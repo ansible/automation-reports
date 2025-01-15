@@ -1,0 +1,13 @@
+---
+instances:
+  - protocol: https
+    host: 10.44.17.179
+    port: 8443
+    access_token: sampleToken
+    verify_ssl: false
+
+  - protocol: https
+    host: 10.48.17.178
+    port: 8443
+    access_token: sampleToken1
+    verify_ssl: false
