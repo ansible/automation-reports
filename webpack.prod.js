@@ -33,6 +33,11 @@ module.exports = merge(common('production'), {
         include: [...stylePaths],
         use: [MiniCssExtractPlugin.loader, 'css-loader'],
       },
+      {
+        test: /\.(s(a|c)ss)$/,
+        include: [...stylePaths],
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+      },
     ],
   },
 });

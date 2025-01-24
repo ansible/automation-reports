@@ -1,0 +1,76 @@
+:where(:root) {
+  --pf-v6-global--BackgroundColor--dark-100: #151515;
+  --pf-v6-c-page__main-section--BackgroundColor: #f2f2f2;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+#app {
+  overflow: hidden;
+}
+
+.pf-v6-c-page {
+  background: var(--pf-t--global--background--color--secondary--default);
+}
+.pf-v6-c-page__main {
+  overflow: hidden;
+  padding: 0;
+}
+
+.pf-v6-c-page__main-container {
+  border: none;
+  margin: 0;
+}
+
+.pf-v6-c-content {
+  --pf-v6-c-content--small--Color: var(
+    --pf-t--global--color--status--danger--default
+  ); /* changes all <small> color to the semantic token for danger */
+  --pf-v6-c-content--blockquote--BorderLeftColor: var(
+    --pf-t--global--color--nonstatus--purple--default
+  ); /* changes all <blockquote> left border color to the semantic token for non-status (purple) */
+  --pf-v6-c-content--hr--BackgroundColor: var(
+    --pf-t--global--color--nonstatus--yellow--default
+  ); /* changes a <hr> color to the semantic token for non-status (yellow) */
+}
+
+.pf-v6-c-masthead {
+  --pf-v6-c-masthead--BackgroundColor: var(--pf-v6-global--BackgroundColor--dark-100);
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 70px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.267);
+  position: fixed;
+  width: 100vw;
+}
+
+.pf-v6-c-masthead__main {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+}
+
+.pf-v6-c-masthead__brand {
+  align-self: center;
+  display: inline-flex;
+  border: none;
+}
+
+.main-layout {
+  background: var(--pf-t--global--background--color--secondary--default);
+  margin-top: 151px;
+  width: 100vw;
+  height: calc(100vh - 151px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid black;
+}
+
+.pf-v6-c-menu {
+  max-height: 185px;
+  overflow: auto;
+}

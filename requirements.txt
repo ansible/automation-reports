@@ -12,3 +12,4 @@ psycopg2==2.9.10
 PyYAML==6.0.2
 pydantic==2.8.2
 djantic==0.3.4
+django-cors-headers==4.6.0

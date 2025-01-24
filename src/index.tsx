@@ -1,8 +1,10 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import App from '@app/index';
+import { Provider } from 'react-redux';
+import { store } from '@app/Store/store';
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== 'production') {
   const config = {
     rules: [
       {
@@ -12,14 +14,16 @@ if (process.env.NODE_ENV !== "production") {
     ]
   };
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const axe = require("react-axe");
-  axe(React, ReactDOM, 1000, config);
+  const axe = require('react-axe');
+  axe(React, ReactDOM, 1000, config).then();
 }
 
-const root = ReactDOM.createRoot(document.getElementById("app") as Element);
+const root = ReactDOM.createRoot(document.getElementById('app') as Element);
 
 root.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>
-)
+);
