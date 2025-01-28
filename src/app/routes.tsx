@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {Route, Routes} from 'react-router-dom';
-import {Dashboard} from '@app/Dashboard/Dashboard';
+import { Route, Routes } from 'react-router-dom';
+import { Dashboard } from '@app/Dashboard/Dashboard';
 
 export interface IAppRoute {
   label?: string; // Excluding the label will exclude the route from the nav sidebar in AppLayout
@@ -22,7 +22,7 @@ export type AppRouteConfig = IAppRoute | IAppRouteGroup;
 
 const routes: AppRouteConfig[] = [
   {
-    element: <Dashboard/>,
+    element: <Dashboard />,
     exact: true,
     label: 'Dashboard',
     path: '/',
@@ -37,11 +37,11 @@ const flattenedRoutes: IAppRoute[] = routes.reduce(
 
 const AppRoutes = (): React.ReactElement => (
   <Routes>
-    {flattenedRoutes.map(({path, element}, idx) => (
-      <Route path={path} element={element} key={idx}/>
+    {flattenedRoutes.map(({ path, element }, idx) => (
+      <Route path={path} element={element} key={idx} />
     ))}
-    <Route path="*" element={<Dashboard/>}/>
+    <Route path="*" element={<Dashboard />} />
   </Routes>
 );
 
-export {AppRoutes, routes};
+export { AppRoutes, routes };

@@ -29,6 +29,11 @@ module.exports = merge(common('development'), {
         include: [...stylePaths],
         use: ['style-loader', 'css-loader'],
       },
+      {
+        test: /\.(s(a|c)ss)$/,
+        include: [...stylePaths],
+        use: ['style-loader','css-loader', 'sass-loader'],
+      },
     ],
   },
 });
