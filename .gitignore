@@ -36,3 +36,7 @@ storybook-static
 .idea
 .env
 .history
+
+.env
+.venv
+clusters.yaml

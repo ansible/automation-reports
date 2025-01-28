@@ -1,0 +1,24 @@
+---
+name: aapreport
+services:
+  db:
+    image: registry.redhat.io/rhel8/postgresql-15:latest
+    env_file:
+      - path: "./.env"
+        required: true
+    # environment:
+    #   - POSTGRESQL_ADMIN_PASSWORD=${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5433:5432"
+    volumes:
+       - type: volume
+         source: postgres-data
+         target: /var/lib/psql/data
+
+volumes:
+  postgres-data:

@@ -13,9 +13,23 @@ pip install --upgrade pip wheel
 pip install -r requirements.txt
 ```
 
+You might need to install required development libraries
+
+```bash
+# Fedora
+sudo dnf install python3.12-devel libpq-devel
+```
+
 #### Migrations and superuser
 
 ```bash
+cp -i .env.example .env
+set -o allexport; source .env; set +o allexport;
+(cd devel/compose-psql; docker compose up)
+
+cd src/backend
+export PYTHONPATH=$PWD/.. # pip install -e .
+
 python manage.py migrate
 python manage.py createsuperuser
 ```
@@ -23,8 +37,25 @@ python manage.py createsuperuser
 #### Set up instances
 
 ```bash
-python manage.py setinstances <path to yaml file>
+cp -i clusters.example.yaml clusters.yaml
+nano clusters.yaml
+python manage.py setclusters <path to yaml file>
 ```
+
+File `clusters.yaml` needs to contain an AAP OAuth2 application and token.
+Create OAuth2 application at https://AAP_CONTROLLER_FQDN:8443/#/applications:
+
+- Authorization grant type: Resource owner password-based
+- Organization: Default
+- Redirect URIs: empty
+- Client type: Confidential
+
+Create token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
+
+- Scope: read
+
+Store access token and refresh token value.
+The access token is used in clusters.yaml.
 
 ### Run
 
