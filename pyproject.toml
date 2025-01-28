@@ -2,3 +2,6 @@
 name = "Automation savings service"
 readme = "README.md"
 requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "backend.django_config.settings"
