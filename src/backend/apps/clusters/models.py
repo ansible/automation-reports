@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Instance(models.Model):
+class Cluster(models.Model):
     protocol = models.CharField(max_length=10)
     host = models.CharField(max_length=15)
     port = models.IntegerField()

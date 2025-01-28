@@ -1,9 +1,10 @@
 import pydantic
 import yaml
+import traceback
 from django.core.management.base import BaseCommand
 
-from backend.apps.instances.models import Instance
-from backend.apps.instances.schemas import InstanceSchema
+from backend.apps.clusters.models import Cluster
+from backend.apps.clusters.schemas import ClusterSchema
 from django.db import transaction
 
 
@@ -17,9 +18,10 @@ class Command(BaseCommand):
         self.stdout.write('Check if table exists.')
         path = options['path'][0] if len(options['path']) == 1 else options['path']
         try:
-            db_instances = {i.host: i for i in Instance.objects.all()}
+            db_clusters = {i.host: i for i in Cluster.objects.all()}
         except Exception as ex:
-            self.stdout.write(self.style.ERROR('Error creating instances: {}'.format(ex)))
+            traceback.print_exc()
+            self.stdout.write(self.style.ERROR('Error creating clusters: {}'.format(ex)))
             return
         self.stdout.write('Reading YAML file.')
         try:
@@ -33,28 +35,29 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR('YAML file not found: {}'.format(path)))
             return
 
-        yaml_instances = yaml_settings.get('instances', None)
+        yaml_clusters = yaml_settings.get('clusters', None)
 
-        if yaml_instances is None or len(yaml_instances) == 0:
-            self.stdout.write(self.style.ERROR('Improper configured template. Missing key instances {}.'.format(path)))
+        if yaml_clusters is None or len(yaml_clusters) == 0:
+            self.stdout.write(self.style.ERROR('Improper configured template. Missing key clusters {}.'.format(path)))
+            return
 
         error = False
         with transaction.atomic():
-            for instance in yaml_instances:
+            for cluster in yaml_clusters:
                 try:
-                    new_instance = InstanceSchema(**instance)
+                    new_cluster = ClusterSchema(**cluster)
                 except pydantic.ValidationError as ex:
-                    self.stdout.write(self.style.ERROR('Error reading new instance: {}'.format(ex)))
+                    self.stdout.write(self.style.ERROR('Error reading new cluster: {}'.format(ex)))
                     transaction.rollback()
                     break
-                db_instance = db_instances.pop(new_instance.host, None)
-                new_instance = Instance(**new_instance.model_dump())
-                if db_instance is not None:
-                    new_instance.pk = db_instance.pk
+                db_cluster = db_clusters.pop(new_cluster.host, None)
+                new_cluster = Cluster(**new_cluster.model_dump())
+                if db_cluster is not None:
+                    new_cluster.pk = db_cluster.pk
 
-                new_instance.save()
-            for key, value in db_instances.items():
+                new_cluster.save()
+            for key, value in db_clusters.items():
                 value.delete()
         if error:
             return
-        self.stdout.write(self.style.SUCCESS('Successfully set up AAP instances'))
+        self.stdout.write(self.style.SUCCESS('Successfully set up AAP clusters'))

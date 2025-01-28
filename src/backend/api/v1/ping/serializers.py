@@ -1,17 +1,17 @@
 from rest_framework import serializers
 
-from backend.apps.instances.connector import Connector
-from backend.apps.instances.models import Instance
+from backend.apps.clusters.connector import Connector
+from backend.apps.clusters.models import Cluster
 
 
-class InstanceSerializer(serializers.ModelSerializer):
+class ClusterSerializer(serializers.ModelSerializer):
   ping = serializers.SerializerMethodField()
 
   class Meta:
-    model = Instance
+    model = Cluster
     fields = ('id', 'host', 'ping')
 
   @staticmethod
-  def get_ping(instance):
-    connector = Connector(instance)
+  def get_ping(cluster):
+    connector = Connector(cluster)
     return connector.ping

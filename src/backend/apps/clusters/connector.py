@@ -1,10 +1,10 @@
 from abc import ABC
-from backend.apps.instances.schemas import InstanceSchema
+from backend.apps.clusters.schemas import ClusterSchema
 import requests
 
 class Connector(ABC):
 
-    def __init__(self, instance: InstanceSchema, timeout=30):
+    def __init__(self, instance: ClusterSchema, timeout=30):
         self.instance = instance
         self.timeout = timeout
 

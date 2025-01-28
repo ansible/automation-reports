@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class InstanceSchema(BaseModel):
+class ClusterSchema(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     protocol: str
