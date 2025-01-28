@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from backend.apps.instances.models import DateRangeChoices
+from backend.apps.clusters.models import DateRangeChoices
 
 
 class TemplateOptionsView(APIView):
