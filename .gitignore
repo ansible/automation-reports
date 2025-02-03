@@ -40,3 +40,4 @@ storybook-static
 .env
 .venv
 clusters.yaml
+.yarn

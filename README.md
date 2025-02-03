@@ -66,6 +66,8 @@ python manage.py runserver
 ## Frontend
 
 ```bash
+yarn --version  # 3.8.6
+cd src/frontend
 yarn install
 yarn run start:dev
 ```
