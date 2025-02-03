@@ -1,25 +1,49 @@
+import os
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
-
-from backend.apps.clusters.models import DateRangeChoices
+from decimal import Decimal
+from backend.api.v1.template_options.serializers import (
+    OrganizationSerializer,
+    ClusterSerializer,
+    LabelSerializer,
+    JobTemplateSerializer)
+from backend.apps.clusters.helpers import get_costs
+from backend.apps.clusters.models import (
+    DateRangeChoices,
+    Cluster,
+    Organization,
+    Label,
+    JobTemplate, CostsChoices)
 
 
 class TemplateOptionsView(APIView):
 
     def get(self, request: Request) -> Response:
-        organizations = [{"key": i, "value": f"Organization {i}"} for i in range(2, 6)]
-        instances = [{"key": i, "value": f"Instance {i}"} for i in range(1,4)]
-        templates = [{"key": i, "value": f"Template {i}" if i != 2 else f"Template {i} very looooooooooooooooooooooooooooooooooooooooooong name"} for i in range(1, 40)]
+        date_range = [
+            {
+                "key": choice[0], "value": choice[1]
+            }
+            for choice in DateRangeChoices.choices
+        ]
+        clusters = Cluster.objects.all().order_by('address')
+        organizations = Organization.objects.all().order_by("name")
+        labels = Label.objects.all().order_by("name")
 
-        date_range = [{"key": choice[0], "value": choice[1]} for choice in DateRangeChoices.choices]
+        job_templates = JobTemplate.objects.all().order_by("name")
+
+        costs = get_costs()
 
         result = {
-            "organizations": [{"key": 1, "value": "Default organization"}] + organizations + [{"key": -2, "value": "No organization"}],
-            "instances": instances,
-            "templates": templates,
-            "date_ranges": date_range
+            "clusters": ClusterSerializer(clusters, many=True).data,
+            "organizations": OrganizationSerializer(organizations, many=True).data,
+            "labels": LabelSerializer(labels, many=True).data,
+            "date_ranges": date_range,
+            "job_templates": JobTemplateSerializer(job_templates, many=True).data,
+            "manual_cost_automation": costs[CostsChoices.MANUAL].value,
+            "automated_process_cost": costs[CostsChoices.AUTOMATED].value,
         }
 
         return Response(

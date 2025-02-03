@@ -63,6 +63,9 @@ The access token is used in clusters.yaml.
 python manage.py runserver
 ```
 
+### Run dramatiq
+     python manage.py rundramatiq --use-gevent --processes 2 --threads 1
+
 ## Frontend
 
 ```bash
