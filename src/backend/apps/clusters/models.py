@@ -4,7 +4,7 @@ from django.db import models
 from dateutil.relativedelta import relativedelta
 import calendar
 
-from backend.apps.instances.schemas import DateRangeSchema
+from backend.apps.clusters.schemas import DateRangeSchema
 
 
 class Cluster(models.Model):
