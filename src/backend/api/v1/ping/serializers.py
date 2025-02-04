@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from backend.apps.clusters.connector import Connector
+from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.models import Cluster
 
 
@@ -13,5 +13,5 @@ class ClusterSerializer(serializers.ModelSerializer):
 
   @staticmethod
   def get_ping(cluster):
-    connector = Connector(cluster)
+    connector = ApiConnector(cluster)
     return connector.ping

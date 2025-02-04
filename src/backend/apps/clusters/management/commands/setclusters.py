@@ -18,7 +18,7 @@ class Command(BaseCommand):
         self.stdout.write('Check if table exists.')
         path = options['path'][0] if len(options['path']) == 1 else options['path']
         try:
-            db_clusters = {i.host: i for i in Cluster.objects.all()}
+            db_clusters = {i.address: i for i in Cluster.objects.all()}
         except Exception as ex:
             traceback.print_exc()
             self.stdout.write(self.style.ERROR('Error creating clusters: {}'.format(ex)))
@@ -50,7 +50,7 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.ERROR('Error reading new cluster: {}'.format(ex)))
                     transaction.rollback()
                     break
-                db_cluster = db_clusters.pop(new_cluster.host, None)
+                db_cluster = db_clusters.pop(new_cluster.address, None)
                 new_cluster = Cluster(**new_cluster.model_dump())
                 if db_cluster is not None:
                     new_cluster.pk = db_cluster.pk
