@@ -5,21 +5,69 @@ Hello! And welcome to the Automation reports monorepo.
 ### Running locally
 
 ## Backend
-    python3.12 -m venv .venv
-    source .venv/bin/activate
-    pip install --upgrade pip wheel
-    pip install -r requirements.txt
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip wheel
+pip install -r requirements.txt
+```
+
+You might need to install required development libraries
+
+```bash
+# Fedora
+sudo dnf install python3.12-devel libpq-devel
+```
 
 #### Migrations and superuser
-    python manage.py migrate
-    python manage.py createsuperuser
+
+```bash
+cp -i .env.example .env
+set -o allexport; source .env; set +o allexport;
+(cd devel/compose-psql; docker compose up)
+
+cd src/backend
+export PYTHONPATH=$PWD/.. # pip install -e .
+
+python manage.py migrate
+python manage.py createsuperuser
+```
 
 #### Set up instances
-    python manage.py setinstances <path to yaml file>
+
+```bash
+cp -i clusters.example.yaml clusters.yaml
+nano clusters.yaml
+python manage.py setclusters <path to yaml file>
+```
+
+File `clusters.yaml` needs to contain an AAP OAuth2 application and token.
+Create OAuth2 application at https://AAP_CONTROLLER_FQDN:8443/#/applications:
+
+- Authorization grant type: Resource owner password-based
+- Organization: Default
+- Redirect URIs: empty
+- Client type: Confidential
+
+Create token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
+
+- Scope: read
+
+Store access token and refresh token value.
+The access token is used in clusters.yaml.
 
 ### Run
-    python manage.py runserver
+
+```bash
+python manage.py runserver
+```
 
 ## Frontend
-    yarn install
-    yarn run start:dev
+
+```bash
+yarn --version  # 3.8.6
+cd src/frontend
+yarn install
+yarn run start:dev
+```
