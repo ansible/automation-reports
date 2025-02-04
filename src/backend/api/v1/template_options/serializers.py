@@ -10,19 +10,25 @@ class ClusterSerializer(serializers.ModelSerializer):
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
+    key = serializers.IntegerField(read_only=True, source="id")
+    value = serializers.CharField(read_only=True, source="name")
 
     class Meta:
-        fields = ("id", "name", "cluster_id")
+        fields = ("key", "value", "cluster_id")
         model = Organization
 
 class LabelSerializer(serializers.ModelSerializer):
+    key = serializers.IntegerField(read_only=True, source="id")
+    value = serializers.CharField(read_only=True, source="name")
 
     class Meta:
-        fields = ("id", "name", "cluster_id")
+        fields = ("key", "value", "cluster_id")
         model = Label
 
 class JobTemplateSerializer(serializers.ModelSerializer):
+    key = serializers.IntegerField(read_only=True, source="id")
+    value = serializers.CharField(read_only=True, source="name")
 
     class Meta:
-        fields = ("id", "name", "cluster_id")
+        fields = ("key", "value", "cluster_id")
         model = JobTemplate
