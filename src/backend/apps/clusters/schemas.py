@@ -4,8 +4,10 @@ from typing import List, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+
 class FrozenModel(BaseModel):
     model_config = ConfigDict(frozen=True)
+
 
 class ClusterSchema(FrozenModel):
     model_config = ConfigDict(frozen=True)
@@ -16,50 +18,63 @@ class ClusterSchema(FrozenModel):
     access_token: str
     verify_ssl: bool = True
 
+
 class DateRangeSchema(BaseModel):
     start: datetime
     end: datetime
+    prev_start: datetime
+    prev_end: datetime
 
     @property
     def iso_format(self) -> dict[str, str]:
         return {
             "start": self.start.isoformat().replace('+00:00', 'Z') if self.start else None,
             "end": self.end.isoformat().replace('+00:00', 'Z') if self.end else None,
+            "prev_start": self.prev_start.isoformat().replace('+00:00', 'Z') if self.prev_start else None,
+            "prev_end": self.prev_end.isoformat().replace('+00:00', 'Z') if self.prev_end else None,
         }
+
 
 class NameDescriptionModelSchema(FrozenModel):
     id: int
     name: str
     description: str
 
+
 class InstanceGroup(FrozenModel):
     id: int
     name: str
     is_container_group: bool
 
+
 class LabelModelSchema(FrozenModel):
     id: int
     name: str
+
 
 class LabelsSchema(FrozenModel):
     count: int
     results: List[LabelModelSchema]
 
+
 class SummaryFields(FrozenModel):
     organization: NameDescriptionModelSchema | None
-    job_template:  NameDescriptionModelSchema | None
+    job_template: NameDescriptionModelSchema | None
     inventory: NameDescriptionModelSchema | None
     execution_environment: NameDescriptionModelSchema | None
     instance_group: InstanceGroup | None
     labels: LabelsSchema
+
 
 class LaunchedBy(FrozenModel):
     id: int
     name: str
     type: str
 
+
 class HostSummarySummaryFieldsSchema(FrozenModel):
     host: NameDescriptionModelSchema | None
+
 
 class HostSummarySchema(FrozenModel):
     summary_fields: HostSummarySummaryFieldsSchema
@@ -75,6 +90,7 @@ class HostSummarySchema(FrozenModel):
     rescued: int
     created: datetime
     modified: datetime
+
 
 class ExternalJobSchema(FrozenModel):
     model_config = ConfigDict(frozen=True)
