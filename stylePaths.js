@@ -1,7 +1,7 @@
 const path = require('path');
 module.exports = {
   stylePaths: [
-    path.resolve(__dirname, 'src/app/styles'),
+    path.resolve(__dirname, 'src/frontend/app/styles'),
     path.resolve(__dirname, 'node_modules/patternfly'),
     path.resolve(__dirname, 'node_modules/@patternfly/patternfly'),
     path.resolve(__dirname, 'node_modules/@patternfly/react-styles/css'),

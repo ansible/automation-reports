@@ -74,8 +74,8 @@ module.exports = (env) => {
         {
           test: /\.(jpg|jpeg|png|gif|ico)$/i,
           include: [
-            path.resolve(__dirname, 'src'),
-            path.resolve(__dirname, 'src/assets/images'),
+            path.resolve(__dirname, 'src/frontend'),
+            path.resolve(__dirname, 'src/frontend/assets/images'),
             path.resolve(__dirname, 'node_modules/patternfly'),
             path.resolve(__dirname, 'node_modules/@patternfly/patternfly/assets/images'),
             path.resolve(__dirname, 'node_modules/@patternfly/react-styles/css/assets/images'),
@@ -106,6 +106,7 @@ module.exports = (env) => {
         },
       ],
     },
+    entry: ['./src/frontend/index.tsx'],
     output: {
       filename: '[name].bundle.js',
       path: path.resolve(__dirname, 'dist'),
@@ -113,14 +114,14 @@ module.exports = (env) => {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: path.resolve(__dirname, 'src', 'index.html'),
+        template: path.resolve(__dirname, 'src/frontend', 'index.html'),
       }),
       new Dotenv({
         systemvars: true,
         silent: true,
       }),
       new CopyPlugin({
-        patterns: [{ from: './src/assets/images/favicon.ico', to: 'images' }],
+        patterns: [{ from: './src/frontend/assets/images/favicon.ico', to: 'images' }],
       }),
     ],
     resolve: {
