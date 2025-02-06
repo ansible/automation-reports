@@ -14,7 +14,7 @@ from backend.apps.clusters.models import (
     Job,
     JobLabel,
     Host,
-    JobHostSummary)
+    JobHostSummary, Project)
 from backend.apps.clusters.schemas import (
     ExternalJobSchema,
     NameDescriptionModelSchema,
@@ -62,7 +62,10 @@ class DataParser:
         template_description = external_job_template.description if external_job_template else self.data.description
         external_id = external_job_template.id if external_job_template else -1
 
-        job_template = JobTemplate.objects.filter(cluster=self.cluster, name=template_name).first()
+        if external_id > 0:
+            job_template = JobTemplate.objects.filter(cluster=self.cluster, external_id=external_id).first()
+        else:
+            job_template = JobTemplate.objects.filter(cluster=self.cluster, name=template_name).first()
         if job_template is None:
             job_template = JobTemplate.objects.create(cluster=self.cluster, external_id=external_id, name=template_name, description=template_description)
         else:
@@ -165,6 +168,23 @@ class DataParser:
         for label in external_labels.results:
             yield self.get_label(label)
 
+    @property
+    def project(self):
+        external_project = self.data.summary_fields.project
+        if external_project is not None:
+            data = external_project.model_dump()
+            external_id = data.pop("id")
+            project = Project.objects.filter(cluster=self.cluster, external_id=external_id).first()
+            if project is None:
+                project = Project.objects.create(cluster=self.cluster, external_id=external_id, **data)
+            else:
+                project.name = data.pop("name")
+                project.description = data.pop("description", "")
+                project.scm_type = data.pop("scm_type", "")
+                project.save()
+            return project
+        return None
+
     def get_host(self, host: NameDescriptionModelSchema | None, host_name: str) -> Host:
         name = host.name if host else host_name
         description = host.description if host else ""
@@ -215,7 +235,7 @@ class DataParser:
         inventory = self.inventory
         execution_environment = self.execution_environment
         instance_group = self.instance_group
-
+        project = self.project
         job_data = self.job
         external_id = job_data.pop("id")
 
@@ -231,6 +251,7 @@ class DataParser:
                     inventory=inventory,
                     job_template=job_template,
                     launched_by=launched_by,
+                    project=project,
                     **job_data
                 )
             else:
@@ -245,6 +266,7 @@ class DataParser:
                 job.instance_group = instance_group
                 job.job_template = job_template
                 job.launched_by = launched_by
+                job.project = project
             job.save()
 
             db_job_labels = {label.label_id: label for label in JobLabel.objects.filter(job=job)}

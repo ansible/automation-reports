@@ -1,17 +1,16 @@
+import calendar
+import datetime
 import decimal
 import os
 
-import datetime
 import pytz
-from django.db import models
 from dateutil.relativedelta import relativedelta
-import calendar
-
-from django.db.models.functions import TruncDate
+from django.db import models
 
 from backend.apps.clusters.schemas import DateRangeSchema
 
 manual_time = int(os.environ.get("DEFAULT_JOB_TEMPLATE_MANUAL_TIME_MINUTES", "60"))
+
 
 class CreatUpdateModel(models.Model):
     internal_created = models.DateTimeField(auto_now_add=True, blank=True, editable=False)
@@ -47,20 +46,29 @@ class DateRangeChoices(models.TextChoices):
     CUSTOM = "custom", "Custom"
 
     @classmethod
-    def get_date_range(cls, choice, start: str = None, end: str = None)->DateRangeSchema:
+    def get_date_range(cls, choice, start: str = None, end: str = None) -> DateRangeSchema:
         now = datetime.datetime.now(pytz.utc)
         match choice:
             case cls.LAST_YEAR:
                 start_date = now.replace(year=now.year - 1, month=1, day=1)
                 end_date = now.replace(year=now.year - 1, month=12, day=31)
 
+                prev_start_date = now.replace(year=now.year - 2, month=1, day=1)
+                prev_end_date = now.replace(year=now.year - 2, month=12, day=31)
+
             case cls.LAST_3_YEARS:
                 start_date = now.replace(year=now.year - 3, month=1, day=1)
                 end_date = now.replace(year=now.year - 1, month=12, day=31)
 
+                prev_start_date = now.replace(year=now.year - 6, month=1, day=1)
+                prev_end_date = now.replace(year=now.year - 4, month=12, day=31)
+
             case cls.LAST_2_YEARS:
                 start_date = now.replace(year=now.year - 2, month=1, day=1)
                 end_date = now.replace(year=now.year - 1, month=12, day=31)
+
+                prev_start_date = now.replace(year=now.year - 4, month=1, day=1)
+                prev_end_date = now.replace(year=now.year - 3, month=12, day=31)
 
             case cls.LAST_3_MONTH:
                 end_date = now - relativedelta(months=1)
@@ -69,6 +77,12 @@ class DateRangeChoices(models.TextChoices):
                 start_date = now - relativedelta(months=3)
                 start_date = start_date.replace(day=1)
 
+                prev_end_date = now - relativedelta(months=4)
+                num_days = calendar.monthrange(prev_end_date.year, end_date.month)[1]
+                prev_end_date = prev_end_date.replace(day=num_days)
+                prev_start_date = now - relativedelta(months=6)
+                prev_start_date = prev_start_date.replace(day=1)
+
             case cls.LAST_6_MONTH:
                 end_date = now - relativedelta(months=1)
                 num_days = calendar.monthrange(end_date.year, end_date.month)[1]
@@ -76,25 +90,76 @@ class DateRangeChoices(models.TextChoices):
                 start_date = now - relativedelta(months=6)
                 start_date = start_date.replace(day=1)
 
+                prev_end_date = now - relativedelta(months=7)
+                num_days = calendar.monthrange(prev_end_date.year, end_date.month)[1]
+                prev_end_date = prev_end_date.replace(day=num_days)
+                prev_start_date = now - relativedelta(months=12)
+                prev_start_date = prev_start_date.replace(day=1)
+
             case cls.LAST_MONTH:
                 end_date = now - relativedelta(months=1)
                 num_days = calendar.monthrange(end_date.year, end_date.month)[1]
                 end_date = end_date.replace(day=num_days)
                 start_date = end_date.replace(day=1)
 
+                prev_end_date = now - relativedelta(months=2)
+                num_days = calendar.monthrange(prev_end_date.year, end_date.month)[1]
+                prev_end_date = prev_end_date.replace(day=num_days)
+                prev_start_date = prev_end_date.replace(day=1)
+
             case cls.YEAR_TO_DATE:
                 end_date = now
                 start_date = now.replace(month=1, day=1)
 
+                prev_start_date = start_date.replace(year=start_date.year - 1, month=1, day=1)
+
+                end_month = end_date.month
+                end_year = end_date.year - 1
+                num_days = calendar.monthrange(end_year, end_month)[1]
+
+                day = end_date.day if end_date.day <= num_days else num_days
+                prev_end_date = end_date.replace(year=end_year, month=end_month, day=day)
+
             case cls.MONTH_TO_DATE:
                 end_date = now
                 start_date = now.replace(day=1)
+
+                year = start_date.year
+                month = start_date.month
+
+                if month == 1:
+                    year -= 1
+                    month = 12
+                else:
+                    month -=1
+
+                num_days = calendar.monthrange(year, month)[1]
+                day = end_date.day if end_date.day <= num_days else num_days
+                prev_start_date = start_date.replace(year=year, month=month, day=1)
+                prev_end_date = end_date.replace(year=year, month=month, day=day)
 
             case cls.QUARTER_TO_DATE:
                 end_date = now
                 quarter = (now.month - 1) // 3 + 1
                 quarter_start_month = 3 * quarter - 2
                 start_date = now.replace(day=1, month=int(quarter_start_month))
+
+                year = start_date.year
+                if quarter == 1:
+                    year -= 1
+                    prev_quarter = 4
+                else:
+                    prev_quarter = quarter - 1
+
+                prev_quarter_start_month = 3 * prev_quarter - 2
+                prev_quarter_end_month = 3 * prev_quarter
+
+                num_days = calendar.monthrange(year, prev_quarter_end_month)[1]
+
+                day = end_date.day if end_date.day <= num_days else num_days
+
+                prev_start_date = start_date.replace(year=year, month=prev_quarter_start_month, day=1)
+                prev_end_date = end_date.replace(year=year, month=prev_quarter_end_month, day=day)
 
             case cls.CUSTOM:
                 try:
@@ -106,15 +171,24 @@ class DateRangeChoices(models.TextChoices):
                     end_date = datetime.datetime.fromisoformat(end)
                 except (ValueError, TypeError):
                     end_date = now
+                num_days = (end_date - start_date).days
+                prev_end_date = start_date - datetime.timedelta(days=1)
+                prev_start_date = prev_end_date - datetime.timedelta(days=num_days)
 
             case _:
                 raise NotImplementedError
+        start = datetime.datetime.combine(start_date, datetime.time.min, pytz.utc)
+        end = datetime.datetime.combine(end_date, datetime.time.max, pytz.utc)
+
+        prev_start = datetime.datetime.combine(prev_start_date, datetime.time.min, pytz.utc)
+        prev_end = datetime.datetime.combine(prev_end_date, datetime.time.max, pytz.utc)
 
         return DateRangeSchema(**{
-            'start': datetime.datetime.combine(start_date, datetime.time.min, pytz.utc),
-            'end': datetime.datetime.combine(end_date, datetime.time.max, pytz.utc),
+            'start': start,
+            'end': end,
+            'prev_start': prev_start,
+            'prev_end': prev_end,
         })
-
 
 
 class JobStatusChoices(models.TextChoices):
@@ -239,6 +313,13 @@ class Host(NameDescriptionModel):
         abstract = False
 
 
+class Project(NameDescriptionModel):
+    scm_type = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        abstract = False
+
+
 class Job(BaseModel):
     type = models.CharField(choices=JobTypeChoices.choices, default=JobTypeChoices.JOB, max_length=20)
     job_type = models.CharField(choices=JobRunTypeChoices.choices, default=JobTypeChoices.JOB, max_length=20)
@@ -268,11 +349,15 @@ class Job(BaseModel):
     failed_hosts_count = models.IntegerField(default=0)
     ignored_hosts_count = models.IntegerField(default=0)
     rescued_hosts_count = models.IntegerField(default=0)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name='jobs')
 
     class Meta:
         abstract = False
-        indexes =  [models.Index(TruncDate("finished"), "finished", name="finished_date_idx")]
+        indexes = [
+            models.Index(fields=['status', 'finished']),
+        ]
         index_together = ('cluster', 'job_template'),
+
 
 class JobLabel(CreatUpdateModel):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='labels')
