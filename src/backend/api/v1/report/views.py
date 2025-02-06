@@ -1,5 +1,4 @@
 import decimal
-
 from django.db.models import Count, Sum, F, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, filters, status
@@ -10,7 +9,7 @@ from rest_framework.viewsets import GenericViewSet
 from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_range
 from backend.api.v1.report.serializers import JobSerializer
 from backend.apps.clusters.helpers import get_costs, get_report_data, get_diff_index, get_jobs_chart, get_hosts_chart
-from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices, JobHostSummary
+from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices, JobHostSummary, Cluster, ClusterSyncData
 
 
 class ReportsView(mixins.ListModelMixin, GenericViewSet):
@@ -62,6 +61,14 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
 
         report_data = get_report_data(list(qs), list(prev_qs) if prev_qs else [])
 
+        ## TOP PROJECTS ##
+        top_projects_qs = (filter_by_range(request, filtered_qs).
+                           filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED]))
+        top_projects_qs = (top_projects_qs.filter(project__isnull=False).values(
+            "project_id",
+            project_name=F("project__name")
+        ).annotate(count=Count("id")).order_by("project_id").order_by("-count"))[:5]
+
         ## UNIQUE HOSTS ###
         host_count_index = None
         host_count_job_qs = filter_by_range(request, filtered_qs)
@@ -81,6 +88,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
 
         response = {
             "users": list(top_users_qs),
+            "projects": list(top_projects_qs),
             "total_number_of_unique_hosts": {
                 "value": host_count,
                 "index": host_count_index

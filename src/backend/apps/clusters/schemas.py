@@ -57,6 +57,12 @@ class LabelsSchema(FrozenModel):
     results: List[LabelModelSchema]
 
 
+class ProjectSchema(FrozenModel):
+    id: int
+    name: str
+    scm_type: str | None = ""
+
+
 class SummaryFields(FrozenModel):
     organization: NameDescriptionModelSchema | None
     job_template: NameDescriptionModelSchema | None
@@ -64,6 +70,7 @@ class SummaryFields(FrozenModel):
     execution_environment: NameDescriptionModelSchema | None
     instance_group: InstanceGroup | None
     labels: LabelsSchema
+    project: ProjectSchema | None
 
 
 class LaunchedBy(FrozenModel):

@@ -14,7 +14,8 @@ from backend.apps.clusters.models import (
     Job,
     JobLabel,
     Host,
-    JobHostSummary
+    JobHostSummary,
+    Project
     )
 
 admin.site.register(Cluster)
@@ -31,3 +32,4 @@ admin.site.register(Job)
 admin.site.register(JobLabel)
 admin.site.register(Host)
 admin.site.register(JobHostSummary)
+admin.site.register(Project)

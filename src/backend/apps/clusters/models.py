@@ -282,6 +282,13 @@ class Host(NameDescriptionModel):
         abstract = False
 
 
+class Project(NameDescriptionModel):
+    scm_type = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        abstract = False
+
+
 class Job(BaseModel):
     type = models.CharField(choices=JobTypeChoices.choices, default=JobTypeChoices.JOB, max_length=20)
     job_type = models.CharField(choices=JobRunTypeChoices.choices, default=JobTypeChoices.JOB, max_length=20)
@@ -311,6 +318,7 @@ class Job(BaseModel):
     failed_hosts_count = models.IntegerField(default=0)
     ignored_hosts_count = models.IntegerField(default=0)
     rescued_hosts_count = models.IntegerField(default=0)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name='jobs')
 
     class Meta:
         abstract = False

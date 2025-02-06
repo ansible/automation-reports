@@ -7,10 +7,11 @@ import traceback
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from backend.apps.clusters.models import Cluster, ClusterSyncData, ClusterSyncStatus, Organization, JobTemplate, AAPUser, Inventory, ExecutionEnvironment, InstanceGroup, Label, Host, Job, JobLabel, JobHostSummary, JobTypeChoices, JobRunTypeChoices, JobLaunchTypeChoices, JobStatusChoices
+from backend.apps.clusters.models import Cluster, ClusterSyncData, ClusterSyncStatus, Organization, JobTemplate, AAPUser, Inventory, ExecutionEnvironment, InstanceGroup, Label, Host, Job, JobLabel, JobHostSummary, JobTypeChoices, JobRunTypeChoices, JobLaunchTypeChoices, JobStatusChoices, Project
 from backend.apps.clusters.schemas import ClusterSchema
 from django.db import transaction
 import random
+
 
 class Command(BaseCommand):
     help = "Set test data db"
@@ -119,6 +120,20 @@ class Command(BaseCommand):
             )
         return hosts
 
+    def projects(self, cluster):
+        projects = []
+        for i in range(10):
+            projects.append(
+                Project.objects.create(
+                    name=f"Project {i + 1}",
+                    description=f"description for Host {i + 1}",
+                    external_id=i + 1,
+                    scm_type="git",
+                    cluster=cluster,
+                )
+            )
+        return projects
+
     def handle(self, *args, **options):
         call_command("cleardb")
         now = datetime.now(timezone.utc)
@@ -140,6 +155,8 @@ class Command(BaseCommand):
         instance_groups = self.instance_group(cluster)
         labels = self.label(cluster)
         hosts = self.host(cluster)
+        projects = self.projects(cluster)
+
         for i in range(days):
             created = start_date + timedelta(days=i)
             print(f"Creating job for {created.strftime('%Y-%m-%d')}")
@@ -154,6 +171,7 @@ class Command(BaseCommand):
                 execution_environment = random.choice(execution_environments)
                 inventory = random.choice(inventories)
                 launched_by = random.choice(aapusers)
+                project = random.choice(projects)
                 elapsed = random.randrange(10000, 1000000, 50) / 1000
                 job = Job.objects.create(
                     type=JobTypeChoices.JOB,
@@ -167,15 +185,16 @@ class Command(BaseCommand):
                     inventory=inventory,
                     job_template=template,
                     launched_by=launched_by,
-                    status = JobStatusChoices.SUCCESSFUL,
-                    started = job_created,
-                    finished = job_created,
-                    elapsed = elapsed,
-                    failed = False,
-                    created = job_created,
-                    modified = job_created,
-                    external_id=i+1,
+                    status=JobStatusChoices.SUCCESSFUL,
+                    started=job_created,
+                    finished=job_created,
+                    elapsed=elapsed,
+                    failed=False,
+                    created=job_created,
+                    modified=job_created,
+                    external_id=i + 1,
                     cluster=cluster,
+                    project=project,
                 )
                 labels_count = random.randrange(0, 9)
                 if labels_count > 0:
@@ -194,8 +213,8 @@ class Command(BaseCommand):
                         job=job,
                         host=host,
                         host_name=host.name,
-                        created = job_created,
-                        modified = job_created,
+                        created=job_created,
+                        modified=job_created,
                         ok=1,
                     )
                     count += 1
