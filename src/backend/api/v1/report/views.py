@@ -6,10 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_range
+from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_range, get_filter_options
 from backend.api.v1.report.serializers import JobSerializer
-from backend.apps.clusters.helpers import get_costs, get_report_data, get_diff_index, get_jobs_chart, get_hosts_chart
-from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices, JobHostSummary, Cluster, ClusterSyncData
+from backend.apps.clusters.helpers import get_costs, get_report_data, get_diff_index, get_jobs_chart, get_hosts_chart, get_unique_host_count
+from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices, JobHostSummary
 
 
 class ReportsView(mixins.ListModelMixin, GenericViewSet):
@@ -70,31 +70,8 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         ).annotate(count=Count("id")).order_by("project_id").order_by("-count"))[:5]
 
         ## UNIQUE HOSTS ###
-        host_count_index = None
-        host_count_job_qs = filter_by_range(request, filtered_qs)
-        host_count = (JobHostSummary.objects.
-                      filter(
-            job_id__in=host_count_job_qs.values_list("id", flat=True)).values("host").
-                      annotate(count=Count("host", distinct=True))).count()
+        unique_host = get_unique_host_count(options=get_filter_options(request))
 
-        host_count_job_prev_qs = filter_by_range(request, filtered_qs, prev_range=True)
-        if host_count_job_prev_qs:
-            prev_host_count = (JobHostSummary.objects.
-                               filter(
-                job_id__in=host_count_job_prev_qs.values_list("id", flat=True)).values("host").
-                               annotate(count=Count("host", distinct=True))).count()
-
-            host_count_index = get_diff_index(prev_host_count, host_count)
-
-        response = {
-            "users": list(top_users_qs),
-            "projects": list(top_projects_qs),
-            "total_number_of_unique_hosts": {
-                "value": host_count,
-                "index": host_count_index
-            },
-
-        }
         job_chart_qs = Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED])
         self.filter_queryset(job_chart_qs)
         job_chart_qs = filter_by_range(request, job_chart_qs)
@@ -102,8 +79,14 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
 
         hosts_chart = {"host_chart": get_hosts_chart(job_chart_qs, date_range=get_range(request))}
 
+        response = {
+            "users": list(top_users_qs),
+            "projects": list(top_projects_qs),
+        }
+
         response_data = {
             **response,
+            **unique_host,
             **report_data,
             **job_chart,
             **hosts_chart,

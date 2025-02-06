@@ -110,25 +110,56 @@ class DateRangeChoices(models.TextChoices):
             case cls.YEAR_TO_DATE:
                 end_date = now
                 start_date = now.replace(month=1, day=1)
-                num_days = (end_date - start_date).days
-                prev_end_date = end_date - datetime.timedelta(days=1)
-                prev_start_date = prev_end_date - datetime.timedelta(days=num_days)
+
+                prev_start_date = start_date.replace(year=start_date.year - 1, month=1, day=1)
+
+                end_month = end_date.month
+                end_year = end_date.year - 1
+                num_days = calendar.monthrange(end_year, end_month)[1]
+
+                day = end_date.day if end_date.day <= num_days else num_days
+                prev_end_date = end_date.replace(year=end_year, month=end_month, day=day)
 
             case cls.MONTH_TO_DATE:
                 end_date = now
                 start_date = now.replace(day=1)
-                num_days = (end_date - start_date).days
-                prev_end_date = end_date - datetime.timedelta(days=1)
-                prev_start_date = prev_end_date - datetime.timedelta(days=num_days)
+
+                year = start_date.year
+                month = start_date.month
+
+                if month == 1:
+                    year -= 1
+                    month = 12
+                else:
+                    month -=1
+
+                num_days = calendar.monthrange(year, month)[1]
+                day = end_date.day if end_date.day <= num_days else num_days
+                prev_start_date = start_date.replace(year=year, month=month, day=1)
+                prev_end_date = end_date.replace(year=year, month=month, day=day)
 
             case cls.QUARTER_TO_DATE:
                 end_date = now
                 quarter = (now.month - 1) // 3 + 1
                 quarter_start_month = 3 * quarter - 2
                 start_date = now.replace(day=1, month=int(quarter_start_month))
-                num_days = (end_date - start_date).days
-                prev_end_date = end_date - datetime.timedelta(days=1)
-                prev_start_date = prev_end_date - datetime.timedelta(days=num_days)
+
+                year = start_date.year
+                if quarter == 1:
+                    year -= 1
+                    prev_quarter = 4
+                else:
+                    prev_quarter = quarter - 1
+
+                prev_quarter_start_month = 3 * prev_quarter - 2
+                prev_quarter_end_month = 3 * prev_quarter
+
+                num_days = calendar.monthrange(year, prev_quarter_end_month)[1]
+
+                day = end_date.day if end_date.day <= num_days else num_days
+
+                prev_start_date = start_date.replace(year=year, month=prev_quarter_start_month, day=1)
+                prev_end_date = end_date.replace(year=year, month=prev_quarter_end_month, day=day)
 
             case cls.CUSTOM:
                 try:

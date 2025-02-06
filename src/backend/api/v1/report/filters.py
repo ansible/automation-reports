@@ -3,42 +3,55 @@ from rest_framework import filters
 from backend.apps.clusters.models import JobLabel, DateRangeChoices
 
 
+def get_filter_options(request):
+    options = {}
+    params_options = [
+        "organization",
+        "cluster",
+        "job_template",
+        "label"
+    ]
+    for key in params_options:
+        values = request.query_params.get(key, None)
+        if values is not None:
+            options[key] = values.split(",")
+
+    date_range = request.query_params.get("date_range", None)
+    start_date = request.query_params.get("start_date", None)
+    end_date = request.query_params.get("end_date", None)
+
+    if date_range is not None:
+        options["date_range"] = DateRangeChoices.get_date_range(
+                choice=date_range,
+                start=start_date,
+                end=end_date)
+    return options
+
+
 class CustomReportFilter(filters.BaseFilterBackend):
 
     def filter_queryset(self, request, queryset, view):
-        organizations = request.query_params.get("organization", None)
-        clusters = request.query_params.get("cluster", None)
-        job_templates = request.query_params.get("job_template", None)
-        labels = request.query_params.get("label", None)
+        options = get_filter_options(request)
 
-        if organizations:
-            list_organizations = [int(org) for org in organizations.split(",")]
-            queryset = queryset.filter(organization__in=list_organizations)
+        if options.get("organization", None) is not None:
+            queryset = queryset.filter(organization__in=options["organization"])
 
-        if clusters:
-            list_clusters = [int(cluster) for cluster in clusters.split(",")]
-            queryset = queryset.filter(cluster__in=list_clusters)
+        if options.get("cluster", None) is not None:
+            queryset = queryset.filter(cluster__in=options["cluster"])
 
-        if job_templates:
-            list_job_templates = [int(template) for template in job_templates.split(",")]
-            queryset = queryset.filter(job_template__in=list_job_templates)
+        if options.get("job_template", None) is not None:
+            queryset = queryset.filter(job_template__in=options["job_template"])
 
-        if labels:
-            list_labels = [int(label) for label in labels.split(",")]
-            labels_qs = JobLabel.objects.filter(label_id__in=list_labels).values_list("job_id", flat=True)
+        if options.get("label", None) is not None:
+            labels_qs = JobLabel.objects.filter(label_id__in=options["label"]).values_list("job_id", flat=True)
             queryset = queryset.filter(id__in=labels_qs)
 
         return queryset
 
 
 def get_range(request):
-    date_range_key = request.query_params.get("date_range", None)
-    start_date = request.query_params.get("start_date", None)
-    end_date = request.query_params.get("end_date", None)
-
-    if date_range_key:
-        return DateRangeChoices.get_date_range(date_range_key, start_date, end_date)
-    return None
+    options = get_filter_options(request)
+    return options.get("date_range", None)
 
 
 def filter_by_range(request, queryset, prev_range=False):

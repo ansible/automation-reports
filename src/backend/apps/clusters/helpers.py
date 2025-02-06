@@ -6,7 +6,7 @@ import pytz
 from django.core.cache import cache
 from django.db.models import Count, Sum, F, CharField, Func, Value
 
-from backend.apps.clusters.models import Costs, CostsChoices
+from backend.apps.clusters.models import Costs, CostsChoices, JobHostSummary, JobStatusChoices, JobLabel
 
 
 def get_costs():
@@ -73,7 +73,7 @@ def sum_items(items):
         result["manual_costs"] += item["manual_costs"]
         result["savings"] += item["savings"]
 
-    result["total_elapsed_hours"] = round(result["total_elapsed_hours"], 2)
+    result["total_elapsed_hours"] = round((result["total_elapsed_hours"] / 3600), 2)
     result["automated_costs"] = round(result["automated_costs"], 2)
     result["manual_costs"] = round(result["manual_costs"], 2)
     result["savings"] = round(result["savings"], 2)
@@ -205,3 +205,55 @@ def get_hosts_chart(qs, date_range):
             "y": job["hosts"],
         })
     return result
+
+
+def get_unique_host_count(options):
+
+    queryset = JobHostSummary.objects.filter(
+        job__status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED],
+    )
+    if options.get("organization", None) is not None:
+        queryset = queryset.filter(job__organization__in=options["organization"])
+
+    if options.get("cluster", None) is not None:
+        queryset = queryset.filter(job__cluster__in=options["cluster"])
+
+    if options.get("job_template", None) is not None:
+        queryset = queryset.filter(job__job_template__in=options["job_template"])
+
+    if options.get("label", None) is not None:
+        labels_qs = JobLabel.objects.filter(label_id__in=options["label"]).values_list("job_id", flat=True)
+        queryset = queryset.filter(job_id__in=labels_qs)
+
+    count_qs = queryset
+    prev_count_qs = queryset
+    prev_count = None
+
+    date_range = options.get("date_range", None)
+
+    if date_range is not None:
+        start_date = date_range.start
+        end_date = date_range.end
+
+        prev_start_date = date_range.prev_start
+        prev_end_date = date_range.prev_end
+
+        if start_date:
+            count_qs = count_qs.filter(job__finished__gte=start_date)
+        if end_date:
+            count_qs = count_qs.filter(job__finished__lte=end_date)
+
+        if prev_start_date and prev_end_date:
+            prev_count_qs = prev_count_qs.filter(job__finished__range=(prev_start_date, prev_end_date))
+            prev_count_qs = prev_count_qs.aggregate(count=Count("host_id", distinct=True))
+            prev_count = prev_count_qs["count"]
+
+    count_qs = count_qs.aggregate(count=Count("host_id", distinct=True))
+
+    total_number_of_unique_hosts = count_qs["count"]
+    return {
+        "total_number_of_unique_hosts": {
+            "value": total_number_of_unique_hosts,
+            "index": get_diff_index(prev_count, total_number_of_unique_hosts)
+        }
+    }
