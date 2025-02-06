@@ -62,6 +62,7 @@ def sum_items(items):
         "total_runs": 0,
         "automated_costs": 0,
         "manual_costs": 0,
+        "host_count": 0,
         "savings": 0
     }
     for item in items:
@@ -72,6 +73,7 @@ def sum_items(items):
         result["automated_costs"] += item["automated_costs"]
         result["manual_costs"] += item["manual_costs"]
         result["savings"] += item["savings"]
+        result["host_count"] += item["num_hosts"]
 
     result["total_elapsed_hours"] = round((result["total_elapsed_hours"] / 3600), 2)
     result["automated_costs"] = round(result["automated_costs"], 2)
@@ -91,6 +93,7 @@ def get_report_data(items, prev_items):
     automated_costs = res["automated_costs"]
     manual_costs = res["manual_costs"]
     savings = res["savings"]
+    num_hosts = res["host_count"]
 
     prev_len = len(prev_items)
 
@@ -106,6 +109,10 @@ def get_report_data(items, prev_items):
         "total_number_of_job_runs": {
             "value": total_runs,
             "index": get_diff_index(prev_res["total_runs"] if prev_len > 0 else None, total_runs),
+        },
+        "total_number_of_host_job_runs": {
+            "value": num_hosts,
+            "index": get_diff_index(prev_res["host_count"] if prev_len > 0 else None, num_hosts),
         },
         "total_hours_of_automation": {
             "value": total_elapsed_hours,
@@ -150,16 +157,50 @@ def get_chart_range(date_range):
     return result
 
 
+def get_chart_x_axis(date_range):
+    result = []
+    chart_range = get_chart_range(date_range)
+    x_axis_range = chart_range["range"]
+    start = date_range.start
+    end = date_range.end
+    if x_axis_range == "hour":
+        for i in range(23):
+            d = start.replace(hour=i, minute=0, second=0, microsecond=0)
+            result.append(d)
+    elif x_axis_range == "day":
+        start_day = start.day
+        end_day = end.day
+        for i in range(start_day, end_day + 1):
+            d = start.replace(day=i, hour=0, minute=0, second=0, microsecond=0)
+            result.append(d)
+    elif x_axis_range == "month":
+        start_month = start.month
+        end_month = end.month
+        for i in range(start_month, end_month + 1):
+            d = start.replace(month=i, day=1, hour=0, minute=0, second=0, microsecond=0)
+            result.append(d)
+    else:
+        start_year = start.year
+        end_year = end.year
+        for i in range(start_year, end_year + 1):
+            d = start.replace(year=i, day=1, hour=0, minute=0, second=0, microsecond=0)
+            result.append(d)
+    return result
+
+
 def get_jobs_chart(qs, date_range):
     result = {
         "items": [],
         "range": None
     }
     if date_range is None:
-        return []
+        return result
 
     chart_range = get_chart_range(date_range)
+
     result["range"] = chart_range["range"]
+
+    x_axis = get_chart_x_axis(date_range)
 
     qs = qs.values(
         date=Func(
@@ -171,12 +212,12 @@ def get_jobs_chart(qs, date_range):
     ).annotate(
         count=Count("id"),
     ).order_by("date")
+    y_data = {datetime.strptime(job["date"], '%Y-%m-%d %H:%M:%S+00').astimezone(pytz.UTC): job["count"] for job in qs}
 
-    for job in qs:
-        result["items"].append({
-            "x": datetime.strptime(job["date"], '%Y-%m-%d %H:%M:%S+00').astimezone(pytz.UTC),
-            "y": job["count"],
-        })
+    for x in x_axis:
+        y = y_data.get(x, 0)
+        result["items"].append({"x": x, "y": y})
+
     return result
 
 
@@ -186,9 +227,11 @@ def get_hosts_chart(qs, date_range):
         "range": None
     }
     if date_range is None:
-        return []
+        return result
+
     chart_range = get_chart_range(date_range)
     result["range"] = chart_range["range"]
+
     qs = qs.values(
         date=Func(
             F('finished'),
@@ -199,16 +242,18 @@ def get_hosts_chart(qs, date_range):
     ).annotate(
         hosts=Sum("num_hosts"),
     ).order_by("date")
-    for job in qs:
-        result["items"].append({
-            "x": datetime.strptime(job["date"], '%Y-%m-%d %H:%M:%S+00').astimezone(pytz.UTC),
-            "y": job["hosts"],
-        })
+
+    x_axis = get_chart_x_axis(date_range)
+    y_data = {datetime.strptime(job["date"], '%Y-%m-%d %H:%M:%S+00').astimezone(pytz.UTC): job["hosts"] for job in qs}
+
+    for x in x_axis:
+        y = y_data.get(x, 0)
+        result["items"].append({"x": x, "y": y})
+
     return result
 
 
 def get_unique_host_count(options):
-
     queryset = JobHostSummary.objects.filter(
         job__status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED],
     )
