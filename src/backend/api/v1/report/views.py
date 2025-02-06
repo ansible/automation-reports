@@ -16,7 +16,8 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
     filter_backends = [CustomReportFilter, DjangoFilterBackend, filters.OrderingFilter]
     serializer_class = JobSerializer
     ordering_fields = ["name", "successful_runs", "failed_runs",
-                       "num_hosts", "elapsed", "manual_time", "manual_costs", "automated_costs", "savings"]
+                       "num_hosts", "elapsed", "manual_time", "manual_costs",
+                       "automated_costs", "savings", "runs"]
     ordering = ["name"]
 
     def get_filtered_queryset(self, prev_range=False):
