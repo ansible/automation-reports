@@ -1,0 +1,13 @@
+---
+- name: Manage postgresql firewalld port
+  ansible.posix.firewalld:
+    port: '{{ postgresql_port }}/tcp'
+    permanent: true
+    state: '{{ __firewalld_state }}'
+    immediate: true
+    zone: '{{ postgresql_firewall_zone }}'
+  become: true
+  when:
+    - ansible_facts.services.get('firewalld.service', {}) | length
+    - ansible_facts.services['firewalld.service']['status'] == 'enabled'
+...

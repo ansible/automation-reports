@@ -1,0 +1,56 @@
+---
+- name: Set postgresql hostname
+  ansible.builtin.set_fact:
+    _postgresql_hostname: '{{ routable_hostname | default(ansible_host) }}'
+
+- name: Set postgresql IPs
+  ansible.builtin.set_fact:
+    _postgresql_ips: '{{ _postgresql_ips | default([]) | union(["IP:" + item]) }}'
+  loop: '{{ ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }}'
+
+- name: Set postgresql volumes
+  ansible.builtin.set_fact:
+    _secrets:
+      - 'postgresql_admin_password,type=env,target=POSTGRESQL_ADMIN_PASSWORD'
+    _volumes:
+      - 'postgresql:/var/lib/pgsql/data:Z'
+
+- name: Add tls to volumes
+  ansible.builtin.set_fact:
+    _volumes: '{{ _volumes + _tls_volumes }}'
+  vars:
+    _tls_volumes:
+      - '{{ postgresql_conf_dir }}/server.crt:/var/lib/pgsql/server.crt:ro,z'
+      - '{{ postgresql_conf_dir }}/server.key:/var/lib/pgsql/server.key:ro,z'
+  when: not postgresql_disable_tls | bool
+
+- name: Set effective cache size fact for dedicated database node
+  ansible.builtin.set_fact:
+    postgresql_effective_cache_size: '{{ (ansible_memtotal_mb * 0.5) | int }}MB'
+  when:
+    - postgresql_effective_cache_size is not defined
+    - inventory_hostname not in groups.get('automationcontroller', [])
+    - inventory_hostname not in groups.get('automationhub', [])
+
+- name: Set shared buffers fact for dedicated database node
+  ansible.builtin.set_fact:
+    postgresql_shared_buffers: '{{ (ansible_memtotal_mb * 0.25) | int }}MB'
+  when:
+    - postgresql_shared_buffers is not defined
+    - inventory_hostname not in groups.get('automationcontroller', [])
+    - inventory_hostname not in groups.get('automationhub', [])
+
+- name: Set effective cache size fact for collocated database node
+  ansible.builtin.set_fact:
+    postgresql_effective_cache_size: '{{ (ansible_memtotal_mb * 0.2) | int }}MB'
+  when:
+    - postgresql_effective_cache_size is not defined
+    - inventory_hostname in groups.get('automationcontroller', []) or inventory_hostname in groups.get('automationhub', [])
+
+- name: Set shared buffers fact for collocated database node
+  ansible.builtin.set_fact:
+    postgresql_shared_buffers: '{{ (ansible_memtotal_mb * 0.1) | int }}MB'
+  when:
+    - postgresql_shared_buffers is not defined
+    - inventory_hostname in groups.get('automationcontroller', []) or inventory_hostname in groups.get('automationhub', [])
+...

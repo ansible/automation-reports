@@ -1,0 +1,45 @@
+---
+- name: Ensure postgresql admin user is provided
+  ansible.builtin.assert:
+    that:
+      - postgresql_admin_username is defined
+      - postgresql_admin_username | length
+    fail_msg: 'postgresql_admin_username must be set and not empty with external database'
+  when: groups.get('database', []) | length == 0
+
+- name: When a database node is present
+  when: groups.get('database', []) | length > 0
+  block:
+    - name: Ensure only one managed database
+      ansible.builtin.assert:
+        that:
+          - groups.get('database', []) | length == 1
+        fail_msg: 'only one managed database is supported'
+
+    - name: Ensure postgresql admin password is provided
+      ansible.builtin.assert:
+        that:
+          - postgresql_admin_password is defined
+          - postgresql_admin_password | length
+        fail_msg: 'postgresql_admin_password must be set and not empty with managed database'
+
+    - name: Check the postgresql_effective_cache_size format
+      ansible.builtin.assert:
+        that:
+          - postgresql_effective_cache_size is regex('^\d+MB$')
+        fail_msg: 'The postgresql_effective_cache_size format should be <int>MB'
+      when: postgresql_effective_cache_size is defined
+
+    - name: Check the postgresql_shared_buffers format
+      ansible.builtin.assert:
+        that:
+          - postgresql_shared_buffers is regex('^\d+MB$')
+        fail_msg: 'The postgresql_shared_buffers format should be <int>MB'
+      when: postgresql_shared_buffers is defined
+
+    - name: Ensure postgresql password encryption is valid
+      ansible.builtin.assert:
+        that:
+          - postgresql_password_encryption in ['md5', 'scram-sha-256']
+      when: postgresql_password_encryption is defined
+...

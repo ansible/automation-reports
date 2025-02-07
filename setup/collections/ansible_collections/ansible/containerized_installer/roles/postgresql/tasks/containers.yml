@@ -1,0 +1,29 @@
+---
+- name: Create the postgresql container
+  containers.podman.podman_container:
+    name: postgresql
+    image: '{{ _postgresql_image }}'
+    generate_systemd:
+      container_prefix: ''
+      path: '{{ ansible_user_dir }}/.config/systemd/user'
+      separator: ''
+    log_driver: '{{ container_log_driver }}'
+    network: host
+    secrets: '{{ _secrets }}'
+    volume: '{{ _volumes }}'
+    env:
+      POSTGRESQL_EFFECTIVE_CACHE_SIZE: '{{ postgresql_effective_cache_size }}'
+      POSTGRESQL_MAX_CONNECTIONS: '{{ postgresql_max_connections }}'
+      POSTGRESQL_SHARED_BUFFERS: '{{ postgresql_shared_buffers }}'
+    uidmap:
+      - '{{ postgresql_uid }}:0:1'
+      - '0:1:{{ postgresql_uid }}'
+      - '{{ postgresql_uid + 1 }}:{{ postgresql_uid + 1 }}:{{ 65536 - postgresql_uid }}'
+    gidmap:
+      - '{{ postgresql_uid }}:0:1'
+      - '0:1:{{ postgresql_uid }}'
+      - '{{ postgresql_uid + 1 }}:{{ postgresql_uid + 1 }}:{{ 65536 - postgresql_uid }}'
+    label:
+      '{{ _autoupdate_label }}'
+    state: created
+...

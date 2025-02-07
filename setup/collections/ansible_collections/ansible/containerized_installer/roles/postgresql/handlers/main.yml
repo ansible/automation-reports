@@ -1,0 +1,7 @@
+---
+- name: Restart postgresql
+  ansible.builtin.systemd:
+    name: postgresql.service
+    scope: user
+    state: restarted
+...

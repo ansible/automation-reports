@@ -1,0 +1,136 @@
+---
+- name: Preflight checks
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  become: false
+  tasks:
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Get ostree fact
+      ansible.builtin.import_role:
+        name: common
+        tasks_from: ostree.yml
+
+    - name: Run preflight checks
+      ansible.builtin.import_role:
+        name: preflight
+
+- name: Install common container components
+  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Gather facts
+      ansible.builtin.setup:
+      become: true
+
+    - name: Gather regular user id, uid and home dir
+      ansible.builtin.setup:
+        filter:
+          - 'ansible_user_id'
+          - 'ansible_user_uid'
+          - 'ansible_user_dir'
+
+    - name: Install and configure podman
+      ansible.builtin.import_role:
+        name: common
+
+- name: Install the database
+  hosts: database
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install and configure postgresql
+      ansible.builtin.import_role:
+        name: postgresql
+
+- name: Install the redis cache
+  hosts: automationcontroller:automationeda:automationhub
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install and configure redis
+      ansible.builtin.import_role:
+        name: redis
+
+- name: Install and configure receptor
+  hosts: automationcontroller:execution_nodes
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install and configure receptor
+      ansible.builtin.import_role:
+        name: receptor
+
+- name: Install the Automation Controller
+  any_errors_fatal: true
+  hosts: automationcontroller
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install and configuration automation controller
+      ansible.builtin.import_role:
+        name: automationcontroller
+
+- name: Install the Automation EDA
+  any_errors_fatal: true
+  hosts: automationeda
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install and configuration automation eda
+      ansible.builtin.import_role:
+        name: automationeda
+
+- name: Install the Automation Hub
+  any_errors_fatal: true
+  hosts: automationhub
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install and configuration automation hub
+      ansible.builtin.import_role:
+        name: automationhub
+
+- name: Trust the Automation Hub registry
+  hosts: automationcontroller:automationeda:execution_nodes
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Add TLS CA to podman configuration
+      ansible.builtin.import_role:
+        name: common
+        tasks_from: hub_registry.yml
+      when: groups.get('automationhub', []) | length > 0
+
+- name: Run the Automation Controller postinstall
+  hosts: automationcontroller
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Configure automation controller resources
+      ansible.builtin.import_role:
+        name: automationcontroller
+        tasks_from: postinstall.yml
+      when: controller_postinstall | default(false) | bool
+
+- name: Run the Automation Hun postinstall
+  hosts: automationhub
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Configure automation hub resources
+      ansible.builtin.import_role:
+        name: automationhub
+        tasks_from: postinstall.yml
+      when: hub_postinstall | default(false) | bool
+...

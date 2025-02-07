@@ -1,0 +1,153 @@
+---
+- name: Ensure hub admin password is provided
+  ansible.builtin.assert:
+    that:
+      - hub_admin_password is defined
+      - hub_admin_password | length
+    fail_msg: 'hub_admin_password must be set and not empty'
+
+- name: Ensure hub postgresql host and password are provided
+  ansible.builtin.assert:
+    that:
+      - hub_pg_host is defined
+      - hub_pg_host | length
+      - hub_pg_password is defined
+      - hub_pg_password | length
+    fail_msg: 'hub_pg_host and hub_pg_password must be set and not empty'
+
+- name: Ensure that Automation Hub LDAP parameters are specified when LDAP backend is enabled
+  ansible.builtin.assert:
+    that:
+      - hub_ldap_server_uri | default('') | length
+      - hub_ldap_bind_dn | default('') | length
+      - hub_ldap_bind_password | default('') | length
+      - hub_ldap_user_search_base_dn | default('') | length
+      - hub_ldap_group_search_base_dn | default('') | length
+    fail_msg: |
+      "Automation Hub is configured to enable LDAP as an authentication backend. "
+      "Some mandatory parameters are not configured. "
+      "List of mandatory paramters are: hub_ldap_server_uri, hub_ldap_bind_dn, hub_ldap_bind_password, "
+      "hub_ldap_user_search_base_dn, hub_ldap_group_search_base_dn"
+  when: hub_authentication_backend | default('') | lower == 'ldap'
+
+- name: Ensure address for shared hub data storage is provided for multi-instance
+  ansible.builtin.assert:
+    that:
+      - hub_shared_data_path | default('') | length
+    fail_msg: |
+      "Multi-Instannce Automation Hub is configured. "
+      "In order to share the storage, an NFS share endpoint must be provided "
+      "by setting hub_shared_data_path"
+  when: groups.get('automationhub', []) | length > 1
+
+- name: Ensure hub_galaxy_importer structure is valid
+  ansible.builtin.assert:
+    that:
+      - hub_galaxy_importer is mapping
+      - hub_galaxy_importer | length > 0
+    fail_msg: 'hub_galaxy_importer must be a non empty dictionary'
+  when: hub_galaxy_importer is defined
+
+- name: Ensure automation hub url format when provided
+  ansible.builtin.assert:
+    that:
+      - hub_main_url | length
+      - hub_main_url is regex('^https?://.*')
+    fail_msg: "hub_main_url must start with http:// or https:// prefix"
+  when: hub_main_url is defined
+
+- name: Check the automation hub postinstall
+  when: hub_postinstall | default(false) | bool
+  block:
+    - name: Ensure hub postinstall directory is provided
+      ansible.builtin.assert:
+        that:
+          - hub_postinstall_dir is defined
+          - hub_postinstall_dir | length
+        fail_msg: 'hub_postinstall_dir must be set and not empty hub_postinstall=true'
+
+    - name: Check the hub postinstall directory
+      ansible.builtin.stat:
+        path: '{{ hub_postinstall_dir }}'
+      register: _hub_postinstall_dir
+
+    - name: Validate that the postinstall directory exists
+      ansible.builtin.assert:
+        that:
+          - _hub_postinstall_dir.stat.exists | bool
+          - _hub_postinstall_dir.stat.isdir | bool
+        fail_msg: 'The hub postinstall directory must exist on the ansible host'
+      when: hub_postinstall_repo_url is not defined
+
+- name: Check the collection signing when using collections auto sign
+  ansible.builtin.assert:
+    that:
+      - hub_collection_signing | default(false) | bool
+    fail_msg: 'Collections auto sign requires to enable hub_collection_signing'
+  when: hub_collection_auto_sign | default(false) | bool
+
+- name: Check the automation hub collection signing
+  when: hub_collection_signing | default(false) | bool
+  block:
+    - name: Check the automation hub collection signing key
+      ansible.builtin.assert:
+        that:
+          - hub_collection_signing_key is defined
+          - hub_collection_signing_key | length
+        fail_msg: 'hub_collection_signing_key must be set and not empty'
+
+    - name: Check the automation hub collection signing key file
+      ansible.builtin.stat:
+        path: '{{ hub_collection_signing_key }}'
+      register: _hub_collection_signing_key
+
+    - name: Validate that automation hub collection signing key file exists
+      ansible.builtin.assert:
+        that:
+          - _hub_collection_signing_key.stat.exists | bool
+          - _hub_collection_signing_key.stat.isreg | bool
+        fail_msg: 'The hub collection key must exist on the ansible host'
+
+    - name: Check the automation hub collection signing key passphrase
+      ansible.builtin.assert:
+        that:
+          - hub_collection_signing_pass | length
+        fail_msg: 'hub_collection_signing_pass must not be empty'
+      when: hub_collection_signing_pass is defined
+
+- name: Check the automation hub container signing
+  when: hub_container_signing | default(false) | bool
+  block:
+    - name: Check the automation hub container signing key
+      ansible.builtin.assert:
+        that:
+          - hub_container_signing_key is defined
+          - hub_container_signing_key | length
+        fail_msg: 'hub_container_signing_key must be set and not empty'
+
+    - name: Check the automation hub container signing key file
+      ansible.builtin.stat:
+        path: '{{ hub_container_signing_key }}'
+      register: _hub_container_signing_key
+
+    - name: Validate that automation hub container signing key file exists
+      ansible.builtin.assert:
+        that:
+          - _hub_container_signing_key.stat.exists | bool
+          - _hub_container_signing_key.stat.isreg | bool
+        fail_msg: 'The hub container key must exist on the ansible host'
+
+    - name: Check the automation hub container signing key passphrase
+      ansible.builtin.assert:
+        that:
+          - hub_container_signing_pass | length
+        fail_msg: 'hub_container_signing_pass must not be empty'
+      when: hub_container_signing_pass is defined
+
+- name: Ensure gnupg directory exists
+  ansible.builtin.file:
+    path: '{{ ansible_user_dir }}/.gnupg'
+    state: directory
+    mode: '0700'
+  when: hub_collection_signing | default(false) | bool or hub_container_signing | default(false) | bool
+...

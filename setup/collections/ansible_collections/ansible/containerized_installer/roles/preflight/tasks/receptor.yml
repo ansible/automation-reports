@@ -1,0 +1,26 @@
+---
+- name: Ensure automation controller is present
+  ansible.builtin.assert:
+    that:
+      - groups.get('automationcontroller', []) | length > 0
+    fail_msg: 'execution nodes need to have automationcontroller node.'
+
+- name: Ensure execution nodes aren't collocated with controller node
+  ansible.builtin.assert:
+    that:
+      - groups['automationcontroller'] | intersect(groups['execution_nodes']) | length == 0
+    fail_msg: 'execution nodes can not be on the same node than automationcontroller node'
+
+- name: Ensure receptor type is a valid choice
+  ansible.builtin.assert:
+    that:
+      - receptor_type in ['control', 'execution', 'hop', 'hybrid']
+    fail_msg: 'Invalid receptor type value.'
+  when: receptor_type is defined
+
+- name: Ensure receptor protocol is a valid choice
+  ansible.builtin.assert:
+    that:
+      - receptor_protocol in ['tcp', 'udp']
+    fail_msg: 'Invalid receptor protocol value.'
+  when: receptor_protocol is defined

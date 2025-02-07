@@ -1,0 +1,97 @@
+---
+- name: Set full container images URL
+  ansible.builtin.set_fact:
+    _controller_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ controller_image }}'
+    _de_supported_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ de_supported_image }}'
+    _eda_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ eda_image }}'
+    _eda_web_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ eda_web_image }}'
+    _ee_29_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ ee_29_image }}'
+    _ee_minimal_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ ee_minimal_image }}'
+    _ee_supported_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ ee_supported_image }}'
+    _hub_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ hub_image }}'
+    _hub_web_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ hub_web_image }}'
+    _postgresql_image: '{{ registry_url }}/{{ registry_ns_rhel }}/{{ postgresql_image }}'
+    _receptor_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ receptor_image }}'
+    _redis_image: '{{ registry_url }}/{{ registry_ns_rhel }}/{{ redis_image }}'
+  run_once: true
+
+- name: Add controller image to the list
+  ansible.builtin.set_fact:
+    _images: '{{ _images | default([]) | union([_controller_image]) }}'
+  when: inventory_hostname in groups.get('automationcontroller', [])
+
+- name: Add receptor image to the list
+  ansible.builtin.set_fact:
+    _images: '{{ _images | default([]) | union([_receptor_image]) }}'
+  when: >
+    inventory_hostname in groups.get('automationcontroller', []) or
+    inventory_hostname in groups.get('execution_nodes', [])
+
+- name: Add eda images to the list
+  ansible.builtin.set_fact:
+    _images: '{{ _images | default([]) | union([_eda_image, _eda_web_image]) }}'
+  when: inventory_hostname in groups.get('automationeda', [])
+
+- name: Add hub images to the list
+  ansible.builtin.set_fact:
+    _images: '{{ _images | default([]) | union([_hub_image, _hub_web_image]) }}'
+  when: inventory_hostname in groups.get('automationhub', [])
+
+- name: Add redis image to the list
+  ansible.builtin.set_fact:
+    _images: '{{ _images | default([]) | union([_redis_image]) }}'
+  when: >
+    inventory_hostname in groups.get('automationcontroller', []) or
+    inventory_hostname in groups.get('automationeda', []) or
+    inventory_hostname in groups.get('automationhub', [])
+
+- name: Add postgresql image to the list
+  ansible.builtin.set_fact:
+    _images: '{{ _images | default([]) | union([_postgresql_image]) }}'
+  when: inventory_hostname in groups.get('database', [])
+
+- name: Add DE images to the list
+  ansible.builtin.set_fact:
+    __de_images: '{{ __de_images | default([]) | union([_de_supported_image]) }}'
+  when: inventory_hostname in groups.get('automationeda', [])
+
+- name: Add EE images to the list
+  ansible.builtin.set_fact:
+    __ee_images: '{{ __ee_images | default([]) | union([_ee_minimal_image, _ee_supported_image]) }}'
+  when: >
+    inventory_hostname in groups.get('automationcontroller', []) or
+    inventory_hostname in groups.get('execution_nodes', [])
+
+- name: Add ee-29 to the list
+  ansible.builtin.set_fact:
+    __ee_images: '{{ __ee_images | default([]) | union([_ee_29_image]) }}'
+  when:
+    - ee_29_enabled | bool
+    - inventory_hostname in groups.get('automationcontroller', []) | union(groups.get('execution_nodes', []))
+
+- name: Add extra DE images
+  when:
+    - de_extra_images | length > 0
+    - inventory_hostname in groups.get('automationeda', [])
+  block:
+    - name: Set de_extra_images fact
+      ansible.builtin.set_fact:
+        _de_extra_images: '{{ de_extra_images }}'
+
+    - name: Add extra DE images to the ee list
+      ansible.builtin.set_fact:
+        __de_images: '{{ __de_images | default([]) | union(de_extra_images | map(attribute="image")) }}'
+
+- name: Add extra EE images
+  when:
+    - ee_extra_images | length > 0
+    - inventory_hostname in groups.get('automationcontroller', []) | union(groups.get('execution_nodes', []))
+  block:
+    - name: Set ee_extra_images fact
+      ansible.builtin.set_fact:
+        _ee_extra_images: '{{ ee_extra_images }}'
+
+    - name: Add extra EE images to the ee list
+      ansible.builtin.set_fact:
+        __ee_images: '{{ __ee_images | default([]) | union(ee_extra_images | map(attribute="image")) }}'
+...

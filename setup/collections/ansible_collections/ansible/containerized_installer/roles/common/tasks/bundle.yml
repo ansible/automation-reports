@@ -1,0 +1,75 @@
+---
+- name: Gather regular user dir and id
+  ansible.builtin.setup:
+    filter:
+      - 'ansible_user_dir'
+      - 'ansible_user_id'
+
+- name: Set the bundle directory path
+  ansible.builtin.set_fact:
+    _bundle: '{{ lookup("ansible.builtin.env", "PWD") }}/bundle/images'
+
+- name: Configure sub UID/GIDs
+  ansible.builtin.include_tasks: subids.yml
+
+- name: Run ostree tasks
+  ansible.builtin.include_tasks: ostree.yml
+
+- name: Install container tools
+  ansible.builtin.package:
+    name: '{{ podman_packages }}'
+  become: true
+  when: not ostree | bool
+
+- name: Create the bundle directory
+  ansible.builtin.file:
+    name: '{{ _bundle }}'
+    mode: '0755'
+    state: directory
+
+- name: Include registry tasks
+  ansible.builtin.include_tasks: registry.yml
+  when: registry_auth | bool
+
+- name: Add localhost to all groups
+  ansible.builtin.add_host:
+    name: localhost
+    groups:
+      - automationcontroller
+      - automationeda
+      - automationhub
+      - database
+      - execution_nodes
+
+- name: Include container image tasks
+  ansible.builtin.include_tasks: images.yml
+
+- name: Pull the container images
+  containers.podman.podman_image:
+    name: '{{ item }}'
+    pull: true
+    force: '{{ container_image_update }}'
+    validate_certs: '{{ registry_tls_verify }}'
+    arch: '{{ container_image_arch | default(omit) }}'
+  loop: '{{ _images | union((__de_images | default([])) | union(__ee_images | default([]))) | unique }}'
+  environment:
+    HTTP_PROXY: "{{ http_proxy | default('') }}"
+    HTTPS_PROXY: "{{ https_proxy | default('') }}"
+    NO_PROXY: "{{ no_proxy | default('') }}"
+
+- name: Save the container images
+  containers.podman.podman_save:
+    dest: '{{ _bundle }}/{{ image }}.tar'
+    image: '{{ item }}'
+  loop: '{{ _images | union((__de_images | default([])) | union(__ee_images | default([]))) | unique }}'
+  vars:
+    image: '{{ (item | basename).split(":")[0] }}'
+
+- name: Compress the container images
+  ansible.builtin.command: '{{ container_compress }} {{ _bundle }}/{{ image }}.tar'
+  args:
+    creates: '{{ _bundle }}/{{ image }}.tar.gz'
+  loop: '{{ _images | union((__de_images | default([])) | union(__ee_images | default([]))) | unique }}'
+  vars:
+    image: '{{ (item | basename).split(":")[0] }}'
+...

@@ -1,0 +1,54 @@
+---
+- name: Ensure registry username and password are provided
+  ansible.builtin.assert:
+    that:
+      - registry_username is defined
+      - registry_username | length
+      - registry_password is defined
+      - registry_password | length
+    fail_msg: 'registry_username and registry_password must be set when registry_auth=true'
+  when:
+    - not bundle_install | default(false) | bool
+    - registry_auth | default(true) | bool
+
+- name: Include database checks
+  ansible.builtin.include_tasks: database.yml
+
+- name: Include controller checks
+  ansible.builtin.include_tasks: automationcontroller.yml
+  when: groups.get('automationcontroller', []) | length > 0
+
+- name: Include hub checks
+  ansible.builtin.include_tasks: automationhub.yml
+  when: groups.get('automationhub', []) | length > 0
+
+- name: Include eda checks
+  ansible.builtin.include_tasks: automationeda.yml
+  when: groups.get('automationeda', []) | length > 0
+
+- name: Include receptor checks
+  ansible.builtin.include_tasks: receptor.yml
+  when: groups.get('execution_nodes', []) | length > 0
+
+- name: Include bundle checks
+  when: bundle_install | default(false) | bool
+  block:
+    - name: Ensure bundle_dir is provided
+      ansible.builtin.assert:
+        that:
+          - bundle_dir is defined
+          - bundle_dir | length
+        fail_msg: 'bundle_dir must be set when bundle_install=true'
+
+    - name: Check the images directory
+      ansible.builtin.stat:
+        path: '{{ bundle_dir }}/images'
+      register: _bundle_images
+
+    - name: Ensure the images directory exists
+      ansible.builtin.assert:
+        that:
+          - _bundle_images.stat.exists | bool
+          - _bundle_images.stat.isdir | bool
+        fail_msg: 'The bundle directory must contain an images directory'
+...

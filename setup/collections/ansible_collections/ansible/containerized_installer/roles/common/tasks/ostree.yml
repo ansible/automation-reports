@@ -1,0 +1,10 @@
+---
+- name: Test for ostree-based OS
+  ansible.builtin.stat:
+    path: /run/ostree-booted
+  register: _ostree
+
+- name: Set ostree-based OS fact
+  ansible.builtin.set_fact:
+    ostree: '{{ _ostree.stat.exists }}'
+...

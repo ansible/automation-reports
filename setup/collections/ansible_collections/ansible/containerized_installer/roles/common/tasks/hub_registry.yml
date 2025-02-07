@@ -1,0 +1,29 @@
+---
+- name: Configure TLS CA for hub registry
+  when: __scheme == 'https'
+  vars:
+    __url: '{{ hostvars[groups["automationhub"][0]]["_hub_url"] }}'
+    __hostname: '{{ __url | urlsplit("hostname") }}'
+    __port: '{{ __url | urlsplit("port") | ternary(__url | urlsplit("port"), "443") }}'
+    __scheme: '{{ __url | urlsplit("scheme") }}'
+    __path: '{{ ansible_user_dir }}/.config/containers/certs.d'
+  block:
+    - name: Create the hub registry directory
+      ansible.builtin.file:
+        path: '{{ __path }}/{{ __hostname }}:{{ __port }}'
+        state: directory
+        mode: '0755'
+
+    - name: Create the hub registry directory alias
+      ansible.builtin.file:
+        src: '{{ __path }}/{{ __hostname }}:{{ __port }}'
+        dest: '{{ __path }}/{{ __hostname }}'
+        state: link
+      when: __port | int == 443
+
+    - name: Add symlink to the TLS CA bundle
+      ansible.builtin.file:
+        src: '{{ _ca_tls_dir }}/extracted/pem/tls-ca-bundle.pem'
+        dest: '{{ __path }}/{{ __hostname }}:{{ __port }}/ca.crt'
+        state: link
+...

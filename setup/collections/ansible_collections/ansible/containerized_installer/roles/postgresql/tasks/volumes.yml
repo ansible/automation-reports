@@ -1,0 +1,6 @@
+---
+- name: Manage the postgresql data volume
+  containers.podman.podman_volume:
+    name: postgresql
+    state: '{{ __volume_state }}'
+...
