@@ -88,7 +88,7 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
   );
 
   return (
-    <Flex direction={{ default: 'column', lg: 'row' }}>
+    <Flex>
       <FlexItem>{props.label}</FlexItem>
       <FlexItem>{rangeSelector}</FlexItem>
       <FlexItem>

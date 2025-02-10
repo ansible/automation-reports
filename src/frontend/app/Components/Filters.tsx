@@ -24,11 +24,15 @@ import { DateRangePicker } from '@app/Components/DateRangePicker';
 import { FilterOption } from '@app/Types';
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
 import { FormEvent } from 'react';
+import '../styles/filters.scss';
+import { ParamsContext } from '@app/Store/paramsContext';
+import moment from 'moment';
 
 interface FilterProps {
-  organizations: (string | number)[];
-  templates: (string | number)[];
+  organization: (string | number)[];
+  job_template: (string | number)[];
   instances: (string | number)[];
+  label: (string | number)[];
   date_range: string | null;
   start_date: Date | null;
   end_date: Date | null;
@@ -41,13 +45,19 @@ export const Filters: React.FunctionComponent = () => {
   const filterChoicesDataByOption = useAppSelector(filterChoicesDataById);
   const [selectedOption, selectOption] = React.useState<string | number>();
   const [filterSelection, selectFilter] = React.useState<FilterProps>({
-    organizations: [],
-    templates: [],
+    organization: [],
+    job_template: [],
     instances: [],
+    label: [],
     date_range: null,
     start_date: null,
     end_date: null,
   });
+  const context = React.useContext(ParamsContext);
+  if (!context) {
+    throw new Error ('Filters must be used within a ParamsProvider');
+  }
+  const { setParams } = context;
 
   const dispatch = useAppDispatch();
 
@@ -65,6 +75,18 @@ export const Filters: React.FunctionComponent = () => {
     }
   };
 
+  const updateParams = (key, value) => {
+    setParams((prevParams) => ({
+      ...prevParams,
+      [key]: value
+    }));
+  }
+
+  const resetPagination = () => {
+    updateParams("page", 1);
+    updateParams("page_size", 10);
+  }
+
   const onDateRangeChange = (
     _event?: React.MouseEvent | FormEvent<HTMLInputElement>,
     range?: string,
@@ -78,18 +100,33 @@ export const Filters: React.FunctionComponent = () => {
         ...prevState,
         [key]: newState,
       }));
+      if (newState !== "custom") {
+        setParams((prevState) => ({
+          ...prevState,
+          "start_date": null,
+          "end_date": null,
+        }))
+      }
+      updateParams(key, newState);  
+      resetPagination();
     }
     if (startDate) {
       selectFilter((prevState) => ({
         ...prevState,
         ['start_date']: startDate,
       }));
+      const formattedDate = moment(startDate).format('YYYY-MM-DD');
+      updateParams('start_date', formattedDate); 
+      resetPagination();
     }
     if (endDate) {
       selectFilter((prevState) => ({
         ...prevState,
         ['end_date']: endDate,
       }));
+      const formattedDate = moment(endDate).format('YYYY-MM-DD');
+      updateParams('end_date', formattedDate);
+      resetPagination();
     }
   };
 
@@ -106,6 +143,8 @@ export const Filters: React.FunctionComponent = () => {
       ...prevState,
       [selectedOption]: newState,
     }));
+    updateParams(selectedOption, newState);
+    resetPagination();
   };
 
   const deleteLabelGroup = (group: string | number) => {
@@ -113,6 +152,8 @@ export const Filters: React.FunctionComponent = () => {
       ...prevState,
       [group]: [],
     }));
+    updateParams(group, null);
+    resetPagination();
   };
 
   const deleteLabel = (group: string | number, key: string | number) => {
@@ -122,15 +163,25 @@ export const Filters: React.FunctionComponent = () => {
       ...prevState,
       [group]: newState,
     }));
+    updateParams(group, newState);
+    resetPagination();
   };
 
   const clearFilters = () => {
     selectFilter((prevState) => ({
       ...prevState,
       ['instances']: [],
-      ['organizations']: [],
-      ['templates']: [],
+      ['organization']: [],
+      ['job_template']: [],
+      ['label']: [],
     }));
+    setParams((prevState) => ({
+      ...prevState,
+      ['instances']: null,
+      ['organization']: null,
+      ['job_template']: null,
+      ['label']: null
+    }))
   };
 
   const filterLabels = (
@@ -154,9 +205,11 @@ export const Filters: React.FunctionComponent = () => {
         );
       })}
       <ToolbarItem>
-        {(filterSelection.organizations.length > 0 ||
+        {(filterSelection.organization.length > 0 ||
           filterSelection.instances.length > 0 ||
-          filterSelection.templates.length > 0) && (
+          filterSelection.job_template.length > 0 ||
+          filterSelection.label.length > 0 )
+           && (
           <Button variant="link" onClick={() => clearFilters()} isInline>
             Clear all filters
           </Button>
@@ -166,34 +219,38 @@ export const Filters: React.FunctionComponent = () => {
   );
 
   const filterSelector = (
-    <BaseDropdown
-      id={'filter-faceted-options-menu'}
-      disabled={!filterOptionsList?.length}
-      options={filterOptionsList}
-      selectedItem={selectedOption}
-      onSelect={onSelectOptionsMenu}
-      icon={<FilterIcon />}
-      style={
-        {
-          width: '160px',
-        } as React.CSSProperties
-      }
-    ></BaseDropdown>
+    <div className='pf-v6-u-mr-xs'>
+      <BaseDropdown
+        id={'filter-faceted-options-menu'}
+        disabled={!filterOptionsList?.length}
+        options={filterOptionsList}
+        selectedItem={selectedOption}
+        onSelect={onSelectOptionsMenu}
+        icon={<FilterIcon />}
+        style={
+          {
+            width: '160px',
+          } as React.CSSProperties
+        }
+      ></BaseDropdown>
+    </div>
   );
 
   const itemsDropdown = (
-    <MultiChoiceDropdown
-      disabled={!selectedOption || !filterChoicesList[selectedOption]?.length}
-      selections={selectedOption ? filterSelection[selectedOption] : []}
-      options={selectedOption ? filterChoicesList[selectedOption] : []}
-      label={selectedOption ? 'Filter by ' + filterOptionsDict[selectedOption].value : ''}
-      onSelect={onMultiSelectionChanged}
-      style={
-        {
-          width: '220px',
-        } as React.CSSProperties
-      }
-    ></MultiChoiceDropdown>
+    <div className='pf-v6-u-mr-md'>
+      <MultiChoiceDropdown
+        disabled={!selectedOption || !filterChoicesList[selectedOption]?.length}
+        selections={selectedOption ? filterSelection[selectedOption] : []}
+        options={selectedOption ? filterChoicesList[selectedOption] : []}
+        label={selectedOption ? 'Filter by ' + filterOptionsDict[selectedOption].value : ''}
+        onSelect={onMultiSelectionChanged}
+        style={
+          {
+            width: '220px',
+          } as React.CSSProperties
+        }
+      ></MultiChoiceDropdown>
+    </div>
   );
 
   const dateRangePicker = (
@@ -209,8 +266,8 @@ export const Filters: React.FunctionComponent = () => {
   const toolBar = (
     <Toolbar id="filter-toolbar" clearAllFilters={clearFilters}>
       <ToolbarContent>
-        <ToolbarGroup variant={'filter-group'}>
-          <Split>
+        <ToolbarGroup variant={'filter-group'} className='filters-wrap'>
+          <Split isWrappable className='row-gap'>
             <SplitItem>
               <ToolbarItem>{filterSelector}</ToolbarItem>
             </SplitItem>

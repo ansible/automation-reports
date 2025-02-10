@@ -1,0 +1,42 @@
+.pf-v6-c-table {
+  .pf-v6-c-table__thead {
+    .pf-v6-c-table__tr {
+      .pf-v6-c-table__th {
+        padding: 8px 16px;
+      }
+    }
+  }
+  .pf-v6-c-table__tbody {
+    .pf-v6-c-table__tr {
+      &:last-child {
+        border-bottom: none;
+      }
+      .pf-v6-c-table__td{
+        padding: 8px 16px;
+      }
+    }
+  }
+}
+
+.simple-table-card {
+  height: inherit;
+  .pf-v6-c-card__body {
+    h2 {
+      padding-bottom: 14px;
+    }
+    padding: 20px;
+  }
+}
+
+.dashboard-table {
+  border: 1px solid #c7c7c7;
+  .details-row {
+    gap: 24px 90px;
+    .cards-gap {
+      gap: 24px 100px;
+    }
+  }
+  &:before {
+    border: none;
+  }
+}

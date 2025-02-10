@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '@app/Store/store';
 import { RestService } from '@app/Services';
-import { FilterOption, FilterOptionResponse, FilterState } from '@app/Types';
+import { FilterOption, FilterOptionResponse, FilterOptionWithId, FilterState } from '@app/Types';
 import { listToDict } from '@app/Utils';
 
 export const fetchTemplateOptions = createAsyncThunk('filters/options', async (): Promise<FilterOptionResponse> => {
@@ -11,14 +11,18 @@ export const fetchTemplateOptions = createAsyncThunk('filters/options', async ()
 
 const initialState: FilterState = {
   filterOptions: [
-    { key: 'instances', value: 'Instance' },
-    { key: 'templates', value: 'Template' },
-    { key: 'organizations', value: 'Organization' },
+    { key: 'job_template', value: 'Template' },
+    { key: 'organization', value: 'Organization' },
+    { key: 'label', value: 'Labels' },
   ],
-  instanceOptions: [],
-  templateOptions: [],
-  organizationOptions: [],
+  automatedProcessCost: 0,
+  clusters: [],
   dateRangeOptions: [],
+  templateOptions: [],
+  labelOptions: [],
+  manualCostAautomation: 0,
+  organizationOptions: [],
+  instanceOptions: [],
   loading: 'idle',
   error: null,
 };
@@ -36,9 +40,12 @@ export const filterSlice = createSlice({
         state.loading = 'succeeded';
         const payload = action.payload as FilterOptionResponse;
         state.instanceOptions = payload.instances;
-        state.templateOptions = payload.templates;
+        state.labelOptions = payload.labels;
+        state.templateOptions = payload.job_templates;
         state.organizationOptions = payload.organizations;
         state.dateRangeOptions = payload.date_ranges;
+        state.manualCostAautomation = payload.manual_cost_automation;
+        state.automatedProcessCost = payload.automated_process_cost;
       })
       .addCase(fetchTemplateOptions.rejected, (state, action) => {
         state.loading = 'failed';
@@ -53,15 +60,19 @@ export const filterOptions = (state: RootState) => state.filters.filterOptions;
 export const instanceOptions = (state: RootState) => state.filters.instanceOptions;
 export const templateOptions = (state: RootState) => state.filters.templateOptions;
 export const organizationOptions = (state: RootState) => state.filters.organizationOptions;
+export const labelOptions = (state: RootState) => state.filters.labelOptions;
 export const dateRangeOptions = (state: RootState) => state.filters.dateRangeOptions;
+export const manualCostAutomation = (state: RootState) => state.filters.manualCostAautomation;
+export const automatedProcessCost = (state: RootState) => state.filters.automatedProcessCost;
 
 export const filterChoicesData = createSelector(
-  [instanceOptions, templateOptions, organizationOptions],
-  (instanceOptions: FilterOption[], templateOptions: FilterOption[], organizationOptions: FilterOption[]) => {
+  [instanceOptions, templateOptions, organizationOptions, labelOptions],
+  (instanceOptions: FilterOptionWithId[], templateOptions: FilterOptionWithId[], organizationOptions: FilterOption[], labelOptions: FilterOptionWithId[]) => {
     return {
       instances: instanceOptions,
-      templates: templateOptions,
-      organizations: organizationOptions,
+      job_template: templateOptions,
+      organization: organizationOptions,
+      label: labelOptions
     };
   },
 );
@@ -71,7 +82,8 @@ export const filterOptionsById = createSelector([filterOptions], (filterOptions)
 export const filterChoicesDataById = createSelector([filterChoicesData], (filterChoicesData) => {
   return {
     instances: listToDict(filterChoicesData.instances),
-    templates: listToDict(filterChoicesData.templates),
-    organizations: listToDict(filterChoicesData.organizations),
+    job_template: listToDict(filterChoicesData.job_template),
+    organization: listToDict(filterChoicesData.organization),
+    label: listToDict(filterChoicesData.label)
   };
 });
