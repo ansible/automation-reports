@@ -19,7 +19,7 @@
     "strict": true,
     "paths": {
       "@app/*": ["src/frontend/app/*"],
-      "@assets/*": ["node_modules/@patternfly/react-core/dist/styles/assets/*"],
+      "@assets/*": ["node_modules/@patternfly/react-core/dist/styles/assets/*"]
     },
     "importHelpers": true,
     "skipLibCheck": true

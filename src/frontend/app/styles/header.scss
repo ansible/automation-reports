@@ -1,8 +1,10 @@
 .page-header {
-  position: fixed;
-  top: 70px;
+  position: sticky;
   left: 0;
   width: 100vw;
-  padding: 0 4px;
   background: #fff;
+
+  .pf-v6-c-page__main-section {
+    padding: 24px;
+  }
 }
