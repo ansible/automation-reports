@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
+
 from django.core.management.base import BaseCommand
 
 from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.models import Cluster, ClusterSyncData
-
 from backend.apps.clusters.parser import DataParser
 
 
@@ -36,7 +36,6 @@ class Command(BaseCommand):
         if since is not None and until is not None and since > until:
             self.stdout.write(self.style.ERROR('Start date is greater than end date'))
             return
-
 
         self.stdout.write('Check if cluster table exists.')
 
@@ -74,13 +73,11 @@ class Command(BaseCommand):
             except Exception as e:
                 print(e)
 
-
     def parse_range(self, _since, _until):
         since = self.parse_date(_since) if _since else None
         until = self.parse_date(_until, True) if _until else None
 
         return since, until
-
 
     def parse_date(self, date_string, end=False):
         tmp = date_string.split('T')
@@ -96,4 +93,3 @@ class Command(BaseCommand):
             else:
                 d = datetime.combine(d, datetime.min.time(), tzinfo=timezone.utc)
         return d
-

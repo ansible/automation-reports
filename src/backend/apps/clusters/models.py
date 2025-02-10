@@ -131,7 +131,7 @@ class DateRangeChoices(models.TextChoices):
                     year -= 1
                     month = 12
                 else:
-                    month -=1
+                    month -= 1
 
                 num_days = calendar.monthrange(year, month)[1]
                 day = end_date.day if end_date.day <= num_days else num_days

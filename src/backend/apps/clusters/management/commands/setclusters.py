@@ -1,11 +1,12 @@
+import traceback
+
 import pydantic
 import yaml
-import traceback
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from backend.apps.clusters.models import Cluster
 from backend.apps.clusters.schemas import ClusterSchema
-from django.db import transaction
 
 
 class Command(BaseCommand):
