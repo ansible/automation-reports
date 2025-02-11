@@ -17,13 +17,15 @@ body,
   background: var(--pf-t--global--background--color--secondary--default);
 }
 .pf-v6-c-page__main {
-  overflow: hidden;
+  // overflow: hidden;
+  overflow-x: hidden;
   padding: 0;
 }
 
 .pf-v6-c-page__main-container {
   border: none;
   margin: 0;
+  border-radius: 0;
 }
 
 .pf-v6-c-content {
@@ -44,7 +46,7 @@ body,
   padding-bottom: 0;
   height: 70px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.267);
-  position: fixed;
+  position: sticky;
   width: 100vw;
 }
 
@@ -62,15 +64,44 @@ body,
 
 .main-layout {
   background: var(--pf-t--global--background--color--secondary--default);
-  margin-top: 151px;
   width: 100vw;
-  height: calc(100vh - 151px);
+  // height: calc(100vh - 151px);
   overflow: auto;
   padding: 24px;
-  border: 1px solid black;
 }
 
 .pf-v6-c-menu {
   max-height: 185px;
   overflow: auto;
+}
+
+.pf-v6-l-grid.pf-m-gutter {
+  grid-gap: 24px;
+}
+
+.grid-gap {
+  display: grid;
+  grid-gap: 24px;
+}
+
+.fw-500 {
+  font-weight: 500;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+input {
+  &:focus-visible {
+    outline: none;
+  }
 }

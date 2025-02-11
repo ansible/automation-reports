@@ -9,9 +9,9 @@ if (process.env.NODE_ENV !== 'production') {
     rules: [
       {
         id: 'color-contrast',
-        enabled: false
-      }
-    ]
+        enabled: false,
+      },
+    ],
   };
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const axe = require('react-axe');
@@ -25,5 +25,5 @@ root.render(
     <Provider store={store}>
       <App />
     </Provider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
