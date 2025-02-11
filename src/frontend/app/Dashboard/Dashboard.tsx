@@ -14,8 +14,9 @@ import { ParamsContext } from '../Store/paramsContext';
 
 import { RestService } from '@app/Services';
 import { deepClone } from '@app/Utils';
-import { DashboardTopTableColumn, ReportDetail, TableResponse, TableResult } from '@app/Types';
+import { DashboardTopTableColumn, ReportDetail, TableResponse, TableResult, UrlParams } from '@app/Types';
 import { DashboardTopTable } from '@app/Dashboard/DashboardTopTable';
+import { useRef } from 'react';
 
 const Dashboard: React.FunctionComponent = () => {
   const context = React.useContext(ParamsContext);
@@ -28,10 +29,13 @@ const Dashboard: React.FunctionComponent = () => {
   const [detailData, setDetailData] = React.useState<ReportDetail>({} as ReportDetail);
   const [loadDataError, setLoadDataError] = React.useState<boolean>(false);
 
+  const prevParams: React.RefObject<UrlParams> = useRef({} as UrlParams);
+
   const fetchServerReportDetails = async () => {
     const queryParams = deepClone(params);
     delete queryParams['page'];
     delete queryParams['page_size'];
+    delete queryParams['ordering'];
     let response: ReportDetail;
     try {
       response = await RestService.fetchReportDetails(queryParams);
@@ -41,7 +45,10 @@ const Dashboard: React.FunctionComponent = () => {
     }
   };
 
-  const fetchServerTableData = async () => {
+  const fetchServerTableData = async (fetchDetails: boolean = true) => {
+    if ((!params.date_range || params.date_range === 'custom') && (!params?.start_date || !params?.end_date)) {
+      return;
+    }
     const queryParams = deepClone(params);
     let tableResponse: TableResponse;
     try {
@@ -50,15 +57,24 @@ const Dashboard: React.FunctionComponent = () => {
     } catch {
       setLoadDataError(true);
     }
-    await fetchServerReportDetails();
+    if (fetchDetails) {
+      await fetchServerReportDetails();
+    }
   };
 
   React.useEffect(() => {
-    if ((!params.date_range || params.date_range === 'custom') && (!params?.start_date || !params?.end_date)) {
-      return;
+    let fetchDetail = false;
+    for (const [key, value] of Object.entries(params)) {
+      if (!key || key === 'page' || key === 'page_size' || key === 'ordering') {
+        continue;
+      }
+      if (prevParams.current?.[key] !== value) {
+        fetchDetail = true;
+        break;
+      }
     }
-
-    fetchServerTableData().then();
+    fetchServerTableData(fetchDetail).then();
+    prevParams.current = params;
   }, [params]);
 
   const costChanged = (type: string, value: number) => {

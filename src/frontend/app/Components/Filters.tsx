@@ -21,9 +21,9 @@ import { Label } from '@patternfly/react-core/src/components/Label';
 import { MultiChoiceDropdown } from '@app/Components/MultiChoiceDropdown';
 import { BaseDropdown } from '@app/Components/BaseDropdown';
 import { DateRangePicker } from '@app/Components/DateRangePicker';
-import { FilterOption } from '@app/Types';
+import { FilterOption, UrlParams } from '@app/Types';
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
-import { FormEvent } from 'react';
+import { FormEvent, useRef } from 'react';
 import '../styles/filters.scss';
 import { ParamsContext } from '@app/Store/paramsContext';
 
@@ -53,6 +53,8 @@ export const Filters: React.FunctionComponent = () => {
     end_date: null,
   });
   const context = React.useContext(ParamsContext);
+  const pageLoaded: React.RefObject<boolean> = useRef(false);
+
   if (!context) {
     throw new Error('Filters must be used within a ParamsProvider');
   }
@@ -65,7 +67,10 @@ export const Filters: React.FunctionComponent = () => {
       await dispatch(fetchTemplateOptions());
       onSelectOptionsMenu(undefined, filterOptionsList[0].key);
     };
-    execute().then();
+    if (pageLoaded.current) {
+      execute().then();
+    }
+    pageLoaded.current = true;
   }, []);
 
   const onSelectOptionsMenu = (_event?: React.MouseEvent, itemId?: string | number) => {

@@ -15,7 +15,8 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
     if (dateChoices?.length) {
       setDateChoices(dateChoices);
       if (!props.selectedRange) {
-        onSelectRangeSelect(undefined, dateChoices[0].key);
+        const index = dateChoices.findIndex((v) => v.key === 'month_to_date');
+        onSelectRangeSelect(undefined, index > -1 ? dateChoices[index].key : dateChoices[0].key);
       }
     }
   }, [dateChoices]);

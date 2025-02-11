@@ -14,8 +14,8 @@ export const BaseTable: React.FunctionComponent<{
   loading: boolean;
   onItemEdit: (value: number, item: TableResult) => void;
 }> = (props) => {
-  const [activeSortIndex, setActiveSortIndex] = React.useState<number | undefined>(undefined);
-  const [activeSortDirection, setActiveSortDirection] = React.useState<'asc' | 'desc' | undefined>(undefined);
+  const [activeSortIndex, setActiveSortIndex] = React.useState<number | undefined>(0);
+  const [activeSortDirection, setActiveSortDirection] = React.useState<'asc' | 'desc' | undefined>('asc');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 

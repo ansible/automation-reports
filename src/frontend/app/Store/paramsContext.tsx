@@ -18,7 +18,7 @@ const ParamsContextProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     end_date: null,
     label: null,
     job_template: null,
-    ordering: null,
+    ordering: 'name',
   });
 
   return <ParamsContext.Provider value={{ params, setParams }}>{children}</ParamsContext.Provider>;
