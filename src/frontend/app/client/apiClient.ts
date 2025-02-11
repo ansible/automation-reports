@@ -2,8 +2,8 @@ import axios from 'axios';
 
 let apiUrl = process.env.API_URL;
 
-if (!apiUrl){
-  throw new Error("Missing API url");
+if (!apiUrl) {
+  throw new Error('Missing API url');
 }
 
 apiUrl = apiUrl.replace(/\/$|$/, '/');

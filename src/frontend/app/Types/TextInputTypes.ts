@@ -14,5 +14,6 @@ export type TextInputType = {
     | 'tel'
     | 'time'
     | 'url';
+  errorMessage?: string | null | undefined;
   onBlur: (value) => void;
-}
+};

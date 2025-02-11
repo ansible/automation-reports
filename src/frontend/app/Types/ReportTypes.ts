@@ -1,3 +1,5 @@
+import { ChartData } from '@app/Types/TableTypes';
+
 export interface Report {
   name: string;
   runs: number;
@@ -26,3 +28,9 @@ export interface ReportState {
   error: string | null | undefined;
   count: number;
 }
+
+export type DashboardChartProps = {
+  value: number;
+  index: number;
+  chartData: ChartData;
+};

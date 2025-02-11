@@ -24,7 +24,6 @@ export interface Project {
   project_id: number | string;
   project_name: string | null;
   count: number;
-
 }
 
 export interface TotalOption {
@@ -38,24 +37,24 @@ export interface ChartItem {
 }
 
 export interface ChartDataType {
-  items: ChartItem[],
-  range: string | null,
+  items: ChartItem[];
+  range: string | null;
 }
 
 export interface ReportDetailsState {
-  users: User[],
-  projects: Project[],
-  totalNumberOfUniqueHosts: TotalOption | null,
-  totalNumberOfSuccessfulJobs: TotalOption | null,
-  totalNumberOfFailedJobs: TotalOption | null,
-  totalNumberOfJobRuns: TotalOption | null,
-  totalNumberOfHostJobRuns: TotalOption | null,
-  totalHoursOfAutomation: TotalOption | null,
-  costOfAutomatedExecution: TotalOption | null,
-  costOfManualAutomation: TotalOption | null,
-  totalSavings: TotalOption | null,
-  jobChart: ChartDataType | null,
-  hostChart: ChartDataType | null,
+  users: User[];
+  projects: Project[];
+  totalNumberOfUniqueHosts: TotalOption | null;
+  totalNumberOfSuccessfulJobs: TotalOption | null;
+  totalNumberOfFailedJobs: TotalOption | null;
+  totalNumberOfJobRuns: TotalOption | null;
+  totalNumberOfHostJobRuns: TotalOption | null;
+  totalHoursOfAutomation: TotalOption | null;
+  costOfAutomatedExecution: TotalOption | null;
+  costOfManualAutomation: TotalOption | null;
+  totalSavings: TotalOption | null;
+  jobChart: ChartDataType | null;
+  hostChart: ChartDataType | null;
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
   error: string | null | undefined;
 }

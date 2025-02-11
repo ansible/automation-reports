@@ -1,45 +1,36 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { BaseTable } from '../Components/BaseTable';
 import { Card, CardBody, Flex, FlexItem, Form, FormGroup, Icon, Tooltip } from '@patternfly/react-core';
 import { DashboardTotals } from './DashboardTotals';
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import { CustomInput } from '@app/Components/CustomInput';
-import { useAppDispatch, useAppSelector } from '@app/hooks';
-import { costOfAutomatedExecution, costOfManualAutomation, fetchReports, totalSavings } from '@app/Store';
-import { automatedProcessCost, manualCostAutomation, reportResults, reportsLoading } from '@app/Store';
+import { useAppSelector } from '@app/hooks';
+
+import { automatedProcessCost, manualCostAutomation } from '@app/Store';
 import { ParamsContext } from '@app/Store/paramsContext';
 import '../styles/table.scss';
-import { columnProps } from '@app/Types';
+import { DashboardTableProps, columnProps } from '@app/Types';
+import { formatCurrency } from '@app/Utils';
 
-export const DashboardTable: React.FunctionComponent = () => {
+export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (props: DashboardTableProps) => {
   const context = useContext(ParamsContext);
   if (!context) {
     throw new Error('Filters must be used within a ParamsProvider');
   }
-  const { params, setParams } = context;
+  const { setParams } = context;
 
   const hourly_manual_costs = useAppSelector(manualCostAutomation);
   const hourly_automated_process_costs = useAppSelector(automatedProcessCost);
-  const loadingReports = useAppSelector(reportsLoading);
-  const manual_automation_cost = useAppSelector(costOfManualAutomation) || { value: null, index: null };
-  const automated_execution_cost = useAppSelector(costOfAutomatedExecution) || { value: null, index: null };
-  const total_savings = useAppSelector(totalSavings) || { value: null, index: null };
 
-  const dispatch = useAppDispatch();
-  const reportsList = useAppSelector(reportResults);
-
-  useEffect(() => {
-    fetchServerData();
-  }, [dispatch, params]);
-
-  const fetchServerData = async () => {
-    await dispatch(fetchReports(params));
-  };
+  const [hourlyManualCostsChangedError, setHourlyManualCostsChangedError] = React.useState<string | null>(null);
+  const [hourlyAutomatedProcessCostsChangedError, setHourlyAutomatedProcessCostsChangedError] = React.useState<
+    string | null
+  >(null);
 
   const updateParams = (key, value) => {
     setParams((prevParams) => ({
       ...prevParams,
-      [key]: value
+      [key]: value,
     }));
   };
 
@@ -52,19 +43,30 @@ export const DashboardTable: React.FunctionComponent = () => {
     updateParams('page_size', newPerPage);
   };
 
-  const handleSort = (ordering) => {
+  const handleSort = (ordering: string) => {
+    updateParams('page', 1);
     updateParams('ordering', ordering);
   };
 
-  // const handleInputChange = (value, rowIndex, columnName) => {
-  //   if (value) {
-  //     console.log('INPUT CHANGED', value, rowIndex, columnName);
-  //   }
-  // }
+  const hourlyManualCostsChanged = (value: number | null | undefined) => {
+    if (value || value === 0) {
+      if (value <= 0) {
+        setHourlyManualCostsChangedError('Value must be greater then 0!');
+      } else {
+        setHourlyManualCostsChangedError(null);
+        props.onCostChanged('manual', value);
+      }
+    }
+  };
 
-  const handleBlur = (value) => {
-    if (value) {
-      console.log('Handle blur - event', value);
+  const hourlyAutomatedProcessCostsChanged = (value: number | null | undefined) => {
+    if (value || value === 0) {
+      if (value <= 0) {
+        setHourlyAutomatedProcessCostsChangedError('Value must be greater then 0!');
+      } else {
+        setHourlyAutomatedProcessCostsChangedError(null);
+        props.onCostChanged('automated', value);
+      }
     }
   };
 
@@ -74,10 +76,16 @@ export const DashboardTable: React.FunctionComponent = () => {
     { name: 'failed_runs', title: 'Number of unsuccessful runs', type: 'number' },
     { name: 'runs', title: 'Runs', type: 'number' },
     { name: 'num_hosts', title: 'Number of hosts jobs were run on', type: 'number' },
-    { name: 'manual_time', title: 'Manual time of automation (minutes)', info: { tooltip: 'Manual time of automation (minutes)' }, isEditable: true },
+    {
+      name: 'manual_time',
+      title: 'Manual time of automation (minutes)',
+      info: { tooltip: 'Manual time of automation (minutes)' },
+      isEditable: true,
+    },
+    { name: 'elapsed', title: 'Running time', valueKey: 'elapsed_str' },
     { name: 'savings', title: 'Savings', type: 'currency' },
     { name: 'automated_costs', title: 'Automated cost', type: 'currency' },
-    { name: 'manual_costs', title: 'Manual cost', type: 'currency' }
+    { name: 'manual_costs', title: 'Manual cost', type: 'currency' },
   ];
 
   return (
@@ -101,7 +109,8 @@ export const DashboardTable: React.FunctionComponent = () => {
                     <CustomInput
                       type={'number'}
                       id={'hourly-manual-costs'}
-                      onBlur={(value) => handleBlur(value)}
+                      onBlur={(value) => hourlyManualCostsChanged(value)}
+                      errorMessage={hourlyManualCostsChangedError}
                       value={hourly_manual_costs}
                     />
                   </FormGroup>
@@ -122,8 +131,9 @@ export const DashboardTable: React.FunctionComponent = () => {
                     <CustomInput
                       type={'number'}
                       id={'hourly-automated-process-costs'}
-                      onBlur={(value) => handleBlur(value)}
+                      onBlur={(value) => hourlyAutomatedProcessCostsChanged(value)}
                       value={hourly_automated_process_costs}
+                      errorMessage={hourlyAutomatedProcessCostsChangedError}
                     />
                   </FormGroup>
                 </Form>
@@ -133,32 +143,37 @@ export const DashboardTable: React.FunctionComponent = () => {
               <FlexItem>
                 <DashboardTotals
                   title={'Cost of manual automation'}
-                  result={manual_automation_cost.value ? manual_automation_cost.value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : ''}
-                  percentage={manual_automation_cost.index}
+                  result={formatCurrency(props?.costOfManualAutomation?.value)}
+                  percentage={props?.costOfManualAutomation?.index}
                 />
               </FlexItem>
               <FlexItem>
                 <DashboardTotals
                   title={'Cost of automated execution'}
-                  result={automated_execution_cost.value ? automated_execution_cost.value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : ''}
-                  percentage={automated_execution_cost.index}
+                  result={formatCurrency(props?.costOfAutomatedExecution?.value)}
+                  percentage={props?.costOfAutomatedExecution?.index}
                 />
               </FlexItem>
               <FlexItem>
                 <DashboardTotals
                   title={'Total savings'}
-                  result={total_savings.value ? total_savings.value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : ''}
-                  percentage={total_savings.index}
+                  result={formatCurrency(props?.totalSaving?.value)}
+                  percentage={props.totalSaving?.index}
                 />
               </FlexItem>
             </Flex>
           </Flex>
           <BaseTable
-            pagination={{ onPageChange: handlePageChange, onPerPageChange: handlePerPageChange, totalItems: reportsList.count }}
-            data={reportsList.reports}
+            pagination={{
+              onPageChange: handlePageChange,
+              onPerPageChange: handlePerPageChange,
+              totalItems: props.data.count,
+            }}
+            data={props.data.results}
             sort={{ onSortChange: handleSort }}
             columns={columns}
-            loading={loadingReports}
+            loading={false}
+            onItemEdit={props.onItemEdit}
           ></BaseTable>
         </CardBody>
       </Card>

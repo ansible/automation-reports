@@ -1,26 +1,15 @@
-import React, { createContext, useState } from "react";
-
-export interface ParamsType {
-  page: number;
-  page_size: number;
-  organization: number[] | null;
-  date_range: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  label: number[] | null;
-  job_template: number[] | null;
-  ordering: string | null;
-}
+import React, { createContext, useState } from 'react';
+import { UrlParams } from '@app/Types';
 
 export interface ParamsContextType {
-  params: ParamsType;
-  setParams: React.Dispatch<React.SetStateAction<ParamsType>>
+  params: UrlParams;
+  setParams: React.Dispatch<React.SetStateAction<UrlParams>>;
 }
 
 export const ParamsContext = createContext<ParamsContextType | undefined>(undefined as any);
 
-const ParamsContextProvider: React.FC<{children: React.ReactNode}> = ({children}) => {
-  const [params, setParams] = useState<ParamsType>({
+const ParamsContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [params, setParams] = useState<UrlParams>({
     page: 1,
     page_size: 10,
     organization: null,
@@ -29,14 +18,10 @@ const ParamsContextProvider: React.FC<{children: React.ReactNode}> = ({children}
     end_date: null,
     label: null,
     job_template: null,
-    ordering: null
+    ordering: null,
   });
 
-  return (
-    <ParamsContext.Provider value={{params, setParams}}>
-      {children}
-    </ParamsContext.Provider>
-  )
-}
+  return <ParamsContext.Provider value={{ params, setParams }}>{children}</ParamsContext.Provider>;
+};
 
 export default ParamsContextProvider;

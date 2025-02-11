@@ -26,7 +26,6 @@ import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
 import { FormEvent } from 'react';
 import '../styles/filters.scss';
 import { ParamsContext } from '@app/Store/paramsContext';
-import moment from 'moment';
 
 interface FilterProps {
   organization: (string | number)[];
@@ -55,7 +54,7 @@ export const Filters: React.FunctionComponent = () => {
   });
   const context = React.useContext(ParamsContext);
   if (!context) {
-    throw new Error ('Filters must be used within a ParamsProvider');
+    throw new Error('Filters must be used within a ParamsProvider');
   }
   const { setParams } = context;
 
@@ -78,14 +77,14 @@ export const Filters: React.FunctionComponent = () => {
   const updateParams = (key, value) => {
     setParams((prevParams) => ({
       ...prevParams,
-      [key]: value
+      [key]: value,
     }));
-  }
+  };
 
   const resetPagination = () => {
-    updateParams("page", 1);
-    updateParams("page_size", 10);
-  }
+    updateParams('page', 1);
+    updateParams('page_size', 10);
+  };
 
   const onDateRangeChange = (
     _event?: React.MouseEvent | FormEvent<HTMLInputElement>,
@@ -100,14 +99,14 @@ export const Filters: React.FunctionComponent = () => {
         ...prevState,
         [key]: newState,
       }));
-      if (newState !== "custom") {
+      if (newState !== 'custom') {
         setParams((prevState) => ({
           ...prevState,
-          "start_date": null,
-          "end_date": null,
-        }))
+          start_date: null,
+          end_date: null,
+        }));
       }
-      updateParams(key, newState);  
+      updateParams(key, newState);
       resetPagination();
     }
     if (startDate) {
@@ -115,8 +114,11 @@ export const Filters: React.FunctionComponent = () => {
         ...prevState,
         ['start_date']: startDate,
       }));
-      const formattedDate = moment(startDate).format('YYYY-MM-DD');
-      updateParams('start_date', formattedDate); 
+
+      const formattedDate = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+      updateParams('start_date', formattedDate);
       resetPagination();
     }
     if (endDate) {
@@ -124,7 +126,10 @@ export const Filters: React.FunctionComponent = () => {
         ...prevState,
         ['end_date']: endDate,
       }));
-      const formattedDate = moment(endDate).format('YYYY-MM-DD');
+      const formattedDate = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+
       updateParams('end_date', formattedDate);
       resetPagination();
     }
@@ -180,8 +185,8 @@ export const Filters: React.FunctionComponent = () => {
       ['instances']: null,
       ['organization']: null,
       ['job_template']: null,
-      ['label']: null
-    }))
+      ['label']: null,
+    }));
   };
 
   const filterLabels = (
@@ -208,8 +213,7 @@ export const Filters: React.FunctionComponent = () => {
         {(filterSelection.organization.length > 0 ||
           filterSelection.instances.length > 0 ||
           filterSelection.job_template.length > 0 ||
-          filterSelection.label.length > 0 )
-           && (
+          filterSelection.label.length > 0) && (
           <Button variant="link" onClick={() => clearFilters()} isInline>
             Clear all filters
           </Button>
@@ -219,7 +223,7 @@ export const Filters: React.FunctionComponent = () => {
   );
 
   const filterSelector = (
-    <div className='pf-v6-u-mr-xs'>
+    <div className="pf-v6-u-mr-xs">
       <BaseDropdown
         id={'filter-faceted-options-menu'}
         disabled={!filterOptionsList?.length}
@@ -237,7 +241,7 @@ export const Filters: React.FunctionComponent = () => {
   );
 
   const itemsDropdown = (
-    <div className='pf-v6-u-mr-md'>
+    <div className="pf-v6-u-mr-md">
       <MultiChoiceDropdown
         disabled={!selectedOption || !filterChoicesList[selectedOption]?.length}
         selections={selectedOption ? filterSelection[selectedOption] : []}
@@ -266,8 +270,8 @@ export const Filters: React.FunctionComponent = () => {
   const toolBar = (
     <Toolbar id="filter-toolbar" clearAllFilters={clearFilters}>
       <ToolbarContent>
-        <ToolbarGroup variant={'filter-group'} className='filters-wrap'>
-          <Split isWrappable className='row-gap'>
+        <ToolbarGroup variant={'filter-group'} className="filters-wrap">
+          <Split isWrappable className="row-gap">
             <SplitItem>
               <ToolbarItem>{filterSelector}</ToolbarItem>
             </SplitItem>

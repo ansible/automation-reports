@@ -1,45 +1,74 @@
-import React from "react";
+import React from 'react';
 import { Card, CardBody, CardTitle } from '@patternfly/react-core';
-import { DashboardTotals } from "./DashboardTotals";
-import { BarChart } from "@app/Components/BarChart";
-import { useAppSelector } from "@app/hooks";
-import { hostChartData, totalNumberOfHostJobRuns } from "@app/Store";
-import { CHART_RANGES } from "@app/constants";
-import moment from "moment";
+import { DashboardTotals } from './DashboardTotals';
+import { DashboardChartProps } from '@app/Types';
+import { generateChartData } from '@app/Utils';
+import {
+  Chart,
+  ChartAxis,
+  ChartBar,
+  ChartGroup,
+  ChartTooltip,
+  ChartVoronoiContainer,
+} from '@patternfly/react-charts/victory';
 
-export const DashboardBarChart: React.FunctionComponent = () => {
-  const total_num_of_host_jobs_run = useAppSelector(totalNumberOfHostJobRuns) || { value: null, index: null };
-  const host_chart_data = useAppSelector(hostChartData) || {items: [], range: null}
+export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {
+  const chartData = generateChartData(props.chartData);
 
-  const items = host_chart_data.items.map((point) => {
-    let range =  host_chart_data.range ? host_chart_data.range : "";
-    return ({
-      x: moment(point.x).format(CHART_RANGES[range].groupFormat),
-      y: point.y
-    })
-  });
-
-  const maxY = host_chart_data.items.length > 0 ? Math.max(...host_chart_data.items.map(item => item.y)) : 0;
-  
   return (
     <>
-      <Card style={{height: 'inherit'}}>
+      <Card style={{ height: 'inherit' }}>
         <CardTitle>
           <DashboardTotals
             title={'Number of hosts jobs are running on'}
-            result={total_num_of_host_jobs_run.value}
-            percentage={total_num_of_host_jobs_run.index}
+            result={props.value}
+            percentage={props.index}
           />
         </CardTitle>
         <CardBody>
-          <BarChart
-            data={items}
-            maxValue={maxY}
-            range={host_chart_data.range ? host_chart_data.range : ""}
-          >
-          </BarChart>
+          <div className={`chart-wrap ${chartData.items.length === 0 && 'no-data'}`}>
+            <Chart
+              ariaDesc="Average number of pets"
+              ariaTitle="Bar chart example"
+              containerComponent={
+                <ChartVoronoiContainer
+                  labels={({ datum }) => `${datum.x}: ${datum.y}`}
+                  constrainToVisibleArea
+                  labelComponent={<ChartTooltip style={{ fontSize: 6 }} />}
+                />
+              }
+              domainPadding={{ x: [30, 25] }}
+              legendData={[{ name: 'items' }]}
+              legendOrientation="vertical"
+              legendPosition="right"
+              name="chart4"
+              padding={{
+                bottom:
+                  chartData.range === 'hour' || chartData.range === 'month' || chartData.items.length > 11 ? 36 : 24,
+                left: 50,
+                right: 24,
+                top: 24,
+              }}
+            >
+              <ChartAxis
+                style={{
+                  tickLabels: {
+                    fontSize: 6,
+                    angle: chartData.items.length > 11 ? -45 : 0,
+                    textAnchor: 'end',
+                  },
+                }}
+              />
+              <ChartAxis tickValues={chartData.tickValues} dependentAxis style={{ tickLabels: { fontSize: 6 } }} />
+              {chartData.items.length > 0 && (
+                <ChartGroup>
+                  <ChartBar data={chartData.items} />
+                </ChartGroup>
+              )}
+            </Chart>
+          </div>
         </CardBody>
       </Card>
     </>
-  )
+  );
 };

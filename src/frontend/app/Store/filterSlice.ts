@@ -20,7 +20,7 @@ const initialState: FilterState = {
   dateRangeOptions: [],
   templateOptions: [],
   labelOptions: [],
-  manualCostAautomation: 0,
+  manualCostAutomation: 0,
   organizationOptions: [],
   instanceOptions: [],
   loading: 'idle',
@@ -44,7 +44,7 @@ export const filterSlice = createSlice({
         state.templateOptions = payload.job_templates;
         state.organizationOptions = payload.organizations;
         state.dateRangeOptions = payload.date_ranges;
-        state.manualCostAautomation = payload.manual_cost_automation;
+        state.manualCostAutomation = payload.manual_cost_automation;
         state.automatedProcessCost = payload.automated_process_cost;
       })
       .addCase(fetchTemplateOptions.rejected, (state, action) => {
@@ -62,17 +62,22 @@ export const templateOptions = (state: RootState) => state.filters.templateOptio
 export const organizationOptions = (state: RootState) => state.filters.organizationOptions;
 export const labelOptions = (state: RootState) => state.filters.labelOptions;
 export const dateRangeOptions = (state: RootState) => state.filters.dateRangeOptions;
-export const manualCostAutomation = (state: RootState) => state.filters.manualCostAautomation;
+export const manualCostAutomation = (state: RootState) => state.filters.manualCostAutomation;
 export const automatedProcessCost = (state: RootState) => state.filters.automatedProcessCost;
 
 export const filterChoicesData = createSelector(
   [instanceOptions, templateOptions, organizationOptions, labelOptions],
-  (instanceOptions: FilterOptionWithId[], templateOptions: FilterOptionWithId[], organizationOptions: FilterOption[], labelOptions: FilterOptionWithId[]) => {
+  (
+    instanceOptions: FilterOptionWithId[],
+    templateOptions: FilterOptionWithId[],
+    organizationOptions: FilterOption[],
+    labelOptions: FilterOptionWithId[],
+  ) => {
     return {
       instances: instanceOptions,
       job_template: templateOptions,
       organization: organizationOptions,
-      label: labelOptions
+      label: labelOptions,
     };
   },
 );
@@ -84,6 +89,6 @@ export const filterChoicesDataById = createSelector([filterChoicesData], (filter
     instances: listToDict(filterChoicesData.instances),
     job_template: listToDict(filterChoicesData.job_template),
     organization: listToDict(filterChoicesData.organization),
-    label: listToDict(filterChoicesData.label)
+    label: listToDict(filterChoicesData.label),
   };
 });

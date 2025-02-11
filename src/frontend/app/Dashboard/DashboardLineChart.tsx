@@ -1,44 +1,78 @@
-import React from "react";
+import React from 'react';
 import { Card, CardBody, CardTitle } from '@patternfly/react-core';
-import { DashboardTotals } from "./DashboardTotals";
-import { LineChart } from "@app/Components/LineChart";
-import { useAppSelector } from "@app/hooks";
-import { jobChartData, totalNumberOfJobRuns } from "@app/Store";
-import { CHART_RANGES } from "@app/constants";
-import moment from "moment";
+import { DashboardTotals } from './DashboardTotals';
+import { DashboardChartProps } from '@app/Types';
+import {
+  Chart,
+  ChartAxis,
+  ChartGroup,
+  ChartLine,
+  ChartThemeColor,
+  ChartTooltip,
+  ChartVoronoiContainer,
+} from '@patternfly/react-charts/victory';
+import { generateChartData } from '@app/Utils';
+import '../styles/chart.scss';
 
-export const DashboardLineChart: React.FunctionComponent = () => {
-  const total_num_of_jobs_run = useAppSelector(totalNumberOfJobRuns) || { value: null, index: null };
-  const job_chart_data = useAppSelector(jobChartData) || {items: [], range: null};
+export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {
+  const chartData = generateChartData(props.chartData);
 
-  const items = job_chart_data.items.map((point) => {
-    let range =  job_chart_data.range ? job_chart_data.range : "";
-    
-    return ({
-      x: moment(point.x).format(CHART_RANGES[range].groupFormat),
-      y: point.y
-    })
-  });
-  const maxY = job_chart_data.items.length > 0 ? Math.max(...job_chart_data.items.map(item => item.y)) : 0;
   return (
     <>
-      <Card style={{height: 'inherit'}}>
+      <Card style={{ height: 'inherit' }}>
         <CardTitle>
-          <DashboardTotals
-            title={'Number of times jobs were run'}
-            result={total_num_of_jobs_run.value}
-            percentage={total_num_of_jobs_run.index}
-          />
+          <DashboardTotals title={'Number of times jobs were run'} result={props.value} percentage={props.index} />
         </CardTitle>
-        <CardBody>
-            <LineChart
-              data={items}
-              maxValue={maxY}
-              range={job_chart_data.range ? job_chart_data.range : ""}
+        <CardBody style={{ width: '100%' }}>
+          <div className={`chart-wrap ${chartData.items.length === 0 && 'no-data'}`}>
+            <Chart
+              ariaDesc="Number of times jobs were run"
+              ariaTitle="Number of times jobs were run"
+              minDomain={{ y: 0 }}
+              maxDomain={{ y: chartData.maxValue }}
+              containerComponent={
+                <ChartVoronoiContainer
+                  labels={({ datum }) => `${datum?.x}: ${datum?.y}`}
+                  constrainToVisibleArea
+                  labelComponent={<ChartTooltip style={{ fontSize: 6 }} />}
+                />
+              }
+              padding={{
+                bottom:
+                  chartData.range === 'hour' || chartData.range === 'month' || chartData.items.length > 11 ? 36 : 24,
+                left: 50,
+                right: 24,
+                top: 24,
+              }}
+              themeColor={ChartThemeColor.blue}
             >
-            </LineChart>
+              <ChartAxis
+                style={{
+                  tickLabels: {
+                    fontSize: 6,
+                    angle: chartData.items.length > 11 ? -45 : 0,
+                    textAnchor: 'end',
+                  },
+                }}
+              />
+              <ChartAxis
+                dependentAxis
+                tickValues={chartData.tickValues}
+                style={{
+                  tickLabels: {
+                    fontSize: 6,
+                  },
+                }}
+              />
+              {chartData?.items?.length && (
+                <ChartGroup>
+                  <ChartLine data={chartData.items} />
+                </ChartGroup>
+              )}
+            </Chart>
+          </div>
         </CardBody>
       </Card>
     </>
-  )
-}
+  );
+};

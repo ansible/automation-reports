@@ -28,12 +28,12 @@ export interface FilterOptionResponse {
 export interface FilterState {
   filterOptions: FilterOption[];
   automatedProcessCost: number | string;
-  clusters: ClusterOption[],
+  clusters: ClusterOption[];
   dateRangeOptions: FilterOption[];
   templateOptions: FilterOptionWithId[];
-  labelOptions: FilterOptionWithId[]
+  labelOptions: FilterOptionWithId[];
   instanceOptions: FilterOptionWithId[];
-  manualCostAautomation: number | string;
+  manualCostAutomation: number | string;
   organizationOptions: FilterOption[];
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
   error: string | null | undefined;
