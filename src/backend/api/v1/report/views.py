@@ -8,7 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_range, get_filter_options
 from backend.api.v1.report.serializers import JobSerializer
-from backend.apps.clusters.helpers import get_costs, get_report_data, get_diff_index, get_jobs_chart, get_hosts_chart, get_unique_host_count
+from backend.apps.clusters.helpers import get_costs, get_report_data, get_jobs_chart, get_hosts_chart, get_unique_host_count
 from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices, JobHostSummary
 
 
@@ -20,7 +20,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
                        "automated_costs", "savings", "runs"]
     ordering = ["name"]
 
-    def get_filtered_queryset(self, prev_range=False):
+    def get_base_queryset(self, prev_range=False):
         costs = get_costs()
         automated_cost_value = costs[CostsChoices.AUTOMATED].value / decimal.Decimal(3600)
         manual_cost_value = costs[CostsChoices.MANUAL].value / decimal.Decimal(60)
@@ -28,6 +28,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         values(
             "name",
             "cluster",
+            "job_template_id",
             manual_time=F("job_template__manual_time_minutes"),
         ).annotate(
             runs=Count("id"),
@@ -42,7 +43,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         return filter_by_range(self.request, queryset=qs, prev_range=prev_range)
 
     def get_queryset(self):
-        return self.get_filtered_queryset(prev_range=False)
+        return self.get_base_queryset(prev_range=False)
 
     @action(methods=["get"], detail=False)
     def details(self, request):
@@ -57,8 +58,10 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             user_name=F("launched_by__name")
         ).annotate(count=Count("id")).order_by("launched_by").order_by("-count"))[:5]
 
-        qs = self.get_filtered_queryset(prev_range=False)
-        prev_qs = self.get_filtered_queryset(prev_range=True)
+        qs = self.filter_queryset(self.get_base_queryset(prev_range=False))
+        prev_qs = self.get_base_queryset(prev_range=True)
+        if prev_qs:
+            prev_qs = self.filter_queryset(prev_qs)
 
         report_data = get_report_data(list(qs), list(prev_qs) if prev_qs else [])
 
@@ -74,11 +77,17 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         unique_host = get_unique_host_count(options=get_filter_options(request))
 
         job_chart_qs = Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED])
-        self.filter_queryset(job_chart_qs)
+        job_chart_qs = self.filter_queryset(job_chart_qs)
         job_chart_qs = filter_by_range(request, job_chart_qs)
-        job_chart = {"job_chart": get_jobs_chart(job_chart_qs, date_range=get_range(request))}
+        job_chart = {
+            "job_chart": get_jobs_chart(
+                job_chart_qs,
+                request=request)}
 
-        hosts_chart = {"host_chart": get_hosts_chart(job_chart_qs, date_range=get_range(request))}
+        hosts_chart = {
+            "host_chart": get_hosts_chart(
+                job_chart_qs,
+                request=request)}
 
         response = {
             "users": list(top_users_qs),

@@ -37,7 +37,7 @@ class JobSerializer(serializers.ModelSerializer):
         fields = ("name", "runs", "elapsed", "cluster",
                   "elapsed_str", "num_hosts", "manual_time",
                   "successful_runs", "failed_runs", "automated_costs",
-                  "manual_costs", "savings",)
+                  "manual_costs", "savings", "job_template_id")
 
     def get_elapsed_str(self, obj):
         return sec2time(obj["elapsed"])

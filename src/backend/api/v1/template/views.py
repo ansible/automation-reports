@@ -1,0 +1,12 @@
+from rest_framework.viewsets import GenericViewSet
+from rest_framework import mixins
+from backend.api.v1.template.serializers import TemplateSerializer
+from backend.apps.clusters.models import JobTemplate
+
+
+class TemplateView(mixins.ListModelMixin, mixins.UpdateModelMixin, GenericViewSet):
+    serializer_class = TemplateSerializer
+
+    def get_queryset(self):
+        return JobTemplate.objects.all()
+

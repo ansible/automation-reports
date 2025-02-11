@@ -1,4 +1,5 @@
 import os
+from calendar import monthrange
 from datetime import datetime
 from decimal import Decimal
 
@@ -6,11 +7,13 @@ import pytz
 from django.core.cache import cache
 from django.db.models import Count, Sum, F, CharField, Func, Value
 
-from backend.apps.clusters.models import Costs, CostsChoices, JobHostSummary, JobStatusChoices, JobLabel
+from backend.apps.clusters.models import Costs, CostsChoices, JobHostSummary, JobStatusChoices, JobLabel, DateRangeChoices
 
 
-def get_costs():
+def get_costs(from_db=False):
     costs = cache.get('costs')
+    if from_db:
+        costs = None
     set_cache = False
 
     if not costs:
@@ -51,7 +54,7 @@ def get_diff_index(old_value, new_value):
         return 0
     if old_value == 0:
         return 100
-    return round(((new_value - old_value) / old_value) * 100)
+    return round(((float(new_value) - float(old_value)) / float(old_value)) * 100)
 
 
 def sum_items(items):
@@ -133,33 +136,59 @@ def get_report_data(items, prev_items):
     }
 
 
-def get_chart_range(date_range):
+def get_chart_range(request):
     result = {
         "range": None,
         "date_format": None,
+        "date_range": None,
     }
-    start = date_range.start
-    end = date_range.end
-    if start is None or end is None:
-        raise NotImplementedError
-    if end.day == start.day and end.month == start.month and end.year == start.year:
-        result["date_format"] = "YYYY-MM-DD HH24:00:00+00"
-        result["range"] = "hour"
-    elif end.month == start.month and end.year == start.year:
-        result["date_format"] = "YYYY-MM-DD 00:00:00+00"
-        result["range"] = "day"
-    elif end.year == start.year:
-        result["date_format"] = "YYYY-MM-01 00:00:00+00"
-        result["range"] = "month"
-    else:
-        result["date_format"] = "YYYY-01-01 00:00:00+00"
-        result["range"] = "year"
+
+    _date_range = request.query_params.get("date_range", None)
+    _start_date = request.query_params.get("start_date", None)
+    _end_date = request.query_params.get("end_date", None)
+
+    if _date_range is None:
+        return result
+
+    result["date_range"] = DateRangeChoices.get_date_range(_date_range, _start_date, _end_date)
+
+    if result["date_range"] is None:
+        return result
+
+    match _date_range:
+        case DateRangeChoices.LAST_YEAR | DateRangeChoices.LAST_6_MONTH | DateRangeChoices.LAST_3_MONTH:
+            result["range"] = "month"
+            result["date_format"] = "YYYY-MM-01 00:00:00+00"
+
+        case DateRangeChoices.LAST_MONTH | DateRangeChoices.MONTH_TO_DATE:
+            result["range"] = "day"
+            result["date_format"] = "YYYY-MM-DD 00:00:00+00"
+        case DateRangeChoices.LAST_2_YEARS | DateRangeChoices.LAST_3_YEARS:
+            result["date_format"] = "YYYY-01-01 00:00:00+00"
+            result["range"] = "year"
+        case _:
+            days = (result["date_range"].end - result["date_range"].start).days
+            if days <= 1:
+                result["range"] = "hour"
+                result["date_format"] = "YYYY-MM-DD HH24:00:00+00"
+            elif days <= 45:
+                result["range"] = "day"
+                result["date_format"] = "YYYY-MM-DD 00:00:00+00"
+            elif days <= 365:
+                result["range"] = "month"
+                result["date_format"] = "YYYY-MM-01 00:00:00+00"
+            elif result["date_range"].start.year == result["date_range"].end.year:
+                result["range"] = "month"
+                result["date_format"] = "YYYY-MM-01 00:00:00+00"
+            else:
+                result["date_format"] = "YYYY-01-01 00:00:00+00"
+                result["range"] = "year"
     return result
 
 
-def get_chart_x_axis(date_range):
+def get_chart_x_axis(chart_range):
     result = []
-    chart_range = get_chart_range(date_range)
+    date_range = chart_range["date_range"]
     x_axis_range = chart_range["range"]
     start = date_range.start
     end = date_range.end
@@ -168,17 +197,32 @@ def get_chart_x_axis(date_range):
             d = start.replace(hour=i, minute=0, second=0, microsecond=0)
             result.append(d)
     elif x_axis_range == "day":
-        start_day = start.day
-        end_day = end.day
-        for i in range(start_day, end_day + 1):
-            d = start.replace(day=i, hour=0, minute=0, second=0, microsecond=0)
-            result.append(d)
+        current_date = start.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        while current_date.date() <= end.date():
+            result.append(current_date)
+            _day = current_date.day + 1
+            _month = current_date.month
+            _year = current_date.year
+            num_days = monthrange(_year, _month)[1]
+            if _day > num_days:
+                _day = 1
+                _month += 1
+                if _month > 12:
+                    _month = 1
+                    _year += 1
+            current_date = current_date.replace(day=_day, month=_month, year=_year, second=0, microsecond=0, hour=0)
     elif x_axis_range == "month":
-        start_month = start.month
-        end_month = end.month
-        for i in range(start_month, end_month + 1):
-            d = start.replace(month=i, day=1, hour=0, minute=0, second=0, microsecond=0)
-            result.append(d)
+        current_date = start.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        while current_date.date() < end.date():
+            result.append(current_date)
+            _year = current_date.year
+            _month = current_date.month
+            if _month == 12:
+                _year += 1
+                _month = 1
+            else:
+                _month += 1
+            current_date = current_date.replace(year=_year, month=_month, day=1, hour=0, minute=0, second=0, microsecond=0)
     else:
         start_year = start.year
         end_year = end.year
@@ -188,19 +232,16 @@ def get_chart_x_axis(date_range):
     return result
 
 
-def get_jobs_chart(qs, date_range):
+def get_jobs_chart(qs, request):
     result = {
         "items": [],
         "range": None
     }
-    if date_range is None:
-        return result
-
-    chart_range = get_chart_range(date_range)
+    chart_range = get_chart_range(request)
 
     result["range"] = chart_range["range"]
 
-    x_axis = get_chart_x_axis(date_range)
+    x_axis = get_chart_x_axis(chart_range)
 
     qs = qs.values(
         date=Func(
@@ -221,16 +262,16 @@ def get_jobs_chart(qs, date_range):
     return result
 
 
-def get_hosts_chart(qs, date_range):
+def get_hosts_chart(qs, request):
     result = {
         "items": [],
         "range": None
     }
-    if date_range is None:
-        return result
+    chart_range = get_chart_range(request)
 
-    chart_range = get_chart_range(date_range)
     result["range"] = chart_range["range"]
+
+    x_axis = get_chart_x_axis(chart_range)
 
     qs = qs.values(
         date=Func(
@@ -243,7 +284,6 @@ def get_hosts_chart(qs, date_range):
         hosts=Sum("num_hosts"),
     ).order_by("date")
 
-    x_axis = get_chart_x_axis(date_range)
     y_data = {datetime.strptime(job["date"], '%Y-%m-%d %H:%M:%S+00').astimezone(pytz.UTC): job["hosts"] for job in qs}
 
     for x in x_axis:

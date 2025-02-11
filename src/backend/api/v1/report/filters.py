@@ -13,7 +13,7 @@ def get_filter_options(request):
     ]
     for key in params_options:
         values = request.query_params.get(key, None)
-        if values is not None:
+        if values is not None and len(values.strip()) > 0:
             options[key] = values.split(",")
 
     date_range = request.query_params.get("date_range", None)
@@ -22,9 +22,9 @@ def get_filter_options(request):
 
     if date_range is not None:
         options["date_range"] = DateRangeChoices.get_date_range(
-                choice=date_range,
-                start=start_date,
-                end=end_date)
+            choice=date_range,
+            start=start_date,
+            end=end_date)
     return options
 
 
