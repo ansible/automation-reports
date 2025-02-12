@@ -37,7 +37,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             elapsed=Sum("elapsed"),
             num_hosts=Sum("num_hosts"),
             automated_costs=(F("elapsed") * automated_cost_value),
-            manual_costs=(F("runs") * F("num_hosts") * F("manual_time") * manual_cost_value),
+            manual_costs=(F("num_hosts") * F("manual_time") * manual_cost_value),
             savings=(F("manual_costs") - F("automated_costs")),
         ))
         return filter_by_range(self.request, queryset=qs, prev_range=prev_range)

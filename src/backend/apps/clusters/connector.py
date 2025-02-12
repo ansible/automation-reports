@@ -8,28 +8,40 @@ from backend.apps.clusters.schemas import ClusterSchema
 import requests
 import logging
 from urllib.parse import urlsplit
-from backend_workers.workers import process_job_data
 
 logger = logging.getLogger("automation-reports")
 
 
 class ApiConnector(ABC):
 
-    def __init__(self, cluster: ClusterSchema, timeout=30, since=None):
+    def __init__(self,
+                 cluster: ClusterSchema,
+                 timeout=30,
+                 since: datetime.datetime | None = None,
+                 until: datetime.datetime | None = None,
+                 managed: bool = False):
+
         self.cluster = cluster
         self.timeout = timeout
+        self.managed = managed
+
         try:
             cluster_sync_data = ClusterSyncStatus.objects.get(cluster=self.cluster)
         except ClusterSyncStatus.DoesNotExist:
             cluster_sync_data = ClusterSyncStatus(cluster=self.cluster)
         self.cluster_sync_data = cluster_sync_data
 
-        if since is not None:
+        self.until = until
+
+        if self.managed:
             self.since = since
-        elif self.cluster_sync_data.last_job_finished_date is not None:
-            self.since = self.cluster_sync_data.last_job_finished_date
         else:
-            self.since = (datetime.datetime.now() - timedelta(hours=4)).astimezone(datetime.timezone.utc)
+            if since is not None:
+                self.since = since
+            elif self.cluster_sync_data.last_job_finished_date is not None and self.managed is False:
+                self.since = self.cluster_sync_data.last_job_finished_date
+            else:
+                self.since = (datetime.datetime.now() - timedelta(hours=4)).astimezone(datetime.timezone.utc)
 
     @property
     def headers(self):
@@ -92,7 +104,10 @@ class ApiConnector(ABC):
         parameters = ""
         if self.since is not None:
             since = self.since.isoformat().replace('+00:00', 'Z')
-            parameters += f'&finished__gt={since}'
+            parameters += f'&finished__gte={since}'
+        if self.until is not None:
+            until = self.until.isoformat().replace('+00:00', 'Z')
+            parameters += f'&finished__lte={until}'
         endpoint = f'/api/v2/jobs/?page_size=100&page=1&order_by=finished{parameters}'
         response = self.execute_get(endpoint)
         for results in response:
@@ -112,7 +127,7 @@ class ApiConnector(ABC):
         self.timeout = 3
         ping = self.ping
         if ping is None:
-            logger.info(f'Cluster {self.base_url} is not reachable.')
+            logger.error(f'Cluster {self.base_url} is not reachable.')
             return
         self.timeout = time_out
         for job in self.jobs:
@@ -133,6 +148,4 @@ class ApiConnector(ABC):
             with transaction.atomic():
                 self.cluster_sync_data.last_job_finished_date = finished
                 self.cluster_sync_data.save()
-                cluster_sync_data = ClusterSyncData.objects.create(cluster=self.cluster, data=job)
-
-            process_job_data.send_with_options(args=(cluster_sync_data.id,))
+                ClusterSyncData.objects.create(cluster=self.cluster, data=job)
