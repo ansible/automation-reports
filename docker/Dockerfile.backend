@@ -1,0 +1,44 @@
+# https://catalog.redhat.com/software/containers/ansible-automation-platform-25/controller-rhel8/650a5670acdb2bef1d5d3a1b?container-tabs=dockerfile
+
+FROM registry.redhat.io/ubi8/ubi-minimal:latest
+
+ENV DESCRIPTION="Red Hat Automation Platform - reports backend \
+"
+
+LABEL description="$DESCRIPTION"
+
+USER root
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/building_running_and_managing_containers/assembly_adding-software-to-a-ubi-container_building-running-and-managing-containers#proc_adding-software-in-a-standard-ubi-container_assembly_adding-software-to-a-ubi-container
+RUN microdnf install tar
+COPY docker/run-secrets.tar /
+RUN tar -xvf /run-secrets.tar
+
+#RUN microdnf -y module enable 'nginx:1.22' 'postgresql:15' 'redis:6' \
+RUN microdnf update --setopt=install_weak_deps=0 --nodocs -y \
+  && microdnf install --setopt=install_weak_deps=0 --nodocs -y findutils \
+  && microdnf reinstall --setopt=install_weak_deps=0 --nodocs -y tzdata \
+  && echo microdnf clean all
+
+RUN microdnf install --setopt=install_weak_deps=0 --nodocs -y python3.12 python3.12-devel libpq-devel gcc
+RUN python3.12 -m venv /venv
+RUN /venv/bin/pip install --upgrade pip wheel
+RUN mkdir /code /code/src
+COPY requirements.txt /code
+RUN /venv/bin/pip install -r /code/requirements.txt
+
+# source .env
+COPY src/backend /code/src/backend
+COPY src/backend_workers /code/src/backend_workers
+WORKDIR /code/src/backend
+ENV PYTHONPATH=/code/src
+
+# CMD ["/venv/bin/python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD /venv/bin/python manage.py migrate && /venv/bin/python manage.py runserver 0.0.0.0:8000
+# /venv/bin/python manage.py rundramatiq --processes 1 --threads 1
+
+RUN rm -fr /run/secrets

@@ -1,0 +1,38 @@
+FROM registry.redhat.io/ubi8/nodejs-20 AS builder
+
+ENV DESCRIPTION="Red Hat Automation Platform - reports frontend \
+"
+
+LABEL description="$DESCRIPTION"
+
+USER root
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+RUN node --version
+RUN npm --version
+RUN npx --version
+RUN npm install -g corepack
+
+# COPY . /code
+RUN mkdir -p /code
+COPY package.json yarn.lock .yarnrc.yml /code/
+WORKDIR /code
+# RUN corepack enable
+RUN corepack install
+RUN yarn install
+# RUN yarn install --immutable
+COPY .eslintrc.js stylePaths.js tsconfig.json webpack.common.js webpack.dev.js webpack.prod.js /code/
+COPY src /code/src
+RUN rm -fr dist/
+# env variables needed at build time
+RUN echo '' > .env
+RUN echo 'API_URL=http://localhost:8000' >> .env
+RUN yarn build
+
+# https://github.com/sclorg/nginx-container/blob/master/1.22/README.md
+FROM registry.redhat.io/ubi8/nginx-122
+COPY --from=builder /code/dist /opt/app-root/src
+CMD ["nginx", "-g", "daemon off;"]
