@@ -1,11 +1,20 @@
-import pydantic
-import yaml
-import traceback
 from django.core.management.base import BaseCommand
 
-from backend.apps.clusters.models import Cluster, ClusterSyncData, ClusterSyncStatus, Organization, JobTemplate, AAPUser, Inventory, ExecutionEnvironment, InstanceGroup, Label, Host, Job, JobLabel, JobHostSummary
-from backend.apps.clusters.schemas import ClusterSchema
-from django.db import transaction
+from backend.apps.clusters.models import (
+    Cluster,
+    ClusterSyncData,
+    ClusterSyncStatus,
+    Organization,
+    JobTemplate,
+    AAPUser,
+    Inventory,
+    ExecutionEnvironment,
+    InstanceGroup,
+    Label,
+    Host,
+    Job,
+    JobLabel,
+    JobHostSummary)
 
 
 class Command(BaseCommand):

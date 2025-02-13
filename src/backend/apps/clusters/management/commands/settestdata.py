@@ -1,16 +1,27 @@
+import random
 from datetime import datetime, timezone, timedelta
-
-import pydantic
-import yaml
-import traceback
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from backend.apps.clusters.models import Cluster, ClusterSyncData, ClusterSyncStatus, Organization, JobTemplate, AAPUser, Inventory, ExecutionEnvironment, InstanceGroup, Label, Host, Job, JobLabel, JobHostSummary, JobTypeChoices, JobRunTypeChoices, JobLaunchTypeChoices, JobStatusChoices, Project
-from backend.apps.clusters.schemas import ClusterSchema
-from django.db import transaction
-import random
+from backend.apps.clusters.models import (
+    Cluster,
+    Organization,
+    JobTemplate,
+    AAPUser,
+    Inventory,
+    ExecutionEnvironment,
+    InstanceGroup,
+    Label,
+    Host,
+    Job,
+    JobLabel,
+    JobHostSummary,
+    JobTypeChoices,
+    JobRunTypeChoices,
+    JobLaunchTypeChoices,
+    JobStatusChoices,
+    Project)
 
 
 class Command(BaseCommand):
