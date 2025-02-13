@@ -1,0 +1,56 @@
+---
+### container
+container_log_driver: journald
+
+### common
+aap_volumes_dir: '{{ ansible_user_dir }}/aap'
+
+### reporter
+reporter_admin_user: admin
+reporter_admin_email: admin@example.com
+reporter_firewall_zone: public
+reporter_data_dir: '{{ aap_volumes_dir }}/reporter/data'
+reporter_conf_dir: '{{ aap_volumes_dir }}/reporter/etc'
+reporter_container_label: 'level:s0:c100,c200'
+reporter_container_requires: []
+# reporter_container_requires:
+#   - redis
+# reporter_daphne_port: 8051
+reporter_uwsgi_port: 8050
+reporter_uwsgi_processes: 5
+reporter_update_secret: false
+reporter_event_workers: 4
+
+### database
+reporter_pg_username: aapreporter
+reporter_pg_database: aapreports
+reporter_pg_port: 5432
+reporter_pg_sslmode: prefer
+
+### postinstall
+# reporter_postinstall_ignore_files: []
+# reporter_postinstall_repo_ref: main
+# reporter_postinstall_async_delay: 1
+# reporter_postinstall_async_retries: 30
+
+### nginx
+nginx_conf_dir: '{{ aap_volumes_dir }}/reporter/nginx/etc'
+nginx_disable_https: false
+nginx_disable_hsts: false
+nginx_http_port: 8083
+nginx_https_port: 8446
+nginx_client_max_body_size: 5m
+nginx_user_headers: []
+
+### receptor
+# receptor_conf_dir: "{{ aap_volumes_dir }}/receptor/etc"
+
+### rsyslog
+# rsyslog_run_dir: '{{ aap_volumes_dir }}/reporter/rsyslog/run'
+
+### supervisor
+supervisor_run_dir: '{{ aap_volumes_dir }}/reporter/supervisor/run'
+
+### TLS CA
+ca_trust_bundle: /etc/pki/tls/certs/ca-bundle.crt
+...

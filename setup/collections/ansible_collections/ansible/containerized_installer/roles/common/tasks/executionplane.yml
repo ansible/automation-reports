@@ -1,0 +1,39 @@
+---
+- name: Create the custom podman rootless storage folder
+  ansible.builtin.file:
+    path: '{{ ansible_user_dir }}/aap/containers/storage'
+    mode: '0770'
+    setype: data_home_t
+    state: directory
+
+- name: Create custom podman storage.conf
+  ansible.builtin.template:
+    src: storage.conf.j2
+    dest: '{{ ansible_user_dir }}/aap/containers/storage.conf'
+    mode: '0640'
+
+- name: Create directory for custom podman service configuration
+  ansible.builtin.file:
+    dest: '{{ ansible_user_dir }}/.config/systemd/user/podman.service.d'
+    mode: '0770'
+    state: directory
+
+- name: Configure podman service
+  ansible.builtin.template:
+    src: override.conf.j2
+    dest: '{{ ansible_user_dir }}/.config/systemd/user/podman.service.d/override.conf'
+    mode: '0644'
+
+- name: Enable podman socket
+  ansible.builtin.systemd:
+    name: podman.socket
+    state: started
+    scope: user
+    enabled: true
+
+- name: Create podman custom command
+  ansible.builtin.copy:
+    src: podman
+    dest: '{{ ansible_user_dir }}/aap/containers/podman'
+    mode: '0755'
+...

@@ -1,0 +1,81 @@
+---
+- name: Run ostree tasks
+  ansible.builtin.include_tasks: ostree.yml
+
+- name: Include container image tasks
+  ansible.builtin.include_tasks: images.yml
+
+- name: Execution plane removal
+  when: >
+    inventory_hostname in groups.get('automationcontroller', []) or
+    inventory_hostname in groups.get('automationeda', []) or
+    inventory_hostname in groups.get('execution_nodes', [])
+  block:
+    - name: Remove the executionplane container images
+      containers.podman.podman_image:
+        name: '{{ item }}'
+        state: absent
+      environment:
+        CONTAINERS_STORAGE_CONF: '{{ ansible_user_dir }}/aap/containers/storage.conf'
+      loop: '{{ (__de_images | default([])) | union(__ee_images | default([])) | unique }}'
+      when: not container_keep_images | bool
+
+    - name: Delete the execution plane storage
+      ansible.builtin.file:
+        path: '{{ ansible_user_dir }}/aap/containers'
+        state: absent
+      become: true
+      when: not container_keep_images | bool
+
+    - name: Disable podman socket
+      ansible.builtin.systemd:
+        name: podman.socket
+        state: stopped
+        enabled: false
+        scope: user
+
+    - name: Delete the podman files
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: absent
+      loop:
+        - '{{ ansible_user_dir }}/aap/containers/podman'
+        - '{{ ansible_user_dir }}/.config/systemd/user/podman.service.d'
+        - '/run/user/{{ ansible_user_uid }}/podman/podman.sock'
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    scope: user
+    daemon_reload: true
+
+- name: Log out of the registry
+  containers.podman.podman_logout:
+    authfile: '{{ ansible_user_dir }}/.config/containers/auth.json'
+    registry: '{{ registry_url }}'
+  failed_when: false
+  when:
+    - not bundle_install | bool
+    - registry_auth | bool
+
+- name: Remove container resources
+  when: not container_keep_images | bool
+  block:
+    - name: Remove the container images
+      containers.podman.podman_image:
+        name: '{{ item }}'
+        state: absent
+      loop: '{{ _images }}'
+
+    - name: Remove the containers config directory
+      ansible.builtin.file:
+        path: '{{ ansible_user_dir }}/.config/containers'
+        state: absent
+
+- name: Remove the TLS CA and container certs directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ ansible_user_dir }}/.config/containers/certs.d'
+    - '{{ ansible_user_dir }}/aap/tls'
+...

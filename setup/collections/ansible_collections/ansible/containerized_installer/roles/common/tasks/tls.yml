@@ -1,0 +1,132 @@
+---
+- name: Set the TLS CA directory fact
+  ansible.builtin.set_fact:
+    _ca_tls_dir: '{{ ansible_user_dir }}/aap/tls'
+
+- name: Create the TLS CA directory
+  ansible.builtin.file:
+    path: '{{ _ca_tls_dir }}'
+    mode: '0750'
+    state: directory
+
+- name: Generate TLS CA certificate and key
+  run_once: true
+  when:
+    - ca_tls_cert is not defined
+    - ca_tls_key is not defined
+  block:
+    - name: Install python-cryptography
+      ansible.builtin.package:
+        name: python3-cryptography
+      become: true
+      when: not ostree | bool
+
+    - name: Generate a private key
+      community.crypto.openssl_privatekey:
+        path: '{{ _ca_tls_dir }}/ca.key'
+        mode: '0400'
+
+    - name: Check the current CA certificate
+      ansible.builtin.stat:
+        path: '{{ _ca_tls_dir }}/ca.cert'
+      register: _ca_tls_cert
+
+    - name: Create the CA TLS certificate
+      when: not _ca_tls_cert.stat.exists | bool
+      block:
+        - name: Generate a certificate signing request
+          community.crypto.openssl_csr_pipe:
+            common_name: Ansible Automation Platform
+            country_name: 'US'
+            locality_name: 'Raleigh'
+            organization_name: 'Red Hat'
+            organizational_unit_name: 'Ansible'
+            state_or_province_name: 'North Carolina'
+            privatekey_path: '{{ _ca_tls_dir }}/ca.key'
+            use_common_name_for_san: false
+            basic_constraints:
+              - 'CA:TRUE'
+            basic_constraints_critical: true
+            key_usage:
+              - keyCertSign
+            key_usage_critical: true
+          register: _ca_tls_csr
+
+        - name: Generate a self signed x509 certificate
+          community.crypto.x509_certificate:
+            path: '{{ _ca_tls_dir }}/ca.cert'
+            csr_content: '{{ _ca_tls_csr.csr }}'
+            privatekey_path: '{{ _ca_tls_dir }}/ca.key'
+            provider: selfsigned
+            mode: '0640'
+          notify: Update CA trust
+
+    - name: Copy TLS CA files to other nodes
+      block:
+        - name: Create local temporary directory
+          ansible.builtin.tempfile:
+            state: directory
+          register: _ca_temp
+          delegate_to: localhost
+
+        - name: Fetch files locally
+          ansible.builtin.fetch:
+            src: '{{ _ca_tls_dir }}/ca.{{ item }}'
+            dest: '{{ _ca_temp.path }}/ca.{{ item }}'
+            flat: true
+          loop:
+            - cert
+            - key
+
+        - name: Copy TLS CA certificate
+          ansible.builtin.copy:
+            src: '{{ _ca_temp.path }}/ca.cert'
+            dest: '{{ _ca_tls_dir }}/ca.cert'
+            mode: '0640'
+          run_once: false
+          notify: Update CA trust
+
+        - name: Copy TLS CA key
+          ansible.builtin.copy:
+            src: '{{ _ca_temp.path }}/ca.key'
+            dest: '{{ _ca_tls_dir }}/ca.key'
+            mode: '0400'
+          run_once: false
+      always:
+        - name: Remove local temporary directory
+          ansible.builtin.file:
+            path: '{{ _ca_temp.path }}'
+            state: absent
+          delegate_to: localhost
+
+- name: Import TLS CA certificate and key
+  when:
+    - ca_tls_cert is defined
+    - ca_tls_key is defined
+  block:
+    - name: Copy TLS CA certificate
+      ansible.builtin.copy:
+        src: '{{ ca_tls_cert }}'
+        dest: '{{ _ca_tls_dir }}/ca.cert'
+        mode: '0640'
+        remote_src: '{{ ca_tls_remote | default(false) }}'
+      notify: Update CA trust
+
+    - name: Copy TLS CA key
+      ansible.builtin.copy:
+        src: '{{ ca_tls_key }}'
+        dest: '{{ _ca_tls_dir }}/ca.key'
+        mode: '0400'
+        remote_src: '{{ ca_tls_remote | default(false) }}'
+
+- name: Create the PKI directories
+  ansible.builtin.file:
+    path: '{{ _ca_tls_dir }}/extracted/{{ item }}'
+    mode: '0750'
+    state: directory
+  loop:
+    - edk2
+    - java
+    - pem
+    - openssl
+...

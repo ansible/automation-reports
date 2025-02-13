@@ -1,0 +1,12 @@
+---
+- name: Generate bundle
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  become: false
+  tasks:
+    - name: Run bundle tasks
+      ansible.builtin.import_role:
+        name: common
+        tasks_from: bundle.yml
+...

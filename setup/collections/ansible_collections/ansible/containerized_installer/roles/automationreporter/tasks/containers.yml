@@ -1,0 +1,170 @@
+---
+# - name: Create the automation reporter rsyslog container
+#   containers.podman.podman_container:
+#     name: automation-reporter-rsyslog
+#     image: '{{ _reporter_image }}'
+#     command: '{{ __rsyslog_cmd }}'
+#     generate_systemd:
+#       container_prefix: ''
+#       path: '{{ ansible_user_dir }}/.config/systemd/user'
+#       separator: ''
+#       requires: '{{ __systemd_requires }}'
+#     log_driver: '{{ container_log_driver }}'
+#     user: '{{ ansible_user_uid }}'
+#     userns: keep-id
+#     network: host
+#     secrets: '{{ _common_secrets }}'
+#     volume: '{{ _rsyslog_volumes }}'
+#     env: '{{ __rsyslog_env }}'
+#     label:
+#       '{{ _autoupdate_label }}'
+#     state: created
+#   notify: Restart reporter rsyslog
+
+- name: Create the automation reporter task container
+  containers.podman.podman_container:
+    name: automation-reporter-task
+    image: '{{ _reporter_image_be }}'
+    command: '{{ __task_cmd }}'
+    generate_systemd:
+      container_prefix: ''
+      path: '{{ ansible_user_dir }}/.config/systemd/user'
+      separator: ''
+      requires: '{{ __systemd_requires }}'
+    log_driver: '{{ container_log_driver }}'
+    user: '{{ ansible_user_uid }}'
+    userns: keep-id
+    network: host
+    secrets: '{{ _common_secrets }}'
+    volume: '{{ _task_volumes }}'
+    security_opt: ['label=disable']
+    env: '{{ __task_env }}'
+    label:
+      '{{ _autoupdate_label }}'
+    state: created
+  notify: Restart reporter task
+
+# web -> reporter-api container
+# task -> reporter-worker container
+- name: Create the automation reporter web container
+  containers.podman.podman_container:
+    name: automation-reporter-web
+    image: '{{ _reporter_image_be }}'
+    command: '{{ __web_cmd }}'
+    generate_systemd:
+      container_prefix: ''
+      path: '{{ ansible_user_dir }}/.config/systemd/user'
+      separator: ''
+      requires: '{{ __systemd_requires }}'
+    log_driver: '{{ container_log_driver }}'
+    user: '{{ ansible_user_uid }}'
+    userns: keep-id
+    network: host
+    secrets: '{{ _common_secrets }}'
+    volume: '{{ _web_volumes }}'
+    stop_timeout: 30
+    env: '{{ __web_env }}'
+    label:
+      '{{ _autoupdate_label }}'
+    state: created
+  notify: Restart reporter web
+
+- name: DEBUG env - Initialize the automation reporter database
+  containers.podman.podman_container:
+    name: automation-reporter-init
+    image: '{{ _reporter_image_be }}'
+    command: sleep 1 # inf
+    detach: false
+    rm: true
+    log_driver: '{{ container_log_driver }}'
+    user: '{{ ansible_user_uid }}'
+    userns: keep-id
+    network: host
+    secrets: '{{ _common_secrets }}'
+    volume: '{{ _common_volumes }}'
+  changed_when: false
+  run_once: true
+  ignore_errors: true
+
+- name: Initialize the automation reporter database
+  containers.podman.podman_container:
+    name: automation-reporter-init
+    image: '{{ _reporter_image_be }}'
+    command: '/venv/bin/python manage.py migrate --noinput'
+    detach: false
+    rm: true
+    log_driver: '{{ container_log_driver }}'
+    user: '{{ ansible_user_uid }}'
+    userns: keep-id
+    network: host
+    secrets: '{{ _common_secrets }}'
+    volume: '{{ _common_volumes }}'
+  register: _migrate
+  changed_when: "'No migrations to apply' not in _migrate.stdout"
+  run_once: true
+  retries: 5
+  delay: 60
+  until: _migrate is not failed
+
+- name: Create django super user
+  containers.podman.podman_container:
+    name: automation-reporter-init
+    image: '{{ _reporter_image_be }}'
+    command: '/venv/bin/python manage.py createsuperuser --username={{ reporter_admin_user }} --email={{ reporter_admin_email }} --noinput'
+    detach: false
+    rm: true
+    log_driver: '{{ container_log_driver }}'
+    user: '{{ ansible_user_uid }}'
+    userns: keep-id
+    network: host
+    secrets: '{{ _common_secrets }}'
+    volume: '{{ _common_volumes }}'
+  register: _createsuperuser
+  changed_when: "'Superuser created successfully' in _createsuperuser.stdout"
+  failed_when: false
+  run_once: true
+  retries: 5
+  delay: 60
+  until: _createsuperuser is not failed
+
+- name: Update django super user password
+  containers.podman.podman_container:
+    name: automation-reporter-init
+    image: '{{ _reporter_image_be }}'
+    command: '/venv/bin/python manage.py update_password --username={{ reporter_admin_user }} --password={{ reporter_admin_password }}'
+    detach: false
+    rm: true
+    log_driver: '{{ container_log_driver }}'
+    user: '{{ ansible_user_uid }}'
+    userns: keep-id
+    network: host
+    secrets: '{{ _common_secrets }}'
+    volume: '{{ _common_volumes }}'
+  register: _superuser_password
+  changed_when: "'Password updated' in _superuser_password.stdout"
+  no_log: true
+  run_once: true
+  retries: 5
+  delay: 60
+  until: _superuser_password is not failed
+
+# - name: Create the default organization
+#   containers.podman.podman_container:
+#     name: automation-reporter-init
+#     image: '{{ _reporter_image_be }}'
+#     command: 'awx-manage create_preload_data'
+#     detach: false
+#     rm: true
+#     log_driver: '{{ container_log_driver }}'
+#     user: '{{ ansible_user_uid }}'
+#     userns: keep-id
+#     network: host
+#     secrets: '{{ _common_secrets }}'
+#     volume: '{{ _common_volumes }}'
+#   register: _preload_data
+#   changed_when: "'(changed: True)' in _preload_data.stdout"
+#   run_once: true
+#   retries: 5
+#   delay: 60
+#   until: _preload_data is not failed
+...

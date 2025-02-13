@@ -1,0 +1,9 @@
+---
+- name: Ensure postgresql container is enabled and started
+  ansible.builtin.systemd:
+    name: postgresql.service
+    state: started
+    scope: user
+    daemon_reload: true
+    enabled: true
+...

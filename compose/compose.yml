@@ -1,0 +1,56 @@
+---
+name: aapreport
+services:
+  db:
+    image: registry.redhat.io/rhel8/postgresql-15:latest
+    env_file:
+      - path: "./.env"
+        required: true
+    environment:
+      # - POSTGRESQL_ADMIN_PASSWORD=${DB_PASSWORD}
+      - POSTGRESQL_USER=${DB_USER}
+      - POSTGRESQL_PASSWORD=${DB_PASSWORD}
+      - POSTGRESQL_DATABASE=${DB_NAME}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    volumes:
+       - type: volume
+         source: postgres-data
+         target: /var/lib/psql/data
+
+  backend:
+    depends_on:
+      db:
+        condition: service_healthy
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile.backend
+    # command: /venv/bin/python manage.py -h
+    env_file:
+      - path: "./.env"
+        required: true
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - ALLOWED_HOSTS=*
+    ports:
+      - "8080:8052"  # nginx
+      # - "8000:8000"  # django-api
+
+  # frontend:
+  #   build:
+  #     context: ./
+  #     dockerfile: docker/Dockerfile.backend
+  #   ports:
+  #     - "9000:8080"
+
+volumes:
+  postgres-data:

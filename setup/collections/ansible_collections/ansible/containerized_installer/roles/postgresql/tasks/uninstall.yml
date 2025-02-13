@@ -1,0 +1,40 @@
+---
+- name: Ensure systemd unit are disabled and stopped
+  ansible.builtin.systemd:
+    name: postgresql.service
+    scope: user
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Delete the container
+  containers.podman.podman_container:
+    name: postgresql
+    state: absent
+
+- name: Delete the systemd unit files
+  ansible.builtin.file:
+    path: '{{ ansible_user_dir }}/.config/systemd/user/postgresql.service'
+    state: absent
+
+- name: Delete podman volumes
+  ansible.builtin.include_tasks: volumes.yml
+  vars:
+    __volume_state: absent
+  when: not postgresql_keep_databases | bool
+
+- name: Delete the postgresql admin password secret
+  containers.podman.podman_secret:
+    name: postgresql_admin_password
+    state: absent
+
+- name: Delete the postgresql config directory
+  ansible.builtin.file:
+    path: '{{ postgresql_conf_dir }}'
+    state: absent
+
+- name: Delete firewalld rules
+  ansible.builtin.include_tasks: firewalld.yml
+  vars:
+    __firewalld_state: disabled
+...

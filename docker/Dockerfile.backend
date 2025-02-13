@@ -1,0 +1,99 @@
+# https://catalog.redhat.com/software/containers/ansible-automation-platform-25/controller-rhel8/650a5670acdb2bef1d5d3a1b?container-tabs=dockerfile
+
+# =============================================================================
+FROM registry.redhat.io/ubi8/nodejs-20 AS web-builder
+
+ENV DESCRIPTION="Red Hat Automation Platform - reports frontend \
+"
+
+LABEL description="$DESCRIPTION"
+
+USER root
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+RUN node --version
+RUN npm --version
+RUN npx --version
+RUN npm install -g corepack
+
+# COPY . /code
+RUN mkdir -p /code
+COPY package.json yarn.lock .yarnrc.yml /code/
+WORKDIR /code
+# RUN corepack enable
+RUN corepack install
+RUN yarn install
+# RUN yarn install --immutable
+COPY .eslintrc.js stylePaths.js tsconfig.json webpack.common.js webpack.dev.js webpack.prod.js /code/
+COPY src /code/src
+RUN rm -fr dist/
+# env variables needed at build time
+RUN echo '' > .env
+# we are happy with relative URLs
+RUN echo 'API_URL=/' >> .env
+RUN yarn build
+
+# https://github.com/sclorg/nginx-container/blob/master/1.22/README.md
+# FROM registry.redhat.io/ubi8/nginx-122
+# COPY --from=web-builder /code/dist /opt/app-root/src
+# CMD ["nginx", "-g", "daemon off;"]
+
+
+# =============================================================================
+FROM registry.redhat.io/ubi8/ubi-minimal:latest
+
+ENV DESCRIPTION="Red Hat Automation Platform - reports backend \
+"
+
+LABEL description="$DESCRIPTION"
+
+USER root
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/building_running_and_managing_containers/assembly_adding-software-to-a-ubi-container_building-running-and-managing-containers#proc_adding-software-in-a-standard-ubi-container_assembly_adding-software-to-a-ubi-container
+RUN microdnf install tar
+COPY docker/run-secrets.tar /
+RUN tar -xvf /run-secrets.tar
+
+#RUN microdnf -y module enable 'nginx:1.22' 'postgresql:15' 'redis:6' \
+RUN microdnf -y module enable 'nginx:1.22' \
+  && microdnf update --setopt=install_weak_deps=0 --nodocs -y \
+  && microdnf install --setopt=install_weak_deps=0 --nodocs -y findutils glibc-langpack-en nginx \
+  && microdnf install --setopt=install_weak_deps=0 --nodocs -y python3.12 python3.12-devel libpq-devel gcc \
+  && microdnf reinstall --setopt=install_weak_deps=0 --nodocs -y tzdata \
+  && microdnf clean all
+RUN useradd awx -u 1000 -g 0 --home-dir /var/lib/awx -s /bin/bash
+
+RUN python3.12 -m venv /venv
+RUN /venv/bin/pip install --upgrade pip wheel
+RUN mkdir /code /code/src
+COPY requirements.txt /code
+RUN /venv/bin/pip install -r /code/requirements.txt
+
+# source .env
+COPY src/backend /code/src/backend
+COPY src/backend_workers /code/src/backend_workers
+WORKDIR /code/src/backend
+ENV PYTHONPATH=/code/src
+RUN mkdir -p /etc/reporter/conf.d
+
+COPY --from=web-builder /code/dist /opt/app-root/src
+
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+RUN mkdir /code/docker/
+COPY docker/launch_automation_reporter.sh /code/docker/launch_automation_reporter.sh
+RUN curl -L -o /usr/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && chmod a+x /usr/bin/dumb-init
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["/code/docker/launch_automation_reporter.sh"]
+EXPOSE 8052
+
+RUN rm -fr /run/secrets
+
+RUN chmod 0777 /var/log/nginx /var/lib/nginx/tmp
+USER awx

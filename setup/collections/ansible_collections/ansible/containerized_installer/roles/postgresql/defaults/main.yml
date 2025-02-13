@@ -1,0 +1,15 @@
+---
+### container
+container_log_driver: journald
+
+### database
+postgresql_firewall_zone: public
+postgresql_max_connections: 1024
+postgresql_port: 5432
+postgresql_uid: 26
+postgresql_update_secret: false
+postgresql_keep_databases: false
+postgresql_conf_dir: '{{ ansible_user_dir }}/aap/postgresql'
+postgresql_disable_tls: false
+postgresql_password_encryption: scram-sha-256
+...

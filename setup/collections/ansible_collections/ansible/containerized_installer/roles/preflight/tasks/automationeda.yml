@@ -1,0 +1,39 @@
+---
+- name: Ensure eda admin password is provided
+  ansible.builtin.assert:
+    that:
+      - eda_admin_password is defined
+      - eda_admin_password | length
+    fail_msg: 'eda_admin_password must be set and not empty'
+
+- name: Ensure eda postgresql host and password are provided
+  ansible.builtin.assert:
+    that:
+      - eda_pg_host is defined
+      - eda_pg_host | length
+      - eda_pg_password is defined
+      - eda_pg_password | length
+    fail_msg: 'eda_pg_host and eda_pg_password must be set and not empty'
+
+- name: Ensure automation controller url is provided
+  ansible.builtin.assert:
+    that:
+      - controller_main_url is defined
+      - controller_main_url | length
+      - controller_main_url is regex('^https?://.*')
+    fail_msg: "controller_main_url must be set when no controller nodes are present"
+  when: groups.get('automationcontroller', []) | length == 0
+
+- name: Check DE extra images structure
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name | length > 0
+      - item.image is defined
+      - item.image | length > 0
+    fail_msg: 'Items in de_extra_images need to have both name and image keys defined and not empty'
+  loop: '{{ de_extra_images }}'
+  when:
+    - de_extra_images is defined
+    - de_extra_images | length > 0
+...

@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 import sys
+import traceback
 from pathlib import Path
 
+from split_settings.tools import optional, include
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +28,8 @@ SECRET_KEY = 'django-insecure-cu=@gv*8$8+rr2-^-8^g00!ib_9-utgu!26#q#@)!y%3#wt^1#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+allowed_hosts_str = os.environ.get("ALLOWED_HOSTS", "")
+ALLOWED_HOSTS = allowed_hosts_str.split(",")
 
 # Application definition
 
@@ -88,11 +91,11 @@ WSGI_APPLICATION = 'django_config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DB_NAME = os.environ['DB_NAME']
-DB_USER = os.environ['DB_USER']
-DB_PASSWORD = os.environ['DB_PASSWORD']
-DB_HOST = os.environ['DB_HOST']
-DB_PORT = os.environ['DB_PORT']
+DB_NAME = os.environ.get('DB_NAME')
+DB_USER = os.environ.get('DB_USER')
+DB_PASSWORD = os.environ.get('DB_PASSWORD')
+DB_HOST = os.environ.get('DB_HOST', 'localhost' )
+DB_PORT = os.environ.get('DB_PORT', '5432')
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING')
 
 DATABASES = {
@@ -177,3 +180,11 @@ CORS_ALLOWED_ORIGINS = [
 ]
 # CORS_ORIGIN_ALLOW_ALL = True
 
+# Load settings from REPORTER_SETTINGS_DIR
+settings_dir = os.environ.get('REPORTER_SETTINGS_DIR', '/etc/reporter/conf.d/')
+settings_files = os.path.join(settings_dir, '*.py')
+try:
+    include(optional(settings_files), scope=locals())
+except ImportError:
+    traceback.print_exc()
+    sys.exit(1)

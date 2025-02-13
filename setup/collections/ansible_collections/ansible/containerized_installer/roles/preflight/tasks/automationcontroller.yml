@@ -1,0 +1,106 @@
+---
+- name: Ensure controller admin password is provided
+  ansible.builtin.assert:
+    that:
+      - controller_admin_password is defined
+      - controller_admin_password | length
+    fail_msg: 'controller_admin_password must be set and not empty'
+
+- name: Ensure controller postgresql host and password are provided
+  ansible.builtin.assert:
+    that:
+      - controller_pg_host is defined
+      - controller_pg_host | length
+      - controller_pg_password is defined
+      - controller_pg_password | length
+    fail_msg: 'controller_pg_host and controller_pg_password must be set and not empty'
+
+- name: Check the Automation Controller license file
+  when: controller_license_file is defined
+  block:
+    - name: Check the license file presence
+      ansible.builtin.stat:
+        path: '{{ controller_license_file }}'
+      register: _controller_license_file
+
+    - name: Validate that the license file exists
+      ansible.builtin.assert:
+        that:
+          - _controller_license_file.stat.exists | bool
+          - _controller_license_file.stat.isreg | bool
+        fail_msg: 'The controller license file must exist on the ansible host'
+
+- name: Check the Automation Controller postinstall
+  when: controller_postinstall | default(false) | bool
+  block:
+    - name: Ensure controller license file is provided
+      ansible.builtin.assert:
+        that:
+          - controller_license_file is defined
+          - controller_license_file | length
+        fail_msg: 'controller_license_file must be set and not empty controller_postinstall=true'
+
+    - name: Ensure controller postinstall dir is provided
+      ansible.builtin.assert:
+        that:
+          - controller_postinstall_dir is defined
+          - controller_postinstall_dir | length
+        fail_msg: 'controller_postinstall_dir must be set and not empty controller_postinstall=true'
+
+    - name: Check the controller postinstall directory
+      ansible.builtin.stat:
+        path: '{{ controller_postinstall_dir }}'
+      register: _controller_postinstall_dir
+
+    - name: Validate that the postinstall directory exists
+      ansible.builtin.assert:
+        that:
+          - _controller_postinstall_dir.stat.exists | bool
+          - _controller_postinstall_dir.stat.isdir | bool
+        fail_msg: 'The controller postinstall directory must exist on the ansible host'
+      when: controller_postinstall_repo_url is not defined
+
+- name: Check the architecture for ee-29 container image
+  when: ee_29_enabled | default(false) | bool
+  block:
+    - name: Gather local architecture fact
+      ansible.builtin.setup:
+        gather_subset: ['architecture']
+      when: bundle_install | default(false) | bool
+
+    - name: Check local architecture
+      ansible.builtin.assert:
+        that:
+          - ansible_architecture == 'x86_64'
+        fail_msg: 'The ee-29 container image is only available on x86_64 architecture'
+      when: bundle_install | default(false) | bool
+
+    - name: Gather remote controller architecture facts
+      ansible.builtin.setup:
+        gather_subset: ['architecture']
+      delegate_to: '{{ item }}'
+      delegate_facts: true
+      loop: '{{ groups.get("automationcontroller", []) }}'
+      when: not bundle_install | default(false) | bool
+
+    - name: Check remote controller architecture
+      ansible.builtin.assert:
+        that:
+          - hostvars[item]['ansible_architecture'] == 'x86_64'
+        fail_msg: 'The ee-29 container image is only available on x86_64 architecture'
+      loop: '{{ groups.get("automationcontroller", []) }}'
+      when: not bundle_install | default(false) | bool
+
+- name: Check EE extra images structure
+  ansible.builtin.assert:
+    that:
+      - item.name is defined
+      - item.name | length > 0
+      - item.image is defined
+      - item.image | length > 0
+    fail_msg: 'Items in ee_extra_images need to have both name and image keys defined and not empty'
+  loop: '{{ ee_extra_images }}'
+  when:
+    - ee_extra_images is defined
+    - ee_extra_images | length > 0
+...

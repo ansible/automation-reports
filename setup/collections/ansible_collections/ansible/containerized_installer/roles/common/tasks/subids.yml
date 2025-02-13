@@ -1,0 +1,11 @@
+---
+- name: Ensure user has enough subuids in namespace
+  ansible.containerized_installer.subuid:
+    user: '{{ ansible_user_id }}'
+  become: true
+
+- name: Ensure user has enough subugids in namespace
+  ansible.containerized_installer.subgid:
+    group: '{{ ansible_user_id }}'
+  become: true
+...

@@ -1,0 +1,49 @@
+---
+- name: Install python-psycopg2
+  ansible.builtin.package:
+    name: python3-psycopg2
+  become: true
+  when: not ostree | bool
+
+- name: Wait for postgresql to be ready
+  community.postgresql.postgresql_ping:
+    login_host: 127.0.0.1
+    login_port: '{{ postgresql_port }}'
+    login_user: '{{ postgresql_admin_username | default("postgres") }}'
+    login_password: '{{ postgresql_admin_password }}'
+    login_db: '{{ postgresql_admin_database | default("postgres") }}'
+  register: _ping
+  retries: 30
+  delay: 10
+  until: _ping.is_available | bool
+
+- name: Set postgresql password encryption configuration
+  community.postgresql.postgresql_set:
+    name: password_encryption
+    value: '{{ postgresql_password_encryption }}'
+    login_host: 127.0.0.1
+    login_port: '{{ postgresql_port }}'
+    login_user: '{{ postgresql_admin_username | default("postgres") }}'
+    login_password: '{{ postgresql_admin_password }}'
+    login_db: '{{ postgresql_admin_database | default("postgres") }}'
+  notify: Restart postgresql
+
+- name: Set postgresql ssl configuration
+  community.postgresql.postgresql_set:
+    name: '{{ item.k }}'
+    value: '{{ item.v }}'
+    login_host: 127.0.0.1
+    login_port: '{{ postgresql_port }}'
+    login_user: '{{ postgresql_admin_username | default("postgres") }}'
+    login_password: '{{ postgresql_admin_password }}'
+    login_db: '{{ postgresql_admin_database | default("postgres") }}'
+  loop:
+    - k: ssl
+      v: 'on'
+    - k: ssl_cert_file
+      v: /var/lib/pgsql/server.crt
+    - k: ssl_key_file
+      v: /var/lib/pgsql/server.key
+  notify: Restart postgresql
+  when: not postgresql_disable_tls | bool
+...

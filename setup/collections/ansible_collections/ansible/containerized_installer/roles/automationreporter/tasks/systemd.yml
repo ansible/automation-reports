@@ -1,0 +1,10 @@
+---
+- name: Ensure automation reporter containers are enabled and started
+  ansible.builtin.systemd:
+    name: '{{ item }}'
+    state: started
+    enabled: true
+    scope: user
+    daemon_reload: true
+  loop: '{{ __services }}'
+...

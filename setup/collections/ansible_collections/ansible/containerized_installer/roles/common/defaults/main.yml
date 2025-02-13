@@ -1,0 +1,49 @@
+---
+bundle_install: false
+
+### registry variables
+registry_auth: true
+registry_url: registry.redhat.io
+registry_tls_verify: true
+registry_ns_aap: ansible-automation-platform-24
+registry_ns_rhel: rhel8
+
+### database
+postgresql_version: 13
+
+### nginx
+nginx_version: 120
+
+### podman
+podman_packages:
+  - crun
+  - podman
+  - slirp4netns
+  - fuse-overlayfs
+podman_runtime: crun
+
+### redis
+redis_version: 6
+
+### container image variables
+container_compress: gzip
+container_image_update: false
+container_keep_images: false
+controller_image: 'controller-rhel8:latest'
+de_supported_image: 'de-supported-rhel8:latest'
+de_extra_images: []
+eda_image: 'eda-controller-rhel8:latest'
+eda_web_image: 'eda-controller-ui-rhel8:latest'
+ee_29_enabled: false
+ee_29_image: 'ee-29-rhel8:latest'
+ee_minimal_image: 'ee-minimal-rhel8:latest'
+ee_supported_image: 'ee-supported-rhel8:latest'
+ee_extra_images: []
+hub_image: 'hub-rhel8:latest'
+hub_web_image: 'hub-web-rhel8:latest'
+postgresql_image: 'postgresql-{{ postgresql_version }}:latest'
+receptor_image: 'ee-supported-rhel8:latest'
+redis_image: 'redis-{{ redis_version }}:latest'
+reporter_image_be: 'aapreport-backend:latest'
+reporter_image_fe: 'aapreport-frontend:latest'
+...

@@ -1,0 +1,19 @@
+---
+- name: Ensure firewalld is started
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+  become: true
+  when:
+    - ansible_facts.services.get('firewalld.service', {}) | length
+    - ansible_facts.services['firewalld.service']['status'] == 'enabled'
+
+- name: Install python-firewall
+  ansible.builtin.package:
+    name: python3-firewall
+  become: true
+  when:
+    - ansible_facts.services.get('firewalld.service', {}) | length
+    - ansible_facts.services['firewalld.service']['status'] == 'enabled'
+    - not ostree | bool
+...

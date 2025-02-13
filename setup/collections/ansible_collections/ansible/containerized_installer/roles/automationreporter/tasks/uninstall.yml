@@ -1,0 +1,61 @@
+---
+- name: Set facts for containers
+  ansible.builtin.set_fact:
+    __containers:
+      # - automation-reporter-rsyslog
+      - automation-reporter-task
+      - automation-reporter-web
+
+- name: Set facts for systemd services and containers
+  ansible.builtin.set_fact:
+    __services: '{{ __containers | product(["service"]) | map("join", ".") }}'
+
+- name: Set reporter port list
+  ansible.builtin.set_fact:
+    _reporter_ports: ['{{ nginx_http_port }}']
+
+- name: Add https port to reporter port list
+  ansible.builtin.set_fact:
+    _reporter_ports: '{{ _reporter_ports | union([nginx_https_port]) }}'
+  when: not nginx_disable_https | bool
+
+- name: Ensure systemd units are disabled and stopped
+  ansible.builtin.systemd:
+    name: '{{ item }}'
+    state: stopped
+    enabled: false
+    scope: user
+  failed_when: false
+  loop: '{{ __services }}'
+
+- name: Delete the containers
+  containers.podman.podman_container:
+    name: '{{ item }}'
+    state: absent
+  loop: '{{ __containers }}'
+
+- name: Delete the systemd unit files
+  ansible.builtin.file:
+    path: '{{ ansible_user_dir }}/.config/systemd/user/{{ item }}'
+    state: absent
+  loop: '{{ __services }}'
+
+- name: Delete the reporter secrets
+  containers.podman.podman_secret:
+    name: '{{ item }}'
+    state: absent
+  loop:
+    - reporter_channels
+    - reporter_postgres
+    - reporter_secret_key
+
+- name: Delete the directories/files
+  ansible.builtin.file:
+    path: '{{ aap_volumes_dir }}/reporter'
+    state: absent
+
+- name: Delete firewalld rules
+  ansible.builtin.include_tasks: firewalld.yml
+  vars:
+    __firewalld_state: disabled
+...

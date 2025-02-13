@@ -1,0 +1,14 @@
+---
+- name: Update CA trust
+  containers.podman.podman_container:
+    name: update-ca-trust
+    image: '{{ _images | first }}'
+    command: 'update-ca-trust'
+    detach: false
+    rm: true
+    log_driver: journald
+    user: root
+    volume:
+      - '{{ _ca_tls_dir }}/extracted:/etc/pki/ca-trust/extracted:z'
+      - '{{ _ca_tls_dir }}/ca.cert:/etc/pki/ca-trust/source/anchors/tls-aap.cert:ro,z'
+...

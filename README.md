@@ -25,7 +25,7 @@ sudo dnf install python3.12-devel libpq-devel
 ```bash
 cp -i .env.example .env
 set -o allexport; source .env; set +o allexport;
-(cd devel/compose-psql; docker compose up)
+(cd compose; docker compose --project-directory .. -f compose.yml up --build db)
 
 cd src/backend
 export PYTHONPATH=$PWD/.. # pip install -e .
