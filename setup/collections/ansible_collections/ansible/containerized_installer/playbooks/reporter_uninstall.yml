@@ -1,0 +1,64 @@
+---
+- name: Collect services facts
+  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Gather regular user uid and home dir
+      ansible.builtin.setup:
+        filter:
+          - 'ansible_user_uid'
+          - 'ansible_user_dir'
+
+    - name: Get service facts
+      ansible.builtin.service_facts:
+      become: true
+
+- name: Uninstall the Automation Reporter
+  hosts: automationreporter
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Uninstall the automation reporter
+      ansible.builtin.import_role:
+        name: automationreporter
+        tasks_from: uninstall.yml
+
+- name: Uninstall the database
+  hosts: database
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Uninstall postgresql
+      ansible.builtin.import_role:
+        name: postgresql
+        tasks_from: uninstall.yml
+
+- name: Remove service leftovers
+  hosts: automationcontroller:automationeda:automationhub
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Run ostree tasks
+      ansible.builtin.import_role:
+        name: common
+        tasks_from: ostree.yml
+
+    - name: Remove python packages used by collections
+      ansible.builtin.package:
+        name:
+          - python3-psycopg2
+        state: absent
+      become: true
+      when: not ostree | bool
+
+# - name: Uninstall common container components
+#   hosts: automationcontroller:automationeda:automationhub:database:execution_nodes
+#   gather_facts: false
+#   become: false
+#   tasks:
+#     - name: Uninstall podman
+#       ansible.builtin.import_role:
+#         name: common
+#         tasks_from: uninstall.yml
+...

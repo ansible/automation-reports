@@ -42,14 +42,15 @@ services:
       - DB_NAME=${DB_NAME}
       - ALLOWED_HOSTS=*
     ports:
-      - "8000:8000"
+      - "8080:8052"  # nginx
+      # - "8000:8000"  # django-api
 
-  frontend:
-    build:
-      context: ./
-      dockerfile: docker/Dockerfile.frontend
-    ports:
-      - "9000:8080"
+  # frontend:
+  #   build:
+  #     context: ./
+  #     dockerfile: docker/Dockerfile.backend
+  #   ports:
+  #     - "9000:8080"
 
 volumes:
   postgres-data:

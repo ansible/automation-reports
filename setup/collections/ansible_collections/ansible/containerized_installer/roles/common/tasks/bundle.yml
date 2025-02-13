@@ -35,11 +35,12 @@
   ansible.builtin.add_host:
     name: localhost
     groups:
-      - automationcontroller
-      - automationeda
-      - automationhub
+      # - automationcontroller
+      # - automationeda
+      # - automationhub
       - database
-      - execution_nodes
+      # - execution_nodes
+      - automationreporter
 
 - name: Include container image tasks
   ansible.builtin.include_tasks: images.yml

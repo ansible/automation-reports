@@ -1,0 +1,12 @@
+inventory
+aap_install.log
+bundle/
+
+!collections/
+collections/*
+!collections/ansible_collections/
+collections/ansible_collections/*
+!collections/ansible_collections/ansible/
+collections/ansible_collections/ansible/*
+!collections/ansible_collections/ansible/containerized_installer/
+

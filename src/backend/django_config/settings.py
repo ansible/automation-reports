@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 import sys
+import traceback
 from pathlib import Path
 
+from split_settings.tools import optional, include
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -178,3 +180,11 @@ CORS_ALLOWED_ORIGINS = [
 ]
 # CORS_ORIGIN_ALLOW_ALL = True
 
+# Load settings from REPORTER_SETTINGS_DIR
+settings_dir = os.environ.get('REPORTER_SETTINGS_DIR', '/etc/reporter/conf.d/')
+settings_files = os.path.join(settings_dir, '*.py')
+try:
+    include(optional(settings_files), scope=locals())
+except ImportError:
+    traceback.print_exc()
+    sys.exit(1)

@@ -44,4 +44,6 @@ hub_web_image: 'hub-web-rhel8:latest'
 postgresql_image: 'postgresql-{{ postgresql_version }}:latest'
 receptor_image: 'ee-supported-rhel8:latest'
 redis_image: 'redis-{{ redis_version }}:latest'
+reporter_image_be: 'aapreport-backend:latest'
+reporter_image_fe: 'aapreport-frontend:latest'
 ...

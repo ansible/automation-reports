@@ -1,0 +1,6 @@
+---
+- name: Create the rsyslog directory
+  ansible.builtin.file:
+    path: '{{ rsyslog_run_dir }}'
+    mode: '0770'
+    state: directory

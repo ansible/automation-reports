@@ -13,6 +13,9 @@
     _postgresql_image: '{{ registry_url }}/{{ registry_ns_rhel }}/{{ postgresql_image }}'
     _receptor_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ receptor_image }}'
     _redis_image: '{{ registry_url }}/{{ registry_ns_rhel }}/{{ redis_image }}'
+    _reporter_image_be: '{{ registry_url }}/{{ registry_ns_aap }}/{{ reporter_image_be }}'
+    _reporter_image_fe: '{{ registry_url }}/{{ registry_ns_aap }}/{{ reporter_image_fe }}'
+
   run_once: true
 
 - name: Add controller image to the list
@@ -49,6 +52,16 @@
   ansible.builtin.set_fact:
     _images: '{{ _images | default([]) | union([_postgresql_image]) }}'
   when: inventory_hostname in groups.get('database', [])
+
+- name: Add reporter backend image to the list
+  ansible.builtin.set_fact:
+    _images: '{{ _images | default([]) | union([_reporter_image_be]) }}'
+  when: inventory_hostname in groups.get('automationreporter', [])
+
+- name: Add reporter frontend image to the list
+  ansible.builtin.set_fact:
+    _images: '{{ _images | default([]) | union([_reporter_image_fe]) }}'
+  when: inventory_hostname in groups.get('automationreporter', [])
 
 - name: Add DE images to the list
   ansible.builtin.set_fact:

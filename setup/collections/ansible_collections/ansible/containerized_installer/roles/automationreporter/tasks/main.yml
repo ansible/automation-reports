@@ -1,0 +1,91 @@
+---
+- name: Set automation reporter facts
+  ansible.builtin.include_tasks: facts.yml
+
+- name: Create the reporter directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    mode: '0770'
+    state: directory
+  loop:
+    - '{{ reporter_conf_dir }}/conf.d'
+    # - '{{ reporter_data_dir }}/job_execution'
+    # - '{{ reporter_data_dir }}/projects'
+    # - '{{ reporter_data_dir }}/rsyslog'
+
+- name: Configure postgresql
+  ansible.builtin.include_tasks: postgresql.yml
+  args:
+    apply:
+      run_once: true
+
+- name: Configure TLS
+  ansible.builtin.include_tasks: tls.yml
+  when: not nginx_disable_https | bool
+
+- name: Configure nginx
+  ansible.builtin.include_tasks: nginx.yml
+
+# - name: Configure rsyslog
+#   ansible.builtin.include_tasks: rsyslog.yml
+
+- name: Configure supervisor
+  ansible.builtin.include_tasks: supervisor.yml
+
+- name: Configure podman secrets
+  ansible.builtin.include_tasks: secrets.yml
+
+# - name: Create the reporter configuration
+#   ansible.builtin.template:
+#     src: settings.py.j2
+#     dest: '{{ reporter_conf_dir }}/settings.py'
+#     mode: '0640'
+#   notify:
+#     - Restart reporter rsyslog
+#     - Restart reporter task
+#     - Restart reporter web
+
+- name: Create the reporter extra configurations
+  ansible.builtin.template:
+    src: '{{ item }}.py.j2'
+    dest: '{{ reporter_conf_dir }}/conf.d/{{ item }}.py'
+    mode: '0640'
+  loop:
+    - django_reporter_conf
+    # - cluster_host_id
+    # - container_groups
+    # - execution_environments
+    # - insights
+    # - subscription_usage_model
+  notify:
+    # - Restart reporter rsyslog
+    - Restart reporter task
+    - Restart reporter web
+
+- name: Create the reporter uwsgi configuration
+  ansible.builtin.template:
+    src: uwsgi.ini.j2
+    dest: '{{ reporter_conf_dir }}/uwsgi.ini'
+    mode: '0640'
+  notify: Restart reporter web
+
+- name: Create task/web custom command
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '{{ reporter_conf_dir }}/{{ item }}'
+    mode: '0755'
+  loop:
+    - launch_reporter_task.sh
+    - launch_reporter_web.sh
+
+- name: Configure containers
+  ansible.builtin.include_tasks: containers.yml
+
+- name: Configure systemd
+  ansible.builtin.include_tasks: systemd.yml
+
+- name: Add firewalld rules
+  ansible.builtin.include_tasks: firewalld.yml
+  vars:
+    __firewalld_state: enabled
+...

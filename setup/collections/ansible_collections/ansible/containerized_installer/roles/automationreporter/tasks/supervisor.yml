@@ -1,0 +1,6 @@
+---
+- name: Create the supervisor directory
+  ansible.builtin.file:
+    path: '{{ supervisor_run_dir }}'
+    mode: '0770'
+    state: directory
