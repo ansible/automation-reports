@@ -21,6 +21,9 @@ class Command(BaseCommand):
     help = "Clear db"
 
     def handle(self, *args, **options):
+        confirm = input('This will delete all data from data base. Are you sure? Y/n:')
+        if confirm != 'Y':
+            return
         print("Clearing db")
         Cluster.objects.all().delete()
         ClusterSyncData.objects.all().delete()

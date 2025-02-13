@@ -16,7 +16,7 @@ from backend.apps.clusters.models import (
     Host,
     JobHostSummary,
     Project
-    )
+)
 
 admin.site.register(Cluster)
 admin.site.register(ClusterSyncStatus)

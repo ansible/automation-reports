@@ -13,7 +13,6 @@ import os
 import sys
 from pathlib import Path
 
-import redis
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,7 +40,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'django_filters',
-    # 'django_dramatiq',
     'backend.apps.clusters'
 ]
 
@@ -95,6 +93,7 @@ DB_USER = os.environ['DB_USER']
 DB_PASSWORD = os.environ['DB_PASSWORD']
 DB_HOST = os.environ['DB_HOST']
 DB_PORT = os.environ['DB_PORT']
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING')
 
 DATABASES = {
     'default': {
@@ -110,15 +109,27 @@ DATABASES = {
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            'stream': sys.stdout
+            "stream": sys.stdout,
+            "formatter": "verbose",
         },
     },
     "root": {
         "handlers": ["console"],
-        "level": "WARNING",
+        "formatter": "verbose",
+        "level": LOG_LEVEL,
     },
 }
 

@@ -46,17 +46,22 @@ class DataParser:
             organization = (Organization.objects.
                             filter(external_id=external_id, cluster=self.cluster).first())
             if organization is None:
+                logger.info("No organization found, let's create new")
                 organization = (Organization.objects.
                                 create(external_id=external_id, cluster=self.cluster, **data))
+                logger.info("New organization created.")
             else:
+                logger.info("Organization already exists, updating.")
                 organization.name = data.pop("name")
                 organization.description = data.pop("description", "")
                 organization.save()
+                logger.info("Organization updated.")
             return organization
         return None
 
     @property
     def job_template(self) -> JobTemplate:
+        logger.info("Getting job template for cluster: {}".format(self.cluster))
         external_job_template = self.data.summary_fields.job_template
         template_name = external_job_template.name if external_job_template else self.data.name
         template_description = external_job_template.description if external_job_template else self.data.description
@@ -67,51 +72,65 @@ class DataParser:
         else:
             job_template = JobTemplate.objects.filter(cluster=self.cluster, name=template_name).first()
         if job_template is None:
+            logger.info("No job template found, let's create new")
             job_template = JobTemplate.objects.create(cluster=self.cluster, external_id=external_id, name=template_name, description=template_description)
+            logger.info("New job template created.")
         else:
+            logger.info("Job template already exists, updating.")
             job_template.description = template_description
             job_template.name = template_name
             job_template.external_id = external_id if external_id > 0 else job_template.external_id
             job_template.save()
-
+            logger.info("Job template updated.")
         job_template.save()
 
         return job_template
 
     @property
     def launched_by(self) -> AAPUser | None:
+        logger.info("Getting AAP user for cluster: {}".format(self.cluster))
         external_launched_by = self.data.launched_by
         if external_launched_by is not None:
             data = external_launched_by.model_dump()
             external_id = data.pop("id")
             launched_by = AAPUser.objects.filter(cluster=self.cluster, external_id=external_id).first()
             if launched_by is None:
+                logger.info("No AAP user, let's create new")
                 launched_by = AAPUser.objects.create(cluster=self.cluster, external_id=external_id, **data)
+                logger.info("New AAP user created.")
             else:
+                logger.info("AAP user already exists, updating.")
                 launched_by.name = data.pop("name")
                 launched_by.type = data.pop("type")
                 launched_by.save()
+                logger.info("AAP user updated.")
             return launched_by
         return None
 
     @property
     def inventory(self):
+        logger.info("Getting inventory for cluster: {}".format(self.cluster))
         external_inventory = self.data.summary_fields.inventory
         if external_inventory is not None:
             data = external_inventory.model_dump()
             external_id = data.pop("id")
             inventory = Inventory.objects.filter(cluster=self.cluster, external_id=external_id).first()
             if inventory is None:
+                logger.info("No inventory found, let's create new")
                 inventory = Inventory.objects.create(cluster=self.cluster, external_id=external_id, **data)
+                logger.info("New inventory created.")
             else:
+                logger.info("Inventory already exists, updating.")
                 inventory.name = data.pop("name")
                 inventory.description = data.pop("description", "")
                 inventory.save()
+                logger.info("Inventory updated.")
             return inventory
         return None
 
     @property
     def execution_environment(self) -> ExecutionEnvironment | None:
+        logger.info("Getting execution environment for cluster: {}".format(self.cluster))
         external_execution_environment = self.data.summary_fields.execution_environment
         if external_execution_environment is not None:
             data = external_execution_environment.model_dump()
@@ -122,27 +141,36 @@ class DataParser:
                 cluster=self.cluster,
                 external_id=external_id).first())
             if execution_environment is None:
+                logger.info("No execution environment found, let's create new")
                 execution_environment = ExecutionEnvironment.objects.create(cluster=self.cluster, external_id=external_id, **data)
+                logger.info("New execution environment created.")
             else:
+                logger.info("Execution environment already exists, updating.")
                 execution_environment.name = data.pop("name")
                 execution_environment.description = data.pop("description", "")
                 execution_environment.save()
+                logger.info("Execution environment updated.")
             return execution_environment
         return None
 
     @property
     def instance_group(self):
+        logger.info("Getting instance group for cluster: {}".format(self.cluster))
         external_instance_group = self.data.summary_fields.instance_group
         if external_instance_group is not None:
             data = external_instance_group.model_dump()
             external_id = data.pop("id")
             instance_group = InstanceGroup.objects.filter(cluster=self.cluster, external_id=external_id).first()
             if instance_group is None:
+                logger.info("No instance group found, let's create new")
                 instance_group = InstanceGroup.objects.create(cluster=self.cluster, external_id=external_id, **data)
+                logger.info("New instance group created.")
             else:
+                logger.info("Instance group already exists, updating.")
                 instance_group.name = data.pop("name")
                 instance_group.is_container_group = data.pop("is_container_group", False)
-            instance_group.save()
+                instance_group.save()
+                logger.info("New instance group created.")
             return instance_group
         return None
 
@@ -151,14 +179,19 @@ class DataParser:
         external_id = external_label.id
         label = Label.objects.filter(cluster=self.cluster, external_id=external_id).first()
         if label is None:
+            logger.info("No label found, let's create new")
             label = Label.objects.create(cluster=self.cluster, external_id=external_id, name=name)
+            logger.info("New label created.")
         else:
+            logger.info("Label already exists, updating.")
             label.name = name
             label.save()
+            logger.info("Label updated.")
         return label
 
     @property
     def labels(self):
+        logger.info("Getting labels.")
         external_labels = self.data.summary_fields.labels
         if external_labels is None or external_labels.count == 0:
             external_labels = LabelsSchema(**{
@@ -170,18 +203,23 @@ class DataParser:
 
     @property
     def project(self):
+        logger.info("Getting project for cluster: {}".format(self.cluster))
         external_project = self.data.summary_fields.project
         if external_project is not None:
             data = external_project.model_dump()
             external_id = data.pop("id")
             project = Project.objects.filter(cluster=self.cluster, external_id=external_id).first()
             if project is None:
+                logger.info("No project found, let's create new")
                 project = Project.objects.create(cluster=self.cluster, external_id=external_id, **data)
+                logger.info("New project created.")
             else:
+                logger.info("Project already exists, updating.")
                 project.name = data.pop("name")
                 project.description = data.pop("description", "")
                 project.scm_type = data.pop("scm_type", "")
                 project.save()
+                logger.info("Project updated.")
             return project
         return None
 
@@ -196,17 +234,22 @@ class DataParser:
             db_host = Host.objects.filter(cluster=self.cluster, name=host_name).first()
 
         if db_host is None:
+            logger.info("No host found, let's create new")
             db_host = Host.objects.create(cluster=self.cluster, external_id=external_id, name=name, description=description)
+            logger.info("New host created.")
         else:
+            logger.info("Host already exists, updating.")
             db_host.name = name
             db_host.description = description
             db_host.external_id = external_id if external_id > 0 else db_host.external_id
             db_host.save()
+            logger.info("Host updated.")
 
         return db_host
 
     @property
     def host_summaries(self):
+        logger.info("Getting host summaries.")
         external_host_summaries = self.data.host_summaries
         if not external_host_summaries:
             external_host_summaries = []
@@ -242,6 +285,7 @@ class DataParser:
         with transaction.atomic():
             job = Job.objects.filter(cluster=self.cluster, external_id=external_id).first()
             if job is None:
+                logger.info("No job found, let's create new")
                 job = Job.objects.create(
                     cluster=self.cluster,
                     external_id=external_id,
@@ -255,6 +299,7 @@ class DataParser:
                     **job_data
                 )
             else:
+                logger.info("Job already exists, updating.")
                 job.type = job_data.pop("type")
                 job.job_type = job_data.pop("job_type")
                 job.launch_type = job_data.pop("launch_type")
@@ -267,18 +312,22 @@ class DataParser:
                 job.job_template = job_template
                 job.launched_by = launched_by
                 job.project = project
-            job.save()
+                job.save()
+                logger.info("Job updated.")
 
             db_job_labels = {label.label_id: label for label in JobLabel.objects.filter(job=job)}
 
             for label in self.labels:
                 db_label = db_job_labels.pop(label.id, None)
                 if db_label is None:
+                    logger.info("Creating new job label.")
                     JobLabel.objects.create(job=job, label=label)
 
             for key, value in db_job_labels.items():
+                logger.info("Deleting old job label(s).")
                 value.delete()
 
+            logger.info("Deleting job host summary(s).")
             JobHostSummary.objects.filter(job=job).delete()
 
             num_hosts = 0
@@ -293,6 +342,7 @@ class DataParser:
             rescued_hosts_count = 0
 
             for host_summary in self.host_summaries:
+                logger.info("Processing host summary.")
                 num_hosts += 1
                 changed_hosts_count += host_summary.get("changed", 0)
                 dark_hosts_count += host_summary.get("dark", 0)
@@ -303,8 +353,10 @@ class DataParser:
                 failed_hosts_count += 1 if host_summary.get("failed", True) is False else 0
                 ignored_hosts_count += host_summary.get("ignored", 0)
                 rescued_hosts_count += host_summary.get("rescued", 0)
+                logger.info("Creating new host summary.")
                 JobHostSummary.objects.create(job=job, **host_summary)
 
+            logger.info("Processing summaries.")
             job.num_hosts = num_hosts
             job.changed_hosts_count = changed_hosts_count
             job.dark_hosts_count = dark_hosts_count
@@ -315,6 +367,9 @@ class DataParser:
             job.failed_hosts_count = failed_hosts_count
             job.ignored_hosts_count = ignored_hosts_count
             job.rescued_hosts_count = rescued_hosts_count
+
+            logger.info("Updating job with summaries.")
             job.save()
 
+            logger.info("Finished processing and deleting record.")
             self.model.delete()

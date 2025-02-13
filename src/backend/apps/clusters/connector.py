@@ -1,13 +1,15 @@
 import datetime
+import logging
+import os
 from abc import ABC
-from datetime import timedelta
+from urllib.parse import urlsplit
+
+import requests
+from crontab import CronTab
 from django.db import transaction
 
 from backend.apps.clusters.models import ClusterSyncData, ClusterSyncStatus
 from backend.apps.clusters.schemas import ClusterSchema
-import requests
-import logging
-from urllib.parse import urlsplit
 
 logger = logging.getLogger("automation-reports")
 
@@ -41,7 +43,10 @@ class ApiConnector(ABC):
             elif self.cluster_sync_data.last_job_finished_date is not None and self.managed is False:
                 self.since = self.cluster_sync_data.last_job_finished_date
             else:
-                self.since = (datetime.datetime.now() - timedelta(hours=4)).astimezone(datetime.timezone.utc)
+                now = datetime.datetime.now(datetime.timezone.utc)
+                cron_entry = os.environ.get("CRON_SYNC", "0 */4 * * *")
+                entry = CronTab(cron_entry)
+                self.since = entry.previous(now=now, default_utc=True, return_datetime=True)
 
     @property
     def headers(self):
@@ -104,7 +109,7 @@ class ApiConnector(ABC):
         parameters = ""
         if self.since is not None:
             since = self.since.isoformat().replace('+00:00', 'Z')
-            parameters += f'&finished__gte={since}'
+            parameters += f'&finished__gt={since}'
         if self.until is not None:
             until = self.until.isoformat().replace('+00:00', 'Z')
             parameters += f'&finished__lte={until}'
@@ -127,25 +132,31 @@ class ApiConnector(ABC):
         self.timeout = 3
         ping = self.ping
         if ping is None:
-            logger.error(f'Cluster {self.base_url} is not reachable.')
-            return
+            logger.info(f'Cluster {self.base_url} is not reachable.')
+            raise Exception(f'Cluster {self.base_url} is not reachable.')
         self.timeout = time_out
         for job in self.jobs:
+            logger.info("Checking status of job %s", job)
             job_id = job.get("id", None)
             finished = job.get("finished", None)
 
             if job_id is None or finished is None:
+                logger.warning(f"Missing id or finished date time in job: {job}", )
                 continue
             try:
                 finished = datetime.datetime.fromisoformat(finished).astimezone(datetime.timezone.utc)
             except ValueError:
-                raise TypeError(f"finished must be of type datetime.datetime")
+                raise TypeError(f"finished must be of type datetime.datetime job: {finished}")
+
             job["host_summaries"] = []
+
+            logger.info(f"Job {job_id} retrieving host summaries.")
 
             for host_summary in self.job_host_summaries(job_id):
                 job["host_summaries"].append(host_summary)
 
             with transaction.atomic():
+                logger.info(f"Job {job_id} saving data.")
                 self.cluster_sync_data.last_job_finished_date = finished
                 self.cluster_sync_data.save()
                 ClusterSyncData.objects.create(cluster=self.cluster, data=job)
