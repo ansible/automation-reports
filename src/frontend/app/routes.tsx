@@ -19,9 +19,7 @@ export interface IAppRouteGroup {
   routes: IAppRoute[];
 }
 
-export type AppRouteConfig = IAppRoute | IAppRouteGroup;
-
-const routes: AppRouteConfig[] = [
+const routes: IAppRoute[] = [
   {
     element: <Dashboard />,
     exact: true,
@@ -31,16 +29,11 @@ const routes: AppRouteConfig[] = [
   },
 ];
 
-const flattenedRoutes: IAppRoute[] = routes.reduce(
-  (flattened, route) => [...flattened, ...(route.routes ? route.routes : [route])],
-  [] as IAppRoute[],
-);
-
 const AppRoutes = (): React.ReactElement => (
   <ParamsContextProvider>
     <Routes>
-      {flattenedRoutes.map(({ path, element }, idx) => (
-        <Route path={path} element={element} key={idx} />
+      {routes.map((route: IAppRoute, index: number) => (
+        <Route path={route.path} element={route.element} key={index} />
       ))}
       <Route path="*" element={<Dashboard />} />
     </Routes>

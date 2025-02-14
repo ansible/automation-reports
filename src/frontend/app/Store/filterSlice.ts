@@ -24,7 +24,7 @@ const initialState: FilterState = {
   organizationOptions: [],
   instanceOptions: [],
   loading: 'idle',
-  error: null,
+  error: false,
 };
 
 export const filterSlice = createSlice({
@@ -49,7 +49,7 @@ export const filterSlice = createSlice({
       })
       .addCase(fetchTemplateOptions.rejected, (state, action) => {
         state.loading = 'failed';
-        state.error = action.error.message;
+        state.error = true;
       });
   },
 });
@@ -64,6 +64,7 @@ export const labelOptions = (state: RootState) => state.filters.labelOptions;
 export const dateRangeOptions = (state: RootState) => state.filters.dateRangeOptions;
 export const manualCostAutomation = (state: RootState) => state.filters.manualCostAutomation;
 export const automatedProcessCost = (state: RootState) => state.filters.automatedProcessCost;
+export const filterRetrieveError = (state: RootState) => state.filters.error;
 
 export const filterChoicesData = createSelector(
   [instanceOptions, templateOptions, organizationOptions, labelOptions],

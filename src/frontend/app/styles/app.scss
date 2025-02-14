@@ -105,3 +105,26 @@ input {
     outline: none;
   }
 }
+
+.loader,
+.error {
+  background: var(--pf-t--global--background--color--secondary--default);
+  position: fixed;
+  left: 0;
+  top: 70px;
+  height: calc(100vh - 70px);
+  width: 100%;
+  z-index: 500;
+  opacity: 0.6;
+  display: flex;
+  .spinner {
+    margin: 350px auto auto auto;
+  }
+}
+
+.error {
+  opacity: 1;
+  .pf-v6-c-empty-state {
+    margin: 350px auto auto auto;
+  }
+}

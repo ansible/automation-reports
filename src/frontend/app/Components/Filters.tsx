@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Button,
+  Label,
   LabelGroup,
   Split,
   SplitItem,
@@ -16,12 +17,13 @@ import {
   filterChoicesDataById,
   filterOptions,
   filterOptionsById,
+  filterRetrieveError,
 } from '@app/Store';
-import { Label } from '@patternfly/react-core/src/components/Label';
+
 import { MultiChoiceDropdown } from '@app/Components/MultiChoiceDropdown';
 import { BaseDropdown } from '@app/Components/BaseDropdown';
 import { DateRangePicker } from '@app/Components/DateRangePicker';
-import { FilterOption, UrlParams } from '@app/Types';
+import { FilterOption } from '@app/Types';
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
 import { FormEvent, useRef } from 'react';
 import '../styles/filters.scss';
@@ -54,6 +56,7 @@ export const Filters: React.FunctionComponent = () => {
   });
   const context = React.useContext(ParamsContext);
   const pageLoaded: React.RefObject<boolean> = useRef(false);
+  const error = useAppSelector(filterRetrieveError);
 
   if (!context) {
     throw new Error('Filters must be used within a ParamsProvider');
@@ -294,7 +297,7 @@ export const Filters: React.FunctionComponent = () => {
 
   return (
     <div className={'filters'}>
-      <React.Fragment>{toolBar}</React.Fragment>
+      <React.Fragment>{!error && toolBar}</React.Fragment>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { BaseTable } from '../Components/BaseTable';
-import { Card, CardBody, Flex, FlexItem, Form, FormGroup, Icon, Tooltip } from '@patternfly/react-core';
+import { Card, CardBody, Flex, FlexItem, Form, FormGroup, Icon, Spinner, Tooltip } from '@patternfly/react-core';
 import { DashboardTotals } from './DashboardTotals';
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import { CustomInput } from '@app/Components/CustomInput';
@@ -92,6 +92,11 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
     <>
       <Card className="dashboard-table">
         <CardBody>
+          {props.loading && (
+            <div className={'table-loader'}>
+              <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />
+            </div>
+          )}
           <Flex className="pf-v6-u-mb-2xl details-row">
             <Flex>
               <FlexItem>
