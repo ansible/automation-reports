@@ -58,8 +58,10 @@ ENV LC_ALL=en_US.UTF-8
 
 # https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/building_running_and_managing_containers/assembly_adding-software-to-a-ubi-container_building-running-and-managing-containers#proc_adding-software-in-a-standard-ubi-container_assembly_adding-software-to-a-ubi-container
 RUN microdnf install tar
-COPY docker/run-secrets.tar /
-RUN tar -xvf /run-secrets.tar
+COPY docker/run-secrets.tar* /
+RUN if [ -f /run-secrets.tar ]; then tar -xvf /run-secrets.tar; fi
+# check subscription is present
+RUN ls -al /run/secrets/rhsm/ /run/secrets/rhsm/syspurpose/ /run/secrets/redhat.repo /run/secrets/etc-pki-entitlement/
 
 #RUN microdnf -y module enable 'nginx:1.22' 'postgresql:15' 'redis:6' \
 RUN microdnf -y module enable 'nginx:1.22' \

@@ -45,6 +45,7 @@ class Command(BaseCommand):
         error = False
         with transaction.atomic():
             for cluster in yaml_clusters:
+                self.stdout.write(self.style.NOTICE('Adding cluster: address={}'.format(cluster.get("address"))))
                 try:
                     new_cluster = ClusterSchema(**cluster)
                 except pydantic.ValidationError as ex:

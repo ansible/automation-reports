@@ -1,0 +1,28 @@
+[automationreporter]
+aap24_reports.novalocal ansible_connection=local
+[automationreporter:vars]
+# force clean install-like
+# reporter_update_secret=true
+# TEMP
+# nginx_disable_https=true
+
+[database]
+aap24_reports.novalocal ansible_connection=local
+
+[all:vars]
+postgresql_admin_username=postgres
+postgresql_admin_password=TODO
+registry_username=
+registry_password=
+
+# AAP Reporter - mandatory
+# --------------------------
+reporter_admin_password=TODO
+reporter_pg_host=aap24_reports.novalocal
+reporter_pg_password=TODO
+
+# test bundle
+# ansible-playbook -i inventory ansible.containerized_installer.reporter_bundle # to generate ./bundle
+bundle_install=true
+# <full path to the bundle directory>
+bundle_dir=/devel/automation-reports/setup/bundle
