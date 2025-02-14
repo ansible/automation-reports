@@ -15,14 +15,22 @@ const fetchTemplateOptions = async () => {
   return api.get('api/v1/template_options/');
 };
 
-const fetchReports = async (params: UrlParams): Promise<TableResponse> => {
+const fetchReports = async (signal: AbortSignal, params: UrlParams): Promise<TableResponse> => {
   const queryString = buildQueryString(params);
-  return api.get(`api/v1/report/${queryString}`).then((response) => response.data);
+  return api
+    .get(`api/v1/report/${queryString}`, {
+      signal: signal,
+    })
+    .then((response) => response.data);
 };
 
-const fetchReportDetails = async (params: UrlParams): Promise<ReportDetail> => {
+const fetchReportDetails = async (signal: AbortSignal, params: UrlParams): Promise<ReportDetail> => {
   const queryString = buildQueryString(params);
-  return api.get(`api/v1/report/details/${queryString}`).then((response) => response.data);
+  return api
+    .get(`api/v1/report/details/${queryString}`, {
+      signal: signal,
+    })
+    .then((response) => response.data);
 };
 
 const updateCosts = async (payload) => {

@@ -36,5 +36,5 @@ export interface FilterState {
   manualCostAutomation: number | string;
   organizationOptions: FilterOption[];
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
-  error: string | null | undefined;
+  error: boolean;
 }

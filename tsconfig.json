@@ -22,13 +22,13 @@
       "@assets/*": ["node_modules/@patternfly/react-core/dist/styles/assets/*"]
     },
     "importHelpers": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.jsx",
-    "**/*.js"
+    "./src/frontend/**/*.ts",
+    "./src/frontend/**/*.tsx",
+    "./src/frontend/**/*.jsx",
+    "./src/frontend/**/*.js"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules",]
 }

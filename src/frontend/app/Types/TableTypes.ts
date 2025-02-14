@@ -64,6 +64,7 @@ export type DashboardTableProps = {
   totalSaving: ValueIndex;
   costOfManualAutomation: ValueIndex;
   costOfAutomatedExecution: ValueIndex;
+  loading: boolean;
 };
 
 export type TopUser = {
