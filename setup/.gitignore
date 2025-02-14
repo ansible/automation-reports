@@ -1,6 +1,7 @@
 inventory
 aap_install.log
 bundle/
+clusters.example.yaml
 
 !collections/
 collections/*
