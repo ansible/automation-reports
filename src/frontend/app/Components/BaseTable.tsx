@@ -95,7 +95,7 @@ export const BaseTable: React.FunctionComponent<{
                 {props.columns.map((column) => (
                   <Td
                     key={`${rowNum}-${column.name}`}
-                    dataLabel={column['name']}
+                    dataLabel={column['title']}
                     style={{
                       maxWidth: '300px',
                       width: '300px',

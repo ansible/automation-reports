@@ -28,8 +28,9 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
         <CardBody>
           <div className={`chart-wrap ${chartData.items.length === 0 && 'no-data'}`}>
             <Chart
-              ariaDesc="Average number of pets"
-              ariaTitle="Bar chart example"
+              height={250}
+              ariaDesc="Number of hosts jobs are running on"
+              ariaTitle="Number of hosts jobs are running on"
               containerComponent={
                 <ChartVoronoiContainer
                   labels={({ datum }) => `${datum.x}: ${datum.y}`}
@@ -38,9 +39,6 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
                 />
               }
               domainPadding={{ x: [30, 25] }}
-              legendData={[{ name: 'items' }]}
-              legendOrientation="vertical"
-              legendPosition="right"
               name="chart4"
               padding={{
                 bottom:
@@ -53,16 +51,16 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
               <ChartAxis
                 style={{
                   tickLabels: {
-                    fontSize: 6,
+                    fontSize: props.loading ? 0 : 6,
                     angle: chartData.items.length > 11 ? -45 : 0,
-                    textAnchor: 'end',
+                    verticalAnchor: 'middle',
                   },
                 }}
               />
               <ChartAxis tickValues={chartData.tickValues} dependentAxis style={{ tickLabels: { fontSize: 6 } }} />
-              {chartData.items.length > 0 && (
+              {!props.loading && chartData.items.length > 0 && (
                 <ChartGroup>
-                  <ChartBar data={chartData.items} />
+                  <ChartBar alignment={'start'} data={chartData.items} animate={{ duration: 500, delay: 1 }} />
                 </ChartGroup>
               )}
             </Chart>

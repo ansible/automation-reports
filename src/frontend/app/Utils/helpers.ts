@@ -1,7 +1,7 @@
 import { ChartData, ChartRange } from '@app/Types';
 import { isDigit } from 'json5/lib/util';
 
-export const listToDict = (list: object[], key: string = 'key'): Record<string | number, object> => {
+export const listToDict = (list: object[], key: string = 'key'): Record<string | number, object> | {} => {
   return list?.length
     ? list.reduce((map: Record<string | number, object>, item: object) => {
         const _key = item?.[key];

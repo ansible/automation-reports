@@ -5,7 +5,7 @@ import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Text/text.css';
 import '@patternfly/react-styles/css/utilities/Flex/flex.css';
-import { Grid, GridItem } from '@patternfly/react-core';
+import { Grid, GridItem, Spinner } from '@patternfly/react-core';
 import { DashboardLineChart } from './DashboardLineChart';
 import { DashboardBarChart } from './DashboardBarChart';
 import { DashboardTable } from './DashboardTable';
@@ -17,6 +17,9 @@ import { deepClone } from '@app/Utils';
 import { DashboardTopTableColumn, ReportDetail, TableResponse, TableResult, UrlParams } from '@app/Types';
 import { DashboardTopTable } from '@app/Dashboard/DashboardTopTable';
 import { useRef } from 'react';
+import { useAppSelector } from '@app/hooks';
+import { filterRetrieveError } from '@app/Store';
+import ErrorState from '@patternfly/react-component-groups/dist/dynamic/ErrorState';
 
 const Dashboard: React.FunctionComponent = () => {
   const context = React.useContext(ParamsContext);
@@ -24,45 +27,72 @@ const Dashboard: React.FunctionComponent = () => {
     throw new Error('Filters must be used within a ParamsProvider');
   }
   const { params } = context;
-
+  const filterError = useAppSelector(filterRetrieveError);
   const [tableData, setTableData] = React.useState<TableResponse>({ count: 0, results: [] } as TableResponse);
   const [detailData, setDetailData] = React.useState<ReportDetail>({} as ReportDetail);
   const [loadDataError, setLoadDataError] = React.useState<boolean>(false);
-
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [tableLoading, setTableLoading] = React.useState<boolean>(true);
   const prevParams: React.RefObject<UrlParams> = useRef({} as UrlParams);
 
-  const fetchServerReportDetails = async () => {
+  const handelError = (error: unknown) => {
+    if (error?.['name'] !== 'CanceledError') {
+      setLoadDataError(true);
+    }
+  };
+
+  const fetchServerReportDetails = async (signal: AbortSignal) => {
     const queryParams = deepClone(params);
     delete queryParams['page'];
     delete queryParams['page_size'];
     delete queryParams['ordering'];
     let response: ReportDetail;
     try {
-      response = await RestService.fetchReportDetails(queryParams);
+      response = await RestService.fetchReportDetails(signal, queryParams);
       setDetailData(response);
-    } catch {
-      setLoadDataError(true);
+    } catch (e) {
+      handelError(e);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchServerTableData = async (fetchDetails: boolean = true) => {
+  const fetchServerTableData = async (
+    signal: AbortSignal | undefined = undefined,
+    fetchDetails: boolean = true,
+    useLoader: boolean = true,
+  ) => {
+    if (!signal) {
+      const ctrl = new AbortController();
+      signal = ctrl.signal;
+    }
     if ((!params.date_range || params.date_range === 'custom') && (!params?.start_date || !params?.end_date)) {
       return;
+    }
+
+    if (useLoader) {
+      setLoading(true);
     }
     const queryParams = deepClone(params);
     let tableResponse: TableResponse;
     try {
-      tableResponse = await RestService.fetchReports(queryParams);
+      tableResponse = await RestService.fetchReports(signal, queryParams);
       setTableData(tableResponse);
-    } catch {
-      setLoadDataError(true);
+    } catch (e) {
+      handelError(e);
+    } finally {
+      setTableLoading(false);
+      if (!fetchDetails) {
+        setLoading(false);
+      }
     }
     if (fetchDetails) {
-      await fetchServerReportDetails();
+      await fetchServerReportDetails(signal);
     }
   };
 
   React.useEffect(() => {
+    const controller = new AbortController();
     let fetchDetail = false;
     for (const [key, value] of Object.entries(params)) {
       if (!key || key === 'page' || key === 'page_size' || key === 'ordering') {
@@ -73,27 +103,32 @@ const Dashboard: React.FunctionComponent = () => {
         break;
       }
     }
-    fetchServerTableData(fetchDetail).then();
+    fetchServerTableData(controller.signal, fetchDetail).then();
     prevParams.current = params;
+    return () => {
+      controller.abort();
+    };
   }, [params]);
 
   const costChanged = (type: string, value: number) => {
+    setTableLoading(true);
     RestService.updateCosts({ type: type, value: value })
       .then(() => {
-        fetchServerTableData().then();
+        fetchServerTableData(undefined, true, false).then();
       })
-      .catch(() => {
-        setLoadDataError(true);
+      .catch((e) => {
+        handelError(e);
       });
   };
 
   const onItemEdit = (value: number, item: TableResult) => {
+    setTableLoading(true);
     RestService.updateTemplate(item.job_template_id, value)
       .then(() => {
-        fetchServerTableData().then();
+        fetchServerTableData(undefined, true, false).then();
       })
-      .catch(() => {
-        setLoadDataError(true);
+      .catch((e) => {
+        handelError(e);
       });
   };
 
@@ -104,7 +139,7 @@ const Dashboard: React.FunctionComponent = () => {
     },
     {
       name: 'count',
-      title: 'Total time of running jobs',
+      title: 'Total number of running jobs',
     },
   ];
 
@@ -115,7 +150,7 @@ const Dashboard: React.FunctionComponent = () => {
     },
     {
       name: 'count',
-      title: 'Total time of running jobs',
+      title: 'Total number of running jobs',
     },
   ];
 
@@ -127,8 +162,24 @@ const Dashboard: React.FunctionComponent = () => {
           'Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.'
         }
       ></Header>
-      {!loadDataError && (
+      {(loadDataError || filterError) && (
+        <div className={'error'}>
+          <ErrorState
+            titleText="Something went wrong"
+            bodyText="Please contact your system administrator."
+            customFooter="&nbsp;"
+            headingLevel={'h1'}
+            variant={'full'}
+          />
+        </div>
+      )}
+      {!loadDataError && !filterError && (
         <div className={'main-layout'}>
+          {loading && (
+            <div className={'loader'}>
+              <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />
+            </div>
+          )}
           <Filters></Filters>
           <div>
             <Grid hasGutter>
@@ -140,6 +191,7 @@ const Dashboard: React.FunctionComponent = () => {
                       value={detailData?.total_number_of_job_runs?.value}
                       index={detailData?.total_number_of_job_runs?.index}
                       chartData={detailData.job_chart}
+                      loading={loading}
                     ></DashboardLineChart>
                   </GridItem>
                   <GridItem className="pf-m-12-col pf-m-6-col-on-md" style={{ height: '100%' }}>
@@ -147,6 +199,7 @@ const Dashboard: React.FunctionComponent = () => {
                       value={detailData?.total_number_of_host_job_runs?.value}
                       index={detailData?.total_number_of_host_job_runs?.index}
                       chartData={detailData?.host_chart}
+                      loading={loading}
                     ></DashboardBarChart>
                   </GridItem>
                 </Grid>
@@ -184,6 +237,7 @@ const Dashboard: React.FunctionComponent = () => {
               costOfAutomatedExecution={detailData.cost_of_automated_execution}
               costOfManualAutomation={detailData.cost_of_manual_automation}
               onItemEdit={onItemEdit}
+              loading={tableLoading}
             ></DashboardTable>
           </div>
         </div>

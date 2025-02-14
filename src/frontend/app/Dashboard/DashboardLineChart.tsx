@@ -26,6 +26,7 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
         <CardBody style={{ width: '100%' }}>
           <div className={`chart-wrap ${chartData.items.length === 0 && 'no-data'}`}>
             <Chart
+              height={250}
               ariaDesc="Number of times jobs were run"
               ariaTitle="Number of times jobs were run"
               minDomain={{ y: 0 }}
@@ -49,12 +50,13 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
               <ChartAxis
                 style={{
                   tickLabels: {
-                    fontSize: 6,
+                    fontSize: props.loading ? 0 : 6,
                     angle: chartData.items.length > 11 ? -45 : 0,
                     textAnchor: 'end',
                   },
                 }}
               />
+
               <ChartAxis
                 dependentAxis
                 tickValues={chartData.tickValues}
@@ -64,9 +66,10 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
                   },
                 }}
               />
-              {chartData?.items?.length && (
+
+              {!props.loading && chartData?.items?.length && (
                 <ChartGroup>
-                  <ChartLine data={chartData.items} />
+                  <ChartLine interpolation="monotoneX" data={chartData.items} animate={{ duration: 500, delay: 1 }} />
                 </ChartGroup>
               )}
             </Chart>

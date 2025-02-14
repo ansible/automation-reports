@@ -6,11 +6,13 @@
       }
     }
   }
+
   .pf-v6-c-table__tbody {
     .pf-v6-c-table__tr {
       &:last-child {
         border-bottom: none;
       }
+
       .pf-v6-c-table__td {
         padding: 8px 16px;
       }
@@ -20,23 +22,44 @@
 
 .simple-table-card {
   height: inherit;
+
   .pf-v6-c-card__body {
     h2 {
       padding-bottom: 14px;
     }
+
     padding: 20px;
   }
 }
 
 .dashboard-table {
   border: 1px solid #c7c7c7;
+
   .details-row {
     gap: 24px 90px;
+
     .cards-gap {
       gap: 24px 100px;
     }
   }
+
   &:before {
     border: none;
+  }
+}
+
+.table-loader {
+  position: absolute;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  opacity: 0.5;
+  display: flex;
+
+  .spinner {
+    margin: auto;
   }
 }

@@ -28,7 +28,7 @@ export const SimpleTable: React.FunctionComponent<TableProps> = (props) => {
             props.data.map((item, rowNum) => (
               <Tr key={rowNum}>
                 {props.columns.map((column) => (
-                  <Td key={item[column.name]} dataLabel={column['name']}>
+                  <Td key={item[column.name]} dataLabel={column['title']}>
                     {item[column.name]}
                   </Td>
                 ))}
