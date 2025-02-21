@@ -38,7 +38,7 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
                   labelComponent={<ChartTooltip style={{ fontSize: 6 }} />}
                 />
               }
-              domainPadding={{ x: [30, 25] }}
+              domain={{ x: [0, chartData.items.length + 1] }}
               name="chart4"
               padding={{
                 bottom:
@@ -60,7 +60,15 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
               <ChartAxis tickValues={chartData.tickValues} dependentAxis style={{ tickLabels: { fontSize: 6 } }} />
               {!props.loading && chartData.items.length > 0 && (
                 <ChartGroup>
-                  <ChartBar alignment={'start'} data={chartData.items} animate={{ duration: 500, delay: 1 }} />
+                  <ChartBar
+                    cornerRadius={{ bottomLeft: 0, bottomRight: 0, topLeft: 2, topRight: 2 }}
+                    barWidth={(x) => {
+                      return x?.data?.length && x.data.length <= 6 ? 50 : 10;
+                    }}
+                    alignment={'middle'}
+                    data={chartData.items}
+                    animate={{ onLoad: { duration: 1 }, duration: 500 }}
+                  />
                 </ChartGroup>
               )}
             </Chart>
