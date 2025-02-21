@@ -31,6 +31,7 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
               ariaTitle="Number of times jobs were run"
               minDomain={{ y: 0 }}
               maxDomain={{ y: chartData.maxValue }}
+              domain={{ x: [0, chartData.items.length + 1] }}
               containerComponent={
                 <ChartVoronoiContainer
                   labels={({ datum }) => `${datum?.x}: ${datum?.y}`}
@@ -52,7 +53,7 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
                   tickLabels: {
                     fontSize: props.loading ? 0 : 6,
                     angle: chartData.items.length > 11 ? -45 : 0,
-                    textAnchor: 'end',
+                    textAnchor: 'middle',
                   },
                 }}
               />
@@ -69,7 +70,11 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
 
               {!props.loading && chartData?.items?.length && (
                 <ChartGroup>
-                  <ChartLine interpolation="monotoneX" data={chartData.items} animate={{ duration: 500, delay: 1 }} />
+                  <ChartLine
+                    interpolation="monotoneX"
+                    data={chartData.items}
+                    animate={{ onLoad: { duration: 1 }, duration: 500 }}
+                  />
                 </ChartGroup>
               )}
             </Chart>
