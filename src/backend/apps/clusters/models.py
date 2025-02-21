@@ -369,8 +369,8 @@ class JobLabel(CreatUpdateModel):
 
 class JobHostSummary(CreatUpdateModel):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='host_summary')
-    host = models.ForeignKey(Host, on_delete=models.CASCADE, related_name="jobs")
-    host_name = models.CharField(max_length=255)
+    host = models.ForeignKey(Host, on_delete=models.CASCADE, related_name="jobs", null=True)
+    host_name = models.CharField(max_length=255, null=True, blank=True)
     changed = models.IntegerField(default=0)
     dark = models.IntegerField(default=0)
     failures = models.IntegerField(default=0)
