@@ -73,6 +73,7 @@ export const Filters: React.FunctionComponent = () => {
     if (pageLoaded.current) {
       execute().then();
     }
+    execute().then();
     pageLoaded.current = true;
   }, []);
 
