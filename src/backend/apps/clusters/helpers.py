@@ -310,6 +310,8 @@ def get_unique_host_count(options):
         labels_qs = JobLabel.objects.filter(label_id__in=options["label"]).values_list("job_id", flat=True)
         queryset = queryset.filter(job_id__in=labels_qs)
 
+    queryset = queryset.filter(host_id__isnull=False)
+
     count_qs = queryset
     prev_count_qs = queryset
     prev_count = None
