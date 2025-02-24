@@ -13,10 +13,14 @@ import {
 } from '@patternfly/react-charts/victory';
 import { generateChartData } from '@app/Utils';
 import '../styles/chart.scss';
+import { AnimatePropTypeInterface } from 'victory-core';
 
 export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {
   const chartData = generateChartData(props.chartData);
-
+  const [useAnimation, setUseAnimation] = React.useState<boolean | AnimatePropTypeInterface>(false);
+  React.useEffect(() => {
+    setUseAnimation({ onLoad: { duration: 1 }, duration: 500 });
+  }, [props.chartData]);
   return (
     <>
       <Card style={{ height: 'inherit' }}>
@@ -70,11 +74,7 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
 
               {!props.loading && chartData?.items?.length && (
                 <ChartGroup>
-                  <ChartLine
-                    interpolation="monotoneX"
-                    data={chartData.items}
-                    animate={{ onLoad: { duration: 1 }, duration: 500 }}
-                  />
+                  <ChartLine interpolation="monotoneX" data={chartData.items} animate={useAnimation} />
                 </ChartGroup>
               )}
             </Chart>

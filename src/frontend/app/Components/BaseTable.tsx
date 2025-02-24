@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Table, Tbody, Td, Th, ThProps, Thead, Tr } from '@patternfly/react-table';
 import { Pagination } from '@patternfly/react-core';
-import { CustomInput } from '@app/Components/CustomInput';
+import { CustomInput } from '@app/Components';
 import { ParamsContext } from '@app/Store/paramsContext';
 import { SortProps, TableResult, columnProps, paginationProps } from '@app/Types';
 import { formatCurrency } from '@app/Utils';

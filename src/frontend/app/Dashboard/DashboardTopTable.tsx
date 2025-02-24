@@ -1,5 +1,5 @@
 import React from 'react';
-import { SimpleTable } from '@app/Components/SimpleTable';
+import { SimpleTable } from '@app/Components';
 import { Card, CardBody } from '@patternfly/react-core';
 import { DashboardTopTableProps } from '@app/Types';
 

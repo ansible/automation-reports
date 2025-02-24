@@ -11,9 +11,15 @@ import {
   ChartTooltip,
   ChartVoronoiContainer,
 } from '@patternfly/react-charts/victory';
+import { AnimatePropTypeInterface } from 'victory-core';
 
 export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {
   const chartData = generateChartData(props.chartData);
+  const [useAnimation, setUseAnimation] = React.useState<boolean | AnimatePropTypeInterface>(false);
+
+  React.useEffect(() => {
+    setUseAnimation({ onLoad: { duration: 1 }, duration: 500 });
+  }, [props.chartData]);
 
   return (
     <>
@@ -67,7 +73,7 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
                     }}
                     alignment={'middle'}
                     data={chartData.items}
-                    animate={{ onLoad: { duration: 1 }, duration: 500 }}
+                    animate={useAnimation}
                   />
                 </ChartGroup>
               )}
