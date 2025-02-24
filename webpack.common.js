@@ -45,7 +45,7 @@ module.exports = (env) => {
               options: {
                 limit: 5000,
                 outputPath: 'svgs',
-                name: '[name].[ext]',
+                name: '[name].[contenthash].[ext]',
               },
             },
           ],
@@ -99,7 +99,7 @@ module.exports = (env) => {
               options: {
                 limit: 5000,
                 outputPath: 'images',
-                name: '[name].[ext]',
+                name: '[name].[contenthash].[ext]',
               },
             },
           ],
@@ -108,7 +108,7 @@ module.exports = (env) => {
     },
     entry: ['./src/frontend/index.tsx'],
     output: {
-      filename: '[name].bundle.js',
+      filename: '[name].[contenthash].bundle.js',
       path: path.resolve(__dirname, 'dist'),
       publicPath: ASSET_PATH,
     },
