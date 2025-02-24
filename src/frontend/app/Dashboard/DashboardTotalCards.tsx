@@ -27,6 +27,7 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
                 title={'Total number of failed jobs'}
                 result={props?.data?.total_number_of_failed_jobs?.value}
                 percentage={props?.data?.total_number_of_failed_jobs?.index}
+                invert={true}
               />
             </CardBody>
           </Card>
