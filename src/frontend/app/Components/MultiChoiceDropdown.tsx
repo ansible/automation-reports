@@ -11,6 +11,9 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
   const menuRef = React.useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
 
+  const [options, setOptions] = React.useState<object[]>(props.options.slice(0, 10));
+  const [currentPage, setCurrentPage] = React.useState<number>(1);
+  const pageSize = 10;
   const handleMenuClickOutside = (event: MouseEvent) => {
     if (isMenuOpen && !menuRef.current?.contains(event.target as Node)) {
       setIsMenuOpen(false);
@@ -24,9 +27,23 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
     };
   }, [isMenuOpen, menuRef]);
 
+  React.useEffect(() => {
+    setOptions(props.options.slice(0, pageSize));
+    setCurrentPage(1);
+  }, [props.options]);
+
   const onToggleClick = (ev: React.MouseEvent) => {
     ev.stopPropagation();
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const onScroll = (ev: React.UIEvent) => {
+    const target = ev.target as HTMLDivElement;
+    if (target.scrollHeight - target.scrollTop < target.clientHeight + 10) {
+      const page = currentPage + 1;
+      setCurrentPage(page);
+      setOptions(props.options.slice(0, page * pageSize));
+    }
   };
 
   const itemsToggle = (
@@ -50,6 +67,7 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
       ref={menuRef}
       id="mixed-group-items-menu"
       onSelect={props.onSelect}
+      onScroll={onScroll}
       style={
         {
           width: '220px',
@@ -59,7 +77,7 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
       {props?.options?.length && (
         <MenuContent>
           <MenuList>
-            {props.options.map((item: object) => {
+            {options.map((item: object) => {
               return (
                 props?.idKey !== undefined &&
                 props?.valueKey !== undefined && (
