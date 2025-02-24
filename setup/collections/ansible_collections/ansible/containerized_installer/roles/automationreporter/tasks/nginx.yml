@@ -28,4 +28,24 @@
     dest: '{{ nginx_conf_dir }}/reporter.conf'
     mode: '0640'
   notify: Restart reporter web
+
+- name: TEMP HACK Install htpasswd utility
+  ansible.builtin.package:
+    name: httpd-tools
+    state: present
+  become: true
+  when: nginx_hack_enable_basic_auth | bool
+
+- name: TEMP HACK Create the nginx htpasswd file
+  ansible.builtin.command:
+    cmd: htpasswd -bc '{{ nginx_conf_dir }}/htpasswd' '{{ nginx_hack_basic_auth_username }}' '{{ nginx_hack_basic_auth_password }}'
+  when: nginx_hack_enable_basic_auth | bool
+  notify: Restart reporter web
+
+- name: TEMP HACK Remove the nginx htpasswd file
+  ansible.builtin.file:
+    path: '{{ nginx_conf_dir }}/htpasswd'
+    state: absent
+  when: not nginx_hack_enable_basic_auth | bool
+  notify: Restart reporter web
 ...
