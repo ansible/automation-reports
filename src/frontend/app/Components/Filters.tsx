@@ -19,10 +19,7 @@ import {
   filterOptionsById,
   filterRetrieveError,
 } from '@app/Store';
-
-import { MultiChoiceDropdown } from '@app/Components/MultiChoiceDropdown';
-import { BaseDropdown } from '@app/Components/BaseDropdown';
-import { DateRangePicker } from '@app/Components/DateRangePicker';
+import { BaseDropdown, DateRangePicker, MultiChoiceDropdown } from '@app/Components';
 import { FilterOption } from '@app/Types';
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
 import { FormEvent, useRef } from 'react';

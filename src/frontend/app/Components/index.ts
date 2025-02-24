@@ -1,2 +1,8 @@
 export { Header } from './Header';
 export { Filters } from './Filters';
+export { BaseDropdown } from './BaseDropdown';
+export { DateRangePicker } from './DateRangePicker';
+export { MultiChoiceDropdown } from './MultiChoiceDropdown';
+export { CustomInput } from './CustomInput';
+export { SimpleTable } from './SimpleTable';
+export { BaseTable } from './BaseTable';
