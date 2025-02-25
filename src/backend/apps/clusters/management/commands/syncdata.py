@@ -1,6 +1,8 @@
+import urllib3
 from datetime import datetime, timezone
 
 from django.core.management.base import BaseCommand
+from django.conf import settings
 
 from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.models import Cluster, ClusterSyncData
@@ -22,6 +24,9 @@ class Command(BaseCommand):
                             help='End date for  sync (e.g. --until=2025-12-21)')
 
     def handle(self, *args, **options):
+
+        if not settings.SHOW_URLLIB3_INSECURE_REQUEST_WARNING:
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         _since = options.get('since') or None
         _until = options.get('until') or None

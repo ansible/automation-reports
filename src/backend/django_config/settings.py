@@ -180,6 +180,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 # CORS_ORIGIN_ALLOW_ALL = True
 
+SHOW_URLLIB3_INSECURE_REQUEST_WARNING = True
+
 # Load settings from REPORTER_SETTINGS_DIR
 settings_dir = os.environ.get('REPORTER_SETTINGS_DIR', '/etc/reporter/conf.d/')
 settings_files = os.path.join(settings_dir, '*.py')

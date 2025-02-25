@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+import urllib3
 from datetime import datetime, timezone
 from pathlib import Path
 from time import sleep
@@ -19,6 +20,7 @@ os.environ.update(LOG_LEVEL="INFO")
 cron_entry = os.environ.get("CRON_SYNC", "0 */4 * * *")
 
 django.setup()
+from django.conf import settings
 
 logger = logging.getLogger("automation-reports")
 
@@ -28,6 +30,8 @@ from backend.apps.clusters.models import Cluster, ClusterSyncData
 from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.parser import DataParser
 
+if not settings.SHOW_URLLIB3_INSECURE_REQUEST_WARNING:
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def run_task():
     job_start = datetime.now()
