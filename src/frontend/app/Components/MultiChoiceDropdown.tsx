@@ -1,19 +1,37 @@
 import * as React from 'react';
-import { Badge, Menu, MenuContent, MenuItem, MenuList, MenuToggle, Popper } from '@patternfly/react-core';
+import {
+  Badge,
+  Divider,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuList,
+  MenuSearch,
+  MenuSearchInput,
+  MenuToggle,
+  Popper,
+  SearchInput,
+} from '@patternfly/react-core';
 import { MultiChoiceDropdownProps, baseDropDownDefaultProps } from '@app/Types';
+import { deepClone } from '@app/Utils';
 
 export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownProps> = (
   props: MultiChoiceDropdownProps,
 ) => {
   props = { ...baseDropDownDefaultProps, ...props };
+  const searchInput = React.useRef<HTMLInputElement>(null);
+  const pageSize = props.pageSize || 10;
   const selectContainerRef = React.useRef<HTMLDivElement>(null);
   const toggleRef = React.useRef<HTMLButtonElement>(null);
   const menuRef = React.useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
 
-  const [options, setOptions] = React.useState<object[]>(props.options.slice(0, 10));
+  const [options, setOptions] = React.useState<object[]>([]);
   const [currentPage, setCurrentPage] = React.useState<number>(1);
-  const pageSize = 10;
+  const [searchValue, setSearchValue] = React.useState<string>('');
+
+  const [timeoutValue, setTimeoutValue] = React.useState<number | undefined>(undefined);
+
   const handleMenuClickOutside = (event: MouseEvent) => {
     if (isMenuOpen && !menuRef.current?.contains(event.target as Node)) {
       setIsMenuOpen(false);
@@ -21,6 +39,10 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
   };
 
   React.useEffect(() => {
+    setSearchValue('');
+    if (isMenuOpen) {
+      searchInput?.current?.focus();
+    }
     window.addEventListener('click', handleMenuClickOutside);
     return () => {
       window.removeEventListener('click', handleMenuClickOutside);
@@ -28,9 +50,14 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
   }, [isMenuOpen, menuRef]);
 
   React.useEffect(() => {
-    setOptions(props.options.slice(0, pageSize));
-    setCurrentPage(1);
-  }, [props.options]);
+    const allOptions = props?.options?.length ? (deepClone(props.options) as object[]) : [];
+    const filteredOptions = allOptions
+      .filter((item: object) => {
+        return props?.valueKey && item[props.valueKey].toLowerCase().includes(searchValue.toLowerCase());
+      })
+      .splice(0, pageSize * currentPage);
+    setOptions(filteredOptions);
+  }, [searchValue, currentPage, props.options]);
 
   const onToggleClick = (ev: React.MouseEvent) => {
     ev.stopPropagation();
@@ -42,9 +69,33 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
     if (target.scrollHeight - target.scrollTop < target.clientHeight + 10) {
       const page = currentPage + 1;
       setCurrentPage(page);
-      setOptions(props.options.slice(0, page * pageSize));
     }
   };
+
+  const onSearch = (value: string) => {
+    if (timeoutValue) {
+      clearTimeout(timeoutValue);
+      setTimeoutValue(undefined);
+    }
+
+    const timeout: number = window.setTimeout(() => {
+      setSearchValue(value);
+    }, 250);
+    setTimeoutValue(timeout);
+  };
+
+  const menuSearch = (
+    <MenuSearch>
+      <MenuSearchInput>
+        <SearchInput
+          ref={searchInput}
+          value={searchValue}
+          aria-label="Filter dropdown items"
+          onChange={(_event, value) => onSearch(value)}
+        />
+      </MenuSearchInput>
+    </MenuSearch>
+  );
 
   const itemsToggle = (
     <MenuToggle
@@ -67,15 +118,16 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
       ref={menuRef}
       id="mixed-group-items-menu"
       onSelect={props.onSelect}
-      onScroll={onScroll}
       style={
         {
           width: '220px',
         } as React.CSSProperties
       }
     >
+      {menuSearch}
+      <Divider />
       {props?.options?.length && (
-        <MenuContent>
+        <MenuContent onScroll={onScroll}>
           <MenuList>
             {options.map((item: object) => {
               return (
@@ -92,6 +144,11 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
                 )
               );
             })}
+            {options.length === 0 && (
+              <MenuItem isDisabled key={'no result'}>
+                No results found
+              </MenuItem>
+            )}
           </MenuList>
         </MenuContent>
       )}

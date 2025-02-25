@@ -15,6 +15,7 @@ export const baseDropDownDefaultProps = {
   idKey: 'key',
   valueKey: 'value',
   disabled: false,
+  pageSize: 10,
 };
 
 export type MultiChoiceDropdownProps = {
