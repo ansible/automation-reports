@@ -73,8 +73,8 @@ http {
 
         {% if not nginx_disable_https | bool %}
         #
-        ssl_certificate /etc/tower/tower.cert;
-        ssl_certificate_key /etc/tower/tower.key;
+        ssl_certificate /etc/tower/reporter.cert;
+        ssl_certificate_key /etc/tower/reporter.key;
         ssl_session_cache shared:SSL:50m;
         ssl_session_timeout 1d;
         ssl_session_tickets off;

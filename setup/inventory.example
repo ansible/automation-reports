@@ -5,6 +5,8 @@ aap24_reports.novalocal ansible_connection=local
 # reporter_update_secret=true
 # TEMP
 # nginx_disable_https=true
+# nginx_http_port=8083
+# nginx_https_port=8446
 # nginx_hack_enable_basic_auth=true
 # nginx_hack_basic_auth_username=admin
 # nginx_hack_basic_auth_password=adminpass
