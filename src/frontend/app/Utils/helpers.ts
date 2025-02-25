@@ -13,7 +13,7 @@ export const listToDict = (list: object[], key: string = 'key'): Record<string |
     : {};
 };
 
-export const deepClone = (object: object): object => {
+export const deepClone = (object: object): object | object[] => {
   return JSON.parse(JSON.stringify(object));
 };
 

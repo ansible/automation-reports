@@ -70,7 +70,7 @@ body,
   padding: 24px;
 }
 
-.pf-v6-c-menu {
+.pf-v6-c-menu__content {
   max-height: 300px;
   overflow: auto;
 }
@@ -126,5 +126,13 @@ input {
   opacity: 1;
   .pf-v6-c-empty-state {
     margin: 350px auto auto auto;
+  }
+}
+
+.pf-v6-c-date-picker {
+  &.default {
+    input {
+      background: var(--pf-v6-c-form-control--m-disabled--BackgroundColor);
+    }
   }
 }

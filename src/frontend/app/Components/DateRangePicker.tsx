@@ -11,8 +11,9 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
   const dateChoices = useAppSelector(dateRangeOptions);
   const [dateOptions, setDateChoices] = React.useState<FilterOption[]>([]);
 
-  const [toDateValue, setToDateValue] = React.useState<Date | null | undefined>(props.dateTo);
-  const [fromDateValue, setFromDateValue] = React.useState<Date | null | undefined>(props.dateFrom);
+  const [toDateValue, setToDateValue] = React.useState<Date | undefined>(props.dateTo);
+  const [fromDateValue, setFromDateValue] = React.useState<Date | undefined>(props.dateFrom);
+  const [customRange, setCustomRange] = React.useState<string | number | undefined>(undefined);
   const [endDateUserSelected, setEndDateUserSelected] = React.useState<boolean>(false);
 
   React.useEffect(() => {
@@ -20,56 +21,60 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
       setDateChoices(dateChoices);
       if (!props.selectedRange) {
         const index = dateChoices.findIndex((v) => v.key === 'month_to_date');
-        onSelectRangeSelect(undefined, index > -1 ? dateChoices[index].key : dateChoices[0].key);
+        setCustomRange(index > -1 ? dateChoices[index].key : dateChoices[0].key);
       }
     }
   }, [dateChoices]);
 
-  const onSelectRangeSelect = (ev: React.MouseEvent | undefined, range?: string | number) => {
-    if (!range) {
-      return;
+  React.useEffect(() => {
+    if (customRange) {
+      props.onChange(customRange.toString(), fromDateValue, toDateValue);
     }
-
-    props.onChange(ev, range.toString(), undefined, undefined);
-    if (range === 'custom' && !props?.dateTo) {
-      const date = new Date();
-      setToDateValue(date);
-      onToChange(undefined, yyyyMMddFormat(date), date, false);
+    if (customRange === 'custom' && !toDateValue) {
+      const toDateValue = new Date();
+      onToChange(undefined, yyyyMMddFormat(toDateValue), toDateValue, false);
     }
-  };
+  }, [fromDateValue, toDateValue, customRange]);
 
-  const onFromChange = (ev: React.FormEvent<HTMLInputElement>, inputDate: string, newFromDate?: Date) => {
-    setFromDateValue(newFromDate);
-
+  const onFromChange = (ev: React.FormEvent<HTMLInputElement> | undefined, inputDate: string, newFromDate?: Date) => {
     if (newFromDate && isValidDate(newFromDate) && inputDate === yyyyMMddFormat(newFromDate)) {
-      props.onChange(ev, undefined, newFromDate, undefined);
+      setFromDateValue(newFromDate);
     }
   };
 
   const onToChange = (
-    ev: React.FormEvent<HTMLInputElement> | undefined,
+    _ev: React.FormEvent<HTMLInputElement> | undefined,
     inputDate: string,
     newToDate?: Date,
     user = true,
   ) => {
-    setToDateValue(newToDate);
-    if (user) {
-      setEndDateUserSelected(true);
-    }
+    _ev?.stopPropagation();
     if (
       newToDate &&
       isValidDate(newToDate) &&
       inputDate === yyyyMMddFormat(newToDate) &&
       toValidator(newToDate) === ''
     ) {
-      props.onChange(ev, undefined, undefined, newToDate);
+      setToDateValue(newToDate);
+    }
+    if (user) {
+      setEndDateUserSelected(true);
     }
   };
 
-  const toValidator = (date: Date) => {
-    return !fromDateValue || (fromDateValue && yyyyMMddFormat(date) >= yyyyMMddFormat(fromDateValue))
-      ? ''
-      : 'The "to" date must be after the "from" date';
+  const onRangeSelect = (_ev: React.MouseEvent | undefined, range?: string | number) => {
+    setCustomRange(range?.toString());
+  };
+  const toValidator = (date: Date): string => {
+    return fromDateValue && yyyyMMddFormat(fromDateValue) > yyyyMMddFormat(date)
+      ? 'The "to" date must be after the "from" date'
+      : '';
+  };
+
+  const fromValidator = (date: Date): string => {
+    return toDateValue && yyyyMMddFormat(toDateValue) < yyyyMMddFormat(date)
+      ? 'The "from" date must be before the "to" date'
+      : '';
   };
 
   const fromDate = (
@@ -78,15 +83,19 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
       placeholder="YYYY-MM-DD"
       value={fromDateValue && isValidDate(fromDateValue) ? yyyyMMddFormat(fromDateValue) : undefined}
       onChange={onFromChange}
+      validators={[fromValidator]}
     ></DatePicker>
   );
 
   const toDate = (
     <DatePicker
       aria-label="End date"
-      placeholder={'NOW'}
+      placeholder="YYYY-MM-DD"
       value={
-        (!fromDateValue || !isValidDate(fromDateValue)) && !endDateUserSelected
+        (!fromDateValue || !isValidDate(fromDateValue)) &&
+        toDateValue &&
+        isValidDate(toDateValue) &&
+        !endDateUserSelected
           ? 'Now'
           : toDateValue && isValidDate(toDateValue)
             ? yyyyMMddFormat(toDateValue)
@@ -104,8 +113,8 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
       id={'range-dropdown-' + props.id}
       options={dateOptions}
       disabled={props.disabled || !dateOptions?.length}
-      selectedItem={props.selectedRange}
-      onSelect={onSelectRangeSelect}
+      selectedItem={customRange}
+      onSelect={onRangeSelect}
       style={
         {
           width: '150px',
@@ -116,10 +125,10 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
 
   return (
     <Flex>
-      <FlexItem>{props.label}</FlexItem>
+      <FlexItem>{props.label}:</FlexItem>
       <FlexItem>{rangeSelector}</FlexItem>
       <FlexItem>
-        {props?.selectedRange === 'custom' && (
+        {customRange === 'custom' && (
           <Flex style={{ alignItems: 'self-start' }}>
             <FlexItem>{fromDate}</FlexItem>
             <FlexItem style={{ marginTop: '8px' }}>to</FlexItem>
