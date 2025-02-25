@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React from 'react';
 import { Table, Tbody, Td, Th, ThProps, Thead, Tr } from '@patternfly/react-table';
 import { Pagination } from '@patternfly/react-core';
 import { CustomInput } from '@app/Components';
@@ -16,10 +16,12 @@ export const BaseTable: React.FunctionComponent<{
 }> = (props) => {
   const [activeSortIndex, setActiveSortIndex] = React.useState<number | undefined>(0);
   const [activeSortDirection, setActiveSortDirection] = React.useState<'asc' | 'desc' | undefined>('asc');
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [page, setPage] = React.useState(1);
+  const [perPage, setPerPage] = React.useState(10);
+  const [editingError, setEditingError] = React.useState<string>('');
+  const [editRow, setEditRow] = React.useState<number | undefined>(undefined);
 
-  const context = useContext(ParamsContext);
+  const context = React.useContext(ParamsContext);
   if (!context) {
     throw new Error('Filters must be used within a ParamsProvider');
   }
@@ -62,7 +64,15 @@ export const BaseTable: React.FunctionComponent<{
     />
   );
 
-  const handleBlur = (value: number, item: TableResult) => {
+  const handleBlur = (value: number, item: TableResult, rowNum: number) => {
+    console.log(item);
+    if (value < 1) {
+      setEditRow(rowNum);
+      setEditingError('Value must be greater then 0!');
+      return;
+    }
+    setEditRow(undefined);
+    setEditingError('');
     props.onItemEdit(value, item);
   };
 
@@ -108,12 +118,14 @@ export const BaseTable: React.FunctionComponent<{
                         <CustomInput
                           type={'number'}
                           id={`${rowNum}-input`}
-                          onBlur={(value) => handleBlur(value, item)}
+                          onBlur={(value) => handleBlur(value, item, rowNum)}
                           value={item[column.name]}
+                          isDisabled={editingError?.length > 0 && editRow !== rowNum}
+                          errorMessage={editRow === rowNum ? editingError : ''}
                         />
                       </div>
                     ) : (
-                      <div>
+                      <div className={editingError?.length > 0 && editRow === rowNum ? 'has-error' : ''}>
                         {column.type === 'currency' ? (
                           <span>{formatCurrency(column.valueKey ? item[column.valueKey] : item[column.name])}</span>
                         ) : (

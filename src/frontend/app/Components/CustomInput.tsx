@@ -37,6 +37,7 @@ export const CustomInput: React.FunctionComponent<TextInputType> = (props) => {
         style={{ textAlign: props.type === 'number' ? 'right' : 'left' }}
         min={props.type === 'number' ? 0 : undefined}
         validated={props.errorMessage ? 'error' : undefined}
+        isDisabled={props.isDisabled}
       />
       {props.errorMessage && (
         <HelperText>

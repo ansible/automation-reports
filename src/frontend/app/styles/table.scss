@@ -15,6 +15,24 @@
 
       .pf-v6-c-table__td {
         padding: 8px 16px;
+        vertical-align: middle;
+
+        &:focus-visible {
+          outline: none;
+        }
+
+        .pf-v6-c-helper-text {
+          padding-top: 6px;
+          justify-content: end;
+        }
+
+        .has-error {
+          margin-top: -24px;
+        }
+      }
+
+      &:hover {
+        background: var(--pf-t--global--background--color--secondary--default);
       }
     }
   }
@@ -61,5 +79,13 @@
 
   .spinner {
     margin: auto;
+  }
+}
+
+.pf-v6-c-pagination {
+  .pf-v6-c-pagination__page-menu {
+    &:focus-visible {
+      outline: none;
+    }
   }
 }
