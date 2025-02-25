@@ -42,6 +42,7 @@ def run_task():
     except Exception as exc:
         logger.error(f"Failed to retrieve clusters information.", exc_info=exc)
         return
+    logger.info(f"Retrieved {clusters.count()} clusters.")
 
     for cluster in clusters:
         start = datetime.now()
@@ -54,7 +55,7 @@ def run_task():
             logger.info(f"Synced data from cluster {cluster} successfully in {s} seconds.")
         except Exception as exc:
             logger.error(f"Failed to sync cluster {cluster}", exc_info=exc)
-            return
+            continue
 
         sync_data = ClusterSyncData.objects.filter(cluster=cluster)
         count = sync_data.count()
