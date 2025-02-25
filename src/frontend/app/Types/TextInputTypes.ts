@@ -2,6 +2,7 @@ export type TextInputType = {
   id: string;
   value?: string | number | null;
   placeholder?: string;
+  isDisabled?: boolean;
   type?:
     | 'text'
     | 'date'

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Dashboard } from '@app/Dashboard/Dashboard';
+import { Dashboard } from '@app/Dashboard';
 import ParamsContextProvider from '@app/Store/paramsContext';
 
 export interface IAppRoute {

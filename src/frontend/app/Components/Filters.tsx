@@ -19,13 +19,10 @@ import {
   filterOptionsById,
   filterRetrieveError,
 } from '@app/Store';
-
-import { MultiChoiceDropdown } from '@app/Components/MultiChoiceDropdown';
-import { BaseDropdown } from '@app/Components/BaseDropdown';
-import { DateRangePicker } from '@app/Components/DateRangePicker';
+import { BaseDropdown, DateRangePicker, MultiChoiceDropdown } from '@app/Components';
 import { FilterOption } from '@app/Types';
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
-import { FormEvent, useRef } from 'react';
+import { useRef } from 'react';
 import '../styles/filters.scss';
 import { ParamsContext } from '@app/Store/paramsContext';
 
@@ -35,8 +32,8 @@ interface FilterProps {
   instances: (string | number)[];
   label: (string | number)[];
   date_range: string | null;
-  start_date: Date | null;
-  end_date: Date | null;
+  start_date: Date | undefined;
+  end_date: Date | undefined;
 }
 
 export const Filters: React.FunctionComponent = () => {
@@ -51,8 +48,8 @@ export const Filters: React.FunctionComponent = () => {
     instances: [],
     label: [],
     date_range: null,
-    start_date: null,
-    end_date: null,
+    start_date: undefined,
+    end_date: undefined,
   });
   const context = React.useContext(ParamsContext);
   const pageLoaded: React.RefObject<boolean> = useRef(false);
@@ -95,12 +92,7 @@ export const Filters: React.FunctionComponent = () => {
     updateParams('page_size', 10);
   };
 
-  const onDateRangeChange = (
-    _event?: React.MouseEvent | FormEvent<HTMLInputElement>,
-    range?: string,
-    startDate?: Date,
-    endDate?: Date,
-  ) => {
+  const onDateRangeChange = (range?: string, startDate?: Date, endDate?: Date) => {
     if (range && range != filterSelection.date_range) {
       const newState = range;
       const key = 'date_range';

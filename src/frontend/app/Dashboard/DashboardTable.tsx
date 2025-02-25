@@ -1,9 +1,8 @@
 import React, { useContext } from 'react';
-import { BaseTable } from '../Components/BaseTable';
 import { Card, CardBody, Flex, FlexItem, Form, FormGroup, Icon, Spinner, Tooltip } from '@patternfly/react-core';
 import { DashboardTotals } from './DashboardTotals';
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
-import { CustomInput } from '@app/Components/CustomInput';
+import { BaseTable, CustomInput } from '@app/Components';
 import { useAppSelector } from '@app/hooks';
 
 import { automatedProcessCost, manualCostAutomation } from '@app/Store';

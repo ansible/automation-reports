@@ -38,7 +38,7 @@ class DateRangeSchema(BaseModel):
 class NameDescriptionModelSchema(FrozenModel):
     id: int
     name: str
-    description: str
+    description: str | None = ""
 
 
 class InstanceGroup(FrozenModel):
@@ -64,13 +64,13 @@ class ProjectSchema(FrozenModel):
 
 
 class SummaryFields(FrozenModel):
-    organization: NameDescriptionModelSchema | None
-    job_template: NameDescriptionModelSchema | None
-    inventory: NameDescriptionModelSchema | None
-    execution_environment: NameDescriptionModelSchema | None
-    instance_group: InstanceGroup | None
+    organization: NameDescriptionModelSchema | None = None
+    job_template: NameDescriptionModelSchema | None = None
+    inventory: NameDescriptionModelSchema | None = None
+    execution_environment: NameDescriptionModelSchema | None = None
+    instance_group: InstanceGroup | None = None
     labels: LabelsSchema
-    project: ProjectSchema | None
+    project: ProjectSchema | None = None
 
 
 class LaunchedBy(FrozenModel):
@@ -80,12 +80,12 @@ class LaunchedBy(FrozenModel):
 
 
 class HostSummarySummaryFieldsSchema(FrozenModel):
-    host: NameDescriptionModelSchema | None
+    host: NameDescriptionModelSchema | None = None
 
 
 class HostSummarySchema(FrozenModel):
-    summary_fields: HostSummarySummaryFieldsSchema
-    host_name: str
+    summary_fields: HostSummarySummaryFieldsSchema | None = None
+    host_name: str | None = ""
     changed: int
     dark: int
     failures: int
@@ -108,8 +108,8 @@ class ExternalJobSchema(FrozenModel):
     summary_fields: SummaryFields
     host_summaries: List[HostSummarySchema]
     started: datetime
-    finished: datetime | None
-    elapsed: decimal.Decimal | None
+    finished: datetime | None = None
+    elapsed: decimal.Decimal | None = None
     failed: bool
     status: Literal["new", "pending", "waiting", "running", "successful", "failed", "error", "canceled"]
     job_type: Literal["run", "check", "scan"]

@@ -151,7 +151,6 @@ def get_chart_range(request):
         return result
 
     result["date_range"] = DateRangeChoices.get_date_range(_date_range, _start_date, _end_date)
-
     if result["date_range"] is None:
         return result
 
@@ -168,7 +167,7 @@ def get_chart_range(request):
             result["range"] = "year"
         case _:
             days = (result["date_range"].end - result["date_range"].start).days
-            if days <= 1:
+            if days < 1:
                 result["range"] = "hour"
                 result["date_format"] = "YYYY-MM-DD HH24:00:00+00"
             elif days <= 45:
@@ -197,7 +196,7 @@ def get_chart_x_axis(chart_range):
             d = start.replace(hour=i, minute=0, second=0, microsecond=0)
             result.append(d)
     elif x_axis_range == "day":
-        current_date = start.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        current_date = start.replace(hour=0, minute=0, second=0, microsecond=0)
         while current_date.date() <= end.date():
             result.append(current_date)
             _day = current_date.day + 1
@@ -309,6 +308,8 @@ def get_unique_host_count(options):
     if options.get("label", None) is not None:
         labels_qs = JobLabel.objects.filter(label_id__in=options["label"]).values_list("job_id", flat=True)
         queryset = queryset.filter(job_id__in=labels_qs)
+
+    queryset = queryset.filter(host_id__isnull=False)
 
     count_qs = queryset
     prev_count_qs = queryset

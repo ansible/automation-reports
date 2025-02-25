@@ -1,25 +1,24 @@
 import * as React from 'react';
 import { Filters, Header } from '@app/Components';
-
 import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Text/text.css';
 import '@patternfly/react-styles/css/utilities/Flex/flex.css';
 import { Grid, GridItem, Spinner } from '@patternfly/react-core';
-import { DashboardLineChart } from './DashboardLineChart';
-import { DashboardBarChart } from './DashboardBarChart';
-import { DashboardTable } from './DashboardTable';
-import { DashboardTotalCards } from './DashboardTotalCards';
 import { ParamsContext } from '../Store/paramsContext';
-
 import { RestService } from '@app/Services';
 import { deepClone } from '@app/Utils';
 import { DashboardTopTableColumn, ReportDetail, TableResponse, TableResult, UrlParams } from '@app/Types';
-import { DashboardTopTable } from '@app/Dashboard/DashboardTopTable';
-import { useRef } from 'react';
 import { useAppSelector } from '@app/hooks';
 import { filterRetrieveError } from '@app/Store';
 import ErrorState from '@patternfly/react-component-groups/dist/dynamic/ErrorState';
+import {
+  DashboardBarChart,
+  DashboardLineChart,
+  DashboardTable,
+  DashboardTopTable,
+  DashboardTotalCards,
+} from '@app/Dashboard';
 
 const Dashboard: React.FunctionComponent = () => {
   const context = React.useContext(ParamsContext);
@@ -33,7 +32,7 @@ const Dashboard: React.FunctionComponent = () => {
   const [loadDataError, setLoadDataError] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [tableLoading, setTableLoading] = React.useState<boolean>(true);
-  const prevParams: React.RefObject<UrlParams> = useRef({} as UrlParams);
+  const prevParams: React.RefObject<UrlParams> = React.useRef({} as UrlParams);
 
   const handelError = (error: unknown) => {
     if (error?.['name'] !== 'CanceledError') {
@@ -42,7 +41,7 @@ const Dashboard: React.FunctionComponent = () => {
   };
 
   const fetchServerReportDetails = async (signal: AbortSignal) => {
-    const queryParams = deepClone(params);
+    const queryParams = deepClone(params) as object;
     delete queryParams['page'];
     delete queryParams['page_size'];
     delete queryParams['ordering'];
@@ -70,10 +69,14 @@ const Dashboard: React.FunctionComponent = () => {
       return;
     }
 
+    if (params.date_range === 'custom' && params.start_date && params.end_date && params.start_date > params.end_date) {
+      return;
+    }
+
     if (useLoader) {
       setLoading(true);
     }
-    const queryParams = deepClone(params);
+    const queryParams = deepClone(params) as object;
     let tableResponse: TableResponse;
     try {
       tableResponse = await RestService.fetchReports(signal, queryParams);

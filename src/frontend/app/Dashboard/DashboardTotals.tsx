@@ -1,34 +1,54 @@
 import React from 'react';
 import { Icon } from '@patternfly/react-core';
-import { ArrowCircleUpIcon, ArrowCircleDownIcon } from '@patternfly/react-icons';
+import { ArrowCircleDownIcon, ArrowCircleUpIcon, MinusIcon } from '@patternfly/react-icons';
 import '../styles/dashboard-totals.scss';
 
-interface CardProps {
+type CardProps = {
   title: string | '';
   result: number | string | null;
   percentage?: number | null;
-}
+  invert?: boolean;
+};
 
 export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
+  const percentageClass: string[] = ['percentage', 'fw-500'];
+  if (!props.percentage) {
+    percentageClass.push('grey');
+  } else if ((props.percentage > 0 && !props.invert) || (props.percentage < 0 && props.invert)) {
+    percentageClass.push('green');
+  } else {
+    percentageClass.push('red');
+  }
+
   const percentage =
     props.percentage !== null && props.percentage !== undefined ? (
       <span>
-        {props.percentage > 0 ? (
-          <Icon size="lg" className="arrow-up">
+        {props.percentage > 0 && (
+          <Icon size="lg" className={'arrow-up' + (props?.invert ? ' invert' : '')}>
             <ArrowCircleUpIcon />
           </Icon>
-        ) : (
-          <Icon size="lg" className="arrow-down">
+        )}
+        {props.percentage < 0 && (
+          <Icon size="lg" className={'arrow-down' + (props?.invert ? ' invert' : '')}>
             <ArrowCircleDownIcon />
           </Icon>
         )}
-        <span className={`percentage fw-500 ${props.percentage > 0 ? 'green' : 'red'}`}>
-          ({props.percentage > 0 && <span>+</span>}
-          {props.percentage}%)
-        </span>
+        {props.percentage === 0 && (
+          <Icon size="lg" className={'minus-circle'}>
+            <MinusIcon />
+          </Icon>
+        )}
+        {
+          <span className={percentageClass.join(' ')}>
+            ({props.percentage > 0 && <span>+</span>}
+            {props.percentage}%)
+          </span>
+        }
       </span>
     ) : (
-      <span className="fw-500 pf-v6-u-font-size-4xl"> - </span>
+      <Icon size="lg" className={'minus-circle'}>
+        <MinusIcon />
+      </Icon>
     );
 
   return (
