@@ -8,12 +8,12 @@ lazy-apps = true
 max-requests = 1000
 buffer-size = 32768
 harakiri = 120
-master-fifo = /var/lib/awx/awxfifo
+master-fifo = /var/lib/awx/reporterfifo
 
 if-env = UWSGI_MOUNT_PATH
-mount = %(_)=awx.wsgi:application
+mount = %(_)=backend.django_config.wsgi:application
 endif =
 
 if-not-env = UWSGI_MOUNT_PATH
-mount = /=awx.wsgi:application
+mount = /=backend.django_config.wsgi:application
 endif =

@@ -9,7 +9,8 @@ aap24_reports.novalocal ansible_connection=local
 # nginx_https_port=8446
 # nginx_hack_enable_basic_auth=true
 # nginx_hack_basic_auth_username=admin
-# nginx_hack_basic_auth_password=adminpass
+# NOTE: nginx_hack_basic_auth_password needs to be same as reporter_admin_password, since UWSGI is used
+# nginx_hack_basic_auth_password="{{ reporter_admin_password }}"
 
 [database]
 aap24_reports.novalocal ansible_connection=local

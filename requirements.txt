@@ -13,3 +13,4 @@ pytz==2025.1
 PyYAML==6.0.2
 requests==2.32.3
 setuptools==75.8.0
+uwsgi==2.0.28
