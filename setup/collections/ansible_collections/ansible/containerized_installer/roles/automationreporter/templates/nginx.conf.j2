@@ -101,13 +101,14 @@ http {
         add_header X-Content-Type-Options nosniff;
 
         location /favicon.ico { alias /opt/app-root/src/images/favicon.ico; }
-        location ~ ^/(api|admin|static)/ {
-            {% if nginx_hack_enable_basic_auth | bool %}
-            # remove basic auth
-            proxy_set_header Authorization "";
-            {% endif %}
-            proxy_pass http://127.0.0.1:8000;
-        }
+
+#        location ~ ^/(api|admin|static)/ {
+#            {% if nginx_hack_enable_basic_auth | bool %}
+#            # remove basic auth
+#            proxy_set_header Authorization "";
+#            {% endif %}
+#            proxy_pass http://127.0.0.1:8000;
+#        }
 
         # location /websocket {
         #     # Pass request to the upstream alias
@@ -134,7 +135,14 @@ http {
         #     proxy_set_header X-Real-IP $remote_addr;
         # }
 
-        location /uwsgi-todo {
+        location ~ ^/(api|admin|static)/ {
+            {% if nginx_hack_enable_basic_auth | bool %}
+            # remove basic auth
+            # proxy_set_header Authorization "";
+            # uwsgi_param Authorization "Basic YWRtaW46YWRtaW5wcg==";
+            {% endif %}
+            # proxy_pass http://127.0.0.1:8000;
+
             # Redirect if there is no forward-slash
             rewrite ^(.*[^/])$ $1/ permanent;
 
