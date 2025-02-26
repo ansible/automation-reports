@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+AAP_REPORTER_IMAGE="${AAP_REPORTER_IMAGE:-registry.redhat.io/ansible-automation-platform-24/aapreport-backend:latest}"
+docker build -f docker/Dockerfile.backend -t $AAP_REPORTER_IMAGE . # --no-cache
+docker image save $AAP_REPORTER_IMAGE | podman image load
+
 cd setup/
 /bin/rm -f bundle/images/*
 ansible-playbook -i inventory ansible.containerized_installer.reporter_bundle -e bundle_install=true

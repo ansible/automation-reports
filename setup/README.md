@@ -50,12 +50,9 @@ Open http://HOST_IP:8083/.
 
 Bundled installer contains also images.
 Build bundle.
-Container image needs to be built before this step.
+This will also build needed container image.
 
 ```bash
-img="registry.redhat.io/ansible-automation-platform-24/aapreport-backend:latest"
-docker build -f docker/Dockerfile.backend -t $img . --no-cache
-docker image save $img | podman image load
 ./setup/build_bundle.sh
 # ...
 # Bundled installer is at bundle/automation-reports-bundled-installer.tar.gz
