@@ -60,6 +60,7 @@ export type ValueIndex = {
 export type DashboardTableProps = {
   onCostChanged: (type: string, value: number) => void;
   onItemEdit: (value: number, item: TableResult) => void;
+  onInputFocus: (event?: never) => void;
   data: TableResponse;
   totalSaving: ValueIndex;
   costOfManualAutomation: ValueIndex;

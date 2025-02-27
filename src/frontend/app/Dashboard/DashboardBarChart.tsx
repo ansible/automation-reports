@@ -39,7 +39,7 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
               ariaTitle="Number of hosts jobs are running on"
               containerComponent={
                 <ChartVoronoiContainer
-                  labels={({ datum }) => `${datum.x}: ${datum.y}`}
+                  labels={({ datum }) => `${datum.x}: ${datum.y?.toLocaleString('en-US')}`}
                   constrainToVisibleArea
                   labelComponent={<ChartTooltip style={{ fontSize: 6 }} />}
                 />

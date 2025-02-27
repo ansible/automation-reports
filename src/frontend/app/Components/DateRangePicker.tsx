@@ -124,8 +124,8 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
   );
 
   return (
-    <Flex>
-      <FlexItem>{props.label}:</FlexItem>
+    <Flex style={{ alignItems: 'self-start' }}>
+      <FlexItem style={{ marginTop: '8px' }}>{props.label}:</FlexItem>
       <FlexItem>{rangeSelector}</FlexItem>
       <FlexItem>
         {customRange === 'custom' && (
