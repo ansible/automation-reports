@@ -5,9 +5,10 @@ from decimal import Decimal
 
 import pytz
 from django.core.cache import cache
+from django.db import connection
 from django.db.models import Count, Sum, F, CharField, Func, Value
 
-from backend.apps.clusters.models import Costs, CostsChoices, JobHostSummary, JobStatusChoices, JobLabel, DateRangeChoices
+from backend.apps.clusters.models import Costs, CostsChoices, JobStatusChoices, DateRangeChoices
 
 
 def get_costs(from_db=False):
@@ -226,120 +227,131 @@ def get_chart_x_axis(chart_range):
         start_year = start.year
         end_year = end.year
         for i in range(start_year, end_year + 1):
-            d = start.replace(year=i, day=1, hour=0, minute=0, second=0, microsecond=0)
+            d = start.replace(year=i, day=1, month=1, hour=0, minute=0, second=0, microsecond=0)
             result.append(d)
     return result
 
 
-def get_jobs_chart(qs, request):
-    result = {
-        "items": [],
-        "range": None
+def get_unique_hosts_db(start_date, end_date, options):
+    retval = None
+    params = {
+        'successful': JobStatusChoices.SUCCESSFUL,
+        'failed': JobStatusChoices.FAILED,
     }
-    chart_range = get_chart_range(request)
+    organizations = options.get("organization", None)
+    clusters = options.get("cluster", None)
+    job_templates = options.get("job_template", None)
+    labels = options.get("label", None)
 
-    result["range"] = chart_range["range"]
+    sql = '''
+            with jobs as (
+            select job.id 
+                from clusters_job job
+            '''
+    if labels is not None:
+        sql += '''
+            join clusters_joblabel label on label.job_id = job.id 
+        '''
+    sql += '''
+                WHERE job.status IN (%(successful)s, %(failed)s) 
+            '''
+    if start_date is not None:
+        sql += ' AND job.finished >= %(start_date)s'
+        params['start_date'] = start_date
+    if end_date is not None:
+        sql += ' AND job.finished <= %(end_date)s'
+        params['end_date'] = end_date
+    if organizations is not None:
+        sql += ' AND job.organization_id = ANY(%(organizations)s)'
+        params['organizations'] = [int(n) for n in organizations]
+    if clusters is not None:
+        sql += ' AND job.cluster_id = ANY(%(clusters)s)'
+        params['clusters'] = [int(n) for n in clusters]
+    if job_templates is not None:
+        sql += ' AND job.job_template_id = ANY(%(job_templates)s)'
+        params['job_templates'] = [int(n) for n in job_templates]
 
-    x_axis = get_chart_x_axis(chart_range)
+    if labels is not None:
+        sql += ' AND label.label_id = ANY(%(labels)s)'
+        params['labels'] = [int(n) for n in labels]
 
-    qs = qs.values(
-        date=Func(
-            F('finished'),
-            Value(chart_range["date_format"]),
-            function='to_char',
-            output_field=CharField()
-        )
-    ).annotate(
-        count=Count("id"),
-    ).order_by("date")
-    y_data = {datetime.strptime(job["date"], '%Y-%m-%d %H:%M:%S+00').astimezone(pytz.UTC): job["count"] for job in qs}
+    sql += ')'
+    sql += '''
+            select count(*) from (
+            select
+            host_id
+            from clusters_jobhostsummary
+            where job_id in (select id from jobs)
+            group by host_id)a
+    '''
 
-    for x in x_axis:
-        y = y_data.get(x, 0)
-        result["items"].append({"x": x, "y": y})
+    with connection.cursor() as cursor:
+        cursor.execute(sql, params)
+        rows = cursor.fetchall()
+        if len(rows) > 0 and len(rows[0]) > 0:
+            retval = rows[0][0]
 
-    return result
-
-
-def get_hosts_chart(qs, request):
-    result = {
-        "items": [],
-        "range": None
-    }
-    chart_range = get_chart_range(request)
-
-    result["range"] = chart_range["range"]
-
-    x_axis = get_chart_x_axis(chart_range)
-
-    qs = qs.values(
-        date=Func(
-            F('finished'),
-            Value(chart_range["date_format"]),
-            function='to_char',
-            output_field=CharField()
-        )
-    ).annotate(
-        hosts=Sum("num_hosts"),
-    ).order_by("date")
-
-    y_data = {datetime.strptime(job["date"], '%Y-%m-%d %H:%M:%S+00').astimezone(pytz.UTC): job["hosts"] for job in qs}
-
-    for x in x_axis:
-        y = y_data.get(x, 0)
-        result["items"].append({"x": x, "y": y})
-
-    return result
+    return retval
 
 
 def get_unique_host_count(options):
-    queryset = JobHostSummary.objects.filter(
-        job__status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED],
-    )
-    if options.get("organization", None) is not None:
-        queryset = queryset.filter(job__organization__in=options["organization"])
-
-    if options.get("cluster", None) is not None:
-        queryset = queryset.filter(job__cluster__in=options["cluster"])
-
-    if options.get("job_template", None) is not None:
-        queryset = queryset.filter(job__job_template__in=options["job_template"])
-
-    if options.get("label", None) is not None:
-        labels_qs = JobLabel.objects.filter(label_id__in=options["label"]).values_list("job_id", flat=True)
-        queryset = queryset.filter(job_id__in=labels_qs)
-
-    queryset = queryset.filter(host_id__isnull=False)
-
-    count_qs = queryset
-    prev_count_qs = queryset
     prev_count = None
-
     date_range = options.get("date_range", None)
+    start_date = None
+    end_date = None
+
+    prev_start_date = None
+    prev_end_date = None
 
     if date_range is not None:
         start_date = date_range.start
         end_date = date_range.end
-
         prev_start_date = date_range.prev_start
         prev_end_date = date_range.prev_end
 
-        if start_date:
-            count_qs = count_qs.filter(job__finished__gte=start_date)
-        if end_date:
-            count_qs = count_qs.filter(job__finished__lte=end_date)
+    total_number_of_unique_hosts = get_unique_hosts_db(start_date=start_date, end_date=end_date, options=options)
 
-        if prev_start_date and prev_end_date:
-            prev_count_qs = prev_count_qs.filter(job__finished__range=(prev_start_date, prev_end_date))
-            prev_count_qs = prev_count_qs.aggregate(count=Count("host_id", distinct=True))
-            prev_count = prev_count_qs["count"]
+    if prev_start_date and prev_end_date:
+        prev_count = get_unique_hosts_db(start_date=prev_start_date, end_date=prev_end_date, options=options)
 
-    count_qs = count_qs.aggregate(count=Count("host_id", distinct=True))
-
-    total_number_of_unique_hosts = count_qs["count"]
     return {
         "total_number_of_unique_hosts": {
             "value": total_number_of_unique_hosts,
             "index": get_diff_index(prev_count, total_number_of_unique_hosts)
         }
     }
+
+
+def get_chart_data(qs, request):
+    chart_range = get_chart_range(request)
+    x_axis = get_chart_x_axis(chart_range)
+    result = {
+        "host_chart": {
+            "items": [],
+            "range": chart_range["range"]
+        },
+        "job_chart": {
+            "items": [],
+            "range": chart_range["range"]
+        }
+    }
+
+    qs = qs.values(
+        date=Func(
+            F('finished'),
+            Value(chart_range["date_format"]),
+            function='to_char',
+            output_field=CharField()
+        )
+    ).annotate(
+        runs=Count("*"),
+        num_hosts=Sum("num_hosts"),
+    ).order_by("date")
+
+    y_data = {datetime.strptime(d["date"], '%Y-%m-%d %H:%M:%S+00').astimezone(pytz.UTC): d for d in qs}
+    for x in x_axis:
+        y = y_data.get(x, {"runs": 0, "num_hosts": 0})
+        result["host_chart"]["items"].append({"x": x, "y": y["num_hosts"]})
+        result["job_chart"]["items"].append({"x": x, "y": y["runs"]})
+
+    return result
