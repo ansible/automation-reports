@@ -1,21 +1,12 @@
-import decimal
-
 from rest_framework import serializers
 from backend.apps.clusters.models import Job, Cluster, CostsChoices
-from backend.apps.clusters.helpers import get_costs
 
 
-def sec2time(sec, n_msec=3):
-    ''' Convert seconds to 'D days, HH:MM:SS.FFF' '''
-    if hasattr(sec,'__len__'):
-        return [sec2time(s) for s in sec]
+def sec2time(sec):
     m, s = divmod(sec, 60)
     h, m = divmod(m, 60)
-    d, h = divmod(h, 24)
 
-    if d > 0:
-        return '%dD %dh %dmin %dsec' % (d, h, m, s)
-    elif h > 0:
+    if h > 0:
         return '%dh %dmin %dsec' % (h, m, s)
     else:
         return '%dmin %dsec' % (m, s)

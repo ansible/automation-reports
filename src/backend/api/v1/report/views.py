@@ -6,10 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_range, get_filter_options
+from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_filter_options
 from backend.api.v1.report.serializers import JobSerializer
-from backend.apps.clusters.helpers import get_costs, get_report_data, get_jobs_chart, get_hosts_chart, get_unique_host_count
-from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices, JobHostSummary
+from backend.apps.clusters.helpers import get_costs, get_report_data, get_unique_host_count, get_chart_data
+from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices
 
 
 class ReportsView(mixins.ListModelMixin, GenericViewSet):
@@ -76,29 +76,23 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         ## UNIQUE HOSTS ###
         unique_host = get_unique_host_count(options=get_filter_options(request))
 
-        job_chart_qs = Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED])
-        job_chart_qs = self.filter_queryset(job_chart_qs)
-        job_chart_qs = filter_by_range(request, job_chart_qs)
-        job_chart = {
-            "job_chart": get_jobs_chart(
-                job_chart_qs,
-                request=request)}
+        ## CHARTS ###
+        chart_qs = Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED])
+        chart_qs = self.filter_queryset(chart_qs)
+        chart_qs = filter_by_range(request, chart_qs)
 
-        hosts_chart = {
-            "host_chart": get_hosts_chart(
-                job_chart_qs,
-                request=request)}
 
         response = {
             "users": list(top_users_qs),
             "projects": list(top_projects_qs),
         }
 
+        charts_data = get_chart_data(chart_qs, request=request)
+
         response_data = {
             **response,
             **unique_host,
             **report_data,
-            **job_chart,
-            **hosts_chart,
+            **charts_data,
         }
         return Response(data=response_data, status=status.HTTP_200_OK)
