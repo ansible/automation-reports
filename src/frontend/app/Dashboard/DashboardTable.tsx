@@ -113,9 +113,10 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                     <CustomInput
                       type={'number'}
                       id={'hourly-manual-costs'}
-                      onBlur={(value) => hourlyManualCostsChanged(value)}
+                      onBlur={(value) => hourlyManualCostsChanged(value ? parseFloat(value) : value)}
                       errorMessage={hourlyManualCostsChangedError}
                       value={hourly_manual_costs}
+                      onFocus={props.onInputFocus}
                     />
                   </FormGroup>
                 </Form>
@@ -135,9 +136,10 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                     <CustomInput
                       type={'number'}
                       id={'hourly-automated-process-costs'}
-                      onBlur={(value) => hourlyAutomatedProcessCostsChanged(value)}
+                      onBlur={(value) => hourlyAutomatedProcessCostsChanged(value ? parseFloat(value) : value)}
                       value={hourly_automated_process_costs}
                       errorMessage={hourlyAutomatedProcessCostsChangedError}
+                      onFocus={props.onInputFocus}
                     />
                   </FormGroup>
                 </Form>
@@ -178,6 +180,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             columns={columns}
             loading={false}
             onItemEdit={props.onItemEdit}
+            onItemFocus={props.onInputFocus}
           ></BaseTable>
         </CardBody>
       </Card>

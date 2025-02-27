@@ -13,14 +13,14 @@ export const CustomInput: React.FunctionComponent<TextInputType> = (props) => {
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const value = event.target.value;
-
-    if (value !== String(initialValueRef.current)) {
-      props.onBlur(value);
-    }
+    props.onBlur(value);
   };
 
-  const handleFocus = () => {
+  const handleFocus = (ev?: never) => {
     initialValueRef.current = localeValue;
+    if (props?.onFocus) {
+      props?.onFocus(ev);
+    }
   };
 
   return (

@@ -17,4 +17,5 @@ export type TextInputType = {
     | 'url';
   errorMessage?: string | null | undefined;
   onBlur: (value) => void;
+  onFocus?: (event?: never) => void;
 };

@@ -63,6 +63,9 @@ export const maxChartValue = (value: number | null | undefined) => {
   if (!value || isNaN(value) || value < 10) {
     return 10;
   }
+  if (value > 10000) {
+    return Math.ceil(value / 1000) * 1000 + 1000;
+  }
   const k = Math.floor(Math.log10(value));
   return Math.floor((value + 10 ** k) / 10 ** k) * 10 ** k;
 };

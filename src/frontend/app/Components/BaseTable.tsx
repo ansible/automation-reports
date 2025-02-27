@@ -13,6 +13,8 @@ export const BaseTable: React.FunctionComponent<{
   sort: SortProps;
   loading: boolean;
   onItemEdit: (value: number, item: TableResult) => void;
+  onItemFocus?: (event?: never) => void;
+  onItemBlur?: (event?: never) => void;
 }> = (props) => {
   const [activeSortIndex, setActiveSortIndex] = React.useState<number | undefined>(0);
   const [activeSortDirection, setActiveSortDirection] = React.useState<'asc' | 'desc' | undefined>('asc');
@@ -65,7 +67,6 @@ export const BaseTable: React.FunctionComponent<{
   );
 
   const handleBlur = (value: number, item: TableResult, rowNum: number) => {
-    console.log(item);
     if (value < 1) {
       setEditRow(rowNum);
       setEditingError('Value must be greater then 0!');
@@ -74,6 +75,12 @@ export const BaseTable: React.FunctionComponent<{
     setEditRow(undefined);
     setEditingError('');
     props.onItemEdit(value, item);
+  };
+
+  const handleFocus = (event?: never) => {
+    if (props.onItemFocus) {
+      props.onItemFocus(event);
+    }
   };
 
   return (
@@ -122,6 +129,7 @@ export const BaseTable: React.FunctionComponent<{
                           value={item[column.name]}
                           isDisabled={editingError?.length > 0 && editRow !== rowNum}
                           errorMessage={editRow === rowNum ? editingError : ''}
+                          onFocus={handleFocus}
                         />
                       </div>
                     ) : (

@@ -10,7 +10,7 @@ import { RestService } from '@app/Services';
 import { deepClone } from '@app/Utils';
 import { DashboardTopTableColumn, ReportDetail, TableResponse, TableResult, UrlParams } from '@app/Types';
 import { useAppSelector } from '@app/hooks';
-import { filterRetrieveError } from '@app/Store';
+import { automatedProcessCost, filterRetrieveError, manualCostAutomation } from '@app/Store';
 import ErrorState from '@patternfly/react-component-groups/dist/dynamic/ErrorState';
 import {
   DashboardBarChart,
@@ -19,6 +19,10 @@ import {
   DashboardTopTable,
   DashboardTotalCards,
 } from '@app/Dashboard';
+
+const refreshInterval: string = process.env.DATA_REFRESH_INTERVAL_SECONDS
+  ? process.env.DATA_REFRESH_INTERVAL_SECONDS
+  : '60';
 
 const Dashboard: React.FunctionComponent = () => {
   const context = React.useContext(ParamsContext);
@@ -33,6 +37,12 @@ const Dashboard: React.FunctionComponent = () => {
   const [loading, setLoading] = React.useState<boolean>(true);
   const [tableLoading, setTableLoading] = React.useState<boolean>(true);
   const prevParams: React.RefObject<UrlParams> = React.useRef({} as UrlParams);
+
+  const hourly_manual_costs = useAppSelector(manualCostAutomation);
+  const hourly_automated_process_costs = useAppSelector(automatedProcessCost);
+  const interval = React.useRef<number | undefined>(undefined);
+
+  const controller = React.useRef<AbortController | undefined>(undefined);
 
   const handelError = (error: unknown) => {
     if (error?.['name'] !== 'CanceledError') {
@@ -49,6 +59,7 @@ const Dashboard: React.FunctionComponent = () => {
     try {
       response = await RestService.fetchReportDetails(signal, queryParams);
       setDetailData(response);
+      afterDataRetrieve();
     } catch (e) {
       handelError(e);
     } finally {
@@ -56,14 +67,10 @@ const Dashboard: React.FunctionComponent = () => {
     }
   };
 
-  const fetchServerTableData = async (
-    signal: AbortSignal | undefined = undefined,
-    fetchDetails: boolean = true,
-    useLoader: boolean = true,
-  ) => {
-    if (!signal) {
-      const ctrl = new AbortController();
-      signal = ctrl.signal;
+  const fetchServerTableData = async (fetchDetails: boolean = true, useLoader: boolean = true) => {
+    clearTimeout();
+    if (!controller.current) {
+      controller.current = new AbortController();
     }
     if ((!params.date_range || params.date_range === 'custom') && (!params?.start_date || !params?.end_date)) {
       return;
@@ -74,12 +81,16 @@ const Dashboard: React.FunctionComponent = () => {
     }
 
     if (useLoader) {
-      setLoading(true);
+      if (fetchDetails) {
+        setLoading(true);
+      } else {
+        setTableLoading(true);
+      }
     }
     const queryParams = deepClone(params) as object;
     let tableResponse: TableResponse;
     try {
-      tableResponse = await RestService.fetchReports(signal, queryParams);
+      tableResponse = await RestService.fetchReports(controller.current.signal, queryParams);
       setTableData(tableResponse);
     } catch (e) {
       handelError(e);
@@ -90,12 +101,33 @@ const Dashboard: React.FunctionComponent = () => {
       }
     }
     if (fetchDetails) {
-      await fetchServerReportDetails(signal);
+      await fetchServerReportDetails(controller.current.signal);
+    } else {
+      afterDataRetrieve();
+    }
+  };
+
+  const afterDataRetrieve = () => {
+    interval.current = window.setTimeout(
+      () => {
+        fetchServerTableData(true, false).then();
+      },
+      parseInt(refreshInterval) * 1000,
+    );
+  };
+
+  const clearTimeout = () => {
+    controller.current?.abort();
+    controller.current = undefined;
+    if (interval.current) {
+      window.clearTimeout(interval.current);
+      interval.current = undefined;
     }
   };
 
   React.useEffect(() => {
-    const controller = new AbortController();
+    clearTimeout();
+    controller.current = new AbortController();
     let fetchDetail = false;
     for (const [key, value] of Object.entries(params)) {
       if (!key || key === 'page' || key === 'page_size' || key === 'ordering') {
@@ -106,29 +138,41 @@ const Dashboard: React.FunctionComponent = () => {
         break;
       }
     }
-    fetchServerTableData(controller.signal, fetchDetail).then();
+    fetchServerTableData(fetchDetail).then();
     prevParams.current = params;
     return () => {
-      controller.abort();
+      controller.current?.abort();
     };
   }, [params]);
 
   const costChanged = (type: string, value: number) => {
-    setTableLoading(true);
-    RestService.updateCosts({ type: type, value: value })
-      .then(() => {
-        fetchServerTableData(undefined, true, false).then();
-      })
-      .catch((e) => {
-        handelError(e);
-      });
+    const oldValue = type === 'manual' ? hourly_manual_costs : hourly_automated_process_costs;
+    if (oldValue !== value) {
+      clearTimeout();
+      setLoading(true);
+      RestService.updateCosts({ type: type, value: value })
+        .then(() => {
+          fetchServerTableData(true, false).then();
+        })
+        .catch((e) => {
+          handelError(e);
+        });
+    } else {
+      afterDataRetrieve();
+    }
   };
 
-  const onItemEdit = (value: number, item: TableResult) => {
-    setTableLoading(true);
-    RestService.updateTemplate(item.job_template_id, value)
+  const onItemEdit = (value: number | string, item: TableResult) => {
+    const val = typeof value === 'string' ? parseFloat(value) : value;
+    if (val === item.manual_time) {
+      afterDataRetrieve();
+      return;
+    }
+    clearTimeout();
+    setLoading(true);
+    RestService.updateTemplate(item.job_template_id, val)
       .then(() => {
-        fetchServerTableData(undefined, true, false).then();
+        fetchServerTableData(true, false).then();
       })
       .catch((e) => {
         handelError(e);
@@ -156,6 +200,10 @@ const Dashboard: React.FunctionComponent = () => {
       title: 'Total number of running jobs',
     },
   ];
+
+  const onInputFocus = () => {
+    clearTimeout();
+  };
 
   return (
     <div>
@@ -241,6 +289,7 @@ const Dashboard: React.FunctionComponent = () => {
               costOfManualAutomation={detailData.cost_of_manual_automation}
               onItemEdit={onItemEdit}
               loading={tableLoading}
+              onInputFocus={onInputFocus}
             ></DashboardTable>
           </div>
         </div>
