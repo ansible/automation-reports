@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardBody, CardTitle } from '@patternfly/react-core';
 import { DashboardTotals } from './DashboardTotals';
 import { DashboardChartProps } from '@app/Types';
-import { generateChartData } from '@app/Utils';
+import { formatNumber, generateChartData } from '@app/Utils';
 import {
   Chart,
   ChartAxis,
@@ -39,13 +39,13 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
               ariaTitle="Number of hosts jobs are running on"
               containerComponent={
                 <ChartVoronoiContainer
-                  labels={({ datum }) => `${datum.x}: ${datum.y?.toLocaleString('en-US')}`}
+                  labels={({ datum }) => `${datum.x}: ${formatNumber(datum?.y)}`}
                   constrainToVisibleArea
                   labelComponent={<ChartTooltip style={{ fontSize: 6 }} />}
                 />
               }
               domain={{ x: [0, chartData.items.length + 1] }}
-              name="chart4"
+              name="numberOfHostsChart"
               padding={{
                 bottom:
                   chartData.range === 'hour' || chartData.range === 'month' || chartData.items.length > 11 ? 36 : 24,
@@ -63,7 +63,12 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
                   },
                 }}
               />
-              <ChartAxis tickValues={chartData.tickValues} dependentAxis style={{ tickLabels: { fontSize: 6 } }} />
+              <ChartAxis
+                tickValues={chartData.tickValues}
+                dependentAxis
+                style={{ tickLabels: { fontSize: 6 } }}
+                tickFormat={(n) => formatNumber(n)}
+              />
               {!props.loading && chartData.items.length > 0 && (
                 <ChartGroup>
                   <ChartBar

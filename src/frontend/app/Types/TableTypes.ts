@@ -103,13 +103,8 @@ export type ReportDetail = {
   host_chart: ChartData;
 };
 
-export type DashboardTopTableColumn = {
-  name: string;
-  title: string;
-};
-
 export type DashboardTopTableProps = {
   title: string;
-  columns: DashboardTopTableColumn[];
+  columns: columnProps[];
   data: TopUser[] | TopProject[];
 };

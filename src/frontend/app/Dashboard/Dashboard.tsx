@@ -8,7 +8,7 @@ import { Grid, GridItem, Spinner } from '@patternfly/react-core';
 import { ParamsContext } from '../Store/paramsContext';
 import { RestService } from '@app/Services';
 import { deepClone } from '@app/Utils';
-import { DashboardTopTableColumn, ReportDetail, TableResponse, TableResult, UrlParams } from '@app/Types';
+import { columnProps, ReportDetail, TableResponse, TableResult, UrlParams } from '@app/Types';
 import { useAppSelector } from '@app/hooks';
 import { automatedProcessCost, filterRetrieveError, manualCostAutomation } from '@app/Store';
 import ErrorState from '@patternfly/react-component-groups/dist/dynamic/ErrorState';
@@ -43,35 +43,44 @@ const Dashboard: React.FunctionComponent = () => {
   const interval = React.useRef<number | undefined>(undefined);
 
   const controller = React.useRef<AbortController | undefined>(undefined);
+  const detailController = React.useRef<AbortController | undefined>(undefined);
 
   const handelError = (error: unknown) => {
     if (error?.['name'] !== 'CanceledError') {
       setLoadDataError(true);
+      setLoading(false);
+      setTableLoading(false);
     }
   };
 
-  const fetchServerReportDetails = async (signal: AbortSignal) => {
+  const fetchServerReportDetails = (signal: AbortSignal) => {
     const queryParams = deepClone(params) as object;
     delete queryParams['page'];
     delete queryParams['page_size'];
     delete queryParams['ordering'];
     let response: ReportDetail;
-    try {
-      response = await RestService.fetchReportDetails(signal, queryParams);
-      setDetailData(response);
-      afterDataRetrieve();
-    } catch (e) {
-      handelError(e);
-    } finally {
-      setLoading(false);
-    }
+
+    RestService.fetchReportDetails(signal, queryParams)
+      .then((response) => {
+        setDetailData(response);
+        afterDataRetrieve();
+        setLoading(false);
+      })
+      .catch((e) => {
+        handelError(e);
+      });
   };
 
-  const fetchServerTableData = async (fetchDetails: boolean = true, useLoader: boolean = true) => {
-    clearTimeout();
+  const fetchServerTableData = (fetchDetails: boolean = true, useLoader: boolean = true) => {
+    if (interval.current) {
+      clearTimeout();
+
+      detailController.current = new AbortController();
+    }
     if (!controller.current) {
       controller.current = new AbortController();
     }
+
     if ((!params.date_range || params.date_range === 'custom') && (!params?.start_date || !params?.end_date)) {
       return;
     }
@@ -89,28 +98,29 @@ const Dashboard: React.FunctionComponent = () => {
     }
     const queryParams = deepClone(params) as object;
     let tableResponse: TableResponse;
-    try {
-      tableResponse = await RestService.fetchReports(controller.current.signal, queryParams);
-      setTableData(tableResponse);
-    } catch (e) {
-      handelError(e);
-    } finally {
-      setTableLoading(false);
-      if (!fetchDetails) {
-        setLoading(false);
-      }
-    }
-    if (fetchDetails) {
-      await fetchServerReportDetails(controller.current.signal);
-    } else {
-      afterDataRetrieve();
-    }
+    RestService.fetchReports(controller.current.signal, queryParams)
+      .then((tableResponse) => {
+        setTableData(tableResponse);
+        setTableLoading(false);
+        if (fetchDetails) {
+          if (!detailController.current) {
+            detailController.current = new AbortController();
+          }
+          fetchServerReportDetails(detailController.current.signal);
+        } else {
+          afterDataRetrieve();
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        handelError(e);
+      });
   };
 
   const afterDataRetrieve = () => {
     interval.current = window.setTimeout(
       () => {
-        fetchServerTableData(true, false).then();
+        fetchServerTableData(true, false);
       },
       parseInt(refreshInterval) * 1000,
     );
@@ -119,6 +129,8 @@ const Dashboard: React.FunctionComponent = () => {
   const clearTimeout = () => {
     controller.current?.abort();
     controller.current = undefined;
+    detailController.current?.abort();
+    detailController.current = undefined;
     if (interval.current) {
       window.clearTimeout(interval.current);
       interval.current = undefined;
@@ -128,6 +140,7 @@ const Dashboard: React.FunctionComponent = () => {
   React.useEffect(() => {
     clearTimeout();
     controller.current = new AbortController();
+    detailController.current = new AbortController();
     let fetchDetail = false;
     for (const [key, value] of Object.entries(params)) {
       if (!key || key === 'page' || key === 'page_size' || key === 'ordering') {
@@ -138,10 +151,11 @@ const Dashboard: React.FunctionComponent = () => {
         break;
       }
     }
-    fetchServerTableData(fetchDetail).then();
+    fetchServerTableData(fetchDetail);
     prevParams.current = params;
     return () => {
       controller.current?.abort();
+      detailController.current?.abort();
     };
   }, [params]);
 
@@ -152,7 +166,7 @@ const Dashboard: React.FunctionComponent = () => {
       setLoading(true);
       RestService.updateCosts({ type: type, value: value })
         .then(() => {
-          fetchServerTableData(true, false).then();
+          fetchServerTableData(true, false);
         })
         .catch((e) => {
           handelError(e);
@@ -172,14 +186,14 @@ const Dashboard: React.FunctionComponent = () => {
     setLoading(true);
     RestService.updateTemplate(item.job_template_id, val)
       .then(() => {
-        fetchServerTableData(true, false).then();
+        fetchServerTableData(true, false);
       })
       .catch((e) => {
         handelError(e);
       });
   };
 
-  const topProjectColumns: DashboardTopTableColumn[] = [
+  const topProjectColumns: columnProps[] = [
     {
       name: 'project_name',
       title: 'Project name',
@@ -187,10 +201,11 @@ const Dashboard: React.FunctionComponent = () => {
     {
       name: 'count',
       title: 'Total number of running jobs',
+      type: 'number',
     },
   ];
 
-  const topUsersColumns: DashboardTopTableColumn[] = [
+  const topUsersColumns: columnProps[] = [
     {
       name: 'user_name',
       title: 'User name',
@@ -198,6 +213,7 @@ const Dashboard: React.FunctionComponent = () => {
     {
       name: 'count',
       title: 'Total number of running jobs',
+      type: 'number',
     },
   ];
 

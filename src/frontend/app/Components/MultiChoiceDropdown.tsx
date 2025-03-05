@@ -114,16 +114,7 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
   );
 
   const menu = (
-    <Menu
-      ref={menuRef}
-      id="mixed-group-items-menu"
-      onSelect={props.onSelect}
-      style={
-        {
-          width: '220px',
-        } as React.CSSProperties
-      }
-    >
+    <Menu ref={menuRef} id="mixed-group-items-menu" onSelect={props.onSelect}>
       {menuSearch}
       <Divider />
       {props?.options?.length && (

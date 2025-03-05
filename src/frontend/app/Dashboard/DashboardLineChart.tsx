@@ -11,7 +11,7 @@ import {
   ChartTooltip,
   ChartVoronoiContainer,
 } from '@patternfly/react-charts/victory';
-import { generateChartData } from '@app/Utils';
+import { formatNumber, generateChartData } from '@app/Utils';
 import '../styles/chart.scss';
 import { AnimatePropTypeInterface } from 'victory-core';
 
@@ -38,7 +38,7 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
               domain={{ x: [0, chartData.items.length + 1] }}
               containerComponent={
                 <ChartVoronoiContainer
-                  labels={({ datum }) => `${datum?.x}: ${datum?.y?.toLocaleString('en-US')}`}
+                  labels={({ datum }) => `${datum?.x}: ${formatNumber(datum?.y)}`}
                   constrainToVisibleArea
                   labelComponent={<ChartTooltip style={{ fontSize: 6 }} />}
                 />
@@ -65,6 +65,7 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
               <ChartAxis
                 dependentAxis
                 tickValues={chartData.tickValues}
+                tickFormat={(n) => formatNumber(n)}
                 style={{
                   tickLabels: {
                     fontSize: 6,
