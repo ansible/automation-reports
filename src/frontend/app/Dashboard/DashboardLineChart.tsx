@@ -38,7 +38,7 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
               domain={{ x: [0, chartData.items.length + 1] }}
               containerComponent={
                 <ChartVoronoiContainer
-                  labels={({ datum }) => `${datum?.x}: ${formatNumber(datum?.y)}`}
+                  labels={({ datum }) => `${formatNumber(datum?.y)}`}
                   constrainToVisibleArea
                   labelComponent={<ChartTooltip style={{ fontSize: 6 }} />}
                 />
