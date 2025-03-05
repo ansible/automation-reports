@@ -13,15 +13,15 @@ def sec2time(sec):
 
 class JobSerializer(serializers.ModelSerializer):
     runs = serializers.IntegerField(read_only=True)
-    elapsed = serializers.DecimalField(max_digits=10, decimal_places=3)
+    elapsed = serializers.DecimalField(max_digits=10, decimal_places=2)
     elapsed_str = serializers.SerializerMethodField()
     cluster = serializers.IntegerField(read_only=True)
     manual_time = serializers.IntegerField(read_only=True)
     successful_runs = serializers.IntegerField(read_only=True)
     failed_runs = serializers.IntegerField(read_only=True)
-    automated_costs = serializers.DecimalField(max_digits=10, decimal_places=3, read_only=True)
-    manual_costs = serializers.DecimalField(max_digits=10, decimal_places=3, read_only=True)
-    savings = serializers.DecimalField(max_digits=10, decimal_places=3, read_only=True)
+    automated_costs = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
+    manual_costs = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
+    savings = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
 
     class Meta:
         model = Job

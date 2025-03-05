@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.db import connection
 from django.db.models import Count, Sum, F, CharField, Func, Value
 
-from backend.apps.clusters.models import Costs, CostsChoices, JobStatusChoices, DateRangeChoices
+from backend.apps.clusters.models import Costs, CostsChoices, JobStatusChoices, DateRangeChoices, JobHostSummary
 
 
 def get_costs(from_db=False):
@@ -193,7 +193,7 @@ def get_chart_x_axis(chart_range):
     start = date_range.start
     end = date_range.end
     if x_axis_range == "hour":
-        for i in range(23):
+        for i in range(24):
             d = start.replace(hour=i, minute=0, second=0, microsecond=0)
             result.append(d)
     elif x_axis_range == "day":
@@ -234,27 +234,23 @@ def get_chart_x_axis(chart_range):
 
 def get_unique_hosts_db(start_date, end_date, options):
     retval = None
-    params = {
-        'successful': JobStatusChoices.SUCCESSFUL,
-        'failed': JobStatusChoices.FAILED,
-    }
     organizations = options.get("organization", None)
     clusters = options.get("cluster", None)
     job_templates = options.get("job_template", None)
     labels = options.get("label", None)
-
+    params = {
+        'successful': JobStatusChoices.SUCCESSFUL,
+        'failed': JobStatusChoices.FAILED,
+        'num_hosts': 0
+    }
     sql = '''
-            with jobs as (
-            select job.id 
-                from clusters_job job
-            '''
-    if labels is not None:
-        sql += '''
-            join clusters_joblabel label on label.job_id = job.id 
-        '''
-    sql += '''
-                WHERE job.status IN (%(successful)s, %(failed)s) 
-            '''
+        select count(*) from (
+        select s.host_id
+        FROM clusters_jobhostsummary s
+        JOIN clusters_job job on job.id=s.job_id
+        WHERE job.status IN (%(successful)s, %(failed)s)
+        AND job.num_hosts > %(num_hosts)s
+    '''
     if start_date is not None:
         sql += ' AND job.finished >= %(start_date)s'
         params['start_date'] = start_date
@@ -270,28 +266,18 @@ def get_unique_hosts_db(start_date, end_date, options):
     if job_templates is not None:
         sql += ' AND job.job_template_id = ANY(%(job_templates)s)'
         params['job_templates'] = [int(n) for n in job_templates]
-
     if labels is not None:
-        sql += ' AND label.label_id = ANY(%(labels)s)'
+        sql += ' AND job.id in (select job_id from clusters_joblabel where label_id = ANY(%(labels)s))'
         params['labels'] = [int(n) for n in labels]
 
-    sql += ')'
-    sql += '''
-            select count(*) from (
-            select
-            host_id
-            from clusters_jobhostsummary
-            where job_id in (select id from jobs)
-            group by host_id)a
-    '''
-
+    sql += ' group by s.host_id)t'
     with connection.cursor() as cursor:
         cursor.execute(sql, params)
         rows = cursor.fetchall()
         if len(rows) > 0 and len(rows[0]) > 0:
             retval = rows[0][0]
-
     return retval
+
 
 
 def get_unique_host_count(options):
@@ -349,6 +335,7 @@ def get_chart_data(qs, request):
     ).order_by("date")
 
     y_data = {datetime.strptime(d["date"], '%Y-%m-%d %H:%M:%S+00').astimezone(pytz.UTC): d for d in qs}
+
     for x in x_axis:
         y = y_data.get(x, {"runs": 0, "num_hosts": 0})
         result["host_chart"]["items"].append({"x": x, "y": y["num_hosts"]})
