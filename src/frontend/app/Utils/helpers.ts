@@ -21,28 +21,29 @@ export const formatChartDate = (range: ChartRange, value: Date | string): string
   switch (range) {
     case 'hour': {
       const _d = new Date(value);
-      const hour = _d.toLocaleString('default', { hour: '2-digit' });
+      const hour = _d.toLocaleString('default', { hour: '2-digit', timeZone: 'UTC' });
       return `${hour}`;
     }
     case 'day': {
       const _d = new Date(value);
-      const day = _d.toLocaleString('default', { day: '2-digit' });
-      const month = _d.toLocaleString('default', { month: 'short' });
+      const day = _d.toLocaleString('default', { day: '2-digit', timeZone: 'UTC' });
+      const month = _d.toLocaleString('default', { month: 'short', timeZone: 'UTC' });
       return `${day} ${month}`;
     }
     case 'month': {
       const _d = new Date(value);
-      const month = _d.toLocaleString('default', { month: 'short' });
-      const year = _d.toLocaleString('default', { year: 'numeric' });
+      const month = _d.toLocaleString('default', { month: 'short', timeZone: 'UTC' });
+      const year = _d.toLocaleString('default', { year: 'numeric', timeZone: 'UTC' });
       return `${month} ${year}`;
     }
     case 'year': {
       const _d = new Date(value);
-      const year = _d.toLocaleString('default', { year: 'numeric' });
+      const year = _d.toLocaleString('default', { year: 'numeric', timeZone: 'UTC' });
       return `${year}`;
     }
-    default:
+    default: {
       return value.toString();
+    }
   }
 };
 
@@ -81,6 +82,7 @@ export const generateChartData = (data: ChartData) => {
       if (y > maxValue) {
         maxValue = y;
       }
+      //console.log(y);
       items.push({
         x: x,
         y: y,
@@ -111,5 +113,20 @@ export const formatCurrency = (value: number | string | undefined | null): strin
     currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
+  });
+};
+
+export const formatNumber = (value: number | string | undefined | null, decimalPlaces = 0): string => {
+  if (value === undefined || value === null) {
+    return '';
+  }
+
+  if (typeof value === 'string' && isDigit(value)) {
+    value = parseFloat(value);
+  }
+
+  return value.toLocaleString('en-US', {
+    minimumFractionDigits: decimalPlaces,
+    maximumFractionDigits: decimalPlaces,
   });
 };

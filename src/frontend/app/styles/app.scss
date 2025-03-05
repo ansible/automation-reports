@@ -65,11 +65,13 @@ body,
 .main-layout {
   background: var(--pf-t--global--background--color--secondary--default);
   width: 100vw;
-  // height: calc(100vh - 151px);
   overflow: auto;
   padding: 24px;
 }
 
+.pf-v6-c-menu {
+  margin-top: 3px;
+}
 .pf-v6-c-menu__content {
   max-height: 300px;
   overflow: auto;
@@ -114,7 +116,7 @@ input {
   top: 70px;
   height: calc(100vh - 70px);
   width: 100%;
-  z-index: 500;
+  z-index: 1500;
   opacity: 0.6;
   display: flex;
   .spinner {

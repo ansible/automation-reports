@@ -251,7 +251,7 @@ export const Filters: React.FunctionComponent = () => {
         onSelect={onMultiSelectionChanged}
         style={
           {
-            width: '220px',
+            minWidth: '250px',
           } as React.CSSProperties
         }
       ></MultiChoiceDropdown>

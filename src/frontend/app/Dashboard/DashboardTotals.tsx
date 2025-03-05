@@ -1,6 +1,6 @@
 import React from 'react';
-import { Icon } from '@patternfly/react-core';
-import { ArrowCircleDownIcon, ArrowCircleUpIcon, MinusIcon } from '@patternfly/react-icons';
+import { Icon, Tooltip } from '@patternfly/react-core';
+import { ArrowCircleDownIcon, ArrowCircleUpIcon, MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import '../styles/dashboard-totals.scss';
 
 type CardProps = {
@@ -8,6 +8,7 @@ type CardProps = {
   result: number | string | null;
   percentage?: number | null;
   invert?: boolean;
+  tooltip?: string;
 };
 
 export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
@@ -55,7 +56,16 @@ export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
     <>
       <div className="content">
         <div>
-          <span className="pf-v6-u-font-size-md">{props.title}</span>
+          <span className="pf-v6-u-font-size-md">
+            {props.title}
+            {props.tooltip && (
+              <Tooltip content={props.tooltip}>
+                <Icon size="md" className="pf-v6-u-ml-sm">
+                  <OutlinedQuestionCircleIcon />
+                </Icon>
+              </Tooltip>
+            )}
+          </span>
         </div>
         <div className="value">
           <span className="pf-v6-u-font-size-4xl fw-500 result">{props.result?.toLocaleString('en-US')}</span>

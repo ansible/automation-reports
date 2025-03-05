@@ -103,7 +103,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                   <FormGroup
                     label="Hourly manual cost of automation ($)"
                     labelHelp={
-                      <Tooltip content="Content">
+                      <Tooltip content="e.g. average salary of mid-level Software Engineer">
                         <Icon size="md" className="pf-v6-u-ml-sm">
                           <OutlinedQuestionCircleIcon />
                         </Icon>
@@ -126,7 +126,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                   <FormGroup
                     label="Hourly automated process cost ($)"
                     labelHelp={
-                      <Tooltip content="Content">
+                      <Tooltip content="Average hourly cost of running automated processes">
                         <Icon size="md" className="pf-v6-u-ml-sm">
                           <OutlinedQuestionCircleIcon />
                         </Icon>
@@ -151,6 +151,9 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                   title={'Cost of manual automation'}
                   result={formatCurrency(props?.costOfManualAutomation?.value)}
                   percentage={props?.costOfManualAutomation?.index}
+                  tooltip={
+                    'Manual time of automation (minutes) / 60 * Number of hosts jobs were run on * Hourly manual cost of automation '
+                  }
                 />
               </FlexItem>
               <FlexItem>
@@ -158,6 +161,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                   title={'Cost of automated execution'}
                   result={formatCurrency(props?.costOfAutomatedExecution?.value)}
                   percentage={props?.costOfAutomatedExecution?.index}
+                  tooltip={'Running time (s) / 3600 * Hourly automated process cost'}
                 />
               </FlexItem>
               <FlexItem>
@@ -165,6 +169,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                   title={'Total savings'}
                   result={formatCurrency(props?.totalSaving?.value)}
                   percentage={props.totalSaving?.index}
+                  tooltip={'Cost of manual automation - Cost of automated execution'}
                 />
               </FlexItem>
             </Flex>
