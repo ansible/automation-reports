@@ -24,22 +24,26 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         costs = get_costs()
         automated_cost_value = costs[CostsChoices.AUTOMATED].value / decimal.Decimal(3600)
         manual_cost_value = costs[CostsChoices.MANUAL].value / decimal.Decimal(60)
-        qs = (Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED]).
-        values(
-            "name",
-            "cluster",
-            "job_template_id",
-            manual_time=F("job_template__manual_time_minutes"),
-        ).annotate(
-            runs=Count("id"),
-            successful_runs=Count("id", filter=Q(status=JobStatusChoices.SUCCESSFUL)),
-            failed_runs=Count("id", filter=Q(status=JobStatusChoices.FAILED)),
-            elapsed=Sum("elapsed"),
-            num_hosts=Sum("num_hosts"),
-            automated_costs=(F("elapsed") * automated_cost_value),
-            manual_costs=(F("num_hosts") * F("manual_time") * manual_cost_value),
-            savings=(F("manual_costs") - F("automated_costs")),
-        ))
+        qs = (
+            Job.objects.filter(
+                status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED],
+                num_hosts__gt=0
+            ).
+            values(
+                "name",
+                "cluster",
+                "job_template_id",
+                manual_time=F("job_template__manual_time_minutes"),
+            ).annotate(
+                runs=Count("id"),
+                successful_runs=Count("id", filter=Q(status=JobStatusChoices.SUCCESSFUL)),
+                failed_runs=Count("id", filter=Q(status=JobStatusChoices.FAILED)),
+                elapsed=Sum("elapsed"),
+                num_hosts=Sum("num_hosts"),
+                automated_costs=(F("elapsed") * automated_cost_value),
+                manual_costs=(F("num_hosts") * F("manual_time") * manual_cost_value),
+                savings=(F("manual_costs") - F("automated_costs")),
+            ))
         return filter_by_range(self.request, queryset=qs, prev_range=prev_range)
 
     def get_queryset(self):
@@ -50,8 +54,8 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         filtered_qs = Job.objects.all()
         filtered_qs = self.filter_queryset(filtered_qs)
         ### TOP USERS ###
-        top_users_qs = (filter_by_range(request, filtered_qs).
-                        filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED]))
+        top_users_qs = (filter_by_range(request, filtered_qs)
+                        .filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED], num_hosts__gt=0))
         top_users_qs = (top_users_qs.filter(launched_by__isnull=False).
                         values(
             user_id=F("launched_by"),
@@ -62,12 +66,11 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         prev_qs = self.get_base_queryset(prev_range=True)
         if prev_qs:
             prev_qs = self.filter_queryset(prev_qs)
-
         report_data = get_report_data(list(qs), list(prev_qs) if prev_qs else [])
 
         ## TOP PROJECTS ##
         top_projects_qs = (filter_by_range(request, filtered_qs).
-                           filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED]))
+                           filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED], num_hosts__gt=0))
         top_projects_qs = (top_projects_qs.filter(project__isnull=False).values(
             "project_id",
             project_name=F("project__name")
@@ -77,10 +80,9 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         unique_host = get_unique_host_count(options=get_filter_options(request))
 
         ## CHARTS ###
-        chart_qs = Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED])
+        chart_qs = Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED], num_hosts__gt=0)
         chart_qs = self.filter_queryset(chart_qs)
         chart_qs = filter_by_range(request, chart_qs)
-
 
         response = {
             "users": list(top_users_qs),
