@@ -56,7 +56,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         ### TOP USERS ###
         top_users_qs = (filter_by_range(request, filtered_qs)
                         .filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED], num_hosts__gt=0))
-        top_users_qs = (top_users_qs.filter(launched_by__isnull=False).
+        top_users_qs = (top_users_qs.filter(launched_by__isnull=False, launched_by__type='user').
                         values(
             user_id=F("launched_by"),
             user_name=F("launched_by__name")
