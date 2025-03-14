@@ -1,0 +1,316 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+from datetime import datetime
+from decimal import Decimal
+
+import pytest
+import pytz
+from django.test import TestCase
+from freezegun import freeze_time
+from freezegun.api import FakeDatetime
+from rest_framework import status
+from rest_framework.reverse import reverse
+
+from backend.apps.clusters.helpers import get_costs
+from backend.apps.clusters.models import (
+    Cluster,
+    Organization,
+    Label,
+    JobTemplate,
+    Job,
+    JobTypeChoices,
+    JobLaunchTypeChoices,
+    InstanceGroup,
+    ExecutionEnvironment,
+    Inventory,
+    AAPUser,
+    JobStatusChoices,
+    Project,
+    JobHostSummary,
+    Host,
+    CostsChoices)
+
+
+@pytest.mark.django_db()
+class TestViews(TestCase):
+    setup_done = False
+
+    @classmethod
+    def setUpTestData(cls):
+        cluster = Cluster.objects.create(protocol="https", address="localhost", port=8000, access_token="<PASSWORD>", verify_ssl=False)
+        Organization.objects.create(name="Organization B", cluster=cluster, external_id=1)
+        Organization.objects.create(name="Organization A", cluster=cluster, external_id=2)
+        Label.objects.create(name="Label A", cluster=cluster, external_id=1)
+        Label.objects.create(name="Label C", cluster=cluster, external_id=2)
+        Label.objects.create(name="Label B", cluster=cluster, external_id=3)
+        JobTemplate.objects.create(name="Job Template A", cluster=cluster, external_id=1)
+        JobTemplate.objects.create(name="Job Template B", cluster=cluster, external_id=1)
+        JobTemplate.objects.create(name="Job Template C", cluster=cluster, external_id=1)
+
+        InstanceGroup.objects.create(name="Instance Group A", cluster=cluster, external_id=1)
+        ExecutionEnvironment.objects.create(name="Execution Environment", cluster=cluster, external_id=1)
+        Inventory.objects.create(name="Inventory A", cluster=cluster, external_id=1)
+
+        AAPUser.objects.create(name="AAP User", cluster=cluster, external_id=1, type="user")
+        Project.objects.create(name="Project A", cluster=cluster, external_id=1)
+
+        host_1 = Host.objects.create(name="Host A", cluster=cluster, external_id=1)
+        host_2 = Host.objects.create(name="Host B", cluster=cluster, external_id=2)
+        host_3 = Host.objects.create(name="Host C", cluster=cluster, external_id=3)
+
+        job1 = Job.objects.create(
+            type=JobTypeChoices.JOB,
+            launch_type=JobLaunchTypeChoices.MANUAL,
+            name="Job Template A",
+            description="",
+            organization=Organization.objects.get(name="Organization A"),
+            instance_group=InstanceGroup.objects.get(name="Instance Group A"),
+            execution_environment=ExecutionEnvironment.objects.get(name="Execution Environment"),
+            inventory=Inventory.objects.get(name="Inventory A"),
+            job_template=JobTemplate.objects.get(name="Job Template A"),
+            launched_by=AAPUser.objects.get(name="AAP User"),
+            status=JobStatusChoices.SUCCESSFUL,
+            started=datetime.strptime('2025-03-01T10:00:00Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC')),
+            finished=datetime.strptime('2025-03-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC')),
+            elapsed=25,
+            failed=False,
+            num_hosts=2,
+            project=Project.objects.get(name="Project A"),
+            cluster=cluster,
+            external_id=1)
+
+        job2 = Job.objects.create(
+            type=JobTypeChoices.JOB,
+            launch_type=JobLaunchTypeChoices.MANUAL,
+            name="Job Template B",
+            description="",
+            organization=Organization.objects.get(name="Organization A"),
+            instance_group=InstanceGroup.objects.get(name="Instance Group A"),
+            execution_environment=ExecutionEnvironment.objects.get(name="Execution Environment"),
+            inventory=Inventory.objects.get(name="Inventory A"),
+            job_template=JobTemplate.objects.get(name="Job Template B"),
+            launched_by=AAPUser.objects.get(name="AAP User"),
+            status=JobStatusChoices.SUCCESSFUL,
+            started=datetime.strptime('2025-02-01T10:00:00Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC')),
+            finished=datetime.strptime('2025-02-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC')),
+            elapsed=25,
+            failed=False,
+            num_hosts=2,
+            project=Project.objects.get(name="Project A"),
+            cluster=cluster,
+            external_id=1)
+
+        created = datetime.strptime('2025-03-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC'))
+
+        JobHostSummary.objects.create(
+            job=job1,
+            host=host_1,
+            host_name=host_1.name,
+            created=created,
+            modified=created
+
+        )
+
+        JobHostSummary.objects.create(
+            job=job1,
+            host=host_2,
+            host_name=host_2.name,
+            created=created,
+            modified=created
+        )
+
+        created = datetime.strptime('2025-02-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC'))
+
+        JobHostSummary.objects.create(
+            job=job2,
+            host=host_1,
+            host_name=host_1.name,
+            created=created,
+            modified=created
+        )
+        JobHostSummary.objects.create(
+            job=job2,
+            host=host_2,
+            host_name=host_2.name,
+            created=created,
+            modified=created
+        )
+        JobHostSummary.objects.create(
+            job=job2,
+            host=host_3,
+            host_name=host_3.name,
+            created=created,
+            modified=created
+        )
+
+    def test_ping(self):
+        response = self.client.get(f"{reverse('ping')}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data
+        self.assertEqual(
+            dict(data),
+            dict(
+                ping="pong",
+                clusters=[
+                    dict(id=1, address="localhost")
+                ]
+            )
+        )
+
+    def test_template_options(self):
+        response = self.client.get(f"{reverse('template_options')}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            dict(response.data),
+            dict(
+                clusters=[
+                    dict(id=1, address='localhost')
+                ],
+                organizations=[
+                    dict(key=2, value='Organization A', cluster_id=1),
+                    dict(key=1, value='Organization B', cluster_id=1),
+                ],
+                labels=[
+                    dict(key=1, value='Label A', cluster_id=1),
+                    dict(key=3, value='Label B', cluster_id=1),
+                    dict(key=2, value='Label C', cluster_id=1),
+                ],
+                date_ranges=[
+                    dict(key='last_year', value='Past year'),
+                    dict(key='last_6_month', value='Past 6 months'),
+                    dict(key='last_3_month', value='Past 3 months'),
+                    dict(key='last_month', value='Past month'),
+                    dict(key='year_to_date', value='Year to date'),
+                    dict(key='quarter_to_date', value='Quarter to date'),
+                    dict(key='month_to_date', value='Month to date'),
+                    dict(key='last_3_years', value='Past 3 years'),
+                    dict(key='last_2_years', value='Past 2 years'),
+                    dict(key='custom', value='Custom'),
+                ],
+                job_templates=[
+                    dict(key=1, value='Job Template A', cluster_id=1),
+                    dict(key=2, value='Job Template B', cluster_id=1),
+                    dict(key=3, value='Job Template C', cluster_id=1),
+                ],
+                manual_cost_automation=Decimal('50.00'),
+                automated_process_cost=Decimal('20.00')
+            )
+        )
+
+    @freeze_time("2025-03-21 22:01:45", tz_offset=0)
+    def test_report(self):
+        response = self.client.get("/api/v1/report/?page=1&page_size=10&date_range=month_to_date")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data
+        self.assertEqual(
+            dict(data),
+            dict(
+                count=1,
+                next=None,
+                previous=None,
+                results=[
+                    dict(
+                        name='Job Template A',
+                        runs=1,
+                        elapsed='25.00',
+                        cluster=1,
+                        elapsed_str='0min 25sec',
+                        num_hosts=2,
+                        manual_time=60,
+                        successful_runs=1,
+                        failed_runs=0,
+                        automated_costs='0.14',
+                        manual_costs='100.00',
+                        savings='99.86',
+                        job_template_id=1
+                    )
+                ]
+            )
+        )
+
+    @freeze_time("2025-03-21 22:01:45", tz_offset=0)
+    def test_report_past_month(self):
+        response = self.client.get("/api/v1/report/?page=1&page_size=10&date_range=last_month")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data
+        self.assertEqual(
+            dict(data),
+            dict(
+                count=1,
+                next=None,
+                previous=None,
+                results=[
+                    dict(
+                        name='Job Template B',
+                        runs=1,
+                        elapsed='25.00',
+                        cluster=1,
+                        elapsed_str='0min 25sec',
+                        num_hosts=2,
+                        manual_time=60,
+                        successful_runs=1,
+                        failed_runs=0,
+                        automated_costs='0.14',
+                        manual_costs='100.00',
+                        savings='99.86',
+                        job_template_id=2
+                    )
+                ]
+            )
+        )
+
+    @freeze_time("2025-03-21 22:01:45", tz_offset=0)
+    def test_report_details(self):
+        response = self.client.get("/api/v1/report/details/?page=1&page_size=10&date_range=year_to_date")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data
+        self.assertEqual(
+            dict(data),
+            dict(
+                users=[dict(user_id=1, user_name='AAP User', count=2)],
+                projects=[dict(project_id=1, project_name='Project A', count=2)],
+                total_number_of_unique_hosts=dict(value=3, index=100),
+                total_number_of_successful_jobs=dict(value=2, index=None),
+                total_number_of_failed_jobs=dict(value=0, index=None),
+                total_number_of_job_runs=dict(value=2, index=None),
+                total_number_of_host_job_runs=dict(value=4, index=None),
+                total_hours_of_automation=dict(value=Decimal('0.01'), index=None),
+                cost_of_automated_execution=dict(value=Decimal('0.28'), index=None),
+                cost_of_manual_automation=dict(value=Decimal('200.00'), index=None),
+                total_saving=dict(value=Decimal('199.72'), index=None),
+                host_chart=dict(
+                    items=[
+                        dict(x=FakeDatetime(2025, 1, 1, 0, 0, tzinfo=pytz.UTC), y=0),
+                        dict(x=FakeDatetime(2025, 2, 1, 0, 0, tzinfo=pytz.UTC), y=2),
+                        dict(x=FakeDatetime(2025, 3, 1, 0, 0, tzinfo=pytz.UTC), y=2),
+                    ],
+                    range='month'),
+                job_chart=dict(
+                    items=[
+                        dict(x=FakeDatetime(2025, 1, 1, 0, 0, tzinfo=pytz.UTC), y=0),
+                        dict(x=FakeDatetime(2025, 2, 1, 0, 0, tzinfo=pytz.UTC), y=1),
+                        dict(x=FakeDatetime(2025, 3, 1, 0, 0, tzinfo=pytz.UTC), y=1),
+                    ],
+                    range='month'),
+            )
+        )
+
+    def test_update_template_manual_time(self):
+        job_template = JobTemplate.objects.get(name="Job Template A")
+        data = dict(manual_time_minutes=120)
+        response = self.client.put(f"/api/v1/templates/{job_template.id}/", content_type='application/json', data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        job_template = JobTemplate.objects.get(name="Job Template A")
+        self.assertEqual(job_template.manual_time_minutes, 120)
+
+    def test_update_manual_costs(self):
+        response = self.client.post(f"/api/v1/costs/", content_type='application/json', data=dict(type="manual", value=1000))
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        costs = get_costs()
+        self.assertEqual(costs[CostsChoices.MANUAL].value, 1000)
+
+    def test_update_automated_costs(self):
+        response = self.client.post(f"/api/v1/costs/", content_type='application/json', data=dict(type="automated", value=1000))
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        costs = get_costs()
+        self.assertEqual(costs[CostsChoices.AUTOMATED].value, 1000)
