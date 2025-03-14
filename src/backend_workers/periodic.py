@@ -17,7 +17,7 @@ sys.path.insert(0, str(project_root))
 os.environ.update(DJANGO_SETTINGS_MODULE="backend.django_config.settings")
 os.environ.update(LOG_LEVEL="INFO")
 
-cron_entry = os.environ.get("CRON_SYNC", "0 */4 * * *")
+cron_entry = os.environ.get("CRON_SYNC", "0 */1 * * *")
 
 django.setup()
 from django.conf import settings

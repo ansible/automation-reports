@@ -44,7 +44,7 @@ class ApiConnector(ABC):
                 self.since = self.cluster_sync_data.last_job_finished_date
             else:
                 now = datetime.datetime.now(datetime.timezone.utc)
-                cron_entry = os.environ.get("CRON_SYNC", "0 */4 * * *")
+                cron_entry = os.environ.get("CRON_SYNC", "0 */1 * * *")
                 entry = CronTab(cron_entry)
                 self.since = entry.previous(now=now, default_utc=True, return_datetime=True)
 
