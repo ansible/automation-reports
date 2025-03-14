@@ -17,5 +17,5 @@ class PingView(APIView):
       status=status.HTTP_200_OK,
       data={
         "ping": "pong",
-        "instances": ClusterSerializer(clusters, many=True).data
+        "clusters": ClusterSerializer(clusters, many=True).data
       })

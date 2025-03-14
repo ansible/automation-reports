@@ -103,7 +103,7 @@ class DateRangeChoices(models.TextChoices):
                 start_date = end_date.replace(day=1)
 
                 prev_end_date = now - relativedelta(months=2)
-                num_days = calendar.monthrange(prev_end_date.year, end_date.month)[1]
+                num_days = calendar.monthrange(prev_end_date.year, prev_end_date.month)[1]
                 prev_end_date = prev_end_date.replace(day=num_days)
                 prev_start_date = prev_end_date.replace(day=1)
 
@@ -143,7 +143,7 @@ class DateRangeChoices(models.TextChoices):
                 quarter = (now.month - 1) // 3 + 1
                 quarter_start_month = 3 * quarter - 2
                 start_date = now.replace(day=1, month=int(quarter_start_month))
-
+                quarter_end_moth = now.month
                 year = start_date.year
                 if quarter == 1:
                     year -= 1
@@ -152,7 +152,7 @@ class DateRangeChoices(models.TextChoices):
                     prev_quarter = quarter - 1
 
                 prev_quarter_start_month = 3 * prev_quarter - 2
-                prev_quarter_end_month = 3 * prev_quarter
+                prev_quarter_end_month = prev_quarter_start_month + (quarter_end_moth - quarter_start_month)
 
                 num_days = calendar.monthrange(year, prev_quarter_end_month)[1]
 
