@@ -1,5 +1,3 @@
-from random import choices
-
 from rest_framework import serializers
 
 from backend.apps.clusters.models import Costs, CostsChoices
