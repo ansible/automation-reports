@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Dashboard } from '@app/Dashboard';
-import ParamsContextProvider from '@app/Store/paramsContext';
 
 export interface IAppRoute {
   label?: string; // Excluding the label will exclude the route from the nav sidebar in AppLayout
@@ -30,14 +29,12 @@ const routes: IAppRoute[] = [
 ];
 
 const AppRoutes = (): React.ReactElement => (
-  <ParamsContextProvider>
-    <Routes>
-      {routes.map((route: IAppRoute, index: number) => (
-        <Route path={route.path} element={route.element} key={index} />
-      ))}
-      <Route path="*" element={<Dashboard />} />
-    </Routes>
-  </ParamsContextProvider>
+  <Routes>
+    {routes.map((route: IAppRoute, index: number) => (
+      <Route path={route.path} element={route.element} key={index} />
+    ))}
+    <Route path="*" element={<Dashboard />} />
+  </Routes>
 );
 
 export { AppRoutes, routes };

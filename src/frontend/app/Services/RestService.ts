@@ -1,5 +1,13 @@
 import api from '../client/apiClient';
-import { ReportDetail, TableResponse, UrlParams } from '@app/Types';
+import {
+  FilterSet,
+  OrderingParams,
+  ReportDetail,
+  RequestFilter,
+  TableResponse,
+  TableResult,
+  UrlParams,
+} from '@app/Types';
 
 const buildQueryString = (params: object): string => {
   const query = new URLSearchParams();
@@ -24,7 +32,7 @@ const fetchReports = async (signal: AbortSignal, params: UrlParams): Promise<Tab
     .then((response) => response.data);
 };
 
-const fetchReportDetails = async (signal: AbortSignal, params: UrlParams): Promise<ReportDetail> => {
+const fetchReportDetails = async (signal: AbortSignal, params: RequestFilter): Promise<ReportDetail> => {
   const queryString = buildQueryString(params);
   return api
     .get(`api/v1/report/details/${queryString}`, {
@@ -33,12 +41,51 @@ const fetchReportDetails = async (signal: AbortSignal, params: UrlParams): Promi
     .then((response) => response.data);
 };
 
+const exportToCSV = async (params: RequestFilter & OrderingParams): Promise<void> => {
+  const queryString = buildQueryString(params);
+  return api
+    .get(`api/v1/report/csv/${queryString}`, {
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+      },
+    })
+    .then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'report.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      Promise.resolve();
+    });
+};
+
 const updateCosts = async (payload) => {
   return api.post('api/v1/costs/', payload);
 };
 
-const updateTemplate = async (template_id: number, manualTimeMinutes: number) => {
-  return api.put(`api/v1/templates/${template_id}/`, { manual_time_minutes: manualTimeMinutes });
+const updateTemplate = async (item: TableResult) => {
+  return api.put(`api/v1/templates/${item.job_template_id}/`, {
+    time_taken_manually_execute_minutes: item.time_taken_manually_execute_minutes,
+    time_taken_create_automation_minutes: item.time_taken_create_automation_minutes,
+  });
+};
+
+const setCurrency = async (currencyId: number) => {
+  return api.post('api/v1/common/settings/', { type: 'currency', value: currencyId });
+};
+
+const saveView = async (viewData: FilterSet): Promise<FilterSet> => {
+  if (viewData.id) {
+    return api.put(`api/v1/common/filter_set/${viewData.id}/`, viewData).then((response) => response.data);
+  }
+  return api.post('api/v1/common/filter_set/', viewData).then((response) => response.data);
+};
+
+const deleteView = async (viewId: number) => {
+  return api.delete(`api/v1/common/filter_set/${viewId}/`);
 };
 
 export const RestService = {
@@ -48,4 +95,8 @@ export const RestService = {
   updateCosts: updateCosts,
   buildQueryString: buildQueryString,
   updateTemplate: updateTemplate,
+  setCurrency: setCurrency,
+  saveView: saveView,
+  deleteView: deleteView,
+  exportToCSV: exportToCSV,
 };

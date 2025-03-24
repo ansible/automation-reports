@@ -18,30 +18,25 @@ import {
   filterOptions,
   filterOptionsById,
   filterRetrieveError,
+  filterSetOptions,
+  setView,
+  viewsById,
 } from '@app/Store';
-import { BaseDropdown, DateRangePicker, MultiChoiceDropdown } from '@app/Components';
-import { FilterOption } from '@app/Types';
+import { AddEditView, BaseDropdown, DateRangePicker, MultiChoiceDropdown } from '@app/Components';
+import { FilterComponentProps, FilterOption, FilterProps, RequestFilter } from '@app/Types';
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
-import { useRef } from 'react';
 import '../styles/filters.scss';
-import { ParamsContext } from '@app/Store/paramsContext';
+import { ViewSelector } from '@app/Components/ViewsSelector';
+import { formatDateTimeToDate } from '@app/Utils';
 
-interface FilterProps {
-  organization: (string | number)[];
-  job_template: (string | number)[];
-  instances: (string | number)[];
-  label: (string | number)[];
-  date_range: string | null;
-  start_date: Date | undefined;
-  end_date: Date | undefined;
-}
-
-export const Filters: React.FunctionComponent = () => {
+export const Filters: React.FunctionComponent<FilterComponentProps> = (props: FilterComponentProps) => {
   const filterOptionsList = useAppSelector(filterOptions);
   const filterChoicesList = useAppSelector(filterChoicesData);
+  const viewChoices = useAppSelector(filterSetOptions);
+  const error = useAppSelector(filterRetrieveError);
+  const [selectedOption, selectOption] = React.useState<string | number>();
   const filterOptionsDict = useAppSelector(filterOptionsById) as Record<string, FilterOption>;
   const filterChoicesDataByOption = useAppSelector(filterChoicesDataById);
-  const [selectedOption, selectOption] = React.useState<string | number>();
   const [filterSelection, selectFilter] = React.useState<FilterProps>({
     organization: [],
     job_template: [],
@@ -51,28 +46,44 @@ export const Filters: React.FunctionComponent = () => {
     start_date: undefined,
     end_date: undefined,
   });
-  const context = React.useContext(ParamsContext);
-  const pageLoaded: React.RefObject<boolean> = useRef(false);
-  const error = useAppSelector(filterRetrieveError);
-
-  if (!context) {
-    throw new Error('Filters must be used within a ParamsProvider');
-  }
-  const { setParams } = context;
-
+  const allViews = useAppSelector(viewsById);
   const dispatch = useAppDispatch();
 
   React.useEffect(() => {
     const execute = async () => {
       await dispatch(fetchTemplateOptions());
-      onSelectOptionsMenu(undefined, filterOptionsList[0].key);
+      selectOption(filterOptionsList[0].key);
     };
-    if (pageLoaded.current) {
-      execute().then();
-    }
     execute().then();
-    pageLoaded.current = true;
   }, []);
+
+  React.useEffect(() => {
+    if (!filterSelection.date_range) {
+      return;
+    }
+
+    if (filterSelection.date_range === 'custom' && (!filterSelection.start_date || !filterSelection.end_date)) {
+      return;
+    }
+
+    const options: RequestFilter = {
+      date_range: filterSelection.date_range,
+    };
+    for (const key of ['organization', 'instances', 'job_template', 'label']) {
+      if (filterSelection[key].length > 0) {
+        options[key] = filterSelection[key];
+      }
+    }
+    if (filterSelection.date_range === 'custom') {
+      if (filterSelection.start_date) {
+        options.start_date = formatDateTimeToDate(filterSelection.start_date);
+      }
+      if (filterSelection.end_date) {
+        options.end_date = formatDateTimeToDate(filterSelection.end_date);
+      }
+    }
+    props.onChange(options);
+  }, [filterSelection]);
 
   const onSelectOptionsMenu = (_event?: React.MouseEvent, itemId?: string | number) => {
     if (itemId && itemId !== selectedOption) {
@@ -80,60 +91,34 @@ export const Filters: React.FunctionComponent = () => {
     }
   };
 
-  const updateParams = (key, value) => {
-    setParams((prevParams) => ({
-      ...prevParams,
-      [key]: value,
+  const clearFilters = () => {
+    selectFilter((prevState) => ({
+      ...prevState,
+      ['instances']: [],
+      ['organization']: [],
+      ['job_template']: [],
+      ['label']: [],
     }));
+    dispatch(setView(null));
   };
 
-  const resetPagination = () => {
-    updateParams('page', 1);
-    updateParams('page_size', 10);
-  };
-
-  const onDateRangeChange = (range?: string, startDate?: Date, endDate?: Date) => {
-    if (range && range != filterSelection.date_range) {
-      const newState = range;
-      const key = 'date_range';
-      selectFilter((prevState) => ({
-        ...prevState,
-        [key]: newState,
-      }));
-      if (newState !== 'custom') {
-        setParams((prevState) => ({
-          ...prevState,
-          start_date: null,
-          end_date: null,
-        }));
-      }
-      updateParams(key, newState);
-      resetPagination();
+  const viewSelected = (viewId: string | number | null | undefined) => {
+    if (!viewId) {
+      clearFilters();
+      return;
     }
-    if (startDate) {
-      selectFilter((prevState) => ({
-        ...prevState,
-        ['start_date']: startDate,
-      }));
+    const view = allViews[viewId];
+    selectFilter((prevState) => ({
+      ...prevState,
+      ['instances']: view?.filters?.instances ?? [],
+      ['organization']: view?.filters?.organization ?? [],
+      ['job_template']: view?.filters?.job_template ?? [],
+      ['label']: view?.filters?.label ?? [],
 
-      const formattedDate = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000)
-        .toISOString()
-        .split('T')[0];
-      updateParams('start_date', formattedDate);
-      resetPagination();
-    }
-    if (endDate) {
-      selectFilter((prevState) => ({
-        ...prevState,
-        ['end_date']: endDate,
-      }));
-      const formattedDate = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000)
-        .toISOString()
-        .split('T')[0];
-
-      updateParams('end_date', formattedDate);
-      resetPagination();
-    }
+      ['date_range']: view?.filters?.date_range ?? 'month_to_date',
+      ['start_date']: view?.filters?.start_date ? new Date(view.filters.start_date) : undefined,
+      ['end_date']: view?.filters?.end_date ? new Date(view.filters.end_date) : undefined,
+    }));
   };
 
   const onMultiSelectionChanged = (ev: React.MouseEvent | undefined, itemId?: string | number) => {
@@ -149,8 +134,29 @@ export const Filters: React.FunctionComponent = () => {
       ...prevState,
       [selectedOption]: newState,
     }));
-    updateParams(selectedOption, newState);
-    resetPagination();
+  };
+
+  const onDateRangeChange = (range?: string, startDate?: Date, endDate?: Date) => {
+    if (range && range != filterSelection.date_range) {
+      const newState = range;
+      const key = 'date_range';
+      selectFilter((prevState) => ({
+        ...prevState,
+        [key]: newState,
+      }));
+    }
+    if (startDate) {
+      selectFilter((prevState) => ({
+        ...prevState,
+        ['start_date']: startDate,
+      }));
+    }
+    if (endDate) {
+      selectFilter((prevState) => ({
+        ...prevState,
+        ['end_date']: endDate,
+      }));
+    }
   };
 
   const deleteLabelGroup = (group: string | number) => {
@@ -158,8 +164,6 @@ export const Filters: React.FunctionComponent = () => {
       ...prevState,
       [group]: [],
     }));
-    updateParams(group, null);
-    resetPagination();
   };
 
   const deleteLabel = (group: string | number, key: string | number) => {
@@ -169,59 +173,7 @@ export const Filters: React.FunctionComponent = () => {
       ...prevState,
       [group]: newState,
     }));
-    updateParams(group, newState);
-    resetPagination();
   };
-
-  const clearFilters = () => {
-    selectFilter((prevState) => ({
-      ...prevState,
-      ['instances']: [],
-      ['organization']: [],
-      ['job_template']: [],
-      ['label']: [],
-    }));
-    setParams((prevState) => ({
-      ...prevState,
-      ['instances']: null,
-      ['organization']: null,
-      ['job_template']: null,
-      ['label']: null,
-    }));
-  };
-
-  const filterLabels = (
-    <ToolbarGroup variant={'label-group'}>
-      {filterOptionsList.map((item: FilterOption) => {
-        return (
-          <LabelGroup
-            key={item.key}
-            categoryName={item.value}
-            isClosable={true}
-            onClick={() => deleteLabelGroup(item.key)}
-          >
-            {filterSelection[item.key].map((selectedItem: string | number) => {
-              return (
-                <Label key={selectedItem} onClose={() => deleteLabel(item.key, selectedItem)}>
-                  {filterChoicesDataByOption?.[item?.key]?.[selectedItem].value}
-                </Label>
-              );
-            })}
-          </LabelGroup>
-        );
-      })}
-      <ToolbarItem>
-        {(filterSelection.organization.length > 0 ||
-          filterSelection.instances.length > 0 ||
-          filterSelection.job_template.length > 0 ||
-          filterSelection.label.length > 0) && (
-          <Button variant="link" onClick={() => clearFilters()} isInline>
-            Clear all filters
-          </Button>
-        )}
-      </ToolbarItem>
-    </ToolbarGroup>
-  );
 
   const filterSelector = (
     <div className="pf-v6-u-mr-xs">
@@ -268,23 +220,61 @@ export const Filters: React.FunctionComponent = () => {
     ></DateRangePicker>
   );
 
+  const filterLabels = (
+    <ToolbarGroup variant={'label-group'}>
+      {filterOptionsList.map((item: FilterOption) => {
+        return (
+          <LabelGroup
+            key={item.key}
+            categoryName={item.value}
+            isClosable={true}
+            onClick={() => deleteLabelGroup(item.key)}
+          >
+            {filterSelection[item.key].map((selectedItem: string | number) => {
+              return (
+                <Label key={selectedItem} onClose={() => deleteLabel(item.key, selectedItem)}>
+                  {filterChoicesDataByOption?.[item?.key]?.[selectedItem].value}
+                </Label>
+              );
+            })}
+          </LabelGroup>
+        );
+      })}
+      <ToolbarItem>
+        {(filterSelection.organization.length > 0 ||
+          filterSelection.instances.length > 0 ||
+          filterSelection.job_template.length > 0 ||
+          filterSelection.label.length > 0) && (
+          <Button variant="link" onClick={() => clearFilters()} isInline>
+            Clear all filters
+          </Button>
+        )}
+      </ToolbarItem>
+    </ToolbarGroup>
+  );
+
   const toolBar = (
     <Toolbar id="filter-toolbar" clearAllFilters={clearFilters}>
       <ToolbarContent>
         <ToolbarGroup variant={'filter-group'} className="filters-wrap">
+          {viewChoices?.length > 0 && (
+            <ToolbarItem>
+              <ViewSelector onSelect={viewSelected}></ViewSelector>
+            </ToolbarItem>
+          )}
           <Split isWrappable className="row-gap">
             <SplitItem>
               <ToolbarItem>{filterSelector}</ToolbarItem>
             </SplitItem>
-
             <SplitItem>
               <ToolbarItem>{itemsDropdown}</ToolbarItem>
             </SplitItem>
           </Split>
-          <ToolbarItem>{dateRangePicker}</ToolbarItem>
+          <ToolbarItem style={{ marginRight: '16px' }}>{dateRangePicker}</ToolbarItem>
+          <AddEditView filters={filterSelection} onViewDelete={clearFilters}></AddEditView>
         </ToolbarGroup>
       </ToolbarContent>
-      <ToolbarContent>{filterLabels}</ToolbarContent>
+      {<ToolbarContent>{filterLabels}</ToolbarContent>}
     </Toolbar>
   );
 

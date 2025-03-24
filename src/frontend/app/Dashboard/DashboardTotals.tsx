@@ -1,7 +1,18 @@
 import React from 'react';
-import { Icon, Tooltip } from '@patternfly/react-core';
-import { ArrowCircleDownIcon, ArrowCircleUpIcon, MinusIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
+import { Button, Icon, Tooltip } from '@patternfly/react-core';
+import {
+  ArrowCircleDownIcon,
+  ArrowCircleUpIcon,
+  ExternalLinkSquareAltIcon,
+  MinusIcon,
+  OutlinedQuestionCircleIcon,
+} from '@patternfly/react-icons';
 import '../styles/dashboard-totals.scss';
+
+type urlProps = {
+  url?: string;
+  title?: string;
+};
 
 type CardProps = {
   title: string | '';
@@ -9,6 +20,8 @@ type CardProps = {
   percentage?: number | null;
   invert?: boolean;
   tooltip?: string;
+  url?: urlProps;
+  extraText?: string;
 };
 
 export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
@@ -52,6 +65,15 @@ export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
       </Icon>
     );
 
+  const link = props?.url && (
+    <Button isInline variant="link" icon={<ExternalLinkSquareAltIcon />} iconPosition="end">
+      <a href={props.url.url} target={'_blank'} rel="noreferrer">
+        {' '}
+        {props?.url.title}
+      </a>
+    </Button>
+  );
+
   return (
     <>
       <div className="content">
@@ -67,10 +89,12 @@ export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
             )}
           </span>
         </div>
+        {link}
         <div className="value">
           <span className="pf-v6-u-font-size-4xl fw-500 result">{props.result?.toLocaleString('en-US')}</span>
           {percentage}
         </div>
+        {props.extraText && <div className={'extra-text'}>{props.extraText}</div>}
       </div>
     </>
   );

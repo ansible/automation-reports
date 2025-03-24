@@ -3,11 +3,25 @@ import { RootState } from '@app/Store/store';
 import { RestService } from '@app/Services';
 import { FilterOption, FilterOptionResponse, FilterOptionWithId, FilterState } from '@app/Types';
 import { listToDict } from '@app/Utils';
+import { setCurrencies, setDefaultCurrency, setFilterViews } from '@app/Store/commonSlice';
 
-export const fetchTemplateOptions = createAsyncThunk('filters/options', async (): Promise<FilterOptionResponse> => {
-  const response = await RestService.fetchTemplateOptions();
-  return response.data;
-});
+export const fetchTemplateOptions = createAsyncThunk(
+  'filters/options',
+  async (_, api): Promise<FilterOptionResponse> => {
+    const response = await RestService.fetchTemplateOptions();
+    const data = response.data as FilterOptionResponse;
+    if (data?.currencies) {
+      api.dispatch(setCurrencies(data.currencies));
+    }
+    if (data?.currency) {
+      api.dispatch(setDefaultCurrency(data.currency));
+    }
+    if (data?.filter_sets) {
+      api.dispatch(setFilterViews(data.filter_sets));
+    }
+    return data;
+  },
+);
 
 const initialState: FilterState = {
   filterOptions: [

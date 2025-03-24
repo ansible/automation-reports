@@ -4,9 +4,11 @@ export type BaseDropdownProps = {
   id: string;
   selectedItem: number | string | undefined | null;
   options: object[];
-  onSelect: (ev: React.MouseEvent | undefined, itemId?: string | number) => void;
+  onSelect: (ev: React.MouseEvent | undefined, itemId?: string | number | undefined) => void;
   icon?: React.ReactNode;
   style?: React.CSSProperties;
+  placeholder?: string;
+  nullable?: boolean;
 } & DefaultBaseDropdownProps;
 
 type DefaultBaseDropdownProps = Partial<typeof baseDropDownDefaultProps>;

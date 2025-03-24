@@ -1,0 +1,19 @@
+.pf-v6-c-modal-box.pf-m-align-top {
+  margin-top: 100px;
+}
+.modal-wrap {
+  position: relative;
+  min-height: 66px;
+  .modal-loader {
+    position: absolute;
+    z-index: 10000;
+    left: calc(50% - 20px);
+    top: calc(50% - 20px);
+  }
+}
+
+.pf-v6-c-form {
+  &.hidden {
+    display: none;
+  }
+}

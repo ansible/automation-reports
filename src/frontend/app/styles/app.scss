@@ -138,3 +138,21 @@ input {
     }
   }
 }
+
+.pf-v6-c-menu-toggle__text {
+  width: 100%;
+  text-align: left;
+}
+
+#currency-options-menu {
+  min-width: 200px;
+}
+#currency-options-menu-toggle {
+  min-width: 200px;
+  background: transparent;
+}
+
+#views-options-menu-toggle {
+  background: transparent;
+  margin-right: 16px;
+}
