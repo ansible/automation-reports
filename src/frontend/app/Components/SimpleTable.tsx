@@ -1,11 +1,11 @@
 import React from 'react';
-import { Table, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table';
+import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import '../styles/table.scss';
-import { columnProps } from '@app/Types';
+import { ColumnProps } from '@app/Types';
 import { formatNumber } from '@app/Utils';
 
 interface TableProps {
-  columns: columnProps[];
+  columns: ColumnProps[];
   data: any[];
 }
 

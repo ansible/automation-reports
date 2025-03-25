@@ -82,7 +82,6 @@ export const generateChartData = (data: ChartData) => {
       if (y > maxValue) {
         maxValue = y;
       }
-      //console.log(y);
       items.push({
         x: x,
         y: y,
@@ -99,21 +98,12 @@ export const generateChartData = (data: ChartData) => {
   };
 };
 
-export const formatCurrency = (value: number | string | undefined | null): string => {
-  if (value === undefined || value === null) {
-    return '';
+export const formatCurrency = (value: number | string | undefined | null, currencySign: string): string => {
+  const retval = formatNumber(value, 2);
+  if (retval?.length) {
+    return (currencySign ? currencySign : '') + retval;
   }
-
-  if (typeof value === 'string' && isDigit(value)) {
-    value = parseFloat(value);
-  }
-
-  return value.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return retval;
 };
 
 export const formatNumber = (value: number | string | undefined | null, decimalPlaces = 0): string => {
@@ -129,4 +119,19 @@ export const formatNumber = (value: number | string | undefined | null, decimalP
     minimumFractionDigits: decimalPlaces,
     maximumFractionDigits: decimalPlaces,
   });
+};
+
+export const formatDateTimeToDate = (value: Date | string | undefined): string => {
+  if (!value) {
+    return '';
+  }
+  let _d: Date;
+
+  if (typeof value === 'string') {
+    _d = new Date(value);
+  } else {
+    _d = value;
+  }
+
+  return new Date(_d.getTime() - _d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
 };

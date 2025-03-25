@@ -1,50 +1,46 @@
-import React, { useContext } from 'react';
-import { Card, CardBody, Flex, FlexItem, Form, FormGroup, Icon, Spinner, Tooltip } from '@patternfly/react-core';
+import React from 'react';
+import {
+  Button,
+  Card,
+  CardBody,
+  Flex,
+  FlexItem,
+  Form,
+  FormGroup,
+  Icon,
+  Spinner,
+  Tooltip,
+} from '@patternfly/react-core';
 import { DashboardTotals } from './DashboardTotals';
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import { BaseTable, CustomInput } from '@app/Components';
 import { useAppSelector } from '@app/hooks';
 
-import { automatedProcessCost, manualCostAutomation } from '@app/Store';
-import { ParamsContext } from '@app/Store/paramsContext';
+import { automatedProcessCost, currencySign, manualCostAutomation } from '@app/Store';
 import '../styles/table.scss';
-import { DashboardTableProps, columnProps } from '@app/Types';
+import { ColumnProps, DashboardTableProps } from '@app/Types';
 import { formatCurrency } from '@app/Utils';
 
 export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (props: DashboardTableProps) => {
-  const context = useContext(ParamsContext);
-  if (!context) {
-    throw new Error('Filters must be used within a ParamsProvider');
-  }
-  const { setParams } = context;
-
   const hourly_manual_costs = useAppSelector(manualCostAutomation);
   const hourly_automated_process_costs = useAppSelector(automatedProcessCost);
+  const selectedCurrencySign = useAppSelector(currencySign);
 
   const [hourlyManualCostsChangedError, setHourlyManualCostsChangedError] = React.useState<string | null>(null);
   const [hourlyAutomatedProcessCostsChangedError, setHourlyAutomatedProcessCostsChangedError] = React.useState<
     string | null
   >(null);
 
-  const updateParams = (key, value) => {
-    setParams((prevParams) => ({
-      ...prevParams,
-      [key]: value,
-    }));
-  };
-
   const handlePageChange = (newPage: number) => {
-    updateParams('page', newPage);
+    props.onPaginationChange({ page: newPage, page_size: props.pagination.page_size });
   };
 
   const handlePerPageChange = (page: number, newPerPage: number) => {
-    updateParams('page', page);
-    updateParams('page_size', newPerPage);
+    props.onPaginationChange({ page: page, page_size: newPerPage });
   };
 
   const handleSort = (ordering: string) => {
-    updateParams('page', 1);
-    updateParams('ordering', ordering);
+    props.onSortChange(ordering);
   };
 
   const hourlyManualCostsChanged = (value: number | null | undefined) => {
@@ -69,22 +65,30 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
     }
   };
 
-  const columns: columnProps[] = [
+  const exportToCsv = () => {
+    props.onExportCsv();
+  };
+
+  const columns: ColumnProps[] = [
     { name: 'name', title: 'Name' },
-    { name: 'successful_runs', title: 'Number of successful runs', type: 'number' },
-    { name: 'failed_runs', title: 'Number of unsuccessful runs', type: 'number' },
-    { name: 'runs', title: 'Runs', type: 'number' },
-    { name: 'num_hosts', title: 'Number of hosts jobs were run on', type: 'number' },
+    { name: 'runs', title: 'Number of job executions', type: 'number' },
+    { name: 'num_hosts', title: 'Host executions', type: 'number' },
     {
-      name: 'manual_time',
-      title: 'Manual time of automation (minutes)',
-      info: { tooltip: 'Manual time of automation (minutes)' },
+      name: 'time_taken_manually_execute_minutes',
+      title: 'Time taken to manually execute (minutes)',
+      info: { tooltip: 'Please enter an average time that an engineer would spend to run the job' },
+      isEditable: true,
+    },
+    {
+      name: 'time_taken_create_automation_minutes',
+      title: 'Time taken to create automation (minutes)',
+      info: { tooltip: 'Please enter the time that an engineer would spend to automatize this job' },
       isEditable: true,
     },
     { name: 'elapsed', title: 'Running time', valueKey: 'elapsed_str' },
-    { name: 'savings', title: 'Savings', type: 'currency' },
     { name: 'automated_costs', title: 'Automated cost', type: 'currency' },
     { name: 'manual_costs', title: 'Manual cost', type: 'currency' },
+    { name: 'savings', title: 'Savings', type: 'currency' },
   ];
 
   return (
@@ -96,84 +100,101 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
               <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />
             </div>
           )}
-          <Flex className="pf-v6-u-mb-2xl details-row">
-            <Flex>
-              <FlexItem>
-                <Form>
-                  <FormGroup
-                    label="Hourly manual cost of automation ($)"
-                    labelHelp={
-                      <Tooltip content="e.g. average salary of mid-level Software Engineer">
-                        <Icon size="md" className="pf-v6-u-ml-sm">
-                          <OutlinedQuestionCircleIcon />
-                        </Icon>
-                      </Tooltip>
-                    }
-                  >
-                    <CustomInput
-                      type={'number'}
-                      id={'hourly-manual-costs'}
-                      onBlur={(value) => hourlyManualCostsChanged(value ? parseFloat(value) : value)}
-                      errorMessage={hourlyManualCostsChangedError}
-                      value={hourly_manual_costs}
-                      onFocus={props.onInputFocus}
-                    />
-                  </FormGroup>
-                </Form>
-              </FlexItem>
-              <FlexItem>
-                <Form>
-                  <FormGroup
-                    label="Hourly automated process cost ($)"
-                    labelHelp={
-                      <Tooltip content="Average hourly cost of running automated processes">
-                        <Icon size="md" className="pf-v6-u-ml-sm">
-                          <OutlinedQuestionCircleIcon />
-                        </Icon>
-                      </Tooltip>
-                    }
-                  >
-                    <CustomInput
-                      type={'number'}
-                      id={'hourly-automated-process-costs'}
-                      onBlur={(value) => hourlyAutomatedProcessCostsChanged(value ? parseFloat(value) : value)}
-                      value={hourly_automated_process_costs}
-                      errorMessage={hourlyAutomatedProcessCostsChangedError}
-                      onFocus={props.onInputFocus}
-                    />
-                  </FormGroup>
-                </Form>
-              </FlexItem>
-            </Flex>
-            <Flex className="cards-gap">
-              <FlexItem>
-                <DashboardTotals
-                  title={'Cost of manual automation'}
-                  result={formatCurrency(props?.costOfManualAutomation?.value)}
-                  percentage={props?.costOfManualAutomation?.index}
-                  tooltip={
-                    'Manual time of automation (minutes) / 60 * Number of hosts jobs were run on * Hourly manual cost of automation '
+
+          <Flex className="pf-v6-u-mb-2xl pf-v6-u-align-items-flex-end">
+            <FlexItem>
+              <Form>
+                <FormGroup
+                  label={`Average cost of an employee minute (${selectedCurrencySign})`}
+                  labelHelp={
+                    <Tooltip content="Please enter an average cost per minute for the engineer manually running jobs">
+                      <Icon size="md" className="pf-v6-u-ml-sm">
+                        <OutlinedQuestionCircleIcon />
+                      </Icon>
+                    </Tooltip>
                   }
-                />
+                >
+                  <CustomInput
+                    type={'number'}
+                    id={'hourly-manual-costs'}
+                    onBlur={(value) => hourlyManualCostsChanged(value ? parseFloat(value) : value)}
+                    errorMessage={hourlyManualCostsChangedError}
+                    value={hourly_manual_costs}
+                    onFocus={props.onInputFocus}
+                  />
+                </FormGroup>
+              </Form>
+            </FlexItem>
+            <FlexItem>
+              <Form>
+                <FormGroup
+                  label={`Cost per minute of AAP (${selectedCurrencySign})`}
+                  labelHelp={
+                    <Tooltip content="Please enter an average cost per minute of running a job in the Ansible Automation Platform">
+                      <Icon size="md" className="pf-v6-u-ml-sm">
+                        <OutlinedQuestionCircleIcon />
+                      </Icon>
+                    </Tooltip>
+                  }
+                >
+                  <CustomInput
+                    type={'number'}
+                    id={'hourly-automated-process-costs'}
+                    onBlur={(value) => hourlyAutomatedProcessCostsChanged(value ? parseFloat(value) : value)}
+                    value={hourly_automated_process_costs}
+                    errorMessage={hourlyAutomatedProcessCostsChangedError}
+                    onFocus={props.onInputFocus}
+                  />
+                </FormGroup>
+              </Form>
+            </FlexItem>
+            {props.data.count > 0 && (
+              <FlexItem style={{ marginLeft: 'auto' }}>
+                <Button id={'csv-export'} onClick={exportToCsv} variant="secondary" isInline>
+                  Export as CSV
+                </Button>
               </FlexItem>
-              <FlexItem>
-                <DashboardTotals
-                  title={'Cost of automated execution'}
-                  result={formatCurrency(props?.costOfAutomatedExecution?.value)}
-                  percentage={props?.costOfAutomatedExecution?.index}
-                  tooltip={'Running time (s) / 3600 * Hourly automated process cost'}
-                />
-              </FlexItem>
-              <FlexItem>
-                <DashboardTotals
-                  title={'Total savings'}
-                  result={formatCurrency(props?.totalSaving?.value)}
-                  percentage={props.totalSaving?.index}
-                  tooltip={'Cost of manual automation - Cost of automated execution'}
-                />
-              </FlexItem>
-            </Flex>
+            )}
           </Flex>
+          <Flex className="cards-gap pf-v6-u-mb-2xl details-row">
+            <FlexItem>
+              <DashboardTotals
+                title={'Cost of manual automation'}
+                result={formatCurrency(props?.costOfManualAutomation?.value, selectedCurrencySign)}
+                percentage={props?.costOfManualAutomation?.index}
+                tooltip={'Manual time of automation (minutes) * Host executions * Average cost of an employee minute'}
+              />
+            </FlexItem>
+            <FlexItem>
+              <DashboardTotals
+                title={'Cost of automated execution'}
+                result={formatCurrency(props?.costOfAutomatedExecution?.value, selectedCurrencySign)}
+                percentage={props?.costOfAutomatedExecution?.index}
+                tooltip={
+                  'Running time (s) / 60 * Cost per minute of AAP + Time taken to create automation (minutes) * Average cost of an employee minute'
+                }
+              />
+            </FlexItem>
+            <FlexItem>
+              <DashboardTotals
+                title={'Total savings/cost avoided'}
+                result={formatCurrency(props?.totalSaving?.value, selectedCurrencySign)}
+                percentage={props.totalSaving?.index}
+                tooltip={'Cost of manual automation - Cost of automated execution'}
+              />
+            </FlexItem>
+            <FlexItem>
+              <DashboardTotals
+                title={'Total hours saved/avoided'}
+                result={props?.totalTimeSavings?.value}
+                percentage={props.totalTimeSavings?.index}
+                tooltip={
+                  'Manual time of automation (minutes) * Host executions  + Time taken to create automation (minutes) - Running time (s) / 60'
+                }
+              />
+            </FlexItem>
+          </Flex>
+
           <BaseTable
             pagination={{
               onPageChange: handlePageChange,
