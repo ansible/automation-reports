@@ -2,13 +2,25 @@ import os
 from calendar import monthrange
 from datetime import datetime
 from decimal import Decimal
+from urllib.parse import urlencode
 
 import pytz
 from django.core.cache import cache
 from django.db import connection
 from django.db.models import Count, Sum, F, CharField, Func, Value
 
-from backend.apps.clusters.models import Costs, CostsChoices, JobStatusChoices, DateRangeChoices, JobHostSummary
+from backend.apps.clusters.models import Costs, CostsChoices, JobStatusChoices, DateRangeChoices, Cluster
+
+
+def sec2time(sec):
+    m, s = divmod(sec, 60)
+    h, m = divmod(m, 60)
+
+    if h > 0:
+        h = f'{h:,}'
+        return '%sh %dmin %dsec' % (h, m, s)
+    else:
+        return '%dmin %dsec' % (m, s)
 
 
 def get_costs(from_db=False):
@@ -67,7 +79,8 @@ def sum_items(items):
         "automated_costs": 0,
         "manual_costs": 0,
         "host_count": 0,
-        "savings": 0
+        "savings": 0,
+        "time_savings": 0,
     }
     for item in items:
         result["successful_count"] += item["successful_runs"]
@@ -78,6 +91,7 @@ def sum_items(items):
         result["manual_costs"] += item["manual_costs"]
         result["savings"] += item["savings"]
         result["host_count"] += item["num_hosts"]
+        result["time_savings"] += item["time_savings"]
 
     result["total_elapsed_hours"] = round((result["total_elapsed_hours"] / 3600), 2)
     result["automated_costs"] = round(result["automated_costs"], 2)
@@ -98,6 +112,7 @@ def get_report_data(items, prev_items):
     manual_costs = res["manual_costs"]
     savings = res["savings"]
     num_hosts = res["host_count"]
+    time_savings = res["time_savings"]
 
     prev_len = len(prev_items)
 
@@ -133,6 +148,10 @@ def get_report_data(items, prev_items):
         "total_saving": {
             "value": savings,
             "index": get_diff_index(prev_res["savings"] if prev_len > 0 else None, savings),
+        },
+        "total_time_saving": {
+            "value": sec2time(time_savings),
+            "index": get_diff_index(prev_res["time_savings"] if prev_len > 0 else None, time_savings),
         },
     }
 
@@ -279,7 +298,6 @@ def get_unique_hosts_db(start_date, end_date, options):
     return retval
 
 
-
 def get_unique_host_count(options):
     prev_count = None
     date_range = options.get("date_range", None)
@@ -341,4 +359,42 @@ def get_chart_data(qs, request):
         result["host_chart"]["items"].append({"x": x, "y": y["num_hosts"]})
         result["job_chart"]["items"].append({"x": x, "y": y["runs"]})
 
+    return result
+
+
+def get_related_links(options):
+    result = {
+        "related_links": {
+            "successful_jobs": "",
+            "failed_jobs": "",
+        }
+    }
+
+    cluster = Cluster.objects.first()
+    if cluster is None:
+        return result
+
+    _date_range = options.query_params.get("date_range", None)
+
+
+    initial_url = f'{cluster.protocol}://{cluster.address}:{cluster.port}#/jobs'
+    failed_data = {
+        "job.status__exact": JobStatusChoices.FAILED.value,
+    }
+    successful_data = {
+        "job.status__exact": JobStatusChoices.SUCCESSFUL.value,
+    }
+
+    data = {}
+
+    if _date_range is not None:
+        data_range = DateRangeChoices.get_date_range(_date_range)
+        if data_range is not None:
+            data["job.finished__gte"] = data_range.start.isoformat()
+            data["job.finished__lte"] = data_range.end.isoformat()
+
+    result["related_links"] = {
+        "successful_jobs": f'{initial_url}?{urlencode({**data, **successful_data})}',
+        "failed_jobs": f'{initial_url}?{urlencode({**failed_data, **data})}',
+    }
     return result

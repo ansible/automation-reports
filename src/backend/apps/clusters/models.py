@@ -9,7 +9,8 @@ from django.db import models
 
 from backend.apps.clusters.schemas import DateRangeSchema
 
-manual_time = int(os.environ.get("DEFAULT_JOB_TEMPLATE_MANUAL_TIME_MINUTES", "60"))
+manual_time = int(os.environ.get("DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES", "60"))
+automation_time = int(os.environ.get("DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES", "60"))
 
 
 class CreatUpdateModel(models.Model):
@@ -24,7 +25,7 @@ class CreatUpdateModel(models.Model):
 
 class Cluster(CreatUpdateModel):
     protocol = models.CharField(max_length=10)
-    address = models.CharField(max_length=15)
+    address = models.CharField(max_length=255)
     port = models.IntegerField()
     access_token = models.TextField()
     verify_ssl = models.BooleanField(default=True)
@@ -269,7 +270,8 @@ class Organization(NameDescriptionModel):
 
 
 class JobTemplate(NameDescriptionModel):
-    manual_time_minutes = models.IntegerField(default=manual_time)
+    time_taken_manually_execute_minutes = models.IntegerField(default=manual_time)
+    time_taken_create_automation_minutes = models.IntegerField(default=automation_time)
 
     class Meta:
         abstract = False
