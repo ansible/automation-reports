@@ -21,28 +21,29 @@ export const formatChartDate = (range: ChartRange, value: Date | string): string
   switch (range) {
     case 'hour': {
       const _d = new Date(value);
-      const hour = _d.toLocaleString('default', { hour: '2-digit' });
+      const hour = _d.toLocaleString('default', { hour: '2-digit', timeZone: 'UTC' });
       return `${hour}`;
     }
     case 'day': {
       const _d = new Date(value);
-      const day = _d.toLocaleString('default', { day: '2-digit' });
-      const month = _d.toLocaleString('default', { month: 'short' });
+      const day = _d.toLocaleString('default', { day: '2-digit', timeZone: 'UTC' });
+      const month = _d.toLocaleString('default', { month: 'short', timeZone: 'UTC' });
       return `${day} ${month}`;
     }
     case 'month': {
       const _d = new Date(value);
-      const month = _d.toLocaleString('default', { month: 'short' });
-      const year = _d.toLocaleString('default', { year: 'numeric' });
+      const month = _d.toLocaleString('default', { month: 'short', timeZone: 'UTC' });
+      const year = _d.toLocaleString('default', { year: 'numeric', timeZone: 'UTC' });
       return `${month} ${year}`;
     }
     case 'year': {
       const _d = new Date(value);
-      const year = _d.toLocaleString('default', { year: 'numeric' });
+      const year = _d.toLocaleString('default', { year: 'numeric', timeZone: 'UTC' });
       return `${year}`;
     }
-    default:
+    default: {
       return value.toString();
+    }
   }
 };
 
@@ -62,6 +63,9 @@ export const generateChartTicks = (maxValue: number) => {
 export const maxChartValue = (value: number | null | undefined) => {
   if (!value || isNaN(value) || value < 10) {
     return 10;
+  }
+  if (value > 10000) {
+    return Math.ceil(value / 1000) * 1000 + 1000;
   }
   const k = Math.floor(Math.log10(value));
   return Math.floor((value + 10 ** k) / 10 ** k) * 10 ** k;
@@ -94,7 +98,15 @@ export const generateChartData = (data: ChartData) => {
   };
 };
 
-export const formatCurrency = (value: number | string | undefined | null): string => {
+export const formatCurrency = (value: number | string | undefined | null, currencySign: string): string => {
+  const retval = formatNumber(value, 2);
+  if (retval?.length) {
+    return (currencySign ? currencySign : '') + retval;
+  }
+  return retval;
+};
+
+export const formatNumber = (value: number | string | undefined | null, decimalPlaces = 0): string => {
   if (value === undefined || value === null) {
     return '';
   }
@@ -104,9 +116,22 @@ export const formatCurrency = (value: number | string | undefined | null): strin
   }
 
   return value.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: decimalPlaces,
+    maximumFractionDigits: decimalPlaces,
   });
+};
+
+export const formatDateTimeToDate = (value: Date | string | undefined): string => {
+  if (!value) {
+    return '';
+  }
+  let _d: Date;
+
+  if (typeof value === 'string') {
+    _d = new Date(value);
+  } else {
+    _d = value;
+  }
+
+  return new Date(_d.getTime() - _d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
 };

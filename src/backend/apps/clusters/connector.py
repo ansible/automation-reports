@@ -44,7 +44,7 @@ class ApiConnector(ABC):
                 self.since = self.cluster_sync_data.last_job_finished_date
             else:
                 now = datetime.datetime.now(datetime.timezone.utc)
-                cron_entry = os.environ.get("CRON_SYNC", "0 */4 * * *")
+                cron_entry = os.environ.get("CRON_SYNC", "0 */1 * * *")
                 entry = CronTab(cron_entry)
                 self.since = entry.previous(now=now, default_utc=True, return_datetime=True)
 
@@ -139,7 +139,6 @@ class ApiConnector(ABC):
             logger.info("Checking status of job %s", job)
             job_id = job.get("id", None)
             finished = job.get("finished", None)
-
             if job_id is None or finished is None:
                 logger.warning(f"Missing id or finished date time in job: {job}", )
                 continue
@@ -155,8 +154,8 @@ class ApiConnector(ABC):
             for host_summary in self.job_host_summaries(job_id):
                 job["host_summaries"].append(host_summary)
 
-            with transaction.atomic():
+            with (transaction.atomic()):
                 logger.info(f"Job {job_id} saving data.")
-                self.cluster_sync_data.last_job_finished_date = finished
+                self.cluster_sync_data.last_job_finished_date = finished if self.cluster_sync_data.last_job_finished_date is None or finished > self.cluster_sync_data.last_job_finished_date else self.cluster_sync_data.last_job_finished_date
                 self.cluster_sync_data.save()
                 ClusterSyncData.objects.create(cluster=self.cluster, data=job)

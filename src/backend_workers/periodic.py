@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+import urllib3
 from datetime import datetime, timezone
 from pathlib import Path
 from time import sleep
@@ -16,9 +17,10 @@ sys.path.insert(0, str(project_root))
 os.environ.update(DJANGO_SETTINGS_MODULE="backend.django_config.settings")
 os.environ.update(LOG_LEVEL="INFO")
 
-cron_entry = os.environ.get("CRON_SYNC", "0 */4 * * *")
+cron_entry = os.environ.get("CRON_SYNC", "0 */1 * * *")
 
 django.setup()
+from django.conf import settings
 
 logger = logging.getLogger("automation-reports")
 
@@ -28,6 +30,8 @@ from backend.apps.clusters.models import Cluster, ClusterSyncData
 from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.parser import DataParser
 
+if not settings.SHOW_URLLIB3_INSECURE_REQUEST_WARNING:
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def run_task():
     job_start = datetime.now()
@@ -38,6 +42,7 @@ def run_task():
     except Exception as exc:
         logger.error(f"Failed to retrieve clusters information.", exc_info=exc)
         return
+    logger.info(f"Retrieved {clusters.count()} clusters.")
 
     for cluster in clusters:
         start = datetime.now()
@@ -50,7 +55,7 @@ def run_task():
             logger.info(f"Synced data from cluster {cluster} successfully in {s} seconds.")
         except Exception as exc:
             logger.error(f"Failed to sync cluster {cluster}", exc_info=exc)
-            return
+            continue
 
         sync_data = ClusterSyncData.objects.filter(cluster=cluster)
         count = sync_data.count()

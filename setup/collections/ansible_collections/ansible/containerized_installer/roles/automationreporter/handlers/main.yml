@@ -9,8 +9,7 @@
   ansible.builtin.systemd:
     name: automation-reporter-task.service
     scope: user
-    # state: restarted
-    state: stopped
+    state: restarted
 
 - name: Restart reporter web
   ansible.builtin.systemd:

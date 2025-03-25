@@ -9,7 +9,8 @@ from django.db import models
 
 from backend.apps.clusters.schemas import DateRangeSchema
 
-manual_time = int(os.environ.get("DEFAULT_JOB_TEMPLATE_MANUAL_TIME_MINUTES", "60"))
+manual_time = int(os.environ.get("DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES", "60"))
+automation_time = int(os.environ.get("DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES", "60"))
 
 
 class CreatUpdateModel(models.Model):
@@ -24,7 +25,7 @@ class CreatUpdateModel(models.Model):
 
 class Cluster(CreatUpdateModel):
     protocol = models.CharField(max_length=10)
-    address = models.CharField(max_length=15)
+    address = models.CharField(max_length=255)
     port = models.IntegerField()
     access_token = models.TextField()
     verify_ssl = models.BooleanField(default=True)
@@ -103,7 +104,7 @@ class DateRangeChoices(models.TextChoices):
                 start_date = end_date.replace(day=1)
 
                 prev_end_date = now - relativedelta(months=2)
-                num_days = calendar.monthrange(prev_end_date.year, end_date.month)[1]
+                num_days = calendar.monthrange(prev_end_date.year, prev_end_date.month)[1]
                 prev_end_date = prev_end_date.replace(day=num_days)
                 prev_start_date = prev_end_date.replace(day=1)
 
@@ -143,7 +144,7 @@ class DateRangeChoices(models.TextChoices):
                 quarter = (now.month - 1) // 3 + 1
                 quarter_start_month = 3 * quarter - 2
                 start_date = now.replace(day=1, month=int(quarter_start_month))
-
+                quarter_end_moth = now.month
                 year = start_date.year
                 if quarter == 1:
                     year -= 1
@@ -152,7 +153,7 @@ class DateRangeChoices(models.TextChoices):
                     prev_quarter = quarter - 1
 
                 prev_quarter_start_month = 3 * prev_quarter - 2
-                prev_quarter_end_month = 3 * prev_quarter
+                prev_quarter_end_month = prev_quarter_start_month + (quarter_end_moth - quarter_start_month)
 
                 num_days = calendar.monthrange(year, prev_quarter_end_month)[1]
 
@@ -269,7 +270,8 @@ class Organization(NameDescriptionModel):
 
 
 class JobTemplate(NameDescriptionModel):
-    manual_time_minutes = models.IntegerField(default=manual_time)
+    time_taken_manually_execute_minutes = models.IntegerField(default=manual_time)
+    time_taken_create_automation_minutes = models.IntegerField(default=automation_time)
 
     class Meta:
         abstract = False

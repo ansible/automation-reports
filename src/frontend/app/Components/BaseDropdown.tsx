@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Menu, MenuContent, MenuItem, MenuList, MenuToggle, Popper } from '@patternfly/react-core';
 import { listToDict } from '@app/Utils';
 import { BaseDropdownProps, baseDropDownDefaultProps } from '@app/Types';
+import { TimesIcon } from '@patternfly/react-icons/dist/esm/icons/times-icon';
 
 export const BaseDropdown: React.FunctionComponent<BaseDropdownProps> = (props: BaseDropdownProps) => {
   props = { ...baseDropDownDefaultProps, ...props };
@@ -45,6 +46,12 @@ export const BaseDropdown: React.FunctionComponent<BaseDropdownProps> = (props: 
     props.onSelect(ev, itemId);
   };
 
+  const onClearButtonClick = (ev: React.MouseEvent) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    props.onSelect(ev, undefined);
+  };
+
   const menu = (
     <Menu ref={menuRef} id={props.id} onSelect={onSelect}>
       <MenuContent>
@@ -64,8 +71,13 @@ export const BaseDropdown: React.FunctionComponent<BaseDropdownProps> = (props: 
     </Menu>
   );
 
+  const clearSelection = (
+    <TimesIcon style={{ marginLeft: '20px', color: 'grey' }} onClick={onClearButtonClick} aria-hidden />
+  );
+
   const menuToggle = (
     <MenuToggle
+      id={props.id + '-toggle'}
       disabled={props.disabled}
       ref={toggleRef}
       onClick={toggleClick}
@@ -73,7 +85,11 @@ export const BaseDropdown: React.FunctionComponent<BaseDropdownProps> = (props: 
       icon={props?.icon && props.icon}
       style={props?.style}
     >
-      {value && value}
+      <div style={{ display: 'flex' }}>
+        {value && value}
+        {!value && props.placeholder && props.placeholder}
+        {props.nullable && value && <span style={{ marginLeft: 'auto' }}>{clearSelection}</span>}
+      </div>
     </MenuToggle>
   );
 

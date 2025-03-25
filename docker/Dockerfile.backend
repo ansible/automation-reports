@@ -58,8 +58,10 @@ ENV LC_ALL=en_US.UTF-8
 
 # https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/building_running_and_managing_containers/assembly_adding-software-to-a-ubi-container_building-running-and-managing-containers#proc_adding-software-in-a-standard-ubi-container_assembly_adding-software-to-a-ubi-container
 RUN microdnf install tar
-COPY docker/run-secrets.tar /
-RUN tar -xvf /run-secrets.tar
+COPY docker/run-secrets.tar* /
+RUN if [ -f /run-secrets.tar ]; then tar -xvf /run-secrets.tar; fi
+# check subscription is present
+RUN ls -al /run/secrets/rhsm/ /run/secrets/rhsm/syspurpose/ /run/secrets/redhat.repo /run/secrets/etc-pki-entitlement/
 
 #RUN microdnf -y module enable 'nginx:1.22' 'postgresql:15' 'redis:6' \
 RUN microdnf -y module enable 'nginx:1.22' \
@@ -68,6 +70,13 @@ RUN microdnf -y module enable 'nginx:1.22' \
   && microdnf install --setopt=install_weak_deps=0 --nodocs -y python3.12 python3.12-devel libpq-devel gcc \
   && microdnf reinstall --setopt=install_weak_deps=0 --nodocs -y tzdata \
   && microdnf clean all
+
+# TODO use supervisor from rpm
+# Also, supervisor uses asynchat, and py3.12 dropped asynchat. Use py3.9
+RUN microdnf install --setopt=install_weak_deps=0 --nodocs -y python3.9 \
+  && microdnf clean all
+RUN python3.9 -m ensurepip && pip3.9 install supervisor==4.2.4 && supervisord -v
+
 RUN useradd awx -u 1000 -g 0 --home-dir /var/lib/awx -s /bin/bash
 
 RUN python3.12 -m venv /venv
@@ -87,6 +96,10 @@ COPY --from=web-builder /code/dist /opt/app-root/src
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 RUN mkdir /code/docker/
+COPY docker/supervisord_reporter_web.conf /etc/
+COPY docker/stop-supervisor /usr/local/bin/stop-supervisor
+COPY docker/launch_awx_rsyslog.sh /usr/bin/launch_awx_rsyslog.sh
+# TEMP launch_automation_reporter.sh ?
 COPY docker/launch_automation_reporter.sh /code/docker/launch_automation_reporter.sh
 RUN curl -L -o /usr/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && chmod a+x /usr/bin/dumb-init
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

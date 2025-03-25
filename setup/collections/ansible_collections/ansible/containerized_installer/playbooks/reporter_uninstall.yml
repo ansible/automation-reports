@@ -1,6 +1,6 @@
 ---
 - name: Collect services facts
-  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes
+  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes:automationreporter
   gather_facts: false
   become: false
   tasks:
@@ -33,6 +33,7 @@
       ansible.builtin.import_role:
         name: postgresql
         tasks_from: uninstall.yml
+      when: uninstall_database | default(false)
 
 - name: Remove service leftovers
   hosts: automationcontroller:automationeda:automationhub

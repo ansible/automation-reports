@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'django_filters',
-    'backend.apps.clusters'
+    'backend.apps.clusters',
+    'backend.apps.common'
 ]
 
 MIDDLEWARE = [
@@ -179,6 +180,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:9000",
 ]
 # CORS_ORIGIN_ALLOW_ALL = True
+
+SHOW_URLLIB3_INSECURE_REQUEST_WARNING = True
 
 # Load settings from REPORTER_SETTINGS_DIR
 settings_dir = os.environ.get('REPORTER_SETTINGS_DIR', '/etc/reporter/conf.d/')

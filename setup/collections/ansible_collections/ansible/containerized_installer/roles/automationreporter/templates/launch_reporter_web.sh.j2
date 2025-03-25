@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
+#if [ `id -u` -ge 500 ]; then
+#    echo "awx:x:`id -u`:`id -g`:,,,:/var/lib/awx:/bin/bash" >> /tmp/passwd
+#    cat /tmp/passwd > /etc/passwd
+#    rm /tmp/passwd
+#fi
 
 /code/src/backend/wait-for-migrations-reporter.sh
 
-# exec supervisord -c /etc/supervisord_task.conf
-nginx -g 'daemon off;' &
-exec /venv/bin/python manage.py runserver 0.0.0.0:8000
+exec supervisord -c /etc/supervisord_reporter_web.conf
+# nginx -g 'daemon off;' &
+# /venv/bin/python manage.py runserver 0.0.0.0:8000 &

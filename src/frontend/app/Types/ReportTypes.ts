@@ -7,7 +7,8 @@ export interface Report {
   cluster: number;
   elapsed_str: string;
   num_hosts: number;
-  manual_time: number;
+  time_taken_manually_execute_minutes: number;
+  time_taken_create_automation_minutes: number;
   successful_runs: number;
   failed_runs: number;
   automated_costs: string;

@@ -16,6 +16,10 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
                 title={'Total number of successful jobs'}
                 result={props?.data?.total_number_of_successful_jobs?.value}
                 percentage={props?.data?.total_number_of_successful_jobs?.index}
+                url={{
+                  url: props?.data?.related_links?.successful_jobs,
+                  title: 'See all successful jobs in AAP',
+                }}
               />
             </CardBody>
           </Card>
@@ -27,6 +31,10 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
                 title={'Total number of failed jobs'}
                 result={props?.data?.total_number_of_failed_jobs?.value}
                 percentage={props?.data?.total_number_of_failed_jobs?.index}
+                url={{
+                  url: props?.data?.related_links?.failed_jobs,
+                  title: 'See all failed jobs in AAP',
+                }}
                 invert={true}
               />
             </CardBody>
@@ -39,6 +47,7 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
                 title={'Total number of unique hosts automated'}
                 result={props?.data?.total_number_of_unique_hosts?.value}
                 percentage={props?.data?.total_number_of_unique_hosts?.index}
+                extraText={'Compared to previous same-length period'}
               />
             </CardBody>
           </Card>
@@ -52,6 +61,7 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
                   props?.data?.total_hours_of_automation?.value ? props.data.total_hours_of_automation.value + 'h' : ''
                 }
                 percentage={props?.data?.total_hours_of_automation?.index}
+                extraText={'Compared to previous same-length period'}
               />
             </CardBody>
           </Card>

@@ -24,7 +24,7 @@ class CostView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
         if instance is None:
             Costs.objects.create(
                 value=value,
-                _type=_type,
+                type=_type,
             )
         else:
             instance.value = value

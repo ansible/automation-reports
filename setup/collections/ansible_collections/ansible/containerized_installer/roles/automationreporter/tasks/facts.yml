@@ -55,6 +55,7 @@
     _nginx_volumes:
       - '{{ reporter_conf_dir }}/uwsgi.ini:/etc/tower/uwsgi.ini:ro,z'
       - '{{ nginx_conf_dir }}/reporter.conf:/etc/nginx/nginx.conf:ro,z'
+      - '{{ nginx_conf_dir }}/htpasswd:/etc/nginx/htpasswd:ro,z'
 
 - name: Add postgresql socket directory to common automation reporter volumes
   ansible.builtin.set_fact:

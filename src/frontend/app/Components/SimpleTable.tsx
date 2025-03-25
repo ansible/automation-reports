@@ -1,14 +1,11 @@
 import React from 'react';
-import { Table, Thead, Tr, Th, Tbody, Td } from '@patternfly/react-table';
+import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import '../styles/table.scss';
-
-interface TableColumn {
-  name: string;
-  title: string;
-}
+import { ColumnProps } from '@app/Types';
+import { formatNumber } from '@app/Utils';
 
 interface TableProps {
-  columns: TableColumn[];
+  columns: ColumnProps[];
   data: any[];
 }
 
@@ -19,7 +16,12 @@ export const SimpleTable: React.FunctionComponent<TableProps> = (props) => {
         <Thead>
           <Tr>
             {props.columns.map((column) => (
-              <Th key={column.name}>{column.title}</Th>
+              <Th
+                className={column.type === 'number' || column.type === 'currency' ? 'numerical min-180' : ''}
+                key={column.title}
+              >
+                {column.title}
+              </Th>
             ))}
           </Tr>
         </Thead>
@@ -28,8 +30,12 @@ export const SimpleTable: React.FunctionComponent<TableProps> = (props) => {
             props.data.map((item, rowNum) => (
               <Tr key={rowNum}>
                 {props.columns.map((column) => (
-                  <Td key={item[column.name]} dataLabel={column['title']}>
-                    {item[column.name]}
+                  <Td
+                    key={item[column.name]}
+                    dataLabel={column['title']}
+                    className={column.type === 'number' || column.type === 'currency' ? 'numerical' : ''}
+                  >
+                    {column.type === 'number' ? formatNumber(item[column.name]) : item[column.name]}
                   </Td>
                 ))}
               </Tr>

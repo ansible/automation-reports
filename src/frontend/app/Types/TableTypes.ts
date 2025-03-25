@@ -1,4 +1,6 @@
-export type paginationProps = {
+import { PaginationParams } from '@app/Types/FilterTypes';
+
+export type PaginationProps = {
   onPageChange: (newPage: number) => void;
   onPerPageChange: (page: number, newPage: number) => void;
   totalItems: number;
@@ -8,7 +10,7 @@ export type SortProps = {
   onSortChange: (ordering: string) => void;
 };
 
-export type columnProps = {
+export type ColumnProps = {
   name: string;
   title: string;
   valueKey?: string;
@@ -19,18 +21,6 @@ export type columnProps = {
   isEditable?: boolean;
 };
 
-export type UrlParams = {
-  page?: number;
-  page_size?: number;
-  organization?: number[] | null;
-  date_range?: string | null;
-  start_date?: string | null;
-  end_date?: string | null;
-  label?: number[] | null;
-  job_template?: number[] | null;
-  ordering?: string | null;
-};
-
 export type TableResult = {
   name: string;
   runs: number;
@@ -38,7 +28,8 @@ export type TableResult = {
   cluster: number;
   elapsed_str: string;
   num_hosts: number;
-  manual_time: number;
+  time_taken_manually_execute_minutes: number;
+  time_taken_create_automation_minutes: number;
   successful_runs: number;
   failed_runs: number;
   automated_costs: number;
@@ -53,17 +44,23 @@ export type TableResponse = {
 };
 
 export type ValueIndex = {
-  value: number;
+  value: number | string;
   index: number;
 };
 
 export type DashboardTableProps = {
   onCostChanged: (type: string, value: number) => void;
-  onItemEdit: (value: number, item: TableResult) => void;
+  onItemEdit: (newValue: TableResult, oldValue: TableResult) => void;
+  onInputFocus: (event?: never) => void;
+  onPaginationChange: (pagination: PaginationParams) => void;
+  onSortChange: (ordering: string) => void;
+  onExportCsv: () => void;
+  pagination: PaginationParams;
   data: TableResponse;
   totalSaving: ValueIndex;
   costOfManualAutomation: ValueIndex;
   costOfAutomatedExecution: ValueIndex;
+  totalTimeSavings: ValueIndex;
   loading: boolean;
 };
 
@@ -86,6 +83,11 @@ export type ChartData = {
   range: ChartRange;
 };
 
+export type ReportDetailLinks = {
+  successful_jobs?: string;
+  failed_jobs?: string;
+};
+
 export type ReportDetail = {
   users: TopUser[];
   projects: TopProject[];
@@ -100,15 +102,12 @@ export type ReportDetail = {
   total_saving: ValueIndex;
   job_chart: ChartData;
   host_chart: ChartData;
-};
-
-export type DashboardTopTableColumn = {
-  name: string;
-  title: string;
+  total_time_saving: ValueIndex;
+  related_links?: ReportDetailLinks;
 };
 
 export type DashboardTopTableProps = {
   title: string;
-  columns: DashboardTopTableColumn[];
+  columns: ColumnProps[];
   data: TopUser[] | TopProject[];
 };

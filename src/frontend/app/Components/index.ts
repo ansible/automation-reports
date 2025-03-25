@@ -6,3 +6,5 @@ export { MultiChoiceDropdown } from './MultiChoiceDropdown';
 export { CustomInput } from './CustomInput';
 export { SimpleTable } from './SimpleTable';
 export { BaseTable } from './BaseTable';
+export { CurrencySelector } from './CurrenySelector';
+export { AddEditView } from './AddEditView';
