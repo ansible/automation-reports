@@ -278,11 +278,11 @@ const Dashboard: React.FunctionComponent = () => {
               <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />
             </div>
           )}
-          <Flex>
+          <Flex className="pf-m-gap-none">
             <FlexItem>
               <Filters onChange={filtersChange}></Filters>
             </FlexItem>
-            <FlexItem align={{ default: 'alignLeft', '2xl': 'alignRight' }}>
+            <FlexItem align={{ default: 'alignLeft', '2xl': 'alignRight' }} className="currency-selector">
               <Toolbar>
                 <ToolbarItem>
                   <CurrencySelector></CurrencySelector>

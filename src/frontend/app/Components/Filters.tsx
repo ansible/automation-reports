@@ -270,7 +270,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
               <ToolbarItem>{itemsDropdown}</ToolbarItem>
             </SplitItem>
           </Split>
-          <ToolbarItem style={{ marginRight: '16px' }}>{dateRangePicker}</ToolbarItem>
+          <ToolbarItem>{dateRangePicker}</ToolbarItem>
           <AddEditView filters={filterSelection} onViewDelete={clearFilters}></AddEditView>
         </ToolbarGroup>
       </ToolbarContent>

@@ -7,6 +7,8 @@ import {
   FlexItem,
   Form,
   FormGroup,
+  Grid,
+  GridItem,
   Icon,
   Spinner,
   Tooltip,
@@ -75,13 +77,13 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
     { name: 'num_hosts', title: 'Host executions', type: 'number' },
     {
       name: 'time_taken_manually_execute_minutes',
-      title: 'Time taken to manually execute (minutes)',
+      title: 'Time taken to manually execute (min)',
       info: { tooltip: 'Please enter an average time that an engineer would spend to run the job' },
       isEditable: true,
     },
     {
       name: 'time_taken_create_automation_minutes',
-      title: 'Time taken to create automation (minutes)',
+      title: 'Time taken to create automation (min)',
       info: { tooltip: 'Please enter the time that an engineer would spend to automatize this job' },
       isEditable: true,
     },
@@ -101,7 +103,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             </div>
           )}
 
-          <Flex className="pf-v6-u-mb-2xl pf-v6-u-align-items-flex-end">
+          <Flex className="pf-v6-u-mb-lg pf-v6-u-align-items-flex-end">
             <FlexItem>
               <Form>
                 <FormGroup
@@ -156,44 +158,62 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
               </FlexItem>
             )}
           </Flex>
-          <Flex className="cards-gap pf-v6-u-mb-2xl details-row">
-            <FlexItem>
-              <DashboardTotals
-                title={'Cost of manual automation'}
-                result={formatCurrency(props?.costOfManualAutomation?.value, selectedCurrencySign)}
-                percentage={props?.costOfManualAutomation?.index}
-                tooltip={'Manual time of automation (minutes) * Host executions * Average cost of an employee minute'}
-              />
-            </FlexItem>
-            <FlexItem>
-              <DashboardTotals
-                title={'Cost of automated execution'}
-                result={formatCurrency(props?.costOfAutomatedExecution?.value, selectedCurrencySign)}
-                percentage={props?.costOfAutomatedExecution?.index}
-                tooltip={
-                  'Running time (s) / 60 * Cost per minute of AAP + Time taken to create automation (minutes) * Average cost of an employee minute'
-                }
-              />
-            </FlexItem>
-            <FlexItem>
-              <DashboardTotals
-                title={'Total savings/cost avoided'}
-                result={formatCurrency(props?.totalSaving?.value, selectedCurrencySign)}
-                percentage={props.totalSaving?.index}
-                tooltip={'Cost of manual automation - Cost of automated execution'}
-              />
-            </FlexItem>
-            <FlexItem>
-              <DashboardTotals
-                title={'Total hours saved/avoided'}
-                result={props?.totalTimeSavings?.value}
-                percentage={props.totalTimeSavings?.index}
-                tooltip={
-                  'Manual time of automation (minutes) * Host executions  + Time taken to create automation (minutes) - Running time (s) / 60'
-                }
-              />
-            </FlexItem>
-          </Flex>
+          <Grid hasGutter className="mgb-36">
+            <GridItem className="pf-m-12-col pf-m-6-col-on-md pf-m-3-col-on-2xl">
+              <Card className="card">
+                <CardBody>
+                  <DashboardTotals
+                    title={'Cost of manual automation'}
+                    result={formatCurrency(props?.costOfManualAutomation?.value, selectedCurrencySign)}
+                    percentage={props?.costOfManualAutomation?.index}
+                    tooltip={
+                      'Manual time of automation (minutes) * Host executions * Average cost of an employee minute'
+                    }
+                  />
+                </CardBody>
+              </Card>
+            </GridItem>
+            <GridItem className="pf-m-12-col pf-m-6-col-on-md pf-m-3-col-on-2xl">
+              <Card style={{ height: '100%' }}>
+                <CardBody>
+                  <DashboardTotals
+                    title={'Cost of automated execution'}
+                    result={formatCurrency(props?.costOfAutomatedExecution?.value, selectedCurrencySign)}
+                    percentage={props?.costOfAutomatedExecution?.index}
+                    tooltip={
+                      'Running time (s) / 60 * Cost per minute of AAP + Time taken to create automation (minutes) * Average cost of an employee minute'
+                    }
+                  />
+                </CardBody>
+              </Card>
+            </GridItem>
+            <GridItem className="pf-m-12-col pf-m-6-col-on-md pf-m-3-col-on-2xl">
+              <Card style={{ height: '100%' }}>
+                <CardBody>
+                  <DashboardTotals
+                    title={'Total savings/cost avoided'}
+                    result={formatCurrency(props?.totalSaving?.value, selectedCurrencySign)}
+                    percentage={props.totalSaving?.index}
+                    tooltip={'Cost of manual automation - Cost of automated execution'}
+                  />
+                </CardBody>
+              </Card>
+            </GridItem>
+            <GridItem className="pf-m-12-col pf-m-6-col-on-md pf-m-3-col-on-2xl">
+              <Card style={{ height: '100%' }}>
+                <CardBody>
+                  <DashboardTotals
+                    title={'Total hours saved/avoided'}
+                    result={props?.totalTimeSavings?.value}
+                    percentage={props.totalTimeSavings?.index}
+                    tooltip={
+                      'Manual time of automation (minutes) * Host executions  + Time taken to create automation (minutes) - Running time (s) / 60'
+                    }
+                  />
+                </CardBody>
+              </Card>
+            </GridItem>
+          </Grid>
 
           <BaseTable
             pagination={{
