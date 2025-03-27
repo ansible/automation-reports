@@ -4,15 +4,18 @@ import decimal
 from django.db.models import Count, Sum, F, Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from django_weasyprint.views import WeasyTemplateResponse
 from rest_framework import mixins, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_filter_options
+from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_filter_options, get_range
 from backend.api.v1.report.serializers import JobSerializer
 from backend.apps.clusters.helpers import get_costs, get_report_data, get_unique_host_count, get_chart_data, get_related_links, sec2time
-from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices
+from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices, JobTemplate, Organization, Label
+from backend.apps.common.models import Settings, SettingsChoices, Currency
+from backend.django_config import settings
 
 
 class ReportsView(mixins.ListModelMixin, GenericViewSet):
@@ -55,8 +58,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
     def get_queryset(self):
         return self.get_base_queryset(prev_range=False)
 
-    @action(methods=["get"], detail=False)
-    def details(self, request):
+    def get_details(self, request):
         filtered_qs = Job.objects.all()
         filtered_qs = self.filter_queryset(filtered_qs)
         ### TOP USERS ###
@@ -72,7 +74,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         prev_qs = self.get_base_queryset(prev_range=True)
         if prev_qs:
             prev_qs = self.filter_queryset(prev_qs)
-        report_data = get_report_data(list(qs), list(prev_qs) if prev_qs else [])
+        report_data = get_report_data(qs, prev_qs if prev_qs else None)
 
         ## TOP PROJECTS ##
         top_projects_qs = (filter_by_range(request, filtered_qs).
@@ -85,27 +87,34 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         ## UNIQUE HOSTS ###
         unique_host = get_unique_host_count(options=get_filter_options(request))
 
-        ## CHARTS ###
-        chart_qs = Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED], num_hosts__gt=0)
-        chart_qs = self.filter_queryset(chart_qs)
-        chart_qs = filter_by_range(request, chart_qs)
-
-        response = {
+        top_data = {
             "users": list(top_users_qs),
             "projects": list(top_projects_qs),
         }
 
+        return {
+            **top_data,
+            **unique_host,
+            **report_data,
+        }
+
+    @action(methods=["get"], detail=False)
+    def details(self, request):
+        details_data = self.get_details(request)
+        ## CHARTS ###
+        chart_qs = Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED], num_hosts__gt=0)
+        chart_qs = self.filter_queryset(chart_qs)
+        chart_qs = filter_by_range(request, chart_qs)
         charts_data = get_chart_data(chart_qs, request=request)
 
         related_links = get_related_links(request)
 
         response_data = {
-            **response,
-            **unique_host,
-            **report_data,
+            **details_data,
             **charts_data,
             **related_links
         }
+
         return Response(data=response_data, status=status.HTTP_200_OK)
 
     @action(methods=["get"], detail=False)
@@ -144,3 +153,59 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             ])
 
         return response
+
+    @action(methods=["post"], detail=False)
+    def pdf(self, request):
+        table_qs = self.filter_queryset(self.get_base_queryset())
+
+        report_settings = Settings.objects.filter(type=SettingsChoices.CURRENCY).first()
+        currency_sign = "$"
+        if settings is not None:
+            _currency = Currency.objects.filter(pk=report_settings.value).first()
+            if _currency is not None:
+                currency_sign = _currency.symbol if _currency.symbol else _currency.iso_code
+
+        serializer = JobSerializer(table_qs, many=True)
+        details = self.get_details(request)
+
+        options = get_filter_options(request)
+        organizations = None
+        templates = None
+        labels = None
+        job_templates = options.get("job_template", None)
+        params_organizations = options.get("organization", None)
+        param_labels = options.get("label", None)
+
+        if job_templates is not None:
+            qs = JobTemplate.objects.filter(id__in=job_templates)
+            templates = ", ".join([t.name for t in qs])
+
+        if params_organizations is not None:
+            qs = Organization.objects.filter(id__in=params_organizations)
+            organizations = ", ".join([o.name for o in qs])
+
+        if param_labels is not None:
+            qs = Label.objects.filter(id__in=param_labels)
+            labels = ", ".join([l.name for l in qs])
+
+        context = {
+            "table_data": serializer.data,
+            "details": details,
+            "currency": currency_sign,
+            "job_chart": request.data.get("job_chart", None),
+            "host_chart": request.data.get("host_chart", None),
+            "start_date": options["date_range"].start.strftime('%Y-%m-%d'),
+            "end_date": options["date_range"].end.strftime('%Y-%m-%d'),
+            "templates": templates,
+            "organizations": organizations,
+            "labels": labels,
+        }
+
+        return WeasyTemplateResponse(
+            request,
+            template='report.html',
+            context=context,
+            filename='report.pdf',
+            headers={
+                "Content-Disposition": 'attachment; filename="report.pdf"'
+            })

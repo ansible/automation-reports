@@ -1,0 +1,221 @@
+@page {
+  width: 210mm;
+  height: 297mm;
+  margin: -2mm;
+  padding: 20mm 10mm;
+  @top-center {
+    content: element(header);
+  }
+  @bottom-center {
+    content:element(footer);
+  }
+}
+@font-face {
+  font-family: "Red Hat Text";
+  font-style: normal;
+  font-weight: 400 500;
+  src: url("../fonts/RedHatText/RedHatTextVF.woff2") format("woff2-variations");
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: "Red Hat Text";
+  font-style: italic;
+  font-weight: 400 500;
+  src: url("../fonts/RedHatText/RedHatTextVF-Italic.woff2") format("woff2-variations");
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: "Red Hat Display";
+  font-style: normal;
+  font-weight: 400 700;
+  src: url("../fonts/RedHatDisplay/RedHatDisplayVF.woff2") format("woff2-variations");
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: "Red Hat Display";
+  font-style: italic;
+  font-weight: 400 700;
+  src: url("../fonts/RedHatDisplay/RedHatDisplayVF-Italic.woff2") format("woff2-variations");
+  font-display: fallback;
+}
+
+header {
+  background: #151515;
+  margin-top: -20mm;
+  margin-left: -10mm;
+  margin-right: -10mm;
+  padding: 5mm 10mm;
+
+}
+
+footer {
+  position: running(footer);
+  height: 15mm;
+  padding-bottom: 5mm;
+  font-size: 10px;
+  left: 0;
+  width: 100%;
+  content: counter(page) " of " counter(pages);
+}
+
+header img {
+  width: 50mm;
+}
+
+body {
+  font-family: "Red Hat Text", RedHatText, Helvetica, Arial, sans-serif;
+}
+
+thead {
+    display: table-header-group;
+}
+
+
+
+.footer {
+  position: fixed;
+  bottom: -20mm;
+  left: 0;
+  height: 10mm;
+  width: 100%;
+  content: "Page " counter(page) " of " counter(pages);
+}
+
+.content {
+  page-break-inside: auto;
+}
+
+.header-table {
+  margin-top: 5mm;
+}
+
+.header-table td.title {
+  font-family: "Red Hat Display", RedHatDisplay, Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.header-table td.description {
+  font-size: 10px;
+  min-height: 24px;
+}
+
+.data-table {
+  border-collapse: collapse;
+  page-break-inside: avoid;
+}
+
+.data-table th,
+.data-table td {
+  font-size: 10px;
+  text-align: left;
+  padding: 4px;
+  font-family: "Red Hat Text", RedHatText, Helvetica, Arial, sans-serif;
+}
+
+.data-table th {
+  font-weight: 500;
+  vertical-align: bottom;
+}
+
+.data-table th.numeric,
+.data-table td.numeric,
+.numeric {
+  text-align: right;
+}
+
+.data-table tbody tr:not(:last-child) {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.details-table {
+  margin-bottom: 10mm;
+}
+
+.details-table td {
+  vertical-align: top;
+  padding: 4px;
+  height: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.card {
+  padding: 8px;
+  height: 100%;
+  font-size: 11px;
+  width: 100%;
+  text-align: left;
+
+}
+
+.card .title {
+  font-size: 12px;
+  font-weight: 400;
+  padding-bottom: 10px;
+}
+
+.card .value {
+  font-family: "Red Hat Text", RedHatText, Helvetica, Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+
+.card table {
+  width: 95%;
+  border-collapse: collapse;
+}
+.card table th,
+.card table td{
+  font-size: 10px;
+  text-align: left;
+  padding: 4px;
+  font-family: "Red Hat Text", RedHatText, Helvetica, Arial, sans-serif;
+  border: none;
+}
+
+.card table th {
+  font-weight: 500;
+}
+
+.card table td {
+  font-weight: normal;
+}
+
+.card table tr:not(:last-child) {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.card table th.numeric,
+.card table td.numeric {
+    text-align: right;
+}
+
+.value-index {
+  font-size: 10px;
+  font-weight: 400;
+  display: inline-block;
+  height: 10px;
+  position: relative;
+  padding-left: 12px;
+ }
+.value-index img {
+  position: absolute;
+  top: 2px;
+  left: 0
+}
+
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  background: #e0e0e0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+  margin-right: 12px;
+  margin-bottom: 12px;
+}
