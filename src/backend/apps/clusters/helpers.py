@@ -96,7 +96,7 @@ def sum_items(qs):
         ("total_automated_costs", "automated_costs"),
         ("total_savings", "savings"),
     ]:
-       result[resKey] = round(qs[dbKey],2) if qs[dbKey] is not None else 0
+        result[resKey] = round(qs[dbKey], 2) if qs[dbKey] is not None else 0
     result["total_elapsed_hours"] = round((qs["total_elapsed"] / 3600), 2) if qs["total_elapsed"] is not None else 0
     result["time_savings"] = round((qs["total_time_savings"] / 3600), 2) if qs["total_elapsed"] is not None else 0
     return result

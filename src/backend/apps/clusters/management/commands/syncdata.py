@@ -1,8 +1,8 @@
-import urllib3
 from datetime import datetime, timezone
 
-from django.core.management.base import BaseCommand
+import urllib3
 from django.conf import settings
+from django.core.management.base import BaseCommand
 
 from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.models import Cluster, ClusterSyncData

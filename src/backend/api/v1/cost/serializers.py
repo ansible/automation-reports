@@ -4,7 +4,6 @@ from backend.apps.clusters.models import Costs, CostsChoices
 
 
 class CostSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Costs
         fields = ("id", "type", "value")
