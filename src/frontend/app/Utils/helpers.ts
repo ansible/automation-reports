@@ -135,3 +135,37 @@ export const formatDateTimeToDate = (value: Date | string | undefined): string =
 
   return new Date(_d.getTime() - _d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
 };
+
+const loadImage = async (url: string): Promise<HTMLImageElement> => {
+  const img = document.createElement('img');
+  img.src = url;
+  return new Promise((resolve, reject) => {
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+};
+
+export const svgToPng = async (svgElement: SVGSVGElement | undefined | null): Promise<string | null> => {
+  if (!svgElement) {
+    return null;
+  }
+  const dataHeader = 'data:image/svg+xml;charset=utf-8';
+  const serializeAsXML = (e: SVGSVGElement) => new XMLSerializer().serializeToString(e);
+  const encodeAsUTF8 = (s: string) => `${dataHeader},${encodeURIComponent(s)}`;
+
+  const svgData = encodeAsUTF8(serializeAsXML(svgElement));
+  const img = await loadImage(svgData);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = svgElement.clientWidth;
+  canvas.height = svgElement.clientHeight;
+
+  // @ts-ignore
+  canvas.getContext('2d').drawImage(img, 0, 0, svgElement.clientWidth, svgElement.clientHeight);
+  const retVal = canvas.toDataURL(`image/'png'`, 1.0);
+
+  canvas.remove();
+  img.remove();
+  return retVal;
+};

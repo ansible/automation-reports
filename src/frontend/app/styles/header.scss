@@ -3,8 +3,26 @@
   left: 0;
   width: 100vw;
   background: #fff;
-
+  display: flex;
+  flex-flow: row;
   .pf-v6-c-page__main-section {
     padding: 24px;
+    max-width: 1070px;
+  }
+  .btn-pdf {
+    align-self: flex-start;
+    margin: 24px 24px 0 auto;
+  }
+}
+
+@media (max-width: 1200px) {
+  .page-header {
+    flex-flow: column;
+    max-width: unset;
+
+    .btn-pdf {
+      align-self: flex-start;
+      margin: 0 auto 24px 24px;
+    }
   }
 }
