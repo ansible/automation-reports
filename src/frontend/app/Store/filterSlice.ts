@@ -23,6 +23,20 @@ export const fetchTemplateOptions = createAsyncThunk(
   },
 );
 
+export const setAutomatedProcessCost = createAsyncThunk(
+  'filters/automatedProcessCost',
+  async (cost: number): Promise<number> => {
+    return cost;
+  },
+);
+
+export const setManualProcessCost = createAsyncThunk(
+  'filters/manualProcessCost',
+  async (cost: number): Promise<number> => {
+    return cost;
+  },
+);
+
 const initialState: FilterState = {
   filterOptions: [
     { key: 'job_template', value: 'Template' },
@@ -61,9 +75,15 @@ export const filterSlice = createSlice({
         state.manualCostAutomation = payload.manual_cost_automation;
         state.automatedProcessCost = payload.automated_process_cost;
       })
-      .addCase(fetchTemplateOptions.rejected, (state, action) => {
+      .addCase(fetchTemplateOptions.rejected, (state) => {
         state.loading = 'failed';
         state.error = true;
+      })
+      .addCase(setAutomatedProcessCost.fulfilled, (state, action) => {
+        state.automatedProcessCost = action.payload;
+      })
+      .addCase(setManualProcessCost.fulfilled, (state, action) => {
+        state.manualCostAutomation = action.payload;
       });
   },
 });

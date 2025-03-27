@@ -6,7 +6,7 @@ import '@patternfly/react-styles/css/utilities/Text/text.css';
 import '@patternfly/react-styles/css/utilities/Flex/flex.css';
 import { Flex, FlexItem, Grid, GridItem, Spinner, Toolbar, ToolbarItem } from '@patternfly/react-core';
 import { RestService } from '@app/Services';
-import { deepClone } from '@app/Utils';
+import { deepClone, svgToPng } from '@app/Utils';
 import {
   ColumnProps,
   OrderingParams,
@@ -17,8 +17,14 @@ import {
   TableResult,
   UrlParams,
 } from '@app/Types';
-import { useAppSelector } from '@app/hooks';
-import { automatedProcessCost, filterRetrieveError, manualCostAutomation } from '@app/Store';
+import { useAppDispatch, useAppSelector } from '@app/hooks';
+import {
+  automatedProcessCost,
+  filterRetrieveError,
+  manualCostAutomation,
+  setAutomatedProcessCost,
+  setManualProcessCost,
+} from '@app/Store';
 import ErrorState from '@patternfly/react-component-groups/dist/dynamic/ErrorState';
 import {
   DashboardBarChart,
@@ -40,6 +46,7 @@ const Dashboard: React.FunctionComponent = () => {
   const [detailData, setDetailData] = React.useState<ReportDetail>({} as ReportDetail);
   const [loadDataError, setLoadDataError] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [pdfLoading, setPdfLoading] = React.useState<boolean>(false);
   const [tableLoading, setTableLoading] = React.useState<boolean>(true);
   const [requestParams, setRequestParams] = React.useState<RequestFilter>();
   const [paginationParams, setPaginationParams] = React.useState<PaginationParams>({
@@ -51,9 +58,10 @@ const Dashboard: React.FunctionComponent = () => {
   const hourly_automated_process_costs = useAppSelector(automatedProcessCost);
   const interval = React.useRef<number | undefined>(undefined);
   const requestParamsData = React.useRef<RequestFilter>(requestParams as RequestFilter);
-
   const controller = React.useRef<AbortController | undefined>(undefined);
   const detailController = React.useRef<AbortController | undefined>(undefined);
+  const containerLineRefChart = React.useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
 
   const handelError = (error: unknown) => {
     if (error?.['name'] !== 'CanceledError') {
@@ -163,6 +171,11 @@ const Dashboard: React.FunctionComponent = () => {
       RestService.updateCosts({ type: type, value: value })
         .then(() => {
           fetchServerTableData(true, false);
+          if (type === 'manual') {
+            dispatch(setManualProcessCost(value));
+          } else {
+            dispatch(setAutomatedProcessCost(value));
+          }
         })
         .catch((e) => {
           handelError(e);
@@ -252,6 +265,30 @@ const Dashboard: React.FunctionComponent = () => {
       });
   };
 
+  const pdfDownload = async () => {
+    const jobsChartSvg = document.querySelector('.jobs-chart')?.querySelector('svg');
+    const jobsChartPng = await svgToPng(jobsChartSvg);
+
+    const hostChartSvg = document.querySelector('.host-chart')?.querySelector('svg');
+    const hostChartPng = await svgToPng(hostChartSvg);
+
+    RestService.exportToPDF(
+      { ...requestParams, ...{ ordering: ordering } } as RequestFilter & OrderingParams,
+      jobsChartPng,
+      hostChartPng,
+    )
+      .then(() => {
+        setPdfLoading(false);
+      })
+      .catch((e) => {
+        handelError(e);
+      });
+  };
+
+  const onPdfBtnClick = () => {
+    setPdfLoading(true);
+    setTimeout(pdfDownload, 150);
+  };
   return (
     <div>
       <Header
@@ -259,6 +296,10 @@ const Dashboard: React.FunctionComponent = () => {
         subtitle={
           'Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.'
         }
+        pdfBtnText={
+          !loadDataError && !filterError && !loading && !pdfLoading && tableData?.count > 0 ? 'Share as PDF' : undefined
+        }
+        onPdfBtnClick={onPdfBtnClick}
       ></Header>
       {(loadDataError || filterError) && (
         <div className={'error'}>
@@ -273,16 +314,16 @@ const Dashboard: React.FunctionComponent = () => {
       )}
       {!loadDataError && !filterError && (
         <div className={'main-layout'}>
-          {loading && (
+          {(loading || pdfLoading) && (
             <div className={'loader'}>
               <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />
             </div>
           )}
-          <Flex>
+          <Flex className="pf-m-gap-none">
             <FlexItem>
               <Filters onChange={filtersChange}></Filters>
             </FlexItem>
-            <FlexItem align={{ default: 'alignLeft', '2xl': 'alignRight' }}>
+            <FlexItem align={{ default: 'alignLeft', '2xl': 'alignRight' }} className="currency-selector">
               <Toolbar>
                 <ToolbarItem>
                   <CurrencySelector></CurrencySelector>
@@ -296,12 +337,14 @@ const Dashboard: React.FunctionComponent = () => {
                 <DashboardTotalCards data={detailData}></DashboardTotalCards>
                 <Grid hasGutter>
                   <GridItem className="pf-m-12-col pf-m-6-col-on-md" style={{ height: '100%' }}>
-                    <DashboardLineChart
-                      value={detailData?.total_number_of_job_runs?.value as number}
-                      index={detailData?.total_number_of_job_runs?.index}
-                      chartData={detailData.job_chart}
-                      loading={loading}
-                    ></DashboardLineChart>
+                    <div ref={containerLineRefChart}>
+                      <DashboardLineChart
+                        value={detailData?.total_number_of_job_runs?.value as number}
+                        index={detailData?.total_number_of_job_runs?.index}
+                        chartData={detailData.job_chart}
+                        loading={loading}
+                      ></DashboardLineChart>
+                    </div>
                   </GridItem>
                   <GridItem className="pf-m-12-col pf-m-6-col-on-md" style={{ height: '100%' }}>
                     <DashboardBarChart

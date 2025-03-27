@@ -48,7 +48,7 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
       inputDate === yyyyMMddFormat(newToDate) &&
       toValidator(newToDate) === ''
     ) {
-      props.onChange(props.selectedRange?.toString(), props.dateTo, newToDate);
+      props.onChange(props.selectedRange?.toString(), props.dateFrom, newToDate);
     }
   };
 
@@ -96,7 +96,7 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
   return (
     <Flex style={{ alignItems: 'self-start' }}>
       <FlexItem style={{ marginTop: '8px' }}>{props.label}:</FlexItem>
-      <FlexItem>{rangeSelector}</FlexItem>
+      <FlexItem className="range-selector">{rangeSelector}</FlexItem>
       <FlexItem>
         {props.selectedRange === 'custom' && (
           <Flex style={{ alignItems: 'self-start' }}>

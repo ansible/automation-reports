@@ -17,3 +17,4 @@ uwsgi==2.0.28
 freezegun==1.5.1
 urllib3~=2.3.0
 pytest~=8.3.5
+django-weasyprint==2.4.0

@@ -10,6 +10,9 @@
           .pf-v6-c-table__text {
             text-align: right;
           }
+          button {
+            padding: 0;
+          }
         }
 
         &.min-180 {
@@ -112,16 +115,6 @@
 
 .base-table {
   min-width: 1800px;
-
-  .pf-v6-c-table__tbody {
-    .pf-v6-c-table__tr {
-      .pf-v6-c-table__td {
-        &.numerical {
-          padding-right: 2.5rem;
-        }
-      }
-    }
-  }
 }
 
 .pf-v6-c-table__sort-indicator {
@@ -131,15 +124,6 @@
 @media screen and (max-width: calc(-1px + 48rem)) {
   .base-table {
     min-width: unset;
-    .pf-v6-c-table__tbody {
-      .pf-v6-c-table__tr {
-        .pf-v6-c-table__td {
-          &.numerical {
-            padding-right: 1rem;
-          }
-        }
-      }
-    }
   }
 
   .pf-v6-c-table {

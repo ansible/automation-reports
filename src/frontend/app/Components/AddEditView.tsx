@@ -70,6 +70,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
         if (!response?.['error']) {
           closeModal();
           props.onViewDelete();
+          setModalVariant('create');
         }
       });
     } else {
@@ -106,6 +107,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
 
   const onSelect = (_ev: React.MouseEvent | undefined, itemId?: string | number) => {
     toggleRef?.current?.blur();
+
     setModalVariant(itemId?.toString() || 'create');
     if (itemId === 'create') {
       setFilterNameValue('');
@@ -161,7 +163,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
   );
 
   const select = (
-    <div ref={containerRefDropdown}>
+    <div ref={containerRefDropdown} className="save-as-report">
       <Popper
         trigger={menuToggle}
         triggerRef={toggleRef}
@@ -181,10 +183,10 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       onClose={closeModal}
       aria-labelledby="form-modal-set-filter"
       aria-describedby="modal-box-set-filter-form"
+      className="add-edit-report-modal"
     >
       <ModalHeader
         title={modalVariant === 'create' ? 'Create report' : modalVariant === 'edit' ? 'Edit report' : 'Delete report'}
-        description={modalVariant !== 'delete' ? 'Enter report information' : ''}
         descriptorId="modal-box-description-form"
         labelId="form-filter-set-title"
       />
@@ -198,7 +200,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
               </div>
             )}
             <Form id="modal-set-view-form" className={filterSaveProcess ? 'hidden' : ''}>
-              <FormGroup isRequired label={'Name'}>
+              <FormGroup isRequired label={'Report name'}>
                 <TextInput
                   value={filterNameValue}
                   onChange={handleFilterNameValueChange}

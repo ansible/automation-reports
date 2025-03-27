@@ -9,6 +9,17 @@ import {
   UrlParams,
 } from '@app/Types';
 
+const downloadAttachment = (data: never, name: string) => {
+  const url = window.URL.createObjectURL(new Blob([data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', name);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 const buildQueryString = (params: object): string => {
   const query = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
@@ -50,14 +61,21 @@ const exportToCSV = async (params: RequestFilter & OrderingParams): Promise<void
       },
     })
     .then((response) => {
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'report.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      downloadAttachment(response.data as never, 'report.csv');
+      Promise.resolve();
+    });
+};
+
+const exportToPDF = async (
+  params: RequestFilter & OrderingParams,
+  jobChart: string | null,
+  hostChart: string | null,
+): Promise<void> => {
+  const queryString = buildQueryString(params);
+  return api
+    .post(`api/v1/report/pdf/${queryString}`, { job_chart: jobChart, host_chart: hostChart }, { responseType: 'blob' })
+    .then((response) => {
+      downloadAttachment(response.data as never, 'report.pdf');
       Promise.resolve();
     });
 };
@@ -99,4 +117,5 @@ export const RestService = {
   saveView: saveView,
   deleteView: deleteView,
   exportToCSV: exportToCSV,
+  exportToPDF: exportToPDF,
 };
