@@ -13,7 +13,7 @@ import {
   Spinner,
   Tooltip,
 } from '@patternfly/react-core';
-import { DashboardTotals } from './DashboardTotals';
+
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import { BaseTable, CustomInput } from '@app/Components';
 import { useAppSelector } from '@app/hooks';
@@ -22,6 +22,7 @@ import { automatedProcessCost, currencySign, manualCostAutomation } from '@app/S
 import '../styles/table.scss';
 import { ColumnProps, DashboardTableProps } from '@app/Types';
 import { formatCurrency, formatNumber } from '@app/Utils';
+import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
 
 export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (props: DashboardTableProps) => {
   const hourly_manual_costs = useAppSelector(manualCostAutomation);

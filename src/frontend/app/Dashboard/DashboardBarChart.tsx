@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardBody, CardTitle } from '@patternfly/react-core';
-import { DashboardTotals } from './DashboardTotals';
+
 import { DashboardChartProps } from '@app/Types';
 import { formatNumber, generateChartData } from '@app/Utils';
 import {
@@ -12,6 +12,7 @@ import {
   ChartVoronoiContainer,
 } from '@patternfly/react-charts/victory';
 import { AnimatePropTypeInterface } from 'victory-core';
+import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
 
 export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {
   const chartData = generateChartData(props.chartData);

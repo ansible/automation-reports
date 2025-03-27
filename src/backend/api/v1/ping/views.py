@@ -9,13 +9,12 @@ from backend.apps.clusters.models import Cluster
 
 class PingView(APIView):
 
-  def get(self, request: Request) -> Response:
+    def get(self, request: Request) -> Response:
+        clusters = Cluster.objects.all()
 
-    clusters = Cluster.objects.all()
-
-    return Response(
-      status=status.HTTP_200_OK,
-      data={
-        "ping": "pong",
-        "clusters": ClusterSerializer(clusters, many=True).data
-      })
+        return Response(
+            status=status.HTTP_200_OK,
+            data={
+                "ping": "pong",
+                "clusters": ClusterSerializer(clusters, many=True).data
+            })

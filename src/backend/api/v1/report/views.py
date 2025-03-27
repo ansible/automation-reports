@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_filter_options, get_range
+from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_filter_options
 from backend.api.v1.report.serializers import JobSerializer
 from backend.apps.clusters.helpers import get_costs, get_report_data, get_unique_host_count, get_chart_data, get_related_links, sec2time
 from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices, JobTemplate, Organization, Label

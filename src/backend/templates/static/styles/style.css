@@ -7,9 +7,10 @@
     content: element(header);
   }
   @bottom-center {
-    content:element(footer);
+    content: element(footer);
   }
 }
+
 @font-face {
   font-family: "Red Hat Text";
   font-style: normal;
@@ -70,9 +71,8 @@ body {
 }
 
 thead {
-    display: table-header-group;
+  display: table-header-group;
 }
-
 
 
 .footer {
@@ -169,8 +169,9 @@ thead {
   width: 95%;
   border-collapse: collapse;
 }
+
 .card table th,
-.card table td{
+.card table td {
   font-size: 10px;
   text-align: left;
   padding: 4px;
@@ -187,12 +188,12 @@ thead {
 }
 
 .card table tr:not(:last-child) {
-    border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .card table th.numeric,
 .card table td.numeric {
-    text-align: right;
+  text-align: right;
 }
 
 .value-index {
@@ -202,7 +203,8 @@ thead {
   height: 10px;
   position: relative;
   padding-left: 12px;
- }
+}
+
 .value-index img {
   position: absolute;
   top: 2px;
