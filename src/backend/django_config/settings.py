@@ -15,6 +15,7 @@ import traceback
 from pathlib import Path
 
 from split_settings.tools import optional, include
+from tests.testapp.project.settings import BASE_DIR
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'corsheaders',
     'rest_framework',
     'django_filters',
@@ -168,8 +170,15 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
+STATIC_ROOT =  "static"
+STATIC_URL = "/static/"
 
-STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "templates/static",
+]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -191,3 +200,4 @@ try:
 except ImportError:
     traceback.print_exc()
     sys.exit(1)
+

@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load static %}
+{% block content %}
+
+<table class="header-table" style="margin-bottom: 24px;">
+  <tbody>
+  <tr>
+    <td class="title">Automation Savings Service</td>
+  </tr>
+  <tr>
+    <td class="description">Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform.
+      Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+<table class="filter-table">
+  <tr>
+    <td>
+      <div class="badge">Period: {{start_date}} - {{end_date}}</div>
+      {% if templates != None %}
+      <div class="badge">Template: {{templates}}</div>
+      {% endif %}
+      {% if organizations != None %}
+      <div class="badge">Organization: {{organizations}}</div>
+      {% endif %}
+      {% if labels != None %}
+      <div class="badge">Label: {{labels}}</div>
+      {% endif %}
+    </td>
+  </tr>
+</table>
+
+<table class="details-table" style="width: 100%">
+  <tr>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Total number of successful jobs</div>
+        <div class="value">
+          {{ details.total_number_of_successful_jobs.value | intcomma }}
+          {% if details.total_number_of_successful_jobs.index == None or details.total_number_of_successful_jobs.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.total_number_of_successful_jobs.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.total_number_of_successful_jobs.index > 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-up-green.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.total_number_of_successful_jobs.index}}%)
+          </div>
+          {% elif details.total_number_of_successful_jobs.index < 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-down-red.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.total_number_of_successful_jobs.index}}%)
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+    <td style="width: 2%; border: none"></td>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Total number of failed jobs</div>
+        <div class="value">
+          {{ details.total_number_of_failed_jobs.value | intcomma }}
+          {% if details.total_number_of_failed_jobs.index == None or details.total_number_of_failed_jobs.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.total_number_of_failed_jobs.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.total_number_of_failed_jobs.index > 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-up-red.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.total_number_of_failed_jobs.index}}%)
+          </div>
+          {% elif details.total_number_of_failed_jobs.index < 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-down-green.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.total_number_of_failed_jobs.index}}%)
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3" style="width: 100%; height: 2%; border: none"></td>
+  </tr>
+  <tr>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Total number of unique hosts automated</div>
+        <div class="value">
+          {{ details.total_number_of_unique_hosts.value | intcomma }}
+          {% if details.total_number_of_unique_hosts.index == None or details.total_number_of_unique_hosts.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.total_number_of_unique_hosts.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.total_number_of_unique_hosts.index > 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-up-green.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.total_number_of_unique_hosts.index}}%)
+          </div>
+          {% elif details.total_number_of_unique_hosts.index < 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-down-red.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.total_number_of_unique_hosts.index}}%)
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+    <td style="width: 2%; border: none"></td>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Total hours of automation</div>
+        <div class="value">
+          {{ details.total_hours_of_automation.value | intcomma }}h
+          {% if details.total_hours_of_automation.index == None or details.total_hours_of_automation.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.total_hours_of_automation.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.total_hours_of_automation.index > 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-up-green.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.total_hours_of_automation.index}}%)
+          </div>
+          {% elif details.total_hours_of_automation.index < 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-down-red.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.total_hours_of_automation.index}}%)
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3" style="width: 100%; height: 2%; border: none"></td>
+  </tr>
+  <tr>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Top 5 projects</div>
+        <table class="card-table">
+          <thead>
+          <tr>
+            <th>Project name</th>
+            <th class="numeric">Total number of running jobs</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for project in details.projects %}
+          <tr>
+            <td>{{ project.project_name }}</td>
+            <td class="numeric">{{ project.count | intcomma }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </td>
+    <td style="width: 2%; border: none"></td>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Top 5 users</div>
+        <table class="card-table">
+          <thead>
+          <tr>
+            <th>User name</th>
+            <th class="numeric">Total number of running jobs</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for user in details.users %}
+          <tr>
+            <td>{{ user.user_name }}</td>
+            <td class="numeric">{{ user.count | intcomma }}</td>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3" style="width: 100%; height: 2%; border: none"></td>
+  </tr>
+
+  <tr>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Number of times jobs were run</div>
+        <div class="value">
+          {{ details.total_number_of_job_runs.value | intcomma }}
+          {% if details.total_number_of_job_runs.index == None or details.total_number_of_job_runs.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.total_number_of_job_runs.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.total_number_of_job_runs.index > 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-up-green.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.total_number_of_job_runs.index}}%)
+          </div>
+          {% elif details.total_number_of_job_runs.index < 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-down-red.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.total_number_of_job_runs.index}}%)
+          </div>
+          {% endif %}
+        </div>
+        <div class="chart">
+          {% if job_chart %}
+          <img style="width: 350px; height: auto" src="{{job_chart}}"/>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+    <td style="width: 2%; border: none"></td>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Number of hosts jobs are running on</div>
+        <div class="value">
+          {{ details.total_number_of_host_job_runs.value | intcomma }}
+          {% if details.total_number_of_host_job_runs.index == None or details.total_number_of_host_job_runs.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.total_number_of_host_job_runs.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.total_number_of_host_job_runs.index > 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-up-green.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.total_number_of_host_job_runs.index}}%)
+          </div>
+          {% elif details.total_number_of_host_job_runs.index < 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-down-red.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.total_number_of_host_job_runs.index}}%)
+          </div>
+          {% endif %}
+        </div>
+        <div class="chart">
+          {% if host_chart %}
+          <img style="width: 350px; height: auto" src="{{host_chart}}"/>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+  </tr>
+
+
+
+  <tr>
+    <td colspan="3" style="width: 100%; height: 2%; border: none"></td>
+  </tr>
+  <tr>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Cost of manual automation</div>
+        <div class="value">
+          {{currency}}{{ details.cost_of_manual_automation.value | floatformat:2 | intcomma }}
+          {% if details.cost_of_manual_automation.index == None or details.cost_of_manual_automation.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.cost_of_manual_automation.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.cost_of_manual_automation.index > 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-up-green.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.cost_of_manual_automation.index}}%)
+          </div>
+          {% elif details.cost_of_manual_automation.index < 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-down-red.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.cost_of_manual_automation.index}}%)
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+    <td style="width: 2%; border: none"></td>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Cost of automated execution</div>
+        <div class="value">
+          {{currency}}{{ details.cost_of_automated_execution.value | floatformat:2 | intcomma }}
+          {% if details.cost_of_automated_execution.index == None or details.cost_of_automated_execution.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.cost_of_automated_execution.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.cost_of_automated_execution.index > 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-up-green.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.cost_of_automated_execution.index}}%)
+          </div>
+          {% elif details.cost_of_automated_execution.index < 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-down-red.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.cost_of_automated_execution.index}}%)
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3" style="width: 100%; height: 2%; border: none"></td>
+  </tr>
+  <tr>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Total savings/cost avoided</div>
+        <div class="value">
+          {{currency}}{{ details.total_saving.value | floatformat:2 | intcomma }}
+          {% if details.total_saving.index == None or details.total_saving.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.total_saving.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.total_saving.index > 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-up-green.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.total_saving.index}}%)
+          </div>
+          {% elif details.total_saving.index < 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-down-red.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.total_saving.index}}%)
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+    <td style="width: 2%; border: none"></td>
+    <td style="width: 49%;">
+      <div class="card">
+        <div class="title">Total hours saved/avoided</div>
+        <div class="value">
+          {{ details.total_time_saving.value | floatformat:2 | intcomma }}
+          {% if details.total_time_saving.index == None or details.total_time_saving.index == 0%}
+          <div class="value-index" style="color: #a6a6a6">
+            <img src="{% static '/images/fa-minus-circle.svg' %}" alt="minus" style="height: 10px; width: 10px">
+            {% if details.total_time_saving.index == 0 %}
+            (0%)
+            {% endif %}
+          </div>
+          {% elif details.total_time_saving.index > 0 %}
+          <div class="value-index" style="color: #3d7317">
+            <img src="{% static '/images/fa-arrow-circle-up-green.svg' %}" alt="up arrow" style="height: 10px; width: 10px">
+            (+{{details.total_time_saving.index}}%)
+          </div>
+          {% elif details.total_time_saving.index < 0 %}
+          <div class="value-index" style="color: #b1380b">
+            <img src="{% static '/images/fa-arrow-circle-down-red.svg' %}" alt="down arrow" style="height: 10px; width: 10px">
+            ({{details.total_time_saving.index}}%)
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </td>
+  </tr>
+
+</table>
+
+<table class="data-table">
+  <thead>
+  <tr>
+    <th style="width: 10%">Name</th>
+    <th style="width: 10%" class="numeric">Number of job executions</th>
+    <th style="width: 10%" class="numeric">Host executions</th>
+    <th style="width: 10%" class="numeric">Time taken to manually execute (minutes)</th>
+    <th style="width: 10%" class="numeric">Time taken to create automation (minutes)</th>
+    <th style="width: 15%" class="numeric">Running time</th>
+    <th style="width: 10%" class="numeric">Automated cost</th>
+    <th style="width: 15%" class="numeric">Manual cost</th>
+    <th style="width: 10%" class="numeric">Savings</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for data in table_data %}
+  <tr>
+    <td style="width: 10%">{{ data.name }}</td>
+    <td style="width: 10%" class="numeric">{{ data.runs | intcomma }}</td>
+    <td style="width: 10%" class="numeric">{{ data.num_hosts | intcomma }}</td>
+    <td style="width: 10%" class="numeric">{{ data.time_taken_manually_execute_minutes }}</td>
+    <td style="width: 10%" class="numeric">{{ data.time_taken_create_automation_minutes }}</td>
+    <td style="width: 15%" class="numeric">{{ data.elapsed_str }}</td>
+    <td style="width: 10%" class="numeric">{{currency}}{{ data.automated_costs | floatformat:2 | intcomma}}</td>
+    <td style="width: 15%" class="numeric">{{currency}}{{ data.manual_costs | floatformat:2 | intcomma }}</td>
+    <td style="width: 10%" class="numeric">{{currency}}{{ data.savings | floatformat:2 | intcomma }}</td>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

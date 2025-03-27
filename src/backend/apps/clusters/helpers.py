@@ -70,39 +70,41 @@ def get_diff_index(old_value, new_value):
     return round(((float(new_value) - float(old_value)) / float(old_value)) * 100)
 
 
-def sum_items(items):
-    result = {
-        "successful_count": 0,
-        "failed_count": 0,
-        "total_elapsed_hours": 0,
-        "total_runs": 0,
-        "automated_costs": 0,
-        "manual_costs": 0,
-        "host_count": 0,
-        "savings": 0,
-        "time_savings": 0,
-    }
-    for item in items:
-        result["successful_count"] += item["successful_runs"]
-        result["failed_count"] += item["failed_runs"]
-        result["total_elapsed_hours"] += item["elapsed"]
-        result["total_runs"] += item["runs"]
-        result["automated_costs"] += item["automated_costs"]
-        result["manual_costs"] += item["manual_costs"]
-        result["savings"] += item["savings"]
-        result["host_count"] += item["num_hosts"]
-        result["time_savings"] += item["time_savings"]
+def sum_items(qs):
+    qs = qs.aggregate(
+        total_runs=Sum("runs"),
+        total_successful_runs=Sum("successful_runs"),
+        total_failed_runs=Sum("failed_runs"),
+        total_num_hosts=Sum("num_hosts"),
+        total_elapsed=Sum("elapsed"),
+        total_manual_time=Sum("manual_time"),
+        total_manual_costs=Sum("manual_costs"),
+        total_automated_costs=Sum("automated_costs"),
+        total_savings=Sum("savings"),
+        total_time_savings=Sum("time_savings"),
+    )
 
-    result["total_elapsed_hours"] = round((result["total_elapsed_hours"] / 3600), 2)
-    result["automated_costs"] = round(result["automated_costs"], 2)
-    result["manual_costs"] = round(result["manual_costs"], 2)
-    result["savings"] = round(result["savings"], 2)
+    result = {}
+
+    for (dbKey, resKey) in [
+        ("total_runs", "total_runs"),
+        ("total_successful_runs", "successful_count"),
+        ("total_failed_runs", "failed_count"),
+        ("total_num_hosts", "host_count"),
+        ("total_manual_time", "total_manual_time"),
+        ("total_manual_costs", "manual_costs"),
+        ("total_automated_costs", "automated_costs"),
+        ("total_savings", "savings"),
+    ]:
+       result[resKey] = round(qs[dbKey],2) if qs[dbKey] is not None else 0
+    result["total_elapsed_hours"] = round((qs["total_elapsed"] / 3600), 2) if qs["total_elapsed"] is not None else 0
+    result["time_savings"] = round((qs["total_time_savings"] / 3600), 2) if qs["total_elapsed"] is not None else 0
     return result
 
 
-def get_report_data(items, prev_items):
-    res = sum_items(items)
-    prev_res = sum_items(prev_items)
+def get_report_data(qs, prev_qs):
+    res = sum_items(qs)
+    prev_res = sum_items(prev_qs) if prev_qs is not None else None
 
     successful_count = res["successful_count"]
     failed_count = res["failed_count"]
@@ -114,44 +116,42 @@ def get_report_data(items, prev_items):
     num_hosts = res["host_count"]
     time_savings = res["time_savings"]
 
-    prev_len = len(prev_items)
-
     return {
         "total_number_of_successful_jobs": {
             "value": successful_count,
-            "index": get_diff_index(prev_res["total_elapsed_hours"] if prev_len > 0 else None, total_elapsed_hours),
+            "index": get_diff_index(prev_res["successful_count"] if prev_qs is not None else None, successful_count),
         },
         "total_number_of_failed_jobs": {
             "value": failed_count,
-            "index": get_diff_index(prev_res["failed_count"] if prev_len > 0 else None, failed_count),
+            "index": get_diff_index(prev_res["failed_count"] if prev_qs is not None else None, failed_count),
         },
         "total_number_of_job_runs": {
             "value": total_runs,
-            "index": get_diff_index(prev_res["total_runs"] if prev_len > 0 else None, total_runs),
+            "index": get_diff_index(prev_res["total_runs"] if prev_qs is not None else None, total_runs),
         },
         "total_number_of_host_job_runs": {
             "value": num_hosts,
-            "index": get_diff_index(prev_res["host_count"] if prev_len > 0 else None, num_hosts),
+            "index": get_diff_index(prev_res["host_count"] if prev_qs is not None else None, num_hosts),
         },
         "total_hours_of_automation": {
             "value": total_elapsed_hours,
-            "index": get_diff_index(prev_res["total_elapsed_hours"] if prev_len > 0 else None, total_elapsed_hours),
+            "index": get_diff_index(prev_res["total_elapsed_hours"] if prev_qs is not None else None, total_elapsed_hours),
         },
         "cost_of_automated_execution": {
             "value": automated_costs,
-            "index": get_diff_index(prev_res["automated_costs"] if prev_len > 0 else None, automated_costs),
+            "index": get_diff_index(prev_res["automated_costs"] if prev_qs is not None else None, automated_costs),
         },
         "cost_of_manual_automation": {
             "value": manual_costs,
-            "index": get_diff_index(prev_res["manual_costs"] if prev_len > 0 else None, manual_costs),
+            "index": get_diff_index(prev_res["manual_costs"] if prev_qs is not None else None, manual_costs),
         },
         "total_saving": {
             "value": savings,
-            "index": get_diff_index(prev_res["savings"] if prev_len > 0 else None, savings),
+            "index": get_diff_index(prev_res["savings"] if prev_qs is not None else None, savings),
         },
         "total_time_saving": {
-            "value": sec2time(time_savings),
-            "index": get_diff_index(prev_res["time_savings"] if prev_len > 0 else None, time_savings),
+            "value": time_savings,
+            "index": get_diff_index(prev_res["time_savings"] if prev_qs is not None else None, time_savings),
         },
     }
 
@@ -375,7 +375,6 @@ def get_related_links(options):
         return result
 
     _date_range = options.query_params.get("date_range", None)
-
 
     initial_url = f'{cluster.protocol}://{cluster.address}:{cluster.port}#/jobs'
     failed_data = {
