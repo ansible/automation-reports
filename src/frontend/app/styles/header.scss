@@ -7,7 +7,7 @@
   flex-flow: row;
   .pf-v6-c-page__main-section {
     padding: 24px;
-    max-width: 1070px;
+    max-width: 80%;
   }
   .btn-pdf {
     align-self: flex-start;
@@ -21,6 +21,7 @@
     max-width: unset;
 
     .btn-pdf {
+      min-width: 133px;
       align-self: flex-start;
       margin: 0 auto 24px 24px;
     }
