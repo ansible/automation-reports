@@ -4,6 +4,7 @@ import { Card, CardBody } from '@patternfly/react-core';
 import { DashboardTotals } from './DashboardTotals';
 import '../styles/dashboard-totals.scss';
 import { ReportDetail } from '@app/Types';
+import { formatNumber } from '@app/Utils';
 
 export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }> = (props: { data: ReportDetail }) => {
   return (
@@ -58,7 +59,9 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
               <DashboardTotals
                 title={'Total hours of automation'}
                 result={
-                  props?.data?.total_hours_of_automation?.value ? props.data.total_hours_of_automation.value + 'h' : ''
+                  props?.data?.total_hours_of_automation?.value
+                    ? formatNumber(props.data.total_hours_of_automation.value, 2) + 'h'
+                    : ''
                 }
                 percentage={props?.data?.total_hours_of_automation?.index}
                 extraText={'Compared to previous same-length period'}

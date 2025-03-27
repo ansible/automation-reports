@@ -32,7 +32,7 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
           />
         </CardTitle>
         <CardBody>
-          <div className={`chart-wrap ${chartData.items.length === 0 && 'no-data'}`}>
+          <div className={`chart-wrap host-chart ${chartData.items.length === 0 && 'no-data'}`}>
             <Chart
               height={250}
               ariaDesc="Number of hosts jobs are running on"

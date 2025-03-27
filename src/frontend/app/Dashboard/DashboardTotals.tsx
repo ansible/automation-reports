@@ -8,6 +8,7 @@ import {
   OutlinedQuestionCircleIcon,
 } from '@patternfly/react-icons';
 import '../styles/dashboard-totals.scss';
+import { formatNumber } from '@app/Utils';
 
 type urlProps = {
   url?: string;
@@ -55,7 +56,7 @@ export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
         {
           <span className={percentageClass.join(' ')}>
             ({props.percentage > 0 && <span>+</span>}
-            {props.percentage}%)
+            {formatNumber(props.percentage)}%)
           </span>
         }
       </span>

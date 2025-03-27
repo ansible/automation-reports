@@ -28,7 +28,7 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
           <DashboardTotals title={'Number of times jobs were run'} result={props.value} percentage={props.index} />
         </CardTitle>
         <CardBody style={{ width: '100%' }}>
-          <div className={`chart-wrap ${chartData.items.length === 0 && 'no-data'}`}>
+          <div className={`chart-wrap jobs-chart ${chartData.items.length === 0 && 'no-data'}`}>
             <Chart
               height={250}
               ariaDesc="Number of times jobs were run"

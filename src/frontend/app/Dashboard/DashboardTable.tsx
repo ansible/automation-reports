@@ -21,7 +21,7 @@ import { useAppSelector } from '@app/hooks';
 import { automatedProcessCost, currencySign, manualCostAutomation } from '@app/Store';
 import '../styles/table.scss';
 import { ColumnProps, DashboardTableProps } from '@app/Types';
-import { formatCurrency } from '@app/Utils';
+import { formatCurrency, formatNumber } from '@app/Utils';
 
 export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (props: DashboardTableProps) => {
   const hourly_manual_costs = useAppSelector(manualCostAutomation);
@@ -87,7 +87,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
       info: { tooltip: 'Please enter the time that an engineer would spend to automatize this job' },
       isEditable: true,
     },
-    { name: 'elapsed', title: 'Running time', valueKey: 'elapsed_str' },
+    { name: 'elapsed', title: 'Running time', valueKey: 'elapsed_str', type: 'time-string' },
     { name: 'automated_costs', title: 'Automated cost', type: 'currency' },
     { name: 'manual_costs', title: 'Manual cost', type: 'currency' },
     { name: 'savings', title: 'Savings', type: 'currency' },
@@ -204,7 +204,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                 <CardBody>
                   <DashboardTotals
                     title={'Total hours saved/avoided'}
-                    result={props?.totalTimeSavings?.value}
+                    result={props?.totalTimeSavings?.value ? formatNumber(props.totalTimeSavings.value, 2) + 'h' : ''}
                     percentage={props.totalTimeSavings?.index}
                     tooltip={
                       'Manual time of automation (minutes) * Host executions  + Time taken to create automation (minutes) - Running time (s) / 60'

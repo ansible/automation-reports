@@ -48,7 +48,7 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
       inputDate === yyyyMMddFormat(newToDate) &&
       toValidator(newToDate) === ''
     ) {
-      props.onChange(props.selectedRange?.toString(), props.dateTo, newToDate);
+      props.onChange(props.selectedRange?.toString(), props.dateFrom, newToDate);
     }
   };
 

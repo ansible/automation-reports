@@ -14,7 +14,7 @@ export type ColumnProps = {
   name: string;
   title: string;
   valueKey?: string;
-  type?: 'currency' | 'string' | 'number';
+  type?: 'currency' | 'string' | 'number' | 'time-string';
   info?: {
     tooltip?: string;
   };

@@ -98,7 +98,11 @@ export const BaseTable: React.FunctionComponent<{
                 const hasTooltip = column.info && column.info.tooltip;
                 return (
                   <Th
-                    className={column.type === 'number' || column.type === 'currency' ? 'numerical' : ''}
+                    className={
+                      column.type === 'number' || column.type === 'currency' || column.type === 'time-string'
+                        ? 'numerical'
+                        : ''
+                    }
                     key={column.name}
                     sort={column.isEditable ? undefined : getSortParams(index)}
                     info={hasTooltip ? { tooltip: column.info?.tooltip } : undefined}
@@ -117,7 +121,11 @@ export const BaseTable: React.FunctionComponent<{
                     <Td
                       key={`${rowNum}-${column.name}`}
                       dataLabel={column['title']}
-                      className={column.type === 'number' || column.type === 'currency' ? 'numerical' : ''}
+                      className={
+                        column.type === 'number' || column.type === 'currency' || column.type === 'time-string'
+                          ? 'numerical'
+                          : ''
+                      }
                     >
                       {column.isEditable ? (
                         <div
