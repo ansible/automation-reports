@@ -5,9 +5,9 @@ It is based on "AAP containerized installer".
 Code is built into a container image.
 Container is run by systemd/podman.
 
-## Usage
+## Test installer
 
-Build contaner images
+Build container images and deploy, both on same VM.
 
 ```bash
 # Build contaner image on RHEL host with valid subscription.
@@ -28,7 +28,19 @@ Build contaner images
 #   run/secrets/etc-pki-entitlement/
 #   run/secrets/etc-pki-entitlement/4315366312688938588.pem
 #   run/secrets/etc-pki-entitlement/4315366312688938588-key.pem
+```
 
+The container base image (registry.redhat.io/ubi8/ubi-minimal) needs to be accesible.
+Generate credentials - follow https://access.redhat.com/RegistryAuthentication.
+Login to image registry:
+
+```bash
+docker login registry.redhat.io -u USERNAME
+```
+
+Build image:
+
+```bash
 # Build docker/podman images
 (cd compose; docker compose --project-directory .. -f compose.yml build --no-cache)
 # podman build -f docker/Dockerfile.backend -t registry.redhat.io/ansible-automation-platform-24/aapreport-backend:latest .
@@ -48,11 +60,24 @@ ansible-playbook -i inventory ansible.containerized_installer.reporter_install
 
 Open http://HOST_IP:8083/.
 
-Bundled installer contains also images.
+## Build bundled installer
+
+Bundled installer is build on build host, and deployed on other VMs.
+Bundled installer contains also needed container images.
+
 Build bundle.
 This will also build needed container image.
 
 ```bash
+# From previous section, keep
+tar -tf docker/run-secrets.tar
+docker login registry.redhat.io -u USERNAME
+
+# one time setup
+cp -i setup/inventory.example setup/inventory
+# setup bundle_dir, registry_username, registry_password
+nano setup/inventory
+
 ./setup/build_bundle.sh
 # ...
 # Bundled installer is at bundle/automation-reports-bundled-installer.tar.gz
