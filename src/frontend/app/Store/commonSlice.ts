@@ -7,11 +7,15 @@ import { listToDict } from '@app/Utils';
 const getErrorMessage = (e: any): string => {
   let errorMessage = '';
   if (e?.response?.data) {
-    Object.keys(e.response.data).forEach((key) => {
-      e.response.data[key].forEach((error: string) => {
-        errorMessage += ` ${error}`;
+    try {
+      Object.keys(e.response.data).forEach((key) => {
+        e.response.data[key].forEach((error: string) => {
+          errorMessage += ` ${error}`;
+        });
       });
-    });
+    } catch {
+      errorMessage = 'Something went wrong.';
+    }
     return errorMessage;
   }
   return '';
@@ -49,7 +53,7 @@ export const saveView = createAsyncThunk('filters/view/save', async (viewData: F
   try {
     response = await RestService.saveView(viewData);
   } catch (e: any) {
-    let errorMessage = 'Error saving view.';
+    let errorMessage = 'Error saving view. ';
     errorMessage += getErrorMessage(e);
     return Promise.reject(errorMessage);
   }
@@ -60,7 +64,7 @@ export const deleteView = createAsyncThunk('filters/view/delete', async (viewID:
   try {
     await RestService.deleteView(viewID);
   } catch (e: any) {
-    let errorMessage = 'Error deleting view.';
+    let errorMessage = 'Error deleting view. ';
     errorMessage += getErrorMessage(e);
     return Promise.reject(errorMessage);
   }
