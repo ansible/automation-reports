@@ -29,6 +29,7 @@ from backend.apps.clusters.models import (
     JobHostSummary,
     Host,
     CostsChoices)
+from backend.apps.common.models import FilterSet, Currency
 
 
 @pytest.mark.django_db()
@@ -143,6 +144,21 @@ class TestViews(TestCase):
             modified=created
         )
 
+        FilterSet.objects.create(
+            name="Report 1",
+            filters=dict(
+                date_range='last_month',
+                organization=[1,2]
+            ),
+        )
+        FilterSet.objects.create(
+            name="Report 2",
+            filters=dict(
+                date_range='last_year',
+                template=[1, 2]
+            ),
+        )
+
     def test_ping(self):
         response = self.client.get(f"{reverse('ping')}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -193,7 +209,19 @@ class TestViews(TestCase):
                     dict(key=3, value='Job Template C', cluster_id=1),
                 ],
                 manual_cost_automation=Decimal('50.00'),
-                automated_process_cost=Decimal('20.00')
+                automated_process_cost=Decimal('20.00'),
+                currencies=[
+                    dict(id=3, name='British Pound Sterling', iso_code='GBP', symbol='£'),
+                    dict(id=5, name='Chinese Yuan Renminbi', iso_code='CNY', symbol='¥'),
+                    dict(id=2, name='Euro', iso_code='EUR', symbol='€'),
+                    dict(id=4, name='Japanese yen', iso_code='JPY', symbol='¥'),
+                    dict(id=1, name='United States dollar', iso_code='USD', symbol='$'),
+                ],
+                currency=1,
+                filter_sets=[
+                    dict(id=1, name='Report 1', filters=dict(date_range='last_month', organization=[1, 2])),
+                    dict(id=2, name='Report 2', filters=dict(date_range='last_year', template=[1, 2])),
+                ],
             )
         )
 
@@ -216,13 +244,16 @@ class TestViews(TestCase):
                         cluster=1,
                         elapsed_str='0min 25sec',
                         num_hosts=2,
-                        manual_time=60,
+                        time_taken_manually_execute_minutes=60,
+                        time_taken_create_automation_minutes=60,
                         successful_runs=1,
                         failed_runs=0,
-                        automated_costs='0.14',
-                        manual_costs='100.00',
-                        savings='99.86',
-                        job_template_id=1
+                        automated_costs='3008.33',
+                        manual_costs='6000.00',
+                        savings='2991.67',
+                        job_template_id=1,
+                        time_savings='10775.00',
+                        time_savings_str='2h 59min 35sec'
                     )
                 ]
             )
@@ -247,13 +278,16 @@ class TestViews(TestCase):
                         cluster=1,
                         elapsed_str='0min 25sec',
                         num_hosts=2,
-                        manual_time=60,
+                        time_taken_manually_execute_minutes=60,
+                        time_taken_create_automation_minutes=60,
                         successful_runs=1,
                         failed_runs=0,
-                        automated_costs='0.14',
-                        manual_costs='100.00',
-                        savings='99.86',
-                        job_template_id=2
+                        automated_costs='3008.33',
+                        manual_costs='6000.00',
+                        savings='2991.67',
+                        job_template_id=2,
+                        time_savings='10775.00',
+                        time_savings_str='2h 59min 35sec',
                     )
                 ]
             )
@@ -275,9 +309,10 @@ class TestViews(TestCase):
                 total_number_of_job_runs=dict(value=2, index=None),
                 total_number_of_host_job_runs=dict(value=4, index=None),
                 total_hours_of_automation=dict(value=Decimal('0.01'), index=None),
-                cost_of_automated_execution=dict(value=Decimal('0.28'), index=None),
-                cost_of_manual_automation=dict(value=Decimal('200.00'), index=None),
-                total_saving=dict(value=Decimal('199.72'), index=None),
+                cost_of_automated_execution=dict(value=Decimal('6016.67'), index=None),
+                cost_of_manual_automation=dict(value=Decimal('12000.00'), index=None),
+                total_saving=dict(value=Decimal('5983.33'), index=None),
+                total_time_saving=dict(value=Decimal('5.99'), index= None),
                 host_chart=dict(
                     items=[
                         dict(x=FakeDatetime(2025, 1, 1, 0, 0, tzinfo=pytz.UTC), y=0),
@@ -292,16 +327,21 @@ class TestViews(TestCase):
                         dict(x=FakeDatetime(2025, 3, 1, 0, 0, tzinfo=pytz.UTC), y=1),
                     ],
                     range='month'),
+                related_links = dict(
+                    successful_jobs='https://localhost:8000#/jobs?job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00&job.status__exact=successful',
+                    failed_jobs='https://localhost:8000#/jobs?job.status__exact=failed&job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00'
+                )
             )
         )
 
     def test_update_template_manual_time(self):
         job_template = JobTemplate.objects.get(name="Job Template A")
-        data = dict(manual_time_minutes=120)
+        data = dict(time_taken_manually_execute_minutes=120, time_taken_create_automation_minutes=30)
         response = self.client.put(f"/api/v1/templates/{job_template.id}/", content_type='application/json', data=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         job_template = JobTemplate.objects.get(name="Job Template A")
-        self.assertEqual(job_template.manual_time_minutes, 120)
+        self.assertEqual(job_template.time_taken_manually_execute_minutes, 120)
+        self.assertEqual(job_template.time_taken_create_automation_minutes, 30)
 
     def test_update_manual_costs(self):
         response = self.client.post(f"/api/v1/costs/", content_type='application/json', data=dict(type="manual", value=1000))
@@ -314,3 +354,38 @@ class TestViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         costs = get_costs()
         self.assertEqual(costs[CostsChoices.AUTOMATED].value, 1000)
+
+    def test_create_new_report(self):
+        response = self.client.post(f"/api/v1/common/filter_set/", content_type='application/json', data=dict(name="Report 3", filters=dict(date_range='last_month')))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        filter_set = FilterSet.objects.get(name="Report 3")
+        self.assertEqual(filter_set.filters, dict(date_range='last_month'))
+
+    def test_create_new_report_same_name(self):
+        response = self.client.post(f"/api/v1/common/filter_set/", content_type='application/json', data=dict(name="Report 1", filters=dict(date_range='last_month')))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {"name": ["Filter name already exists."]})
+
+    def test_update_report(self):
+        filter_set = FilterSet.objects.get(name="Report 1")
+        response = self.client.put(f"/api/v1/common/filter_set/{filter_set.id}/", content_type='application/json', data=dict(name="Report 1 updated", filters=dict(date_range='last_month')))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        filter_set = FilterSet.objects.get(name="Report 1 updated")
+        self.assertEqual(filter_set.filters, dict(date_range='last_month'))
+
+    def test_delete_report(self):
+        filter_set = FilterSet.objects.get(name="Report 1")
+        response = self.client.delete(f"/api/v1/common/filter_set/{filter_set.id}/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        with self.assertRaises(FilterSet.DoesNotExist):
+            FilterSet.objects.get(name="Report 1")
+
+    def test_change_currency(self):
+        currency = Currency.objects.get(iso_code="EUR")
+        response = self.client.post(f"/api/v1/common/settings/", content_type='application/json', data=dict(type="currency", value=currency.id))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        template_response = self.client.get(f"{reverse('template_options')}")
+        self.assertEqual(template_response.status_code, status.HTTP_200_OK)
+        template_dict = dict(template_response.data)
+        self.assertEqual(template_dict['currency'], currency.id)
