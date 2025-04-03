@@ -9,7 +9,8 @@ def get_filter_options(request):
         "organization",
         "cluster",
         "job_template",
-        "label"
+        "label",
+        "project",
     ]
     for key in params_options:
         values = request.query_params.get(key, None)
@@ -45,6 +46,9 @@ class CustomReportFilter(filters.BaseFilterBackend):
         if options.get("label", None) is not None:
             labels_qs = JobLabel.objects.filter(label_id__in=options["label"]).values_list("job_id", flat=True)
             queryset = queryset.filter(id__in=labels_qs)
+
+        if options.get("project", None) is not None:
+            queryset = queryset.filter(project__in=options["project"])
 
         return queryset
 

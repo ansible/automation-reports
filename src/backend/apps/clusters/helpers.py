@@ -9,7 +9,12 @@ from django.core.cache import cache
 from django.db import connection
 from django.db.models import Count, Sum, F, CharField, Func, Value
 
-from backend.apps.clusters.models import Costs, CostsChoices, JobStatusChoices, DateRangeChoices, Cluster
+from backend.apps.clusters.models import (
+    Costs,
+    CostsChoices,
+    JobStatusChoices,
+    DateRangeChoices,
+    Cluster)
 
 
 def sec2time(sec):
@@ -180,8 +185,13 @@ def get_chart_range(request):
             result["date_format"] = "YYYY-MM-01 00:00:00+00"
 
         case DateRangeChoices.LAST_MONTH | DateRangeChoices.MONTH_TO_DATE:
-            result["range"] = "day"
-            result["date_format"] = "YYYY-MM-DD 00:00:00+00"
+            days = (result["date_range"].end - result["date_range"].start).days
+            if days < 1:
+                result["range"] = "hour"
+                result["date_format"] = "YYYY-MM-DD HH24:00:00+00"
+            else:
+                result["range"] = "day"
+                result["date_format"] = "YYYY-MM-DD 00:00:00+00"
         case DateRangeChoices.LAST_2_YEARS | DateRangeChoices.LAST_3_YEARS:
             result["date_format"] = "YYYY-01-01 00:00:00+00"
             result["range"] = "year"
@@ -285,6 +295,9 @@ def get_unique_hosts_db(start_date, end_date, options):
     if job_templates is not None:
         sql += ' AND job.job_template_id = ANY(%(job_templates)s)'
         params['job_templates'] = [int(n) for n in job_templates]
+    if options.get("project", None) is not None:
+        sql += ' AND job.project_id = ANY(%(projects)s)'
+        params['projects'] = [int(n) for n in options["project"]]
     if labels is not None:
         sql += ' AND job.id in (select job_id from clusters_joblabel where label_id = ANY(%(labels)s))'
         params['labels'] = [int(n) for n in labels]

@@ -9,14 +9,14 @@ from backend.api.v1.template_options.serializers import (
     OrganizationSerializer,
     ClusterSerializer,
     LabelSerializer,
-    JobTemplateSerializer)
+    JobTemplateSerializer, ProjectSerializer)
 from backend.apps.clusters.helpers import get_costs
 from backend.apps.clusters.models import (
     DateRangeChoices,
     Cluster,
     Organization,
     Label,
-    JobTemplate, CostsChoices)
+    JobTemplate, CostsChoices, Project)
 from backend.apps.common.models import Currency, Settings, SettingsChoices, FilterSet
 
 
@@ -45,6 +45,8 @@ class TemplateOptionsView(APIView):
 
         filter_sets = FilterSet.objects.all().order_by("name")
 
+        projects = Project.objects.all().order_by("name")
+
         result = {
             "clusters": ClusterSerializer(clusters, many=True).data,
             "currencies": CurrencySerializer(currencies, many=True).data,
@@ -52,6 +54,7 @@ class TemplateOptionsView(APIView):
             "labels": LabelSerializer(labels, many=True).data,
             "date_ranges": date_range,
             "job_templates": JobTemplateSerializer(job_templates, many=True).data,
+            "projects": ProjectSerializer(projects, many=True).data,
             "manual_cost_automation": costs[CostsChoices.MANUAL].value,
             "automated_process_cost": costs[CostsChoices.AUTOMATED].value,
             "currency": currency.value,
