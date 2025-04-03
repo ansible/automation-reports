@@ -67,12 +67,21 @@ export const BaseTable: React.FunctionComponent<{
     />
   );
 
-  const handleBlur = (value: number, item: TableResult, rowNum: number, columnName: string) => {
+  const handleBlur = (value: number | string, item: TableResult, rowNum: number, columnName: string) => {
+    value = typeof value === 'string' ? parseFloat(value) : value;
     if (value < 1) {
       setEditingError({
         rowNum: rowNum,
         columnName: columnName,
         message: 'Value must be greater then 0!',
+      });
+      return;
+    }
+    if (value !== Math.round(value)) {
+      setEditingError({
+        rowNum: rowNum,
+        columnName: columnName,
+        message: 'Value must be an integer!',
       });
       return;
     }

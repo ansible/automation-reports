@@ -104,9 +104,9 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             </div>
           )}
 
-          <Flex className="pf-v6-u-mb-lg pf-v6-u-align-items-flex-end">
+          <Flex className="pf-v6-u-mb-lg pf-v6-u-align-items-flex-start">
             <FlexItem>
-              <Form>
+              <Form onSubmit={(e) => e.preventDefault()}>
                 <FormGroup
                   label={`Average cost of an employee minute (${selectedCurrencySign})`}
                   labelHelp={
@@ -129,7 +129,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
               </Form>
             </FlexItem>
             <FlexItem>
-              <Form>
+              <Form onSubmit={(e) => e.preventDefault()}>
                 <FormGroup
                   label={`Cost per minute of AAP (${selectedCurrencySign})`}
                   labelHelp={
@@ -152,7 +152,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
               </Form>
             </FlexItem>
             {props.data.count > 0 && (
-              <FlexItem style={{ marginLeft: 'auto' }}>
+              <FlexItem className={'cvs-export-btn'}>
                 <Button id={'csv-export'} onClick={exportToCsv} variant="secondary" isInline>
                   Export as CSV
                 </Button>

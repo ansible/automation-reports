@@ -152,3 +152,14 @@
     }
   }
 }
+
+.cvs-export-btn {
+  margin-left: auto;
+}
+
+@media (max-width: 45rem) {
+  .cvs-export-btn {
+    margin-left: 0;
+    margin-top: 16px;
+  }
+}
