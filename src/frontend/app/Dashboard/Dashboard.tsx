@@ -168,6 +168,7 @@ const Dashboard: React.FunctionComponent = () => {
     if (oldValue !== value) {
       clearTimeout();
       setLoading(true);
+      value = Number(value.toFixed(2));
       RestService.updateCosts({ type: type, value: value })
         .then(() => {
           fetchServerTableData(true, false);
@@ -203,8 +204,8 @@ const Dashboard: React.FunctionComponent = () => {
     clearTimeout();
     setLoading(true);
     const newItem = deepClone(newValue) as TableResult;
-    newItem.time_taken_manually_execute_minutes = manually_minutes;
-    newItem.time_taken_create_automation_minutes = automation_minutes;
+    newItem.time_taken_manually_execute_minutes = Math.round(manually_minutes);
+    newItem.time_taken_create_automation_minutes = Math.round(automation_minutes);
     RestService.updateTemplate(newItem)
       .then(() => {
         fetchServerTableData(true, false);
