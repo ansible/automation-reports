@@ -185,6 +185,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         organizations = None
         templates = None
         labels = None
+        projects = None
         job_templates = options.get("job_template", None)
         params_organizations = options.get("organization", None)
         params_labels = options.get("label", None)
