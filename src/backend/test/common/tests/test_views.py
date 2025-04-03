@@ -54,6 +54,7 @@ class TestViews(TestCase):
 
         AAPUser.objects.create(name="AAP User", cluster=cluster, external_id=1, type="user")
         Project.objects.create(name="Project A", cluster=cluster, external_id=1)
+        Project.objects.create(name="Project B", cluster=cluster, external_id=2)
 
         host_1 = Host.objects.create(name="Host A", cluster=cluster, external_id=1)
         host_2 = Host.objects.create(name="Host B", cluster=cluster, external_id=2)
@@ -148,7 +149,7 @@ class TestViews(TestCase):
             name="Report 1",
             filters=dict(
                 date_range='last_month',
-                organization=[1,2]
+                organization=[1, 2]
             ),
         )
         FilterSet.objects.create(
@@ -207,6 +208,10 @@ class TestViews(TestCase):
                     dict(key=1, value='Job Template A', cluster_id=1),
                     dict(key=2, value='Job Template B', cluster_id=1),
                     dict(key=3, value='Job Template C', cluster_id=1),
+                ],
+                projects=[
+                    dict(key=1, value='Project A', cluster_id=1),
+                    dict(key=2, value='Project B', cluster_id=1)
                 ],
                 manual_cost_automation=Decimal('50.00'),
                 automated_process_cost=Decimal('20.00'),
@@ -293,6 +298,29 @@ class TestViews(TestCase):
             )
         )
 
+    @freeze_time("2025-12-31 22:01:45", tz_offset=0)
+    def test_report_by_project(self):
+        project = Project.objects.get(name="Project B")
+        response = self.client.get(f"/api/v1/report/?page=1&page_size=10&date_range=year_to_date&project={project.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data
+        self.assertEqual(
+            dict(data),
+            dict(
+                count=0,
+                next=None,
+                previous=None,
+                results=[]
+            )
+        )
+        project = Project.objects.get(name="Project A")
+        response = self.client.get(f"/api/v1/report/?page=1&page_size=10&date_range=year_to_date&project={project.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data
+        self.assertEqual(
+            data["count"], 2
+        )
+
     @freeze_time("2025-03-21 22:01:45", tz_offset=0)
     def test_report_details(self):
         response = self.client.get("/api/v1/report/details/?page=1&page_size=10&date_range=year_to_date")
@@ -312,7 +340,7 @@ class TestViews(TestCase):
                 cost_of_automated_execution=dict(value=Decimal('6016.67'), index=None),
                 cost_of_manual_automation=dict(value=Decimal('12000.00'), index=None),
                 total_saving=dict(value=Decimal('5983.33'), index=None),
-                total_time_saving=dict(value=Decimal('5.99'), index= None),
+                total_time_saving=dict(value=Decimal('5.99'), index=None),
                 host_chart=dict(
                     items=[
                         dict(x=FakeDatetime(2025, 1, 1, 0, 0, tzinfo=pytz.UTC), y=0),
@@ -327,7 +355,7 @@ class TestViews(TestCase):
                         dict(x=FakeDatetime(2025, 3, 1, 0, 0, tzinfo=pytz.UTC), y=1),
                     ],
                     range='month'),
-                related_links = dict(
+                related_links=dict(
                     successful_jobs='https://localhost:8000#/jobs?job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00&job.status__exact=successful',
                     failed_jobs='https://localhost:8000#/jobs?job.status__exact=failed&job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00'
                 )
