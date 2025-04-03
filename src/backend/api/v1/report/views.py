@@ -12,8 +12,21 @@ from rest_framework.viewsets import GenericViewSet
 
 from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_filter_options
 from backend.api.v1.report.serializers import JobSerializer
-from backend.apps.clusters.helpers import get_costs, get_report_data, get_unique_host_count, get_chart_data, get_related_links, sec2time
-from backend.apps.clusters.models import Job, JobStatusChoices, CostsChoices, JobTemplate, Organization, Label
+from backend.apps.clusters.helpers import (
+    get_costs,
+    get_report_data,
+    get_unique_host_count,
+    get_chart_data,
+    get_related_links,
+    sec2time)
+from backend.apps.clusters.models import (
+    Job,
+    JobStatusChoices,
+    CostsChoices,
+    JobTemplate,
+    Organization,
+    Label,
+    Project)
 from backend.apps.common.models import Settings, SettingsChoices, Currency
 from backend.django_config import settings
 
@@ -174,7 +187,8 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         labels = None
         job_templates = options.get("job_template", None)
         params_organizations = options.get("organization", None)
-        param_labels = options.get("label", None)
+        params_labels = options.get("label", None)
+        params_projects = options.get("project", None)
 
         if job_templates is not None:
             qs = JobTemplate.objects.filter(id__in=job_templates)
@@ -184,9 +198,13 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             qs = Organization.objects.filter(id__in=params_organizations)
             organizations = ", ".join([o.name for o in qs])
 
-        if param_labels is not None:
-            qs = Label.objects.filter(id__in=param_labels)
+        if params_labels is not None:
+            qs = Label.objects.filter(id__in=params_labels)
             labels = ", ".join([l.name for l in qs])
+
+        if params_projects is not None:
+            qs = Project.objects.filter(id__in=params_projects)
+            projects = ", ".join([p.name for p in qs])
 
         context = {
             "table_data": serializer.data,
@@ -198,6 +216,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             "end_date": options["date_range"].end.strftime('%Y-%m-%d'),
             "templates": templates,
             "organizations": organizations,
+            "projects": projects,
             "labels": labels,
         }
 
