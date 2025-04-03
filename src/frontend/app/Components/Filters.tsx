@@ -42,6 +42,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     job_template: [],
     instances: [],
     label: [],
+    project: [],
     date_range: null,
     start_date: undefined,
     end_date: undefined,
@@ -69,7 +70,8 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     const options: RequestFilter = {
       date_range: filterSelection.date_range,
     };
-    for (const key of ['organization', 'instances', 'job_template', 'label']) {
+
+    for (const key of ['organization', 'instances', 'job_template', 'label', 'project']) {
       if (filterSelection[key].length > 0) {
         options[key] = filterSelection[key];
       }
@@ -97,6 +99,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       ['instances']: [],
       ['organization']: [],
       ['job_template']: [],
+      ['project']: [],
       ['label']: [],
     }));
     dispatch(setView(null));
@@ -113,8 +116,8 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       ['instances']: view?.filters?.instances ?? [],
       ['organization']: view?.filters?.organization ?? [],
       ['job_template']: view?.filters?.job_template ?? [],
+      ['project']: view?.filters?.project ?? [],
       ['label']: view?.filters?.label ?? [],
-
       ['date_range']: view?.filters?.date_range ?? 'month_to_date',
       ['start_date']: view?.filters?.start_date ? new Date(view.filters.start_date) : undefined,
       ['end_date']: view?.filters?.end_date ? new Date(view.filters.end_date) : undefined,
@@ -199,7 +202,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
         disabled={!selectedOption || !filterChoicesList[selectedOption]?.length}
         selections={selectedOption ? filterSelection[selectedOption] : []}
         options={selectedOption ? filterChoicesList[selectedOption] : []}
-        label={selectedOption ? 'Filter by ' + filterOptionsDict[selectedOption].value : ''}
+        label={selectedOption ? 'Filter by ' + filterOptionsDict[selectedOption].value + 's' : ''}
         onSelect={onMultiSelectionChanged}
         style={
           {
@@ -225,6 +228,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       {filterOptionsList.map((item: FilterOption) => {
         return (
           <LabelGroup
+            className={'filters-group'}
             key={item.key}
             categoryName={item.value}
             isClosable={true}
@@ -245,7 +249,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
           filterSelection.instances.length > 0 ||
           filterSelection.job_template.length > 0 ||
           filterSelection.label.length > 0) && (
-          <Button variant="link" onClick={() => clearFilters()} isInline>
+          <Button variant="link" className={'clear-btn'} onClick={() => clearFilters()} isInline>
             Clear all filters
           </Button>
         )}

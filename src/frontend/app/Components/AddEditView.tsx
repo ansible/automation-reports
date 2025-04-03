@@ -84,7 +84,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       if (modalVariant === 'edit' && selectedViewItem) {
         viewData.id = selectedViewItem;
       }
-      ['organization', 'job_template', 'label'].forEach((key) => {
+      ['organization', 'job_template', 'label', 'project'].forEach((key) => {
         if (filters[key] && filters[key].length) {
           viewData.filters[key] = filters[key];
         }
