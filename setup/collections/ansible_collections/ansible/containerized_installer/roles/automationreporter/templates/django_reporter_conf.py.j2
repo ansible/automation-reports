@@ -8,3 +8,7 @@ CORS_ALLOWED_ORIGINS = [
 # CSRF_TRUSTED_ORIGINS = [
 #     "http://HOST_IP:8083",
 # ]
+
+# Avoid using URL - https URLS with untrusted certificate will not work.
+# Use local filesystem instead.
+WEASYPRINT_BASEURL = '/code/src/backend/templates'
