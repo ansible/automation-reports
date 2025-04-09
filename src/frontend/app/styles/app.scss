@@ -190,3 +190,33 @@ input {
     padding-bottom: 24px;
   }
 }
+
+@media (min-width: 112.5rem) {
+  .pf-v6-l-grid > .pf-m-3-col-on-3xl {
+    --pf-v6-l-grid__item--GridColumnEnd: span 3;
+  }
+  .pf-v6-l-grid > .pf-m-9-col-on-3xl {
+    --pf-v6-l-grid__item--GridColumnEnd: span 9;
+  }
+  .main-layout,
+  .pf-v6-c-page__main-section {
+    padding: 24px 48px !important;
+  }
+  .pf-v6-c-page > .pf-v6-c-masthead {
+    padding: 0 48px;
+  }
+  .pf-v6-c-button {
+    &.btn-pdf {
+      margin-right: 48px !important;
+    }
+  }
+}
+
+@media (min-width: 168.75rem) {
+  .pf-v6-l-grid > .pf-m-2-col-on-4xl {
+    --pf-v6-l-grid__item--GridColumnEnd: span 2;
+  }
+  .pf-v6-l-grid > .pf-m-10-col-on-4xl {
+    --pf-v6-l-grid__item--GridColumnEnd: span 10;
+  }
+}

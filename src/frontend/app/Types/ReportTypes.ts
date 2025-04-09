@@ -32,7 +32,6 @@ export interface ReportState {
 
 export type DashboardChartProps = {
   value: number;
-  index: number;
   chartData: ChartData;
   loading: boolean;
 };

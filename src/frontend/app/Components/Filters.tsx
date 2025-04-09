@@ -49,10 +49,36 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
   });
   const allViews = useAppSelector(viewsById);
   const dispatch = useAppDispatch();
+  const interval = React.useRef<number | undefined>(undefined);
+  const refreshInterval: string = process.env.DATA_REFRESH_INTERVAL_SECONDS
+    ? process.env.DATA_REFRESH_INTERVAL_SECONDS
+    : '60';
+
+  const setInterval = () => {
+    interval.current = window.setTimeout(
+      () => {
+        fetchFilters().then();
+      },
+      parseInt(refreshInterval) * 1000,
+    );
+  };
+
+  const clearInterval = () => {
+    if (interval.current) {
+      window.clearTimeout(interval.current);
+      interval.current = undefined;
+    }
+  };
+
+  const fetchFilters = async () => {
+    clearInterval();
+    await dispatch(fetchTemplateOptions());
+    setInterval();
+  };
 
   React.useEffect(() => {
     const execute = async () => {
-      await dispatch(fetchTemplateOptions());
+      await fetchFilters();
       selectOption(filterOptionsList[0].key);
     };
     execute().then();
@@ -237,7 +263,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
             {filterSelection[item.key].map((selectedItem: string | number) => {
               return (
                 <Label key={selectedItem} onClose={() => deleteLabel(item.key, selectedItem)}>
-                  {filterChoicesDataByOption?.[item?.key]?.[selectedItem].value}
+                  {filterChoicesDataByOption?.[item?.key]?.[selectedItem]?.value}
                 </Label>
               );
             })}
@@ -248,7 +274,8 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
         {(filterSelection.organization.length > 0 ||
           filterSelection.instances.length > 0 ||
           filterSelection.job_template.length > 0 ||
-          filterSelection.label.length > 0) && (
+          filterSelection.label.length > 0 ||
+          filterSelection.project.length > 0) && (
           <Button variant="link" className={'clear-btn'} onClick={() => clearFilters()} isInline>
             Clear all filters
           </Button>

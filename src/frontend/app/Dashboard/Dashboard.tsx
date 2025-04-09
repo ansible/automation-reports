@@ -22,6 +22,7 @@ import {
   automatedProcessCost,
   filterRetrieveError,
   manualCostAutomation,
+  saveEnableTemplateCreationTime,
   setAutomatedProcessCost,
   setManualProcessCost,
 } from '@app/Store';
@@ -33,8 +34,8 @@ import {
   DashboardTopTable,
   DashboardTotalCards,
 } from '@app/Dashboard';
-
 import { CurrencySelector } from '@app/Components';
+import { IdNameItem } from '@app/Types/ReportDetailsType';
 
 const refreshInterval: string = process.env.DATA_REFRESH_INTERVAL_SECONDS
   ? process.env.DATA_REFRESH_INTERVAL_SECONDS
@@ -231,11 +232,13 @@ const Dashboard: React.FunctionComponent = () => {
     {
       name: 'project_name',
       title: 'Project name',
+      isVisible: true,
     },
     {
       name: 'count',
-      title: 'Total number of running jobs',
+      title: 'Total no. of jobs',
       type: 'number',
+      isVisible: true,
     },
   ];
 
@@ -243,11 +246,13 @@ const Dashboard: React.FunctionComponent = () => {
     {
       name: 'user_name',
       title: 'User name',
+      isVisible: true,
     },
     {
       name: 'count',
-      title: 'Total number of running jobs',
+      title: 'Total no. of jobs',
       type: 'number',
+      isVisible: true,
     },
   ];
 
@@ -290,10 +295,23 @@ const Dashboard: React.FunctionComponent = () => {
     setPdfLoading(true);
     setTimeout(pdfDownload, 150);
   };
+
+  const onEnableTemplateCreationTimeChange = (checked: boolean) => {
+    clearTimeout();
+    setLoading(true);
+    dispatch(saveEnableTemplateCreationTime(checked)).then((response) => {
+      if (!response?.['error']) {
+        fetchServerTableData(true, true);
+      } else {
+        handelError(response['error']);
+      }
+    });
+  };
+
   return (
     <div>
       <Header
-        title={'Automation Savings Service'}
+        title={'Automation ROI Calculator'}
         subtitle={
           'Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.'
         }
@@ -334,14 +352,13 @@ const Dashboard: React.FunctionComponent = () => {
           </Flex>
           <div>
             <Grid hasGutter>
-              <GridItem className="pf-m-12-col pf-m-8-col-on-2xl grid-gap">
+              <GridItem className="pf-m-12-col pf-m-8-col-on-2xl pf-m-9-col-on-3xl pf-m-10-col-on-4xl grid-gap">
                 <DashboardTotalCards data={detailData}></DashboardTotalCards>
                 <Grid hasGutter>
                   <GridItem className="pf-m-12-col pf-m-6-col-on-md" style={{ height: '100%' }}>
                     <div ref={containerLineRefChart}>
                       <DashboardLineChart
                         value={detailData?.total_number_of_job_runs?.value as number}
-                        index={detailData?.total_number_of_job_runs?.index}
                         chartData={detailData.job_chart}
                         loading={loading}
                       ></DashboardLineChart>
@@ -350,7 +367,6 @@ const Dashboard: React.FunctionComponent = () => {
                   <GridItem className="pf-m-12-col pf-m-6-col-on-md" style={{ height: '100%' }}>
                     <DashboardBarChart
                       value={detailData?.total_number_of_host_job_runs?.value as number}
-                      index={detailData?.total_number_of_host_job_runs?.index}
                       chartData={detailData?.host_chart}
                       loading={loading}
                     ></DashboardBarChart>
@@ -358,7 +374,7 @@ const Dashboard: React.FunctionComponent = () => {
                 </Grid>
               </GridItem>
 
-              <GridItem className="pf-m-12-col-on-lg pf-m-4-col-on-2xl">
+              <GridItem className="pf-m-12-col-on-lg pf-m-4-col-on-2xl pf-m-3-col-on-3xl pf-m-2-col-on-4xl">
                 <Grid hasGutter style={{ height: '100%' }}>
                   <GridItem className="pf-m-12-col pf-m-6-col-on-md pf-m-12-col-on-2xl" style={{ height: '100%' }}>
                     <div style={{ height: '100%' }}>
@@ -397,6 +413,8 @@ const Dashboard: React.FunctionComponent = () => {
               loading={tableLoading}
               onInputFocus={onInputFocus}
               onExportCsv={exportToCsv}
+              onEnableTemplateCreationTimeChange={onEnableTemplateCreationTimeChange}
+              excludedTemplates={detailData?.excluded_templates ?? ([] as IdNameItem[])}
             ></DashboardTable>
           </div>
         </div>

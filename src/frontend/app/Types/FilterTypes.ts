@@ -33,6 +33,7 @@ export interface FilterOptionResponse {
   currencies: Currency[];
   projects: FilterOptionWithId[];
   currency: number;
+  enable_template_creation_time: boolean;
   filter_sets: FilterSet[];
 }
 
@@ -81,6 +82,7 @@ export interface CommonState {
   viewSavingProcess: boolean;
   viewSaveError: string | null;
   selectedView: number | null | undefined;
+  enableTemplateCreationTime: boolean;
 }
 
 export interface FilterProps {

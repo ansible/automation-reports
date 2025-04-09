@@ -26,11 +26,7 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
     <>
       <Card style={{ height: 'inherit' }}>
         <CardTitle>
-          <DashboardTotals
-            title={'Number of hosts jobs are running on'}
-            result={props.value}
-            percentage={props.index}
-          />
+          <DashboardTotals title={'Number of hosts jobs are running on'} result={props.value} />
         </CardTitle>
         <CardBody>
           <div className={`chart-wrap host-chart ${chartData.items.length === 0 && 'no-data'}`}>
