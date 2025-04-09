@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="{% static '/styles/style.css' %}">
-  <title>Report</title>
+  <title>Automation ROI Calculator</title>
 </head>
 <body>
 <header style=" ">
@@ -12,21 +12,6 @@
 <div class="footer"></div>
 <div class="content">
   {% block content %}
-    <table class="data-table">
-      <thead>
-      <tr>
-        <th style="text-align: left;">Name</th>
-        <th class="numeric">Number of job executions</th>
-        <th class="numeric">Host executions</th>
-        <th class="numeric">Time taken to manually execute (minutes)</th>
-        <th class="numeric">Time taken to create automation (minutes)</th>
-        <th class="numeric">Running time</th>
-        <th class="numeric">Automated cost</th>
-        <th class="numeric">Manual cost</th>
-        <th class="numeric">Savings</th>
-      </tr>
-      </thead>
-    </table>
   {% endblock %}
 </div>
 </body>

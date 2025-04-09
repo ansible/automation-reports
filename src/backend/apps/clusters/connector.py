@@ -8,7 +8,13 @@ import requests
 from crontab import CronTab
 from django.db import transaction
 
-from backend.apps.clusters.models import ClusterSyncData, ClusterSyncStatus
+from backend.apps.clusters.models import (
+    ClusterSyncData,
+    ClusterSyncStatus,
+    JobTemplate,
+    Job,
+    Organization
+)
 from backend.apps.clusters.schemas import ClusterSchema
 
 logger = logging.getLogger("automation-reports")
@@ -126,6 +132,66 @@ class ApiConnector(ABC):
             for result in results:
                 yield result
 
+    def sync_common(self, sync_type):
+        if sync_type == 'organization':
+            endpoint = f'/api/v2/organizations/?page_size=100&page=1'
+            qs = Organization.objects.filter(cluster=self.cluster)
+
+        elif sync_type == 'job_template':
+            endpoint = f'/api/v2/job_templates/?page_size=200&page=1'
+            qs = JobTemplate.objects.filter(cluster=self.cluster)
+        else:
+            raise NotImplementedError
+        response = self.execute_get(endpoint)
+        response_data = []
+        db_organizations = {}
+        if sync_type == 'job_template':
+            db_organizations = {org.external_id: org for org in Organization.objects.filter(cluster=self.cluster)}
+        db_data = {data.external_id: data for data in qs}
+
+        for results in response:
+            for result in results:
+                db_item = db_data.pop(result["id"], None)
+
+                if sync_type == 'job_template':
+                    external_organization = result.get("summary_fields", {}).get("organization", {}).get("id", None)
+                    if external_organization:
+                        organization = db_organizations.get(external_organization, None)
+                    else:
+                        organization = None
+                else:
+                    organization = None
+
+                if db_item is not None:
+                    db_item.name = result["name"]
+                    db_item.description = result["description"]
+                    if sync_type == 'job_template':
+                        db_item.organization = organization
+                    db_item.save()
+                else:
+                    if sync_type == 'job_template':
+                        JobTemplate.objects.create(
+                            cluster=self.cluster,
+                            name=result["name"],
+                            description=result["description"],
+                            external_id=result["id"],
+                            organization=organization,
+                        )
+                    elif sync_type == 'organization':
+                        Organization.objects.create(
+                            cluster=self.cluster,
+                            name=result["name"],
+                            description=result["description"],
+                            external_id=result["id"],
+                        )
+                response_data.append(result["id"])
+        if sync_type == 'job_template':
+            for key, value in db_data.items():
+                logger.info(f"Deleting job template {value.name} with id {value.id}")
+                count = Job.objects.filter(job_template_id=value.id, cluster_id=value.cluster_id).count()
+                if count == 0:
+                    value.delete()
+
     def sync(self):
         logger.info('Check status of cluster')
         time_out = self.timeout
@@ -135,6 +201,10 @@ class ApiConnector(ABC):
             logger.info(f'Cluster {self.base_url} is not reachable.')
             raise Exception(f'Cluster {self.base_url} is not reachable.')
         self.timeout = time_out
+
+        self.sync_common('organization')
+        self.sync_common('job_template')
+
         for job in self.jobs:
             logger.info("Checking status of job %s", job)
             job_id = job.get("id", None)
