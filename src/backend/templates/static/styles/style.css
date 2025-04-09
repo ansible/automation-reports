@@ -221,3 +221,9 @@ thead {
   margin-right: 12px;
   margin-bottom: 12px;
 }
+.badge.template {
+  padding: 4px 8px;
+  margin-right: 3px;
+  margin-bottom: 3px;
+  font-weight: normal;
+}

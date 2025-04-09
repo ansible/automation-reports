@@ -1,5 +1,6 @@
 import csv
 import decimal
+from collections import OrderedDict
 
 from django.db.models import Count, Sum, F, Q
 from django.http import HttpResponse
@@ -27,7 +28,7 @@ from backend.apps.clusters.models import (
     Organization,
     Label,
     Project)
-from backend.apps.common.models import Settings, SettingsChoices, Currency
+from backend.apps.common.models import Settings, Currency
 from backend.django_config import settings
 
 
@@ -43,6 +44,9 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         costs = get_costs()
         automated_cost_value = costs[CostsChoices.AUTOMATED].value / decimal.Decimal(60)
         manual_cost_value = costs[CostsChoices.MANUAL].value
+
+        enable_template_creation_time = Settings.enable_template_creation_time()
+
         qs = (
             Job.objects.filter(
                 status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED],
@@ -60,9 +64,12 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
                 failed_runs=Count("id", filter=Q(status=JobStatusChoices.FAILED)),
                 elapsed=Sum("elapsed"),
                 num_hosts=Sum("num_hosts"),
-                automated_costs=((F("time_taken_create_automation_minutes") * manual_cost_value) + (F("elapsed") * automated_cost_value)),
+                automated_costs=((F("time_taken_create_automation_minutes") * manual_cost_value) + (F("elapsed") * automated_cost_value))
+                if enable_template_creation_time
+                else (F("elapsed") * automated_cost_value),
                 manual_costs=(F("num_hosts") * F("time_taken_manually_execute_minutes") * manual_cost_value),
-                manual_time=(F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)) + (F("time_taken_create_automation_minutes") * 60),
+                manual_time=(F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)) + (F("time_taken_create_automation_minutes") * 60)
+                if enable_template_creation_time else (F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)),
                 time_savings=(F("manual_time") - F("elapsed")),
                 savings=(F("manual_costs") - F("automated_costs")),
             ))
@@ -84,10 +91,8 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         ).annotate(count=Count("id")).order_by("launched_by").order_by("-count"))[:5]
 
         qs = self.filter_queryset(self.get_base_queryset(prev_range=False))
-        prev_qs = self.get_base_queryset(prev_range=True)
-        if prev_qs:
-            prev_qs = self.filter_queryset(prev_qs)
-        report_data = get_report_data(qs, prev_qs if prev_qs else None)
+
+        report_data = get_report_data(qs)
 
         ## TOP PROJECTS ##
         top_projects_qs = (filter_by_range(request, filtered_qs).
@@ -105,10 +110,21 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             "projects": list(top_projects_qs),
         }
 
+        excluded_templates = JobTemplate.objects.exclude(id__in=qs.values_list("job_template_id", flat=True)).order_by("name")
+
+        options = get_filter_options(request)
+        opt_organizations = options.get("organization", None)
+        if opt_organizations is not None:
+            excluded_templates = excluded_templates.filter(organization__in=opt_organizations)
+        excluded_templates = {
+            "excluded_templates": [{'id': template.id, 'name': template.name} for template in excluded_templates]
+        }
+
         return {
             **top_data,
             **unique_host,
             **report_data,
+            **excluded_templates,
         }
 
     @action(methods=["get"], detail=False)
@@ -138,32 +154,46 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             headers={"Content-Disposition": 'attachment; filename="report.csv"'},
         )
 
+        enable_template_creation_time = Settings.enable_template_creation_time()
+
         writer = csv.writer(response)
-        writer.writerow([
+        rows = [
             "Name",
             "Number of job executions",
             "Hosts executions",
             "Time taken to manually execute (minutes)",
-            "Time taken to create automation (minutes)",
+        ]
+
+        if enable_template_creation_time:
+            rows.append("Time taken to create automation (minutes)")
+
+        rows += [
             "Running time (seconds)",
             "Running time",
             "Automated costs",
             "Manual costs",
             "Savings",
-        ])
+        ]
+
+        writer.writerow(rows)
         for job in qs:
-            writer.writerow([
+            row = [
                 job["name"],
                 job["runs"],
                 job["num_hosts"],
                 job["time_taken_manually_execute_minutes"],
-                job["time_taken_create_automation_minutes"],
+
+            ]
+            if enable_template_creation_time:
+                row.append(job["time_taken_create_automation_minutes"])
+            row += [
                 job["elapsed"],
                 sec2time(job["elapsed"]),
                 round(job["automated_costs"], 2),
                 round(job["manual_costs"], 2),
                 round(job["savings"], 2),
-            ])
+            ]
+            writer.writerow(row)
 
         return response
 
@@ -171,10 +201,10 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
     def pdf(self, request):
         table_qs = self.filter_queryset(self.get_base_queryset())
 
-        report_settings = Settings.objects.filter(type=SettingsChoices.CURRENCY).first()
+        currency_value = Settings.currency()
         currency_sign = "$"
         if settings is not None:
-            _currency = Currency.objects.filter(pk=report_settings.value).first()
+            _currency = Currency.objects.filter(pk=currency_value).first()
             if _currency is not None:
                 currency_sign = _currency.symbol if _currency.symbol else _currency.iso_code
 
@@ -182,30 +212,22 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         details = self.get_details(request)
 
         options = get_filter_options(request)
-        organizations = None
-        templates = None
-        labels = None
-        projects = None
-        job_templates = options.get("job_template", None)
-        params_organizations = options.get("organization", None)
-        params_labels = options.get("label", None)
-        params_projects = options.get("project", None)
 
-        if job_templates is not None:
-            qs = JobTemplate.objects.filter(id__in=job_templates)
-            templates = ", ".join([t.name for t in qs])
+        options_data = OrderedDict()
 
-        if params_organizations is not None:
-            qs = Organization.objects.filter(id__in=params_organizations)
-            organizations = ", ".join([o.name for o in qs])
-
-        if params_labels is not None:
-            qs = Label.objects.filter(id__in=params_labels)
-            labels = ", ".join([l.name for l in qs])
-
-        if params_projects is not None:
-            qs = Project.objects.filter(id__in=params_projects)
-            projects = ", ".join([p.name for p in qs])
+        for param in [
+            ("job_template", JobTemplate, "Template"),
+            ("organization", Organization, "Organization"),
+            ("project", Project, "Project"),
+            ("label", Label, "Label"),
+        ]:
+            param_data = options.get(param[0], None)
+            if param_data is not None:
+                qs = param[1].objects.filter(id__in=param_data)
+                options_data[param[0]] = {
+                    "name": param[2],
+                    "values": ", ".join([t.name for t in qs])
+                }
 
         context = {
             "table_data": serializer.data,
@@ -215,10 +237,8 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             "host_chart": request.data.get("host_chart", None),
             "start_date": options["date_range"].start.strftime('%Y-%m-%d'),
             "end_date": options["date_range"].end.strftime('%Y-%m-%d'),
-            "templates": templates,
-            "organizations": organizations,
-            "projects": projects,
-            "labels": labels,
+            "filters": options_data,
+            "enable_template_creation_time": Settings.enable_template_creation_time()
         }
 
         return WeasyTemplateResponse(

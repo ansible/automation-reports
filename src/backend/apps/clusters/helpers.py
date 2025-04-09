@@ -7,7 +7,13 @@ from urllib.parse import urlencode
 import pytz
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Count, Sum, F, CharField, Func, Value
+from django.db.models import (
+    Count,
+    Sum,
+    F,
+    CharField,
+    Func,
+    Value)
 
 from backend.apps.clusters.models import (
     Costs,
@@ -65,16 +71,6 @@ def get_costs(from_db=False):
     return costs
 
 
-def get_diff_index(old_value, new_value):
-    if old_value is None or new_value is None:
-        return None
-    if old_value == new_value:
-        return 0
-    if old_value == 0:
-        return 100
-    return round(((float(new_value) - float(old_value)) / float(old_value)) * 100)
-
-
 def sum_items(qs):
     qs = qs.aggregate(
         total_runs=Sum("runs"),
@@ -103,13 +99,12 @@ def sum_items(qs):
     ]:
         result[resKey] = round(qs[dbKey], 2) if qs[dbKey] is not None else 0
     result["total_elapsed_hours"] = round((qs["total_elapsed"] / 3600), 2) if qs["total_elapsed"] is not None else 0
-    result["time_savings"] = round((qs["total_time_savings"] / 3600), 2) if qs["total_elapsed"] is not None else 0
+    result["time_savings"] = round((qs["total_time_savings"] / 3600), 2) if qs["total_time_savings"] is not None else 0
     return result
 
 
-def get_report_data(qs, prev_qs):
+def get_report_data(qs):
     res = sum_items(qs)
-    prev_res = sum_items(prev_qs) if prev_qs is not None else None
 
     successful_count = res["successful_count"]
     failed_count = res["failed_count"]
@@ -124,39 +119,30 @@ def get_report_data(qs, prev_qs):
     return {
         "total_number_of_successful_jobs": {
             "value": successful_count,
-            "index": get_diff_index(prev_res["successful_count"] if prev_qs is not None else None, successful_count),
         },
         "total_number_of_failed_jobs": {
             "value": failed_count,
-            "index": get_diff_index(prev_res["failed_count"] if prev_qs is not None else None, failed_count),
         },
         "total_number_of_job_runs": {
             "value": total_runs,
-            "index": get_diff_index(prev_res["total_runs"] if prev_qs is not None else None, total_runs),
         },
         "total_number_of_host_job_runs": {
             "value": num_hosts,
-            "index": get_diff_index(prev_res["host_count"] if prev_qs is not None else None, num_hosts),
         },
         "total_hours_of_automation": {
             "value": total_elapsed_hours,
-            "index": get_diff_index(prev_res["total_elapsed_hours"] if prev_qs is not None else None, total_elapsed_hours),
         },
         "cost_of_automated_execution": {
             "value": automated_costs,
-            "index": get_diff_index(prev_res["automated_costs"] if prev_qs is not None else None, automated_costs),
         },
         "cost_of_manual_automation": {
             "value": manual_costs,
-            "index": get_diff_index(prev_res["manual_costs"] if prev_qs is not None else None, manual_costs),
         },
         "total_saving": {
             "value": savings,
-            "index": get_diff_index(prev_res["savings"] if prev_qs is not None else None, savings),
         },
         "total_time_saving": {
             "value": time_savings,
-            "index": get_diff_index(prev_res["time_savings"] if prev_qs is not None else None, time_savings),
         },
     }
 
@@ -312,29 +298,19 @@ def get_unique_hosts_db(start_date, end_date, options):
 
 
 def get_unique_host_count(options):
-    prev_count = None
     date_range = options.get("date_range", None)
     start_date = None
     end_date = None
 
-    prev_start_date = None
-    prev_end_date = None
-
     if date_range is not None:
         start_date = date_range.start
         end_date = date_range.end
-        prev_start_date = date_range.prev_start
-        prev_end_date = date_range.prev_end
 
     total_number_of_unique_hosts = get_unique_hosts_db(start_date=start_date, end_date=end_date, options=options)
-
-    if prev_start_date and prev_end_date:
-        prev_count = get_unique_hosts_db(start_date=prev_start_date, end_date=prev_end_date, options=options)
 
     return {
         "total_number_of_unique_hosts": {
             "value": total_number_of_unique_hosts,
-            "index": get_diff_index(prev_count, total_number_of_unique_hosts)
         }
     }
 

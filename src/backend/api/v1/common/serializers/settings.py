@@ -13,8 +13,8 @@ class SettingsSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         settings_type = validated_data.pop('type')
         value = validated_data.pop('value')
+        instance = Settings.objects.filter(type=settings_type).first()
         if settings_type == SettingsChoices.CURRENCY:
-            instance = Settings.objects.filter(type=settings_type).first()
             currency = Currency.objects.filter(pk=value).first()
             if currency is None:
                 raise serializers.ValidationError("Currency not found.")
@@ -23,6 +23,13 @@ class SettingsSerializer(serializers.ModelSerializer):
                 instance.save()
             else:
                 instance = Settings.objects.create(type=SettingsChoices.CURRENCY, value=currency.pk)
+            return instance
+        elif settings_type == SettingsChoices.ENABLE_TEMPLATE_CREATION_TIME:
+            if instance is not None:
+                instance.value = value
+                instance.save()
+            else:
+                instance = Settings.objects.create(type=SettingsChoices.ENABLE_TEMPLATE_CREATION_TIME, value=value)
             return instance
         else:
             raise serializers.ValidationError("Not valid type.")
