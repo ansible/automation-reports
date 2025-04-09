@@ -1,4 +1,5 @@
 import { PaginationParams } from '@app/Types/FilterTypes';
+import { IdNameItem } from '@app/Types/ReportDetailsType';
 
 export type PaginationProps = {
   onPageChange: (newPage: number) => void;
@@ -19,6 +20,7 @@ export type ColumnProps = {
     tooltip?: string;
   };
   isEditable?: boolean;
+  isVisible: boolean;
 };
 
 export type TableResult = {
@@ -45,7 +47,6 @@ export type TableResponse = {
 
 export type ValueIndex = {
   value: number | string;
-  index: number;
 };
 
 export type DashboardTableProps = {
@@ -55,12 +56,14 @@ export type DashboardTableProps = {
   onPaginationChange: (pagination: PaginationParams) => void;
   onSortChange: (ordering: string) => void;
   onExportCsv: () => void;
+  onEnableTemplateCreationTimeChange: (checked: boolean) => void;
   pagination: PaginationParams;
   data: TableResponse;
   totalSaving: ValueIndex;
   costOfManualAutomation: ValueIndex;
   costOfAutomatedExecution: ValueIndex;
   totalTimeSavings: ValueIndex;
+  excludedTemplates: IdNameItem[];
   loading: boolean;
 };
 
@@ -104,6 +107,7 @@ export type ReportDetail = {
   host_chart: ChartData;
   total_time_saving: ValueIndex;
   related_links?: ReportDetailLinks;
+  excluded_templates?: IdNameItem[];
 };
 
 export type DashboardTopTableProps = {

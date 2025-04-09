@@ -7,9 +7,11 @@
 
         &.numerical {
           text-align: right;
+
           .pf-v6-c-table__text {
             text-align: right;
           }
+
           button {
             padding: 0;
           }
@@ -115,6 +117,10 @@
 
 .base-table {
   min-width: 1800px;
+
+  &.less {
+    min-width: 1500px;
+  }
 }
 
 .pf-v6-c-table__sort-indicator {
@@ -158,8 +164,56 @@
 }
 
 @media (max-width: 45rem) {
+}
+
+.top-table {
+  .numerical {
+    padding-left: 0 !important;
+    width: 122px !important;
+  }
+}
+
+.switch-time-taken-automation {
+  margin-top: 2.125rem;
+}
+
+@media (max-width: 59.3125rem) {
+  .switch-time-taken-automation {
+    margin-top: 8px;
+  }
   .cvs-export-btn {
     margin-left: 0;
     margin-top: 16px;
+    width: 100%;
+  }
+}
+
+.excluded-templates-group {
+  border: none !important;
+  padding: 12px !important;
+  background-color: #f2f2f2 !important;
+
+  .pf-v6-c-label-group__label {
+    font-weight: 500;
+  }
+}
+
+.pf-v6-c-table tr:where(.pf-v6-c-table__tr) > :where(th, td) {
+  &.input-td {
+    width: 300px;
+  }
+}
+
+@media screen and (max-width: calc(-1px + 48rem)) {
+  .pf-v6-c-table tr:where(.pf-v6-c-table__tr) > :where(th, td) {
+    &.input-td {
+      width: 100%;
+    }
+  }
+  .top-table {
+    .numerical {
+      width: 100% !important;
+      padding-left: 1rem !important;
+    }
   }
 }

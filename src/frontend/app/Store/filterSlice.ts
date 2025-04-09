@@ -3,7 +3,12 @@ import { RootState } from '@app/Store/store';
 import { RestService } from '@app/Services';
 import { FilterOption, FilterOptionResponse, FilterOptionWithId, FilterState } from '@app/Types';
 import { listToDict } from '@app/Utils';
-import { setCurrencies, setDefaultCurrency, setFilterViews } from '@app/Store/commonSlice';
+import {
+  setCurrencies,
+  setDefaultCurrency,
+  setEnableTemplateCreationTime,
+  setFilterViews,
+} from '@app/Store/commonSlice';
 
 export const fetchTemplateOptions = createAsyncThunk(
   'filters/options',
@@ -19,6 +24,7 @@ export const fetchTemplateOptions = createAsyncThunk(
     if (data?.filter_sets) {
       api.dispatch(setFilterViews(data.filter_sets));
     }
+    api.dispatch(setEnableTemplateCreationTime(data.enable_template_creation_time));
     return data;
   },
 );

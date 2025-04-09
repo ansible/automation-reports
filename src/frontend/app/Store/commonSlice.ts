@@ -72,6 +72,21 @@ export const deleteView = createAsyncThunk('filters/view/delete', async (viewID:
   return Promise.resolve(viewID);
 });
 
+export const setEnableTemplateCreationTime = createAsyncThunk(
+  'filters/settings/enableTemplateCreationTime',
+  async (value: boolean): Promise<boolean> => {
+    return Promise.resolve(value);
+  },
+);
+
+export const saveEnableTemplateCreationTime = createAsyncThunk(
+  'filters/settings/enableTemplateCreationTime/save',
+  async (value: boolean): Promise<boolean> => {
+    await RestService.saveEnableTemplateCreationTime(value);
+    return value;
+  },
+);
+
 const initialState: CommonState = {
   currencyOptions: [],
   filterSetOptions: [],
@@ -81,6 +96,7 @@ const initialState: CommonState = {
   viewSavingProcess: false,
   viewSaveError: null,
   selectedView: null,
+  enableTemplateCreationTime: true,
 };
 
 export const commonSlice = createSlice({
@@ -149,6 +165,20 @@ export const commonSlice = createSlice({
       })
       .addCase(setView.fulfilled, (state, action) => {
         state.selectedView = action.payload;
+      })
+      .addCase(setEnableTemplateCreationTime.fulfilled, (state, action) => {
+        state.enableTemplateCreationTime = action.payload;
+      })
+      .addCase(saveEnableTemplateCreationTime.pending, (state) => {
+        state.loading = 'pending';
+      })
+      .addCase(saveEnableTemplateCreationTime.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.enableTemplateCreationTime = action.payload;
+      })
+      .addCase(saveEnableTemplateCreationTime.rejected, (state) => {
+        state.loading = 'failed';
+        state.error = true;
       });
   },
 });
@@ -171,5 +201,6 @@ export const viewSavingProcess = (state: RootState) => state.common.viewSavingPr
 export const viewSaveError = (state: RootState) => state.common.viewSaveError;
 export const filterSetOptions = (state: RootState) => state.common.filterSetOptions;
 export const selectedView = (state: RootState) => state.common.selectedView;
+export const enableTemplateCreationTime = (state: RootState) => state.common.enableTemplateCreationTime;
 
 export const viewsById = createSelector([filterSetOptions], (viewOptions) => listToDict(viewOptions, 'id'));

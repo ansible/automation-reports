@@ -95,6 +95,10 @@ const setCurrency = async (currencyId: number) => {
   return api.post('api/v1/common/settings/', { type: 'currency', value: currencyId });
 };
 
+const saveEnableTemplateCreationTime = async (value: boolean) => {
+  return api.post('api/v1/common/settings/', { type: 'enable_template_creation_time', value: value });
+};
+
 const saveView = async (viewData: FilterSet): Promise<FilterSet> => {
   if (viewData.id) {
     return api.put(`api/v1/common/filter_set/${viewData.id}/`, viewData).then((response) => response.data);
@@ -118,4 +122,5 @@ export const RestService = {
   deleteView: deleteView,
   exportToCSV: exportToCSV,
   exportToPDF: exportToPDF,
+  saveEnableTemplateCreationTime: saveEnableTemplateCreationTime,
 };
