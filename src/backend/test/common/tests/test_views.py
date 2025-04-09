@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+import csv
+import io
 from datetime import datetime
 from decimal import Decimal
 
@@ -29,7 +31,7 @@ from backend.apps.clusters.models import (
     JobHostSummary,
     Host,
     CostsChoices)
-from backend.apps.common.models import FilterSet, Currency
+from backend.apps.common.models import FilterSet, Currency, Settings, SettingsChoices
 
 
 @pytest.mark.django_db()
@@ -185,7 +187,6 @@ class TestViews(TestCase):
                 ],
                 organizations=[
                     dict(key=2, value='Organization A', cluster_id=1),
-                    dict(key=1, value='Organization B', cluster_id=1),
                 ],
                 labels=[
                     dict(key=1, value='Label A', cluster_id=1),
@@ -207,7 +208,6 @@ class TestViews(TestCase):
                 job_templates=[
                     dict(key=1, value='Job Template A', cluster_id=1),
                     dict(key=2, value='Job Template B', cluster_id=1),
-                    dict(key=3, value='Job Template C', cluster_id=1),
                 ],
                 projects=[
                     dict(key=1, value='Project A', cluster_id=1),
@@ -223,6 +223,7 @@ class TestViews(TestCase):
                     dict(id=1, name='United States dollar', iso_code='USD', symbol='$'),
                 ],
                 currency=1,
+                enable_template_creation_time=True,
                 filter_sets=[
                     dict(id=1, name='Report 1', filters=dict(date_range='last_month', organization=[1, 2])),
                     dict(id=2, name='Report 2', filters=dict(date_range='last_year', template=[1, 2])),
@@ -331,16 +332,19 @@ class TestViews(TestCase):
             dict(
                 users=[dict(user_id=1, user_name='AAP User', count=2)],
                 projects=[dict(project_id=1, project_name='Project A', count=2)],
-                total_number_of_unique_hosts=dict(value=3, index=100),
-                total_number_of_successful_jobs=dict(value=2, index=None),
-                total_number_of_failed_jobs=dict(value=0, index=None),
-                total_number_of_job_runs=dict(value=2, index=None),
-                total_number_of_host_job_runs=dict(value=4, index=None),
-                total_hours_of_automation=dict(value=Decimal('0.01'), index=None),
-                cost_of_automated_execution=dict(value=Decimal('6016.67'), index=None),
-                cost_of_manual_automation=dict(value=Decimal('12000.00'), index=None),
-                total_saving=dict(value=Decimal('5983.33'), index=None),
-                total_time_saving=dict(value=Decimal('5.99'), index=None),
+                total_number_of_unique_hosts=dict(value=3),
+                total_number_of_successful_jobs=dict(value=2),
+                total_number_of_failed_jobs=dict(value=0),
+                total_number_of_job_runs=dict(value=2),
+                total_number_of_host_job_runs=dict(value=4),
+                total_hours_of_automation=dict(value=Decimal('0.01')),
+                cost_of_automated_execution=dict(value=Decimal('6016.67')),
+                cost_of_manual_automation=dict(value=Decimal('12000.00')),
+                total_saving=dict(value=Decimal('5983.33')),
+                total_time_saving=dict(value=Decimal('5.99')),
+                excluded_templates=[
+                    dict(id=3, name='Job Template C'),
+                ],
                 host_chart=dict(
                     items=[
                         dict(x=FakeDatetime(2025, 1, 1, 0, 0, tzinfo=pytz.UTC), y=0),
@@ -417,3 +421,57 @@ class TestViews(TestCase):
         self.assertEqual(template_response.status_code, status.HTTP_200_OK)
         template_dict = dict(template_response.data)
         self.assertEqual(template_dict['currency'], currency.id)
+
+    def test_disable_time_taken_to_create_automation_save(self):
+        response = self.client.post(f"/api/v1/common/settings/", content_type='application/json', data=dict(type="enable_template_creation_time", value=False))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = Settings.objects.get(type=SettingsChoices.ENABLE_TEMPLATE_CREATION_TIME)
+        self.assertEqual(data.value, 0)
+
+    @freeze_time("2025-03-21 22:01:45", tz_offset=0)
+    def test_report_disabled_time_taken_to_create_automation_save(self):
+        response = self.client.post(f"/api/v1/common/settings/", content_type='application/json', data=dict(type="enable_template_creation_time", value=False))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.get("/api/v1/report/?page=1&page_size=10&date_range=last_month")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data
+        self.assertEqual(len(data["results"]), 1)
+        result = data["results"][0]
+        self.assertEqual(result["automated_costs"], "8.33")
+        self.assertEqual(result["manual_costs"], "6000.00")
+        self.assertEqual(result["savings"], "5991.67"),
+        self.assertEqual(result["time_savings"], "7175.00")
+        self.assertEqual(result["time_savings_str"], "1h 59min 35sec")
+
+    @freeze_time("2025-03-21 22:01:45", tz_offset=0)
+    def test_export_csv(self):
+        response = self.client.get("/api/v1/report/csv/?date_range=last_month")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = response.content.decode('utf-8')
+        cvs_reader = csv.reader(io.StringIO(content))
+
+        body = list(cvs_reader)
+        headers = body.pop(0)
+
+        self.assertEqual(len(body[0]), 10)
+        self.assertEqual(len(headers), 10)
+        expected_data = [
+            ("Name", "Job Template B"),
+            ("Number of job executions", "1"),
+            ("Hosts executions", "2"),
+            ("Time taken to manually execute (minutes)", "60"),
+            ("Time taken to create automation (minutes)", "60"),
+            ("Running time (seconds)", "25.000"),
+            ("Running time", "0min 25sec"),
+            ("Automated costs", "3008.33"),
+            ("Manual costs", "6000.00"),
+            ("Savings", "2991.67"),
+        ]
+        for index, data in enumerate(expected_data):
+            self.assertEqual(headers[index], data[0], msg=headers[index])
+            self.assertEqual(body[0][index], data[1], msg=headers[index])
+
+    @freeze_time("2025-03-21 22:01:45", tz_offset=0)
+    def test_export_pdf(self):
+        response = self.client.post("/api/v1/report/pdf/?date_range=last_month")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
