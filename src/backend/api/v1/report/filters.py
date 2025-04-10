@@ -58,24 +58,16 @@ def get_range(request):
     return options.get("date_range", None)
 
 
-def filter_by_range(request, queryset, prev_range=False):
+def filter_by_range(request, queryset):
     date_range = get_range(request)
 
     if date_range:
-        if prev_range:
-            start_date = date_range.prev_start
-            end_date = date_range.prev_end
-            if start_date and end_date:
-                queryset = queryset.filter(finished__range=(start_date, end_date))
-                return queryset
-            return None
-        else:
-            start_date = date_range.start
-            end_date = date_range.end
+        start_date = date_range.start
+        end_date = date_range.end
 
-            if start_date:
-                queryset = queryset.filter(finished__gte=start_date)
-            if end_date:
-                queryset = queryset.filter(finished__lte=end_date)
+        if start_date:
+            queryset = queryset.filter(finished__gte=start_date)
+        if end_date:
+            queryset = queryset.filter(finished__lte=end_date)
 
-    return queryset if prev_range is False else None
+    return queryset
