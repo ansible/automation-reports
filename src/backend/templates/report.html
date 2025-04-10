@@ -238,23 +238,4 @@
     {% endfor %}
   </tbody>
 </table>
-
-{% with details.excluded_templates|length as list_length %}
-{% if list_length > 0 %}
-<table class="details-table" style="width: 100%; margin-top: 1cm; page-break-inside: avoid">
-  <tr>
-    <td colspan="3" style="width: 100%">
-      <div class="card">
-        <div class="title">Templates not used</div>
-        <div class="value">
-          {% for excluded_template in details.excluded_templates %}
-          <div class="badge template">{{excluded_template.name}}</div>
-          {% endfor %}
-        </div>
-      </div>
-    </td>
-  </tr>
-</table>
-{% endif %}
-{% endwith %}
 {% endblock %}

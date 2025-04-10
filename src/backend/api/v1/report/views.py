@@ -40,7 +40,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
                        "automated_costs", "savings", "runs"]
     ordering = ["name"]
 
-    def get_base_queryset(self, prev_range=False):
+    def get_base_queryset(self):
         costs = get_costs()
         automated_cost_value = costs[CostsChoices.AUTOMATED].value / decimal.Decimal(60)
         manual_cost_value = costs[CostsChoices.MANUAL].value
@@ -73,10 +73,10 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
                 time_savings=(F("manual_time") - F("elapsed")),
                 savings=(F("manual_costs") - F("automated_costs")),
             ))
-        return filter_by_range(self.request, queryset=qs, prev_range=prev_range)
+        return filter_by_range(self.request, queryset=qs)
 
     def get_queryset(self):
-        return self.get_base_queryset(prev_range=False)
+        return self.get_base_queryset()
 
     def get_details(self, request):
         filtered_qs = Job.objects.all()
@@ -90,7 +90,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             user_name=F("launched_by__name")
         ).annotate(count=Count("id")).order_by("launched_by").order_by("-count"))[:5]
 
-        qs = self.filter_queryset(self.get_base_queryset(prev_range=False))
+        qs = self.filter_queryset(self.get_base_queryset())
 
         report_data = get_report_data(qs)
 
@@ -110,21 +110,10 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             "projects": list(top_projects_qs),
         }
 
-        excluded_templates = JobTemplate.objects.exclude(id__in=qs.values_list("job_template_id", flat=True)).order_by("name")
-
-        options = get_filter_options(request)
-        opt_organizations = options.get("organization", None)
-        if opt_organizations is not None:
-            excluded_templates = excluded_templates.filter(organization__in=opt_organizations)
-        excluded_templates = {
-            "excluded_templates": [{'id': template.id, 'name': template.name} for template in excluded_templates]
-        }
-
         return {
             **top_data,
             **unique_host,
             **report_data,
-            **excluded_templates,
         }
 
     @action(methods=["get"], detail=False)
@@ -138,10 +127,22 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
 
         related_links = get_related_links(request)
 
+        options = get_filter_options(request)
+        opt_organizations = options.get("organization", None)
+
+        qs = self.filter_queryset(self.get_base_queryset())
+        excluded_templates = JobTemplate.objects.exclude(id__in=qs.values_list("job_template_id", flat=True)).order_by("name")
+        if opt_organizations is not None:
+            excluded_templates = excluded_templates.filter(organization__in=opt_organizations)
+        excluded_templates = {
+            "excluded_templates": [{'id': template.id, 'name': template.name} for template in excluded_templates]
+        }
+
         response_data = {
             **details_data,
             **charts_data,
-            **related_links
+            **related_links,
+            **excluded_templates,
         }
 
         return Response(data=response_data, status=status.HTTP_200_OK)
