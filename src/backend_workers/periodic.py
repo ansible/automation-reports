@@ -22,7 +22,7 @@ cron_entry = os.environ.get("CRON_SYNC", "0 */1 * * *")
 django.setup()
 from django.conf import settings
 
-logger = logging.getLogger("automation-reports")
+logger = logging.getLogger("automation-dashboard")
 
 entry = CronTab(cron_entry)
 

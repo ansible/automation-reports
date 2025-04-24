@@ -1,6 +1,6 @@
 # AAP reports containerized installer
 
-This is installer for automation-reports.
+This is installer for automation-dashboard.
 It is based on "AAP containerized installer".
 Code is built into a container image.
 Container is run by systemd/podman.
