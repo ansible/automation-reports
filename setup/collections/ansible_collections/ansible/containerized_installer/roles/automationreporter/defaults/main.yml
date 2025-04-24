@@ -16,7 +16,7 @@ reporter_container_requires: []
 # reporter_container_requires:
 #   - redis
 # reporter_daphne_port: 8051
-reporter_uwsgi_port: 8050
+reporter_uwsgi_port: 8052
 reporter_uwsgi_processes: 5
 reporter_update_secret: false
 reporter_event_workers: 4
