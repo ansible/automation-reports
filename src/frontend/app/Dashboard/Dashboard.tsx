@@ -311,7 +311,7 @@ const Dashboard: React.FunctionComponent = () => {
   return (
     <div>
       <Header
-        title={'Automation ROI Calculator'}
+        title={'Automation Dashboard'}
         subtitle={
           'Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.'
         }

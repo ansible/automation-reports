@@ -1,6 +1,6 @@
-# Automation reports
+# Automation Dashboard
 
-Hello! And welcome to the Automation reports monorepo.
+Hello! And welcome to the Automation Dashboard monorepo.
 
 ### Running locally
 

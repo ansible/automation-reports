@@ -1,5 +1,5 @@
 [project]
-name = "Automation ROI Calculator"
+name = "Automation Dashboard"
 readme = "README.md"
 requires-python = ">=3.12"
 

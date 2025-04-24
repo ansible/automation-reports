@@ -21,7 +21,7 @@ from backend.apps.clusters.schemas import (
     LabelModelSchema,
     LabelsSchema)
 
-logger = logging.getLogger("automation-reports")
+logger = logging.getLogger("automation-dashboard")
 
 
 class DataParser:
