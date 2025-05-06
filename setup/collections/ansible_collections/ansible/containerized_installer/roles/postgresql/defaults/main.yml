@@ -12,4 +12,8 @@ postgresql_keep_databases: false
 postgresql_conf_dir: '{{ ansible_user_dir }}/aap/postgresql'
 postgresql_disable_tls: false
 postgresql_password_encryption: scram-sha-256
+
+### for non-containerized install
+postgresql_default_options:
+  PGOPTIONS: '-c password_encryption=scram-sha-256'
 ...

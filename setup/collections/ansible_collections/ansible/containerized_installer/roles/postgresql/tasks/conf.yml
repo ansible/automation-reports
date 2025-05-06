@@ -1,0 +1,51 @@
+---
+# conf.yml is copied from AAP 2.4 non-containarized installer, then adjusted.
+- name: Install python-psycopg2
+  ansible.builtin.package:
+    name: python3-psycopg2
+  become: true
+  when: not ostree | bool
+
+- name: Wait for postgresql to be ready
+  community.postgresql.postgresql_ping:
+    login_host: 127.0.0.1
+    login_port: '{{ postgresql_port }}'
+    login_user: '{{ postgresql_admin_username | default("postgres") }}'
+    login_password: '{{ postgresql_admin_password }}'
+    login_db: '{{ postgresql_admin_database | default("postgres") }}'
+  register: _ping
+  retries: 30
+  delay: 10
+  until: _ping.is_available | bool
+
+- block:
+    - name: Create the automation reporter postgres user
+      community.postgresql.postgresql_user:
+        name: "{{ reporter_pg_username }}"
+        password: "{{ reporter_pg_password }}"
+        port: "{{ pg_port }}"
+        state: present
+        login_user: postgres
+      become: true
+      become_user: postgres
+      environment: '{{ extra_env | default({}) | combine(postgresql_default_options, list_merge="keep") }}'
+      when:
+        - "reporter_pg_username is defined and reporter_pg_username != ''"
+        - "reporter_pg_password is defined and reporter_pg_password != ''"
+
+    - name: Create the postgresql database for automation reporter
+      postgresql_db:
+        name: "{{ reporter_pg_database }}"
+        owner: "{{ reporter_pg_username }}"
+        port: "{{ pg_port }}"
+        state: present
+        login_user: postgres
+      become: true
+      become_user: postgres
+      when:
+        - "reporter_pg_username is defined and reporter_pg_username != ''"
+        - "reporter_pg_database is defined and reporter_pg_database != ''"
+  when: 
+    - not reporter_pg_containerized
+    - groups['automationreporter'] | default([]) | length
+...
