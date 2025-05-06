@@ -38,7 +38,7 @@
       ansible.builtin.import_role:
         name: common
 
-- name: Install the database
+- name: Install the database - containerized
   hosts: database
   any_errors_fatal: true
   gather_facts: false
@@ -47,6 +47,19 @@
     - name: Install and configure postgresql
       ansible.builtin.import_role:
         name: postgresql
+      when: reporter_pg_containerized
+
+- name: Install the database - non-containerized
+  hosts: database
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install and configure postgresql
+      ansible.builtin.import_role:
+        name: postgresql
+        tasks_from: conf.yml
+      when: not reporter_pg_containerized
 
 - name: Install the Automation Reporter
   any_errors_fatal: true
