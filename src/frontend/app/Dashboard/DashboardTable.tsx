@@ -86,6 +86,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
       label="Include Time taken to create automation in calculation"
       id="switch-time-taken-automation"
       isChecked={switchEnableTemplateCreationTimeIsChecked}
+      aria-checked={switchEnableTemplateCreationTimeIsChecked}
       onChange={handleSwitchEnableTemplateCreationTime}
     />
   );
