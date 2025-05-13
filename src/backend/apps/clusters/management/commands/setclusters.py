@@ -1,3 +1,4 @@
+import sys
 import traceback
 
 import pydantic
@@ -5,8 +6,9 @@ import yaml
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.models import Cluster
-from backend.apps.clusters.schemas import ClusterSchema
+from backend.apps.clusters.schemas import ClusterSettings
 
 
 class Command(BaseCommand):
@@ -47,19 +49,31 @@ class Command(BaseCommand):
             for cluster in yaml_clusters:
                 self.stdout.write(self.style.NOTICE('Adding cluster: address={}'.format(cluster.get("address"))))
                 try:
-                    new_cluster = ClusterSchema(**cluster)
+                    new_cluster = ClusterSettings(**cluster)
                 except pydantic.ValidationError as ex:
                     self.stdout.write(self.style.ERROR('Error reading new cluster: {}'.format(ex)))
                     transaction.rollback()
+                    error = True
                     break
                 db_cluster = db_clusters.pop(new_cluster.address, None)
                 new_cluster = Cluster(**new_cluster.model_dump())
+
                 if db_cluster is not None:
                     new_cluster.pk = db_cluster.pk
+                    new_cluster.internal_created = db_cluster.internal_created
 
                 new_cluster.save()
+
+                connector = ApiConnector(cluster=Cluster.objects.get(pk=new_cluster.pk))
+                try:
+                    connector.check_aap_version()
+                except Exception as ex:
+                    self.stdout.write(self.style.ERROR('Error connecting AAP connector: {}'.format(ex)))
+                    transaction.rollback()
+                    error = True
+                    break
             for key, value in db_clusters.items():
                 value.delete()
         if error:
-            return
+            sys.exit(1)
         self.stdout.write(self.style.SUCCESS('Successfully set up AAP clusters'))

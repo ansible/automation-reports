@@ -9,14 +9,18 @@ class FrozenModel(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ClusterSchema(FrozenModel):
-    model_config = ConfigDict(frozen=True)
-
+class ClusterSettings(FrozenModel):
     protocol: str
     address: str
     port: int
     access_token: str
     verify_ssl: bool = True
+
+
+class ClusterSchema(ClusterSettings):
+    aap_version: Literal["AAP 2.5", "AAP 2.4"] | None = None
+    api_url: str
+    base_url: str
 
 
 class DateRangeSchema(BaseModel):
@@ -111,3 +115,5 @@ class ExternalJobSchema(FrozenModel):
     job_type: Literal["run", "check", "scan"]
     type: Literal["job", "Playbook Run"]
     launch_type: Literal["manual", "relaunch", "callback", "scheduled", "dependency", "workflow", "webhook", "sync", "scm"]
+    created: datetime
+    modified: datetime

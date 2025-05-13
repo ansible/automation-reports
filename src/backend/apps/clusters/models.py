@@ -23,15 +23,43 @@ class CreatUpdateModel(models.Model):
         abstract = True
 
 
+class ClusterVersionChoices(models.TextChoices):
+    AAP25 = "AAP 2.5", "AAP 2.5"
+    AAP24 = "AAP 2.4", "AAP 2.4"
+
+
 class Cluster(CreatUpdateModel):
     protocol = models.CharField(max_length=10)
     address = models.CharField(max_length=255)
     port = models.IntegerField()
     access_token = models.TextField()
     verify_ssl = models.BooleanField(default=True)
+    aap_version = models.CharField(max_length=15, choices=ClusterVersionChoices.choices, default=ClusterVersionChoices.AAP24)
 
     def __str__(self):
         return f'{self.protocol}://{self.address}:{self.port}'
+
+    @property
+    def base_url(self):
+        return f'{self.protocol}://{self.address}:{self.port}'
+
+    @property
+    def api_url(self):
+        if self.aap_version == ClusterVersionChoices.AAP25:
+            return f'/api/controller/v2'
+        elif self.aap_version == ClusterVersionChoices.AAP24:
+            return f'/api/v2'
+        else:
+            raise NotImplementedError
+
+    @property
+    def gui_base_url(self):
+        if self.aap_version == ClusterVersionChoices.AAP25:
+            return f'{self.base_url}/execution/'
+        elif self.aap_version == ClusterVersionChoices.AAP24:
+            return f'{self.base_url}/#/'
+        else:
+            raise NotImplementedError
 
 
 class DateRangeChoices(models.TextChoices):

@@ -5,8 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from backend.apps.clusters.connector import ApiConnector
-from backend.apps.clusters.models import Cluster, ClusterSyncData
-from backend.apps.clusters.parser import DataParser
+from backend.apps.clusters.models import Cluster
 
 
 class Command(BaseCommand):
@@ -65,16 +64,6 @@ class Command(BaseCommand):
                 self.stdout.write(f'Start syncing cluster {cluster}.')
                 connector.sync()
                 self.stdout.write(self.style.SUCCESS(f'Cluster {cluster} synced.'))
-            except Exception as e:
-                print(e)
-
-        data = ClusterSyncData.objects.all()
-        for sync_data in data:
-            try:
-                self.stdout.write(f'Start parsing job {sync_data.id}.')
-                parser = DataParser(sync_data.id)
-                parser.parse()
-                self.stdout.write(self.style.SUCCESS(f'Job with id {sync_data.id} parsed.'))
             except Exception as e:
                 print(e)
 

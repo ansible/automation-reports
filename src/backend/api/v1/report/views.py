@@ -68,9 +68,8 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
                 if enable_template_creation_time
                 else (F("elapsed") * automated_cost_value),
                 manual_costs=(F("num_hosts") * F("time_taken_manually_execute_minutes") * manual_cost_value),
-                manual_time=(F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)) + (F("time_taken_create_automation_minutes") * 60)
-                if enable_template_creation_time else (F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)),
-                time_savings=(F("manual_time") - F("elapsed")),
+                manual_time=(F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)),
+                time_savings=(F("manual_time") - F("elapsed") - (F("time_taken_create_automation_minutes") * 60)) if enable_template_creation_time else (F("manual_time") - F("elapsed")),
                 savings=(F("manual_costs") - F("automated_costs")),
             ))
         return filter_by_range(self.request, queryset=qs)

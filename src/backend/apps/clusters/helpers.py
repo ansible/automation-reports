@@ -20,7 +20,7 @@ from backend.apps.clusters.models import (
     CostsChoices,
     JobStatusChoices,
     DateRangeChoices,
-    Cluster)
+    Cluster, ClusterVersionChoices)
 
 
 def sec2time(sec):
@@ -259,13 +259,13 @@ def get_unique_hosts_db(start_date, end_date, options):
         'num_hosts': 0
     }
     sql = '''
-        select count(*) from (
-        select s.host_id
-        FROM clusters_jobhostsummary s
-        JOIN clusters_job job on job.id=s.job_id
-        WHERE job.status IN (%(successful)s, %(failed)s)
-        AND job.num_hosts > %(num_hosts)s
-    '''
+          select count(*)
+          from (select s.host_id
+                FROM clusters_jobhostsummary s
+                         JOIN clusters_job job on job.id = s.job_id
+                WHERE job.status IN (%(successful)s, %(failed)s)
+                  AND job.num_hosts > %(num_hosts)s \
+          '''
     if start_date is not None:
         sql += ' AND job.finished >= %(start_date)s'
         params['start_date'] = start_date
@@ -364,18 +364,20 @@ def get_related_links(options):
         return result
 
     _date_range = options.query_params.get("date_range", None)
-
-    initial_url = f'{cluster.protocol}://{cluster.address}:{cluster.port}#/jobs'
+    initial_url = f'{cluster.gui_base_url}jobs'
+    status_key = "status"
+    if cluster.aap_version == ClusterVersionChoices.AAP24:
+        status_key = "job.status__exact"
     failed_data = {
-        "job.status__exact": JobStatusChoices.FAILED.value,
+        status_key: JobStatusChoices.FAILED.value,
     }
     successful_data = {
-        "job.status__exact": JobStatusChoices.SUCCESSFUL.value,
+        status_key: JobStatusChoices.SUCCESSFUL.value,
     }
 
     data = {}
 
-    if _date_range is not None:
+    if _date_range is not None and cluster.aap_version == ClusterVersionChoices.AAP24:
         data_range = DateRangeChoices.get_date_range(_date_range)
         if data_range is not None:
             data["job.finished__gte"] = data_range.start.isoformat()
