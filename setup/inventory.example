@@ -18,8 +18,8 @@ aap24_reports.novalocal ansible_connection=local
 [all:vars]
 postgresql_admin_username=postgres
 postgresql_admin_password=TODO
-registry_username=
-registry_password=
+# registry_username=
+# registry_password=
 
 # AAP Reporter - mandatory
 # --------------------------
@@ -34,7 +34,7 @@ reporter_pg_database=aapreports
 # ansible-playbook -i inventory ansible.containerized_installer.reporter_bundle # to generate ./bundle
 bundle_install=true
 # <full path to the bundle directory>
-bundle_dir=/devel/automation-reports/setup/bundle
+bundle_dir=/home/ec2-user/ansible-automation-reports-containerized-setup/bundle
 #
 # AAP Reporter - extra variables needed when installing next to non-containerized AAP
 # --------------------------

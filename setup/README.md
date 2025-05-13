@@ -5,6 +5,8 @@ It is based on "AAP containerized installer".
 Code is built into a container image.
 Container is run by systemd/podman.
 
+Installation instructions for end user - see [Install using bundled installer](#install-using-bundled-installer) section.
+
 ## Test installer
 
 Build container images and deploy, both on same VM.
@@ -60,7 +62,9 @@ ansible-playbook -i inventory ansible.containerized_installer.reporter_install
 
 Open http://HOST_IP:8083/.
 
-## Build bundled installer
+## Bundled installer
+
+### Build bundled installer
 
 Bundled installer is build on build host, and deployed on other VMs.
 Bundled installer contains also needed container images.
@@ -83,7 +87,7 @@ nano setup/inventory
 # Bundled installer is at bundle/automation-reports-bundled-installer.tar.gz
 ```
 
-Use bundle
+### Install using bundled installer
 
 ```bash
 VMIP=...
@@ -108,8 +112,10 @@ nano clusters.yaml
 podman cp clusters.yaml automation-reporter-web:/
 podman exec automation-reporter-web /venv/bin/python ./manage.py setclusters /clusters.yaml
 podman exec automation-reporter-web /venv/bin/python ./manage.py syncdata --since=2025-01-01 --until=2025-03-01
-# TODO - periodic sync
+# periodic sync executes every one hour - environ CRON_SYNC="0 */1 * * *"
 ```
+
+### Uninstall using bundled installer
 
 Uninstall application.
 Database can be uninstalled too (`uninstall_database` flag).
