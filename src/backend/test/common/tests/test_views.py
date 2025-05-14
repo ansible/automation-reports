@@ -258,8 +258,8 @@ class TestViews(TestCase):
                         manual_costs='6000.00',
                         savings='2991.67',
                         job_template_id=1,
-                        time_savings='10775.00',
-                        time_savings_str='2h 59min 35sec'
+                        time_savings='3575.00',
+                        time_savings_str='59min 35sec'
                     )
                 ]
             )
@@ -292,8 +292,8 @@ class TestViews(TestCase):
                         manual_costs='6000.00',
                         savings='2991.67',
                         job_template_id=2,
-                        time_savings='10775.00',
-                        time_savings_str='2h 59min 35sec',
+                        time_savings='3575.00',
+                        time_savings_str='59min 35sec',
                     )
                 ]
             )
@@ -341,10 +341,7 @@ class TestViews(TestCase):
                 cost_of_automated_execution=dict(value=Decimal('6016.67')),
                 cost_of_manual_automation=dict(value=Decimal('12000.00')),
                 total_saving=dict(value=Decimal('5983.33')),
-                total_time_saving=dict(value=Decimal('5.99')),
-                excluded_templates=[
-                    dict(id=3, name='Job Template C'),
-                ],
+                total_time_saving=dict(value=Decimal('1.99')),
                 host_chart=dict(
                     items=[
                         dict(x=FakeDatetime(2025, 1, 1, 0, 0, tzinfo=pytz.UTC), y=0),
@@ -356,13 +353,14 @@ class TestViews(TestCase):
                     items=[
                         dict(x=FakeDatetime(2025, 1, 1, 0, 0, tzinfo=pytz.UTC), y=0),
                         dict(x=FakeDatetime(2025, 2, 1, 0, 0, tzinfo=pytz.UTC), y=1),
-                        dict(x=FakeDatetime(2025, 3, 1, 0, 0, tzinfo=pytz.UTC), y=1),
+                        dict(x=FakeDatetime(2025, 3, 1, 0, 0, tzinfo=pytz.UTC), y=1)
                     ],
                     range='month'),
                 related_links=dict(
-                    successful_jobs='https://localhost:8000#/jobs?job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00&job.status__exact=successful',
-                    failed_jobs='https://localhost:8000#/jobs?job.status__exact=failed&job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00'
-                )
+                    successful_jobs='https://localhost:8000/#/jobs?job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00&job.status__exact=successful',
+                    failed_jobs='https://localhost:8000/#/jobs?job.status__exact=failed&job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00',
+                ),
+                excluded_templates=[dict(id=3, name='Job Template C'), ]
             )
         )
 
