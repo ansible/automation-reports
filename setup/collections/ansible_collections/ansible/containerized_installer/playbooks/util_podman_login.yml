@@ -1,0 +1,17 @@
+---
+- name: Helper to podman login before building container images
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  become: false
+  vars:
+    registry_host: registry.redhat.io
+  tasks:
+    - name: Run podman login
+      ansible.builtin.command:
+        cmd: podman login -u '{{ registry_username }}' --password-stdin {{ registry_host }}
+        stdin: "{{ registry_password }}"
+    - name: Test podman pull
+      ansible.builtin.command:
+        cmd: podman pull {{ registry_host }}/ubi9/ubi-minimal:latest
+...
