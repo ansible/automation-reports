@@ -56,13 +56,6 @@ ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
-# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/building_running_and_managing_containers/assembly_adding-software-to-a-ubi-container_building-running-and-managing-containers#proc_adding-software-in-a-standard-ubi-container_assembly_adding-software-to-a-ubi-container
-RUN microdnf install -y tar
-COPY docker/run-secrets.tar* /
-RUN if [ -f /run-secrets.tar ]; then tar -xvf /run-secrets.tar; fi
-# check subscription is present
-RUN ls -al /run/secrets/rhsm/ /run/secrets/rhsm/syspurpose/ /run/secrets/redhat.repo /run/secrets/etc-pki-entitlement/
-
 #RUN microdnf -y module enable 'nginx:1.22' 'postgresql:15' 'redis:6' \
 # weasyprint might need also openjpeg2-devel - https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#fedora-39
 # But openjpeg2-devel is not available for ubi8 image
@@ -108,8 +101,6 @@ RUN curl -L -o /usr/bin/dumb-init https://github.com/Yelp/dumb-init/releases/dow
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["/code/docker/launch_automation_reporter.sh"]
 EXPOSE 8052
-
-RUN rm -fr /run/secrets
 
 RUN chmod 0777 /var/log/nginx /var/lib/nginx/tmp
 USER awx
