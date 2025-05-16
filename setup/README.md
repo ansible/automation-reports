@@ -79,7 +79,22 @@ ansible-galaxy collection install -r requirements.yml
 ansible-playbook -i inventory ansible.containerized_installer.reporter_install
 ```
 
-Configure application
+#### Configure application
+
+File `clusters.yaml` needs to contain an AAP OAuth2 application and token.
+Create OAuth2 application at https://AAP_CONTROLLER_FQDN:8443/#/applications:
+
+- Authorization grant type: Resource owner password-based
+- Organization: Default
+- Redirect URIs: empty
+- Client type: Confidential
+
+Create token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
+
+- Scope: read
+
+Store access token and refresh token value.
+The access token is used in clusters.yaml.
 
 ```bash
 cp clusters.example.yaml clusters.yaml
