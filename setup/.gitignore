@@ -1,6 +1,7 @@
 inventory
 aap_install.log
 clusters.example.yaml
+BUILD_INFO.txt
 
 !bundle/
 bundle/*
