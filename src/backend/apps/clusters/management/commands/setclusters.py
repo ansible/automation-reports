@@ -52,7 +52,7 @@ class Command(BaseCommand):
                     new_cluster = ClusterSettings(**cluster)
                 except pydantic.ValidationError as ex:
                     self.stdout.write(self.style.ERROR('Error reading new cluster: {}'.format(ex)))
-                    transaction.rollback()
+                    transaction.set_rollback(True)
                     error = True
                     break
                 db_cluster = db_clusters.pop(new_cluster.address, None)
@@ -69,7 +69,7 @@ class Command(BaseCommand):
                     connector.check_aap_version()
                 except Exception as ex:
                     self.stdout.write(self.style.ERROR('Error connecting AAP connector: {}'.format(ex)))
-                    transaction.rollback()
+                    transaction.set_rollback(True)
                     error = True
                     break
             for key, value in db_clusters.items():
