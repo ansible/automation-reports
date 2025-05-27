@@ -77,16 +77,23 @@ class ApiConnector(ABC):
         if response.status_code != 200:
             logger.error(f'GET request failed with status {response.status_code}')
             return None
+        product_name = response.headers.get("X-Api-Product-Name", None)
+        if product_name is None or  product_name == "AWX":
+            raise Exception("Not supported product.")
         response = response.json()
         return response
 
     def execute_get(self, endpoint):
         _next = endpoint
+        results = []
         while _next is not None:
             url = f'{self.cluster.base_url}{_next}'
             response = self.execute_get_one(url)
-            next_page = response.get('next', None)
-            results = response.get('results', response)
+            if response:
+                next_page = response.get('next', None)
+                results = response.get('results', response)
+            else:
+                next_page = None
             if next_page:
                 url_split = urlsplit(next_page)
                 _next = f'{url_split.path}?{url_split.query}'
