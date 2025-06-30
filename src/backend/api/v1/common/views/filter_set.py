@@ -1,5 +1,5 @@
-from rest_framework.viewsets import GenericViewSet
 from rest_framework import mixins
+from rest_framework.viewsets import GenericViewSet
 
 from backend.api.v1.common.serializers.filter_set import FilterSetSerializer
 from backend.apps.common.models import FilterSet
@@ -12,7 +12,6 @@ class FilterSetView(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin):
-
     serializer_class = FilterSetSerializer
 
     def get_queryset(self):

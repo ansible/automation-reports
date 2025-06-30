@@ -7,11 +7,15 @@ import { listToDict } from '@app/Utils';
 const getErrorMessage = (e: any): string => {
   let errorMessage = '';
   if (e?.response?.data) {
-    Object.keys(e.response.data).forEach((key) => {
-      e.response.data[key].forEach((error: string) => {
-        errorMessage += ` ${error}`;
+    try {
+      Object.keys(e.response.data).forEach((key) => {
+        e.response.data[key].forEach((error: string) => {
+          errorMessage += ` ${error}`;
+        });
       });
-    });
+    } catch {
+      errorMessage = 'Something went wrong.';
+    }
     return errorMessage;
   }
   return '';
@@ -49,7 +53,7 @@ export const saveView = createAsyncThunk('filters/view/save', async (viewData: F
   try {
     response = await RestService.saveView(viewData);
   } catch (e: any) {
-    let errorMessage = 'Error saving view.';
+    let errorMessage = 'Error saving view. ';
     errorMessage += getErrorMessage(e);
     return Promise.reject(errorMessage);
   }
@@ -60,13 +64,28 @@ export const deleteView = createAsyncThunk('filters/view/delete', async (viewID:
   try {
     await RestService.deleteView(viewID);
   } catch (e: any) {
-    let errorMessage = 'Error deleting view.';
+    let errorMessage = 'Error deleting view. ';
     errorMessage += getErrorMessage(e);
     return Promise.reject(errorMessage);
   }
   await api.dispatch(setView(null));
   return Promise.resolve(viewID);
 });
+
+export const setEnableTemplateCreationTime = createAsyncThunk(
+  'filters/settings/enableTemplateCreationTime',
+  async (value: boolean): Promise<boolean> => {
+    return Promise.resolve(value);
+  },
+);
+
+export const saveEnableTemplateCreationTime = createAsyncThunk(
+  'filters/settings/enableTemplateCreationTime/save',
+  async (value: boolean): Promise<boolean> => {
+    await RestService.saveEnableTemplateCreationTime(value);
+    return value;
+  },
+);
 
 const initialState: CommonState = {
   currencyOptions: [],
@@ -77,6 +96,7 @@ const initialState: CommonState = {
   viewSavingProcess: false,
   viewSaveError: null,
   selectedView: null,
+  enableTemplateCreationTime: true,
 };
 
 export const commonSlice = createSlice({
@@ -145,6 +165,20 @@ export const commonSlice = createSlice({
       })
       .addCase(setView.fulfilled, (state, action) => {
         state.selectedView = action.payload;
+      })
+      .addCase(setEnableTemplateCreationTime.fulfilled, (state, action) => {
+        state.enableTemplateCreationTime = action.payload;
+      })
+      .addCase(saveEnableTemplateCreationTime.pending, (state) => {
+        state.loading = 'pending';
+      })
+      .addCase(saveEnableTemplateCreationTime.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.enableTemplateCreationTime = action.payload;
+      })
+      .addCase(saveEnableTemplateCreationTime.rejected, (state) => {
+        state.loading = 'failed';
+        state.error = true;
       });
   },
 });
@@ -167,5 +201,6 @@ export const viewSavingProcess = (state: RootState) => state.common.viewSavingPr
 export const viewSaveError = (state: RootState) => state.common.viewSaveError;
 export const filterSetOptions = (state: RootState) => state.common.filterSetOptions;
 export const selectedView = (state: RootState) => state.common.selectedView;
+export const enableTemplateCreationTime = (state: RootState) => state.common.enableTemplateCreationTime;
 
 export const viewsById = createSelector([filterSetOptions], (viewOptions) => listToDict(viewOptions, 'id'));

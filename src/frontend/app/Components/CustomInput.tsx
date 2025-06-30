@@ -23,6 +23,13 @@ export const CustomInput: React.FunctionComponent<TextInputType> = (props) => {
     }
   };
 
+  const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      const value = event.currentTarget.value;
+      props.onBlur(value);
+    }
+  };
+
   return (
     <>
       <TextInput
@@ -38,6 +45,7 @@ export const CustomInput: React.FunctionComponent<TextInputType> = (props) => {
         min={props.type === 'number' ? 0 : undefined}
         validated={props.errorMessage ? 'error' : undefined}
         isDisabled={props.isDisabled}
+        onKeyUp={handleKeyUp}
       />
       {props.errorMessage && (
         <HelperText>

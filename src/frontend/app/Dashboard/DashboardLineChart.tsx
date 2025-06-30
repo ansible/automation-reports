@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardBody, CardTitle } from '@patternfly/react-core';
-import { DashboardTotals } from './DashboardTotals';
+
 import { DashboardChartProps } from '@app/Types';
 import {
   Chart,
@@ -14,6 +14,7 @@ import {
 import { formatNumber, generateChartData } from '@app/Utils';
 import '../styles/chart.scss';
 import { AnimatePropTypeInterface } from 'victory-core';
+import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
 
 export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {
   const chartData = generateChartData(props.chartData);
@@ -25,7 +26,7 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
     <>
       <Card style={{ height: 'inherit' }}>
         <CardTitle>
-          <DashboardTotals title={'Number of times jobs were run'} result={props.value} percentage={props.index} />
+          <DashboardTotals title={'Number of times jobs were run'} result={props.value} />
         </CardTitle>
         <CardBody style={{ width: '100%' }}>
           <div className={`chart-wrap jobs-chart ${chartData.items.length === 0 && 'no-data'}`}>

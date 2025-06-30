@@ -18,36 +18,39 @@
   delay: 10
   until: _ping.is_available | bool
 
-- name: Create the automation reporter postgresql user
-  community.postgresql.postgresql_user:
-    name: '{{ reporter_pg_username }}'
-    password: '{{ reporter_pg_password }}'
-    login_host: '{{ reporter_pg_host }}'
-    login_port: '{{ reporter_pg_port }}'
-    login_user: '{{ postgresql_admin_username | default("postgres") }}'
-    login_password: '{{ postgresql_admin_password | default(omit) }}'
-    login_db: '{{ postgresql_admin_database | default("postgres") }}'
-    login_unix_socket: '{{ reporter_pg_socket | default(omit) }}'
+- name: Create automation reporter postgresql user and role - containerized postgresql
+  block:
+    - name: Create the automation reporter postgresql user
+      community.postgresql.postgresql_user:
+        name: '{{ reporter_pg_username }}'
+        password: '{{ reporter_pg_password }}'
+        login_host: '{{ reporter_pg_host }}'
+        login_port: '{{ reporter_pg_port }}'
+        login_user: '{{ postgresql_admin_username | default("postgres") }}'
+        login_password: '{{ postgresql_admin_password | default(omit) }}'
+        login_db: '{{ postgresql_admin_database | default("postgres") }}'
+        login_unix_socket: '{{ reporter_pg_socket | default(omit) }}'
 
-- name: Grant the automation reporter role to postgresql admin user
-  community.postgresql.postgresql_membership:
-    source_role: '{{ reporter_pg_username }}'
-    target_role: '{{ postgresql_admin_username | default("postgres") }}'
-    login_host: '{{ reporter_pg_host }}'
-    login_port: '{{ reporter_pg_port }}'
-    login_user: '{{ postgresql_admin_username | default("postgres") }}'
-    login_password: '{{ postgresql_admin_password | default(omit) }}'
-    login_db: '{{ postgresql_admin_database | default("postgres") }}'
-    login_unix_socket: '{{ reporter_pg_socket | default(omit) }}'
+    - name: Grant the automation reporter role to postgresql admin user
+      community.postgresql.postgresql_membership:
+        source_role: '{{ reporter_pg_username }}'
+        target_role: '{{ postgresql_admin_username | default("postgres") }}'
+        login_host: '{{ reporter_pg_host }}'
+        login_port: '{{ reporter_pg_port }}'
+        login_user: '{{ postgresql_admin_username | default("postgres") }}'
+        login_password: '{{ postgresql_admin_password | default(omit) }}'
+        login_db: '{{ postgresql_admin_database | default("postgres") }}'
+        login_unix_socket: '{{ reporter_pg_socket | default(omit) }}'
 
-- name: Create the automation reporter postgresql database
-  community.postgresql.postgresql_db:
-    name: '{{ reporter_pg_database }}'
-    owner: '{{ reporter_pg_username }}'
-    login_host: '{{ reporter_pg_host }}'
-    login_port: '{{ reporter_pg_port }}'
-    login_user: '{{ postgresql_admin_username | default("postgres") }}'
-    login_password: '{{ postgresql_admin_password | default(omit) }}'
-    login_unix_socket: '{{ reporter_pg_socket | default(omit) }}'
-    maintenance_db: '{{ postgresql_admin_database | default("postgres") }}'
+    - name: Create the automation reporter postgresql database
+      community.postgresql.postgresql_db:
+        name: '{{ reporter_pg_database }}'
+        owner: '{{ reporter_pg_username }}'
+        login_host: '{{ reporter_pg_host }}'
+        login_port: '{{ reporter_pg_port }}'
+        login_user: '{{ postgresql_admin_username | default("postgres") }}'
+        login_password: '{{ postgresql_admin_password | default(omit) }}'
+        login_unix_socket: '{{ reporter_pg_socket | default(omit) }}'
+        maintenance_db: '{{ postgresql_admin_database | default("postgres") }}'
+  when: reporter_pg_containerized
 ...

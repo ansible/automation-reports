@@ -9,9 +9,7 @@ class FrozenModel(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ClusterSchema(FrozenModel):
-    model_config = ConfigDict(frozen=True)
-
+class ClusterSettings(FrozenModel):
     protocol: str
     address: str
     port: int
@@ -19,19 +17,21 @@ class ClusterSchema(FrozenModel):
     verify_ssl: bool = True
 
 
+class ClusterSchema(ClusterSettings):
+    aap_version: Literal["AAP 2.5", "AAP 2.4"] | None = None
+    api_url: str
+    base_url: str
+
+
 class DateRangeSchema(BaseModel):
     start: datetime
     end: datetime
-    prev_start: datetime
-    prev_end: datetime
 
     @property
     def iso_format(self) -> dict[str, str]:
         return {
             "start": self.start.isoformat().replace('+00:00', 'Z') if self.start else None,
             "end": self.end.isoformat().replace('+00:00', 'Z') if self.end else None,
-            "prev_start": self.prev_start.isoformat().replace('+00:00', 'Z') if self.prev_start else None,
-            "prev_end": self.prev_end.isoformat().replace('+00:00', 'Z') if self.prev_end else None,
         }
 
 
@@ -115,3 +115,5 @@ class ExternalJobSchema(FrozenModel):
     job_type: Literal["run", "check", "scan"]
     type: Literal["job", "Playbook Run"]
     launch_type: Literal["manual", "relaunch", "callback", "scheduled", "dependency", "workflow", "webhook", "sync", "scm"]
+    created: datetime
+    modified: datetime

@@ -7,9 +7,20 @@ from urllib.parse import urlencode
 import pytz
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Count, Sum, F, CharField, Func, Value
+from django.db.models import (
+    Count,
+    Sum,
+    F,
+    CharField,
+    Func,
+    Value)
 
-from backend.apps.clusters.models import Costs, CostsChoices, JobStatusChoices, DateRangeChoices, Cluster
+from backend.apps.clusters.models import (
+    Costs,
+    CostsChoices,
+    JobStatusChoices,
+    DateRangeChoices,
+    Cluster, ClusterVersionChoices)
 
 
 def sec2time(sec):
@@ -60,16 +71,6 @@ def get_costs(from_db=False):
     return costs
 
 
-def get_diff_index(old_value, new_value):
-    if old_value is None or new_value is None:
-        return None
-    if old_value == new_value:
-        return 0
-    if old_value == 0:
-        return 100
-    return round(((float(new_value) - float(old_value)) / float(old_value)) * 100)
-
-
 def sum_items(qs):
     qs = qs.aggregate(
         total_runs=Sum("runs"),
@@ -96,15 +97,14 @@ def sum_items(qs):
         ("total_automated_costs", "automated_costs"),
         ("total_savings", "savings"),
     ]:
-       result[resKey] = round(qs[dbKey],2) if qs[dbKey] is not None else 0
+        result[resKey] = round(qs[dbKey], 2) if qs[dbKey] is not None else 0
     result["total_elapsed_hours"] = round((qs["total_elapsed"] / 3600), 2) if qs["total_elapsed"] is not None else 0
-    result["time_savings"] = round((qs["total_time_savings"] / 3600), 2) if qs["total_elapsed"] is not None else 0
+    result["time_savings"] = round((qs["total_time_savings"] / 3600), 2) if qs["total_time_savings"] is not None else 0
     return result
 
 
-def get_report_data(qs, prev_qs):
+def get_report_data(qs):
     res = sum_items(qs)
-    prev_res = sum_items(prev_qs) if prev_qs is not None else None
 
     successful_count = res["successful_count"]
     failed_count = res["failed_count"]
@@ -119,39 +119,30 @@ def get_report_data(qs, prev_qs):
     return {
         "total_number_of_successful_jobs": {
             "value": successful_count,
-            "index": get_diff_index(prev_res["successful_count"] if prev_qs is not None else None, successful_count),
         },
         "total_number_of_failed_jobs": {
             "value": failed_count,
-            "index": get_diff_index(prev_res["failed_count"] if prev_qs is not None else None, failed_count),
         },
         "total_number_of_job_runs": {
             "value": total_runs,
-            "index": get_diff_index(prev_res["total_runs"] if prev_qs is not None else None, total_runs),
         },
         "total_number_of_host_job_runs": {
             "value": num_hosts,
-            "index": get_diff_index(prev_res["host_count"] if prev_qs is not None else None, num_hosts),
         },
         "total_hours_of_automation": {
             "value": total_elapsed_hours,
-            "index": get_diff_index(prev_res["total_elapsed_hours"] if prev_qs is not None else None, total_elapsed_hours),
         },
         "cost_of_automated_execution": {
             "value": automated_costs,
-            "index": get_diff_index(prev_res["automated_costs"] if prev_qs is not None else None, automated_costs),
         },
         "cost_of_manual_automation": {
             "value": manual_costs,
-            "index": get_diff_index(prev_res["manual_costs"] if prev_qs is not None else None, manual_costs),
         },
         "total_saving": {
             "value": savings,
-            "index": get_diff_index(prev_res["savings"] if prev_qs is not None else None, savings),
         },
         "total_time_saving": {
             "value": time_savings,
-            "index": get_diff_index(prev_res["time_savings"] if prev_qs is not None else None, time_savings),
         },
     }
 
@@ -180,8 +171,13 @@ def get_chart_range(request):
             result["date_format"] = "YYYY-MM-01 00:00:00+00"
 
         case DateRangeChoices.LAST_MONTH | DateRangeChoices.MONTH_TO_DATE:
-            result["range"] = "day"
-            result["date_format"] = "YYYY-MM-DD 00:00:00+00"
+            days = (result["date_range"].end - result["date_range"].start).days
+            if days < 1:
+                result["range"] = "hour"
+                result["date_format"] = "YYYY-MM-DD HH24:00:00+00"
+            else:
+                result["range"] = "day"
+                result["date_format"] = "YYYY-MM-DD 00:00:00+00"
         case DateRangeChoices.LAST_2_YEARS | DateRangeChoices.LAST_3_YEARS:
             result["date_format"] = "YYYY-01-01 00:00:00+00"
             result["range"] = "year"
@@ -263,13 +259,13 @@ def get_unique_hosts_db(start_date, end_date, options):
         'num_hosts': 0
     }
     sql = '''
-        select count(*) from (
-        select s.host_id
-        FROM clusters_jobhostsummary s
-        JOIN clusters_job job on job.id=s.job_id
-        WHERE job.status IN (%(successful)s, %(failed)s)
-        AND job.num_hosts > %(num_hosts)s
-    '''
+          select count(*)
+          from (select s.host_id
+                FROM clusters_jobhostsummary s
+                         JOIN clusters_job job on job.id = s.job_id
+                WHERE job.status IN (%(successful)s, %(failed)s)
+                  AND job.num_hosts > %(num_hosts)s \
+          '''
     if start_date is not None:
         sql += ' AND job.finished >= %(start_date)s'
         params['start_date'] = start_date
@@ -285,6 +281,9 @@ def get_unique_hosts_db(start_date, end_date, options):
     if job_templates is not None:
         sql += ' AND job.job_template_id = ANY(%(job_templates)s)'
         params['job_templates'] = [int(n) for n in job_templates]
+    if options.get("project", None) is not None:
+        sql += ' AND job.project_id = ANY(%(projects)s)'
+        params['projects'] = [int(n) for n in options["project"]]
     if labels is not None:
         sql += ' AND job.id in (select job_id from clusters_joblabel where label_id = ANY(%(labels)s))'
         params['labels'] = [int(n) for n in labels]
@@ -299,29 +298,19 @@ def get_unique_hosts_db(start_date, end_date, options):
 
 
 def get_unique_host_count(options):
-    prev_count = None
     date_range = options.get("date_range", None)
     start_date = None
     end_date = None
 
-    prev_start_date = None
-    prev_end_date = None
-
     if date_range is not None:
         start_date = date_range.start
         end_date = date_range.end
-        prev_start_date = date_range.prev_start
-        prev_end_date = date_range.prev_end
 
     total_number_of_unique_hosts = get_unique_hosts_db(start_date=start_date, end_date=end_date, options=options)
-
-    if prev_start_date and prev_end_date:
-        prev_count = get_unique_hosts_db(start_date=prev_start_date, end_date=prev_end_date, options=options)
 
     return {
         "total_number_of_unique_hosts": {
             "value": total_number_of_unique_hosts,
-            "index": get_diff_index(prev_count, total_number_of_unique_hosts)
         }
     }
 
@@ -375,18 +364,20 @@ def get_related_links(options):
         return result
 
     _date_range = options.query_params.get("date_range", None)
-
-    initial_url = f'{cluster.protocol}://{cluster.address}:{cluster.port}#/jobs'
+    initial_url = f'{cluster.gui_base_url}jobs'
+    status_key = "status"
+    if cluster.aap_version == ClusterVersionChoices.AAP24:
+        status_key = "job.status__exact"
     failed_data = {
-        "job.status__exact": JobStatusChoices.FAILED.value,
+        status_key: JobStatusChoices.FAILED.value,
     }
     successful_data = {
-        "job.status__exact": JobStatusChoices.SUCCESSFUL.value,
+        status_key: JobStatusChoices.SUCCESSFUL.value,
     }
 
     data = {}
 
-    if _date_range is not None:
+    if _date_range is not None and cluster.aap_version == ClusterVersionChoices.AAP24:
         data_range = DateRangeChoices.get_date_range(_date_range)
         if data_range is not None:
             data["job.finished__gte"] = data_range.start.isoformat()

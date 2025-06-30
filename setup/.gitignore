@@ -1,7 +1,11 @@
 inventory
 aap_install.log
-bundle/
 clusters.example.yaml
+BUILD_INFO.txt
+
+!bundle/
+bundle/*
+!bundle/.gitkeep
 
 !collections/
 collections/*

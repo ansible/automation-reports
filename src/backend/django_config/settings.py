@@ -67,7 +67,13 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
     ),
     'DEFAULT_PAGINATION_CLASS': 'backend.common.pagination.StandardResultsSetPagination',
-    'PAGE_SIZE': 100
+    'PAGE_SIZE': 100,
+
+    # TEMP - only until oauth2 is implemented.
+    # We need this because nginx uses BasicAuth
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+    ],
 }
 
 ROOT_URLCONF = 'django_config.urls'
@@ -100,6 +106,8 @@ DB_PASSWORD = os.environ.get('DB_PASSWORD')
 DB_HOST = os.environ.get('DB_HOST', 'localhost' )
 DB_PORT = os.environ.get('DB_PORT', '5432')
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING')
+
+TEST_DATABASE_PREFIX = 'test'
 
 DATABASES = {
     'default': {

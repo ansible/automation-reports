@@ -16,7 +16,7 @@ reporter_container_requires: []
 # reporter_container_requires:
 #   - redis
 # reporter_daphne_port: 8051
-reporter_uwsgi_port: 8050
+reporter_uwsgi_port: 8053
 reporter_uwsgi_processes: 5
 reporter_update_secret: false
 reporter_event_workers: 4
@@ -38,7 +38,7 @@ nginx_conf_dir: '{{ aap_volumes_dir }}/reporter/nginx/etc'
 nginx_disable_https: false
 nginx_disable_hsts: false
 nginx_http_port: 8083
-nginx_https_port: 8446
+nginx_https_port: 8447
 nginx_client_max_body_size: 5m
 nginx_user_headers: []
 

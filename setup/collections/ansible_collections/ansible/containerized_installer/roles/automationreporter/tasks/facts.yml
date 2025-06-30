@@ -23,7 +23,12 @@
 - name: Add postgresql container to requires when on the same node
   ansible.builtin.set_fact:
     reporter_container_requires: '{{ reporter_container_requires | union(["postgresql"]) }}'
-  when: inventory_hostname in groups.get('database', [])
+  when:
+   - inventory_hostname in groups.get('database', [])
+   # The reporter is alwasy containerized. The systemd service is of --user scope,
+   # and can "Requires" only on other --user services.
+   # The postgresql service is in global systemd scope, so reporter must not depend on it.
+   - reporter_pg_containerized
 
 - name: Set automation reporter volumes
   ansible.builtin.set_fact:
@@ -55,7 +60,11 @@
     _nginx_volumes:
       - '{{ reporter_conf_dir }}/uwsgi.ini:/etc/tower/uwsgi.ini:ro,z'
       - '{{ nginx_conf_dir }}/reporter.conf:/etc/nginx/nginx.conf:ro,z'
-      - '{{ nginx_conf_dir }}/htpasswd:/etc/nginx/htpasswd:ro,z'
+
+- name: Add htpasswd to automation reporter volumes
+  ansible.builtin.set_fact:
+    _nginx_volumes: "{{ _nginx_volumes + [ nginx_conf_dir + '/htpasswd:/etc/nginx/htpasswd:ro,z' ] }}"
+  when: nginx_hack_enable_basic_auth | bool
 
 - name: Add postgresql socket directory to common automation reporter volumes
   ansible.builtin.set_fact:

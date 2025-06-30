@@ -12,12 +12,12 @@ interface TableProps {
 export const SimpleTable: React.FunctionComponent<TableProps> = (props) => {
   return (
     <>
-      <Table>
+      <Table className={'top-table'}>
         <Thead>
           <Tr>
             {props.columns.map((column) => (
               <Th
-                className={column.type === 'number' || column.type === 'currency' ? 'numerical min-180' : ''}
+                className={column.type === 'number' || column.type === 'currency' ? 'numerical' : ''}
                 key={column.title}
               >
                 {column.title}

@@ -31,7 +31,9 @@ export interface FilterOptionResponse {
   organizations: FilterOption[];
   instances: FilterOptionWithId[];
   currencies: Currency[];
+  projects: FilterOptionWithId[];
   currency: number;
+  enable_template_creation_time: boolean;
   filter_sets: FilterSet[];
 }
 
@@ -48,6 +50,7 @@ export interface FilterState {
   templateOptions: FilterOptionWithId[];
   labelOptions: FilterOptionWithId[];
   instanceOptions: FilterOptionWithId[];
+  projectOptions: FilterOptionWithId[];
   manualCostAutomation: number | string;
   organizationOptions: FilterOption[];
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
@@ -58,6 +61,7 @@ export interface RequestFilter {
   organization?: (string | number)[];
   job_template?: (string | number)[];
   label?: (string | number)[];
+  project?: (string | number)[];
   date_range: string;
   start_date?: string;
   end_date?: string;
@@ -78,6 +82,7 @@ export interface CommonState {
   viewSavingProcess: boolean;
   viewSaveError: string | null;
   selectedView: number | null | undefined;
+  enableTemplateCreationTime: boolean;
 }
 
 export interface FilterProps {
@@ -85,6 +90,7 @@ export interface FilterProps {
   job_template: (string | number)[];
   instances: (string | number)[];
   label: (string | number)[];
+  project: (string | number)[];
   date_range: string | null;
   start_date: Date | undefined;
   end_date: Date | undefined;

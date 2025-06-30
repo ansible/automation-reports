@@ -60,7 +60,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
     setModalOpen(false);
   };
 
-  const handleFilterNameValueChange = (_event, value: string) => {
+  const handleFilterNameValueChange = (_event: React.FormEvent<HTMLInputElement>, value: string) => {
     setFilterNameValue(value);
   };
 
@@ -84,7 +84,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       if (modalVariant === 'edit' && selectedViewItem) {
         viewData.id = selectedViewItem;
       }
-      ['organization', 'job_template', 'label'].forEach((key) => {
+      ['organization', 'job_template', 'label', 'project'].forEach((key) => {
         if (filters[key] && filters[key].length) {
           viewData.filters[key] = filters[key];
         }
@@ -126,6 +126,13 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       return;
     }
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const onFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (modalVariant === 'create' || modalVariant === 'edit') {
+      saveFilter();
+    }
   };
 
   const menu = (
@@ -199,7 +206,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
                 <Spinner className={'spinner'} diameter="40px" aria-label="Loader" />
               </div>
             )}
-            <Form id="modal-set-view-form" className={filterSaveProcess ? 'hidden' : ''}>
+            <Form id="modal-set-view-form" className={filterSaveProcess ? 'hidden' : ''} onSubmit={onFormSubmit}>
               <FormGroup isRequired label={'Report name'}>
                 <TextInput
                   value={filterNameValue}

@@ -42,7 +42,7 @@ services:
       - DB_NAME=${DB_NAME}
       - ALLOWED_HOSTS=*
     ports:
-      - "8083:8052"  # nginx
+      - "8083:8053"  # nginx
       # - "8000:8000"  # django-api
 
   # frontend:

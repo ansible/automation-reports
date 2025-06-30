@@ -3,7 +3,12 @@ import { RootState } from '@app/Store/store';
 import { RestService } from '@app/Services';
 import { FilterOption, FilterOptionResponse, FilterOptionWithId, FilterState } from '@app/Types';
 import { listToDict } from '@app/Utils';
-import { setCurrencies, setDefaultCurrency, setFilterViews } from '@app/Store/commonSlice';
+import {
+  setCurrencies,
+  setDefaultCurrency,
+  setEnableTemplateCreationTime,
+  setFilterViews,
+} from '@app/Store/commonSlice';
 
 export const fetchTemplateOptions = createAsyncThunk(
   'filters/options',
@@ -19,6 +24,7 @@ export const fetchTemplateOptions = createAsyncThunk(
     if (data?.filter_sets) {
       api.dispatch(setFilterViews(data.filter_sets));
     }
+    api.dispatch(setEnableTemplateCreationTime(data.enable_template_creation_time));
     return data;
   },
 );
@@ -41,7 +47,8 @@ const initialState: FilterState = {
   filterOptions: [
     { key: 'job_template', value: 'Template' },
     { key: 'organization', value: 'Organization' },
-    { key: 'label', value: 'Labels' },
+    { key: 'project', value: 'Project' },
+    { key: 'label', value: 'Label' },
   ],
   automatedProcessCost: 0,
   clusters: [],
@@ -51,6 +58,7 @@ const initialState: FilterState = {
   manualCostAutomation: 0,
   organizationOptions: [],
   instanceOptions: [],
+  projectOptions: [],
   loading: 'idle',
   error: false,
 };
@@ -74,6 +82,7 @@ export const filterSlice = createSlice({
         state.dateRangeOptions = payload.date_ranges;
         state.manualCostAutomation = payload.manual_cost_automation;
         state.automatedProcessCost = payload.automated_process_cost;
+        state.projectOptions = payload.projects;
       })
       .addCase(fetchTemplateOptions.rejected, (state) => {
         state.loading = 'failed';
@@ -99,19 +108,22 @@ export const dateRangeOptions = (state: RootState) => state.filters.dateRangeOpt
 export const manualCostAutomation = (state: RootState) => state.filters.manualCostAutomation;
 export const automatedProcessCost = (state: RootState) => state.filters.automatedProcessCost;
 export const filterRetrieveError = (state: RootState) => state.filters.error;
+export const projectOptions = (state: RootState) => state.filters.projectOptions;
 
 export const filterChoicesData = createSelector(
-  [instanceOptions, templateOptions, organizationOptions, labelOptions],
+  [instanceOptions, templateOptions, organizationOptions, labelOptions, projectOptions],
   (
     instanceOptions: FilterOptionWithId[],
     templateOptions: FilterOptionWithId[],
     organizationOptions: FilterOption[],
     labelOptions: FilterOptionWithId[],
+    projectOptions: FilterOptionWithId[],
   ) => {
     return {
       instances: instanceOptions,
       job_template: templateOptions,
       organization: organizationOptions,
+      project: projectOptions,
       label: labelOptions,
     };
   },
@@ -124,6 +136,7 @@ export const filterChoicesDataById = createSelector([filterChoicesData], (filter
     instances: listToDict(filterChoicesData.instances),
     job_template: listToDict(filterChoicesData.job_template),
     organization: listToDict(filterChoicesData.organization),
+    project: listToDict(filterChoicesData.project),
     label: listToDict(filterChoicesData.label),
   };
 });

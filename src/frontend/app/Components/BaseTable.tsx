@@ -22,6 +22,7 @@ export const BaseTable: React.FunctionComponent<{
   onItemEdit: (newValue: TableResult, oldValue: TableResult) => void;
   onItemFocus?: (event?: never) => void;
   onItemBlur?: (event?: never) => void;
+  className?: string;
 }> = (props) => {
   const [activeSortIndex, setActiveSortIndex] = React.useState<number | undefined>(0);
   const [activeSortDirection, setActiveSortDirection] = React.useState<'asc' | 'desc' | undefined>('asc');
@@ -66,13 +67,21 @@ export const BaseTable: React.FunctionComponent<{
       onPerPageSelect={onPerPageSelect}
     />
   );
-
-  const handleBlur = (value: number, item: TableResult, rowNum: number, columnName: string) => {
+  const handleBlur = (value: number | string, item: TableResult, rowNum: number, columnName: string) => {
+    value = typeof value === 'string' ? parseFloat(value) : value;
     if (value < 1) {
       setEditingError({
         rowNum: rowNum,
         columnName: columnName,
         message: 'Value must be greater then 0!',
+      });
+      return;
+    }
+    if (value !== Math.round(value)) {
+      setEditingError({
+        rowNum: rowNum,
+        columnName: columnName,
+        message: 'Value must be an integer!',
       });
       return;
     }
@@ -91,24 +100,26 @@ export const BaseTable: React.FunctionComponent<{
   return (
     <>
       <div style={{ overflowX: 'auto' }}>
-        <Table aria-label="Sortable table custom toolbar" className="base-table">
+        <Table aria-label="Sortable table custom toolbar" className={'base-table ' + props.className}>
           <Thead>
             <Tr>
               {props.columns.map((column, index) => {
                 const hasTooltip = column.info && column.info.tooltip;
                 return (
-                  <Th
-                    className={
-                      column.type === 'number' || column.type === 'currency' || column.type === 'time-string'
-                        ? 'numerical'
-                        : ''
-                    }
-                    key={column.name}
-                    sort={column.isEditable ? undefined : getSortParams(index)}
-                    info={hasTooltip ? { tooltip: column.info?.tooltip } : undefined}
-                  >
-                    <span>{column.title}</span>
-                  </Th>
+                  column.isVisible && (
+                    <Th
+                      className={
+                        (column.type === 'number' || column.type === 'currency' || column.type === 'time-string'
+                          ? 'numerical'
+                          : '') + (column.isEditable ? ' input-td' : '')
+                      }
+                      key={column.name}
+                      sort={column.isEditable ? undefined : getSortParams(index)}
+                      info={hasTooltip ? { tooltip: column.info?.tooltip } : undefined}
+                    >
+                      <span>{column.title}</span>
+                    </Th>
+                  )
                 );
               })}
             </Tr>
@@ -117,80 +128,82 @@ export const BaseTable: React.FunctionComponent<{
             {props.data.length > 0 ? (
               props.data.map((item, rowNum) => (
                 <Tr key={rowNum}>
-                  {props.columns.map((column) => (
-                    <Td
-                      key={`${rowNum}-${column.name}`}
-                      dataLabel={column['title']}
-                      className={
-                        column.type === 'number' || column.type === 'currency' || column.type === 'time-string'
-                          ? 'numerical'
-                          : ''
-                      }
-                    >
-                      {column.isEditable ? (
-                        <div
-                          style={{ maxWidth: '150px' }}
+                  {props.columns.map(
+                    (column) =>
+                      column.isVisible && (
+                        <Td
+                          key={`${rowNum}-${column.name}`}
+                          dataLabel={column['title']}
                           className={
-                            editingError?.message &&
-                            editingError?.message?.length > 0 &&
-                            editingError?.rowNum === rowNum &&
-                            editingError?.columnName !== column.name
-                              ? 'has-error'
-                              : ''
+                            (column.type === 'number' || column.type === 'currency' || column.type === 'time-string'
+                              ? 'numerical'
+                              : '') + (column.isEditable ? ' input-td' : '')
                           }
                         >
-                          <CustomInput
-                            type={'number'}
-                            id={`${rowNum}-${column.name}`}
-                            onBlur={(value) => handleBlur(value, item, rowNum, column.name)}
-                            value={item[column.name]}
-                            errorMessage={
-                              editingError &&
-                              editingError?.rowNum === rowNum &&
-                              editingError.columnName === column.name &&
-                              editingError?.message &&
-                              editingError?.message?.length > 0
-                                ? editingError.message
-                                : ''
-                            }
-                            isDisabled={
-                              (editingError &&
+                          {column.isEditable ? (
+                            <div
+                              className={
                                 editingError?.message &&
                                 editingError?.message?.length > 0 &&
-                                (editingError?.rowNum !== rowNum ||
-                                  (editingError?.rowNum === rowNum &&
-                                    editingError?.columnName !== column.name))) as boolean
-                            }
-                            onFocus={handleFocus}
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          className={
-                            editingError &&
-                            editingError?.message &&
-                            editingError?.message?.length > 0 &&
-                            editingError?.rowNum === rowNum
-                              ? 'has-error'
-                              : ''
-                          }
-                        >
-                          {column.type === 'currency' ? (
-                            <span>
-                              {formatCurrency(
-                                column.valueKey ? item[column.valueKey] : item[column.name],
-                                selectedCurrencySign,
-                              )}
-                            </span>
-                          ) : column.type === 'number' ? (
-                            <span>{formatNumber(item[column.name])}</span>
+                                editingError?.rowNum === rowNum &&
+                                editingError?.columnName !== column.name
+                                  ? 'has-error'
+                                  : ''
+                              }
+                            >
+                              <CustomInput
+                                type={'number'}
+                                id={`${rowNum}-${column.name}`}
+                                onBlur={(value) => handleBlur(value, item, rowNum, column.name)}
+                                value={item[column.name]}
+                                errorMessage={
+                                  editingError &&
+                                  editingError?.rowNum === rowNum &&
+                                  editingError.columnName === column.name &&
+                                  editingError?.message &&
+                                  editingError?.message?.length > 0
+                                    ? editingError.message
+                                    : ''
+                                }
+                                isDisabled={
+                                  (editingError &&
+                                    editingError?.message &&
+                                    editingError?.message?.length > 0 &&
+                                    (editingError?.rowNum !== rowNum ||
+                                      (editingError?.rowNum === rowNum &&
+                                        editingError?.columnName !== column.name))) as boolean
+                                }
+                                onFocus={handleFocus}
+                              />
+                            </div>
                           ) : (
-                            <span>{column.valueKey ? item[column.valueKey] : item[column.name]}</span>
+                            <div
+                              className={
+                                editingError &&
+                                editingError?.message &&
+                                editingError?.message?.length > 0 &&
+                                editingError?.rowNum === rowNum
+                                  ? 'has-error'
+                                  : ''
+                              }
+                            >
+                              {column.type === 'currency' ? (
+                                <span>
+                                  {formatCurrency(
+                                    column.valueKey ? item[column.valueKey] : item[column.name],
+                                    selectedCurrencySign,
+                                  )}
+                                </span>
+                              ) : column.type === 'number' ? (
+                                <span>{formatNumber(item[column.name])}</span>
+                              ) : (
+                                <span>{column.valueKey ? item[column.valueKey] : item[column.name]}</span>
+                              )}
+                            </div>
                           )}
-                        </div>
-                      )}
-                    </Td>
-                  ))}
+                        </Td>
+                      ),
+                  )}
                 </Tr>
               ))
             ) : (

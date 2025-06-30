@@ -21,7 +21,7 @@ from backend.apps.clusters.schemas import (
     LabelModelSchema,
     LabelsSchema)
 
-logger = logging.getLogger("automation-reports")
+logger = logging.getLogger("automation-dashboard")
 
 
 class DataParser:
@@ -312,6 +312,8 @@ class DataParser:
                 job.job_template = job_template
                 job.launched_by = launched_by
                 job.project = project
+                job.created = job_data.pop("created")
+                job.modified = job_data.pop("modified")
                 job.save()
                 logger.info("Job updated.")
 

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from backend.apps.clusters.models import Organization, Cluster, Label, JobTemplate
+from backend.apps.clusters.models import Organization, Cluster, Label, JobTemplate, Project
 
 
 class ClusterSerializer(serializers.ModelSerializer):
@@ -9,28 +9,30 @@ class ClusterSerializer(serializers.ModelSerializer):
         fields = ("id", "address")
 
 
-class OrganizationSerializer(serializers.ModelSerializer):
+class FilterKeyValueSerializer(serializers.Serializer):
     key = serializers.IntegerField(read_only=True, source="id")
     value = serializers.CharField(read_only=True, source="name")
+    cluster_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         fields = ("key", "value", "cluster_id")
+
+
+class OrganizationSerializer(FilterKeyValueSerializer):
+    class Meta:
         model = Organization
 
 
-class LabelSerializer(serializers.ModelSerializer):
-    key = serializers.IntegerField(read_only=True, source="id")
-    value = serializers.CharField(read_only=True, source="name")
-
+class LabelSerializer(FilterKeyValueSerializer):
     class Meta:
-        fields = ("key", "value", "cluster_id")
         model = Label
 
 
-class JobTemplateSerializer(serializers.ModelSerializer):
-    key = serializers.IntegerField(read_only=True, source="id")
-    value = serializers.CharField(read_only=True, source="name")
-
+class JobTemplateSerializer(FilterKeyValueSerializer):
     class Meta:
-        fields = ("key", "value", "cluster_id")
         model = JobTemplate
+
+
+class ProjectSerializer(FilterKeyValueSerializer):
+    class Meta:
+        model = Project
