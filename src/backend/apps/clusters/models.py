@@ -1,6 +1,7 @@
 import calendar
 import datetime
 import decimal
+import logging
 import os
 
 import pytz
@@ -8,9 +9,12 @@ from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from backend.apps.clusters.schemas import DateRangeSchema
+from backend.django_config import settings
 
 manual_time = int(os.environ.get("DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES", "60"))
 automation_time = int(os.environ.get("DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES", "60"))
+
+logger = logging.getLogger('automation_dashboard.models')
 
 
 class CreatUpdateModel(models.Model):
@@ -60,6 +64,26 @@ class Cluster(CreatUpdateModel):
             return f'{self.base_url}/#/'
         else:
             raise NotImplementedError
+
+    @property
+    def cache_timeout_blocked(self):
+        from backend.apps.scheduler.models import SyncJob, JobTypeChoices as SyncJobTypeChoices
+        # Only one sync per cluster
+        if SyncJob.objects.filter(
+                cluster=self,
+                status__in=[JobStatusChoices.PENDING, JobStatusChoices.WAITING, JobStatusChoices.RUNNING],
+                type=SyncJobTypeChoices.SYNC_JOBS
+        ).count() > 0:
+            logger.error(
+                "Sync Job template %s could not be started because there are more than %s other jobs from that template waiting to run"
+                % (self, 1)
+            )
+            return True
+        return False
+
+    def create_sync_job(self, **kwargs):
+        from backend.apps.scheduler.models import SyncJob, JobTypeChoices as SyncJobTypeChoices
+        return SyncJob.objects.create(cluster=self, type=SyncJobTypeChoices.SYNC_JOBS, **kwargs)
 
 
 class DateRangeChoices(models.TextChoices):
@@ -186,6 +210,36 @@ class ClusterSyncData(CreatUpdateModel):
 
     def __str__(self):
         return f'{self.cluster.protocol}://{self.cluster.address}:{self.cluster.port} - {self.pk}'
+
+    @property
+    def cache_timeout_blocked(self):
+        from backend.apps.scheduler.models import SyncJob, JobTypeChoices as SyncJobTypeChoices
+        # Max limit for data parser
+        limit = settings.SCHEDULE_MAX_DATA_PARSE_JOBS
+        if SyncJob.objects.filter(
+                cluster=self.cluster,
+                status__in=[JobStatusChoices.PENDING, JobStatusChoices.WAITING, JobStatusChoices.RUNNING],
+                type=SyncJobTypeChoices.PARSE_JOB_DATA).count() >= limit:
+            logger.error(
+                "Parse job data %s could not be started because there are more than %s other jobs from that template waiting to run"
+                % (self, limit)
+            )
+            return True
+        return False
+
+    def save(self, *args, **kwargs):
+        from backend.apps.scheduler.models import SyncJob, JobTypeChoices as SyncJobTypeChoices
+        super(ClusterSyncData, self).save(*args, **kwargs)
+
+        ### This code creates a new `SynJob` instance with specific fields set.
+        ### It is used to trigger a background job related to parsing data for a cluster job.
+        SyncJob.objects.create(
+            name='Data parser',
+            cluster=self.cluster,
+            cluster_sync_data=self,
+            type=SyncJobTypeChoices.PARSE_JOB_DATA,
+            launch_type=JobLaunchTypeChoices.WORKFLOW,
+        )
 
 
 class ClusterSyncStatus(CreatUpdateModel):

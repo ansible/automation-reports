@@ -69,11 +69,10 @@ python manage.py runserver
 python manage.py syncdata --since=2025-02-12 --until=2025-02-12
 ```
 
-### Run dramatiq
+### Run dispatcherd
 
 ```bash
-cd src/backend_workers
-./periodic.py
+python manage.py run_dispatcher
 ```
 
 ## Frontend

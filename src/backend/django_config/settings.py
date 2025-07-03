@@ -10,12 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import socket
 import sys
 import traceback
+from datetime import timedelta
 from pathlib import Path
 
 from split_settings.tools import optional, include
-from tests.testapp.project.settings import BASE_DIR
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,8 +46,13 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'django_filters',
+    'backend',
     'backend.apps.clusters',
-    'backend.apps.common'
+    'backend.apps.common',
+    'backend.apps.scheduler',
+    'backend.apps.dispatch',
+    'backend.apps.tasks',
+    'solo',
 ]
 
 MIDDLEWARE = [
@@ -103,9 +109,9 @@ WSGI_APPLICATION = 'django_config.wsgi.application'
 DB_NAME = os.environ.get('DB_NAME')
 DB_USER = os.environ.get('DB_USER')
 DB_PASSWORD = os.environ.get('DB_PASSWORD')
-DB_HOST = os.environ.get('DB_HOST', 'localhost' )
+DB_HOST = os.environ.get('DB_HOST', 'localhost')
 DB_PORT = os.environ.get('DB_PORT', '5432')
-LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING')
+LOG_LEVEL = "DEBUG"
 
 TEST_DATABASE_PREFIX = 'test'
 
@@ -132,6 +138,7 @@ LOGGING = {
             'format': '{levelname} {message}',
             'style': '{',
         },
+        'dispatcher': {'format': '%(asctime)s %(levelname)-8s [%(guid)s] %(name)s PID:%(process)d %(message)s'},
     },
     "handlers": {
         "console": {
@@ -145,6 +152,18 @@ LOGGING = {
         "formatter": "verbose",
         "level": LOG_LEVEL,
     },
+    "loggers": {
+        'django': {'handlers': ['console']},
+        'automation_dashboard.models': {'handlers': ['console']},
+        'automation_dashboard.consumers': {'handlers': ['console']},
+        'automation_dashboard.dispatch': {'handlers': ['console']},
+        'automation_dashboard.tasks': {'handlers': ['console']},
+        'automation_dashboard.tasks.jobs': {'handlers': ['console']},
+        'automation_dashboard.tasks.utils': {'handlers': ['console']},
+        'automation_dashboard.scheduler': {'handlers': ['console']},
+        'automation_dashboard.utils': {'handlers': ['console']},
+        'automation_dashboard.tasks.system': {'handlers': ['console']}
+    }
 }
 
 # Password validation
@@ -178,7 +197,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-STATIC_ROOT =  "static"
+STATIC_ROOT = "static"
 STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [
@@ -198,7 +217,73 @@ CORS_ALLOWED_ORIGINS = [
 ]
 # CORS_ORIGIN_ALLOW_ALL = True
 
+
+# feature flags
+FLAG_SOURCES = ('flags.sources.SettingsFlagsSource',)
+FLAGS = {
+    'FEATURE_INDIRECT_NODE_COUNTING_ENABLED': [{'condition': 'boolean', 'value': False}],
+    'FEATURE_DISPATCHERD_ENABLED': [{'condition': 'boolean', 'value': False}],
+}
+
+# Whether or not the deployment is a K8S-based deployment
+# In K8S-based deployments, instances have zero capacity - all playbook
+# automation is intended to flow through defined Container Groups that
+# interface with some (or some set of) K8S api (which may or may not include
+# the K8S cluster where itself is running)
+IS_K8S = False
+
+CLUSTER_HOST_ID = socket.gethostname()
+
+DISPATCHERD_DEBUGGING_SOCKFILE = "demo_dispatcher.sock"
+
+# The number of processes spawned by the callback receiver to process job
+# events into the database
+JOB_EVENT_WORKERS = 4
+
+# Time out task managers if they take longer than this many seconds, plus TASK_MANAGER_TIMEOUT_GRACE_PERIOD
+# We have the grace period so the task manager can bail out before the timeout.
+TASK_MANAGER_TIMEOUT = 300
+TASK_MANAGER_TIMEOUT_GRACE_PERIOD = 60
+TASK_MANAGER_LOCK_TIMEOUT = TASK_MANAGER_TIMEOUT + TASK_MANAGER_TIMEOUT_GRACE_PERIOD
+
 SHOW_URLLIB3_INSECURE_REQUEST_WARNING = True
+
+DISPATCHER_SCHEDULE = {}
+
+DISPATCHER_SYNC_CHANNEL = 'automation_dashboard_sync_channel'
+DISPATCHER_PARSE_CHANNEL = 'automation_dashboard_parse_channel'
+
+SCHEDULE_MAX_DATA_PARSE_JOBS = 30
+START_TASK_LIMIT = 50
+# Amount of time dispatcher will try to reconnect to database for jobs and consuming new work
+DISPATCHER_DB_DOWNTIME_TOLERANCE = 40
+
+CELERYBEAT_SCHEDULE = {
+    'periodic_sync_manager':
+        {
+            'task': 'backend.apps.tasks.system.automation_dashboard_periodic_scheduler',
+            'schedule': timedelta(seconds=20),
+            'options': {'expires': 20}
+        },
+    'sync_task_manager':
+        {
+            'task': 'backend.apps.scheduler.tasks.sync_task_manager',
+            'schedule': timedelta(seconds=20),
+            'options': {'expires': 20}
+        },
+    'data_parser_task_manager':
+        {
+            'task': 'backend.apps.tasks.system.automation_dashboard_job_parser_data_scheduler',
+            'schedule': timedelta(seconds=5),
+            'options': {'expires': 5}
+        },
+}
+
+for options in CELERYBEAT_SCHEDULE.values():
+    new_options = options.copy()
+    task_name = options['task']
+    new_options['schedule'] = options['schedule'].total_seconds()
+    DISPATCHER_SCHEDULE[task_name] = new_options
 
 # Load settings from REPORTER_SETTINGS_DIR
 settings_dir = os.environ.get('REPORTER_SETTINGS_DIR', '/etc/reporter/conf.d/')
@@ -208,4 +293,3 @@ try:
 except ImportError:
     traceback.print_exc()
     sys.exit(1)
-

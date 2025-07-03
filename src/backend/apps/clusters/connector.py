@@ -1,11 +1,8 @@
 import datetime
 import logging
-import os
-from abc import ABC
 from urllib.parse import urlsplit
 
 import requests
-from crontab import CronTab
 from django.db import transaction
 
 from backend.apps.clusters.models import (
@@ -15,13 +12,12 @@ from backend.apps.clusters.models import (
     Job,
     Organization, ClusterVersionChoices
 )
-from backend.apps.clusters.parser import DataParser
 from backend.apps.clusters.schemas import ClusterSchema
 
 logger = logging.getLogger("automation-reports")
 
 
-class ApiConnector(ABC):
+class ApiConnector:
 
     def __init__(self,
                  cluster: ClusterSchema,
@@ -50,10 +46,15 @@ class ApiConnector(ABC):
             elif self.cluster_sync_data.last_job_finished_date is not None and self.managed is False:
                 self.since = self.cluster_sync_data.last_job_finished_date
             else:
-                now = datetime.datetime.now(datetime.timezone.utc)
-                cron_entry = os.environ.get("CRON_SYNC", "0 */1 * * *")
-                entry = CronTab(cron_entry)
-                self.since = entry.previous(now=now, default_utc=True, return_datetime=True)
+                '''
+                Due to the possibility of a lot of data, we enable sync for the first sync only for the last day.
+                '''
+                yesterday = datetime.datetime.combine(
+                    datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1),
+                    datetime.datetime.min.time(),
+                    tzinfo=datetime.timezone.utc)
+
+                self.since = yesterday
 
     @property
     def headers(self):
@@ -78,7 +79,7 @@ class ApiConnector(ABC):
             logger.error(f'GET request failed with status {response.status_code}')
             return None
         product_name = response.headers.get("X-Api-Product-Name", None)
-        if product_name is None or  product_name == "AWX":
+        if product_name is None or product_name == "AWX":
             raise Exception("Not supported product.")
         response = response.json()
         return response
@@ -207,20 +208,17 @@ class ApiConnector(ABC):
             if self.cluster.aap_version != ClusterVersionChoices.AAP25:
                 self.cluster.aap_version = ClusterVersionChoices.AAP25
                 self.cluster.save()
-            return
+            return True
 
         is_aap24_instance = self.is_aap24_instance
         if is_aap24_instance:
             if self.cluster.aap_version != ClusterVersionChoices.AAP24:
                 self.cluster.aap_version = ClusterVersionChoices.AAP24
                 self.cluster.save()
-            return
-        raise Exception(f'Not valid version for cluster {self.cluster.base_url}.')
+            return True
+        return False
 
-    def sync(self):
-        self.check_aap_version()
-        self.sync_common('organization')
-        self.sync_common('job_template')
+    def sync_jobs(self):
         for job in self.jobs:
             logger.info("Checking status of job %s", job)
             job_id = job.get("id", None)
@@ -240,19 +238,8 @@ class ApiConnector(ABC):
             for host_summary in self.job_host_summaries(job_id):
                 job["host_summaries"].append(host_summary)
 
-            created_jobs = []
-
             with (transaction.atomic()):
                 logger.info(f"Job {job_id} saving data.")
                 self.cluster_sync_data.last_job_finished_date = finished if self.cluster_sync_data.last_job_finished_date is None or finished > self.cluster_sync_data.last_job_finished_date else self.cluster_sync_data.last_job_finished_date
                 self.cluster_sync_data.save()
-                created_jobs.append(ClusterSyncData.objects.create(cluster=self.cluster, data=job))
-
-            for created_job in created_jobs:
-                try:
-                    logger.info(f"Parsing data with id {created_job.id}.")
-                    data_parser = DataParser(created_job.id)
-                    data_parser.parse()
-                    logger.info(f"Parsed data with id {created_job.id} successfully.")
-                except Exception as exc:
-                    logger.error(f"Failed to parse data {created_job.id}", exc_info=exc)
+                ClusterSyncData.objects.create(cluster=self.cluster, data=job)
