@@ -352,7 +352,7 @@ const Dashboard: React.FunctionComponent = () => {
           </Flex>
           <div>
             <Grid hasGutter>
-              <GridItem className="pf-m-12-col pf-m-8-col-on-2xl pf-m-9-col-on-3xl pf-m-10-col-on-4xl grid-gap">
+              <GridItem className="pf-m-12-col pf-m-8-col-on-2xl pf-m-9-col-on-3xl pf-m-10-col-on-4xl pf-v6-l-grid pf-m-gutter">
                 <DashboardTotalCards data={detailData}></DashboardTotalCards>
                 <Grid hasGutter>
                   <GridItem className="pf-m-12-col pf-m-6-col-on-md" style={{ height: '100%' }}>

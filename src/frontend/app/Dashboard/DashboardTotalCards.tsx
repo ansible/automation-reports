@@ -1,7 +1,6 @@
 import React from 'react';
 import { Grid, GridItem } from '@patternfly/react-core';
 import { Card, CardBody } from '@patternfly/react-core';
-import '../styles/dashboard-totals.scss';
 import { ReportDetail } from '@app/Types';
 import { formatNumber } from '@app/Utils';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';

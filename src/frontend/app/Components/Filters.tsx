@@ -254,7 +254,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       {filterOptionsList.map((item: FilterOption) => {
         return (
           <LabelGroup
-            className={'filters-group'}
+            className={'pf-v6-u-mb-md'}
             key={item.key}
             categoryName={item.value}
             isClosable={true}
@@ -276,7 +276,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
           filterSelection.job_template.length > 0 ||
           filterSelection.label.length > 0 ||
           filterSelection.project.length > 0) && (
-          <Button variant="link" className={'clear-btn'} onClick={() => clearFilters()} isInline>
+          <Button variant="link" className={'pf-v6-u-mb-md'} onClick={() => clearFilters()} isInline>
             Clear all filters
           </Button>
         )}
@@ -285,15 +285,15 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
   );
 
   const toolBar = (
-    <Toolbar id="filter-toolbar" clearAllFilters={clearFilters}>
+    <Toolbar id="filter-toolbar" clearAllFilters={clearFilters} className='pf-v6-l-flex pf-m-row-gap-md pf-v6-u-pb-0'>
       <ToolbarContent>
-        <ToolbarGroup variant={'filter-group'} className="filters-wrap">
+        <ToolbarGroup variant={'filter-group'} className="filters-wrap pf-v6-l-flex pf-v6-u-flex-wrap pf-m-row-gap-md">
           {viewChoices?.length > 0 && (
             <ToolbarItem>
               <ViewSelector onSelect={viewSelected}></ViewSelector>
             </ToolbarItem>
           )}
-          <Split isWrappable className="row-gap">
+          <Split isWrappable className="row-gap pf-v6-l-flex pf-m-row-gap-sm pf-m-column-gap-md-on-xl">
             <SplitItem>
               <ToolbarItem>{filterSelector}</ToolbarItem>
             </SplitItem>
@@ -301,7 +301,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
               <ToolbarItem>{itemsDropdown}</ToolbarItem>
             </SplitItem>
           </Split>
-          <ToolbarItem>{dateRangePicker}</ToolbarItem>
+          <ToolbarItem className='pf-v6-u-mr-0'>{dateRangePicker}</ToolbarItem>
           <AddEditView filters={filterSelection} onViewDelete={clearFilters}></AddEditView>
         </ToolbarGroup>
       </ToolbarContent>
@@ -310,7 +310,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
   );
 
   return (
-    <div className={'filters'}>
+    <div>
       <React.Fragment>{!error && toolBar}</React.Fragment>
     </div>
   );

@@ -1,44 +1,12 @@
-.filters {
-  .pf-v6-c-toolbar {
-    padding-bottom: 0;
-    row-gap: 16px;
-  }
-}
-
 .filters-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  row-gap: 16px;
-
-  .row-gap {
-    row-gap: 8px;
-    @media (max-width: 1300px) {
-      column-gap: 16px;
-    }
-  }
-
   @media (max-width: 1300px) {
     .pf-v6-c-menu-toggle {
       width: 250px !important;
-
-      #split-button-save {
-        width: 100%;
-      }
+    }
+    .range-selector .pf-v6-c-menu-toggle {
+      width: 192px !important;
     }
   }
-
-  .range-selector {
-    @media (max-width: 1300px) {
-      .pf-v6-c-menu-toggle {
-        width: 192px !important;
-      }
-    }
-  }
-}
-
-.pf-v6-c-date-picker__helper-text {
-  max-width: 180px;
-  white-space: normal;
 }
 
 .pf-v6-c-date-picker__input {
@@ -49,16 +17,9 @@
 
 .save-as-report {
   .pf-v6-c-menu-toggle {
-    background-color: transparent;
-    --pf-v6-c-menu-toggle--BorderColor: #c7c7c7;
-    margin-right: 16px;
+    --pf-v6-c-menu-toggle--BorderColor: var(--pf-t--color--gray--30);
     .pf-v6-c-menu-toggle__button {
-      border-inline-start: 1px solid #c7c7c7;
+      border-inline-start: 1px solid var(--pf-t--color--gray--30);
     }
   }
-}
-
-.filters-group,
-.clear-btn {
-  margin-bottom: 16px;
 }

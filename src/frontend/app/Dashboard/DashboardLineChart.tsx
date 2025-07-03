@@ -12,7 +12,6 @@ import {
   ChartVoronoiContainer,
 } from '@patternfly/react-charts/victory';
 import { formatNumber, generateChartData } from '@app/Utils';
-import '../styles/chart.scss';
 import { AnimatePropTypeInterface } from 'victory-core';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
 
@@ -24,12 +23,19 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
   }, [props.chartData]);
   return (
     <>
+      <style>
+        {`
+          .no-data {
+            opacity: 0.6;
+          }
+        `}
+      </style>
       <Card style={{ height: 'inherit' }}>
         <CardTitle>
           <DashboardTotals title={'Number of times jobs were run'} result={props.value} />
         </CardTitle>
         <CardBody style={{ width: '100%' }}>
-          <div className={`chart-wrap jobs-chart ${chartData.items.length === 0 && 'no-data'}`}>
+          <div className={`pf-v6-u-h-initial pf-v6-u-w-100 jobs-chart ${chartData.items.length === 0 && 'no-data'}`}>
             <Chart
               height={250}
               ariaDesc="Number of times jobs were run"

@@ -16,15 +16,17 @@ body,
 .pf-v6-c-page {
   background: var(--pf-t--global--background--color--secondary--default);
 }
+
 .pf-v6-c-page__main {
   overflow-x: hidden;
   padding: 0;
 }
 
 .pf-v6-c-page__main-container {
+  --pf-v6-c-page__main-container--MarginInlineStart: 0;
+  --pf-v6-c-page__main-container--MarginInlineEnd: 0;
+  --pf-v6-c-page__main-container--BorderRadius: 0;
   border: none;
-  margin: 0;
-  border-radius: 0;
 }
 
 .pf-v6-c-content {
@@ -39,65 +41,34 @@ body,
   ); /* changes a <hr> color to the semantic token for non-status (yellow) */
 }
 
-.pf-v6-c-masthead {
-  --pf-v6-c-masthead--BackgroundColor: var(--pf-v6-global--BackgroundColor--dark-100);
-  padding-top: 0;
-  padding-bottom: 0;
-  height: 76px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.267);
-  position: sticky;
-  width: 100vw;
+.pf-v6-l-grid {
+  --pf-v6-l-grid--m-gutter--GridGap: var(--pf-t--global--spacer--lg);
 }
 
-.pf-v6-c-masthead__main {
-  display: flex;
-  align-self: stretch;
-  align-items: center;
+.pf-v6-c-card {
+  --pf-v6-c-card--child--PaddingBlockEnd: 16px;
+  --pf-v6-c-card--child--PaddingInlineStart: 16px;
+  --pf-v6-c-card--child--PaddingInlineEnd: 16px;
+  --pf-v6-c-card--first-child--PaddingBlockStart: 16px;
 }
 
-.pf-v6-c-masthead__brand {
-  align-self: center;
-  display: inline-flex;
-  border: none;
-  padding-bottom: 0;
-}
-
-.pf-v6-c-masthead__logo {
-  position: unset;
-  width: unset;
-  max-height: unset;
+.pf-v6-c-menu {
+  --pf-v6-c-menu__content--MaxHeight: 300px;
 }
 
 .main-layout {
   background: var(--pf-t--global--background--color--secondary--default);
-  width: 100vw;
   overflow: auto;
   padding: 24px;
 }
 
-.pf-v6-c-menu {
-  margin-top: 3px;
-}
 .pf-v6-c-menu__content {
-  max-height: 300px;
   overflow: auto;
 }
 
-.pf-v6-l-grid.pf-m-gutter {
-  grid-gap: 24px;
-}
-
-.grid-gap {
-  display: grid;
-  grid-gap: 24px;
-}
-
-.fw-500 {
-  font-weight: 500;
-}
-
-.mgb-36 {
-  margin-bottom: 36px;
+.pf-v6-c-menu-toggle__text {
+  width: 100%;
+  text-align: left;
 }
 
 /* Chrome, Safari, Edge, Opera */
@@ -141,56 +112,6 @@ input {
   }
 }
 
-.pf-v6-c-date-picker {
-  &.default {
-    input {
-      background: var(--pf-v6-c-form-control--m-disabled--BackgroundColor);
-    }
-  }
-}
-
-.pf-v6-c-menu-toggle__text {
-  width: 100%;
-  text-align: left;
-}
-
-#currency-options-menu {
-  min-width: 200px;
-}
-#currency-options-menu-toggle {
-  min-width: 200px;
-  background: transparent;
-  @media (max-width: 1300px) {
-    min-width: 250px !important;
-  }
-}
-
-#views-options-menu-toggle {
-  background: transparent;
-  margin-right: 16px;
-}
-
-.add-edit-report-modal {
-  .pf-v6-c-button:focus {
-    --pf-v6-c-button--BackgroundColor: transparent;
-  }
-}
-
-.pf-v6-c-card {
-  .pf-v6-c-card__title {
-    padding: 16px;
-  }
-  .pf-v6-c-card__body {
-    padding: 16px;
-  }
-}
-
-.currency-selector {
-  .pf-v6-c-toolbar {
-    padding-bottom: 24px;
-  }
-}
-
 @media (min-width: 112.5rem) {
   .pf-v6-l-grid > .pf-m-3-col-on-3xl {
     --pf-v6-l-grid__item--GridColumnEnd: span 3;
@@ -199,16 +120,11 @@ input {
     --pf-v6-l-grid__item--GridColumnEnd: span 9;
   }
   .main-layout,
-  .pf-v6-c-page__main-section {
+  .page-header {
     padding: 24px 48px !important;
   }
   .pf-v6-c-page > .pf-v6-c-masthead {
     padding: 0 48px;
-  }
-  .pf-v6-c-button {
-    &.btn-pdf {
-      margin-right: 48px !important;
-    }
   }
 }
 

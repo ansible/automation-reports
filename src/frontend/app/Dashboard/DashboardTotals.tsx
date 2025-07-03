@@ -1,7 +1,6 @@
 import React from 'react';
-import { Button, Icon, Tooltip } from '@patternfly/react-core';
+import { Button, Icon, Tooltip, Flex, FlexItem } from '@patternfly/react-core';
 import { ExternalLinkSquareAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
-import '../styles/dashboard-totals.scss';
 
 type urlProps = {
   url?: string;
@@ -27,9 +26,9 @@ export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
 
   return (
     <>
-      <div className="content">
-        <div>
-          <span className="pf-v6-u-font-size-md">
+      <Flex direction={{ default: 'column' }} style={{ height: '100%' }} className='pf-v6-u-justify-content-space-between'>
+        <FlexItem>
+        <span style={{ fontSize: 'var(--pf-t--global--font--size--300)' }}>
             {props.title}
             {props.tooltip && (
               <Tooltip content={props.tooltip}>
@@ -39,12 +38,22 @@ export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
               </Tooltip>
             )}
           </span>
-        </div>
-        {link}
-        <div className="value">
-          <span className="pf-v6-u-font-size-4xl fw-500 result">{props.result?.toLocaleString('en-US')}</span>
-        </div>
-      </div>
+        </FlexItem>
+          
+        {link && <FlexItem>{link}</FlexItem>}
+          
+        <FlexItem>
+          <span
+            style={{
+              fontSize: 'var(--pf-t--global--font--size--800)',
+              fontWeight: 'var(--pf-t--global--font--weight--300)',
+            }}
+          >
+            {props.result?.toLocaleString('en-US')}
+          </span>
+        </FlexItem>
+      </Flex>
+
     </>
   );
 };
