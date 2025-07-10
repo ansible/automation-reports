@@ -8,12 +8,12 @@
     _postgresql_ips: '{{ _postgresql_ips | default([]) | union(["IP:" + item]) }}'
   loop: '{{ ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }}'
 
-- name: Set postgresql volumes
+- name: Set automation-reporter-postgresql volumes
   ansible.builtin.set_fact:
     _secrets:
-      - 'postgresql_admin_password,type=env,target=POSTGRESQL_ADMIN_PASSWORD'
+      - 'automation_reporter_postgresql_admin_password,type=env,target=POSTGRESQL_ADMIN_PASSWORD'
     _volumes:
-      - 'postgresql:/var/lib/pgsql/data:Z'
+      - 'automation-reporter-postgresql:/var/lib/pgsql/data:Z'
 
 - name: Add tls to volumes
   ansible.builtin.set_fact:

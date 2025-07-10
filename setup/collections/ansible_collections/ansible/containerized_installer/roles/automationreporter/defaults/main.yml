@@ -24,7 +24,7 @@ reporter_event_workers: 4
 ### database
 reporter_pg_username: aapreporter
 reporter_pg_database: aapreports
-reporter_pg_port: 5432
+reporter_pg_port: 5433
 reporter_pg_sslmode: prefer
 
 ### postinstall

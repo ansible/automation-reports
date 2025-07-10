@@ -1,7 +1,7 @@
 ---
-- name: Create the postgresql container
+- name: Create the automation-reporter-postgresql container
   containers.podman.podman_container:
-    name: postgresql
+    name: automation-reporter-postgresql
     image: '{{ _postgresql_image }}'
     generate_systemd:
       container_prefix: ''

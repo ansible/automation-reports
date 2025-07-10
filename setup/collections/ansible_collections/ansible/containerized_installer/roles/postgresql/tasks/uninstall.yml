@@ -1,7 +1,7 @@
 ---
 - name: Ensure systemd unit are disabled and stopped
   ansible.builtin.systemd:
-    name: postgresql.service
+    name: automation-reporter-postgresql.service
     scope: user
     state: stopped
     enabled: false
@@ -9,12 +9,12 @@
 
 - name: Delete the container
   containers.podman.podman_container:
-    name: postgresql
+    name: automation-reporter-postgresql
     state: absent
 
 - name: Delete the systemd unit files
   ansible.builtin.file:
-    path: '{{ ansible_user_dir }}/.config/systemd/user/postgresql.service'
+    path: '{{ ansible_user_dir }}/.config/systemd/user/automation-reporter-postgresql.service'
     state: absent
 
 - name: Delete podman volumes
@@ -25,7 +25,7 @@
 
 - name: Delete the postgresql admin password secret
   containers.podman.podman_secret:
-    name: postgresql_admin_password
+    name: automation_reporter_postgresql_admin_password
     state: absent
 
 - name: Delete the postgresql config directory

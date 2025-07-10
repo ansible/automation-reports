@@ -144,6 +144,48 @@ exit
 ansible-playbook -i inventory ansible.containerized_installer.reporter_install
 ```
 
+#### Rename DB container from postgresql to automation-reporter-postgresql
+
+Package build after 2025.07.10 user a diffrent podman volume and container name for database data.
+Previous volume and container name is "postgresql". Same name is used by AAP too.
+New volume and container name is "automation-reporter-postgresql".
+
+User needs to manually transfer database content from old database to new one.
+
+Using old installer:
+
+```bash
+podman volume ls  # there is postgresql, and not automation_reporter_postgresql volume.
+systemctl stop --user automation-reporter-task.service automation-reporter-web.service
+podman exec -it postgresql /usr/bin/pg_dumpall -U postgres > dumpfile
+
+# Optionally remove postgresql database and volume. Do this only if it is not used by AAP.
+# Change uninstall_database=0 to uninstall_database=1
+# ansible-playbook -i inventory ansible.containerized_installer.reporter_uninstall -e uninstall_database=0
+```
+
+Using new installer:
+
+```bash
+# deploy, to switch to PostgreSQL 15
+ansible-playbook -i inventory ansible.containerized_installer.reporter_install
+podman volume ls  # there is automation_reporter_postgresql volume
+
+systemctl stop --user automation-reporter-task.service automation-reporter-web.service
+# podman exec -it postgresql psql -U postgres < dumpfile
+podman cp dumpfile postgresql:/
+podman exec -it postgresql bash
+# now run inside container
+psql -U postgres -c '\l'
+psql -U postgres -c 'DROP DATABASE aapreports;'
+psql -U postgres -c 'CREATE DATABASE aapreports;'
+psql -U postgres aapreports < /dumpfile
+exit
+
+# redeploy, to start application containers
+ansible-playbook -i inventory ansible.containerized_installer.reporter_install
+```
+
 ### Uninstall using bundled installer
 
 Uninstall application.

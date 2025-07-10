@@ -22,7 +22,7 @@
 
 - name: Add postgresql container to requires when on the same node
   ansible.builtin.set_fact:
-    reporter_container_requires: '{{ reporter_container_requires | union(["postgresql"]) }}'
+    reporter_container_requires: '{{ reporter_container_requires | union(["automation-reporter-postgresql"]) }}'
   when:
    - inventory_hostname in groups.get('database', [])
    # The reporter is alwasy containerized. The systemd service is of --user scope,

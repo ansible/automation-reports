@@ -1,16 +1,16 @@
 ---
-- name: Ensure postgresql container is enabled and started
+- name: Ensure automation-reporter-postgresql container is enabled and started
   ansible.builtin.systemd:
-    name: postgresql.service
+    name: automation-reporter-postgresql.service
     state: started
     scope: user
     daemon_reload: true
     enabled: true
   ignore_errors: 1
 
-- name: Ensure postgresql container is enabled and started
+- name: Ensure automation-reporter-postgresql container is enabled and started
   ansible.builtin.systemd:
-    name: postgresql.service
+    name: automation-reporter-postgresql.service
     state: started
     scope: user
     enabled: true

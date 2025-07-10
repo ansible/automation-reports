@@ -1,7 +1,7 @@
 ---
-- name: Restart postgresql
+- name: Restart automation-reporter-postgresql
   ansible.builtin.systemd:
-    name: postgresql.service
+    name: automation-reporter-postgresql.service
     scope: user
     state: restarted
 ...

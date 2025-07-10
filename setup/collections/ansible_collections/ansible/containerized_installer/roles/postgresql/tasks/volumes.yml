@@ -1,6 +1,6 @@
 ---
-- name: Manage the postgresql data volume
+- name: Manage the automation-reporter-postgresql data volume
   containers.podman.podman_volume:
-    name: postgresql
+    name: automation-reporter-postgresql
     state: '{{ __volume_state }}'
 ...
