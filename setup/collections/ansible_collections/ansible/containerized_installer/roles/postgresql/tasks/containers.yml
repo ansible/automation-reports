@@ -11,6 +11,16 @@
     network: host
     secrets: '{{ _secrets }}'
     volume: '{{ _volumes }}'
+    expose:
+      - 5433
+    publish:
+      - '5433:5432'
+    ports:
+      - '5433:5432'
+    # ss -tuln | grep 543 # show 5432 being used...
+    # stderr;
+    #   Port mappings have been discarded as one of the Host, Container, Pod, and None network modes are in use
+    # Rebuild database image if you really need different port.
     env:
       POSTGRESQL_EFFECTIVE_CACHE_SIZE: '{{ postgresql_effective_cache_size }}'
       POSTGRESQL_MAX_CONNECTIONS: '{{ postgresql_max_connections }}'
