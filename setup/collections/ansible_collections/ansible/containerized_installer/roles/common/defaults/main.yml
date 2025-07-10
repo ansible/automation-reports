@@ -9,7 +9,7 @@ registry_ns_aap: ansible-automation-platform-24
 registry_ns_rhel: rhel8
 
 ### database
-postgresql_version: 13
+postgresql_version: 15
 
 ### nginx
 nginx_version: 120
