@@ -2,6 +2,22 @@
 
 Hello! And welcome to the Automation Dashboard monorepo.
 
+## Architecture Overview
+
+The Automation Dashboard uses a distributed task processing architecture:
+
+- **Django Backend**: REST API and data models
+- **Dispatcherd**: Task dispatcher for background job processing
+- **PostgreSQL**: Database for storing job data and metrics
+- **React Frontend**: Dashboard UI for visualizations
+
+### Task Processing
+
+The application uses `dispatcherd` (replacing the previous `dramatiq` implementation) to handle:
+- Periodic synchronization of job data from AAP clusters
+- Background parsing and processing of job metrics
+- Scheduled task execution based on defined schedules
+
 ### Running locally
 
 ## Backend
@@ -65,15 +81,35 @@ python manage.py runserver
 
 ### Sync AAP data
 
+The sync process now creates background tasks that are processed by the dispatcher:
+
 ```bash
+# Create a sync task for a specific date range
 python manage.py syncdata --since=2025-02-12 --until=2025-02-12
+
+# Without date range, it will prompt for confirmation (syncs from last sync date)
+python manage.py syncdata
 ```
 
-### Run dispatcherd
+### Run the Task Dispatcher
+
+The dispatcher processes all background tasks including data syncs and parsing:
 
 ```bash
+# Start the dispatcher service
 python manage.py run_dispatcher
+
+# Check dispatcher status
+python manage.py run_dispatcher --status
+
+# View running tasks
+python manage.py run_dispatcher --running
+
+# Cancel a specific task
+python manage.py run_dispatcher --cancel <task_uuid>
 ```
+
+**Note**: The dispatcher must be running for sync tasks to be processed. In production, this should be run as a separate service.
 
 ## Frontend
 
@@ -83,3 +119,9 @@ cd src/frontend
 yarn install
 yarn run start:dev
 ```
+
+## Task ManagerPerformance Tuning
+
+- `JOB_EVENT_WORKERS`: Number of processes for event processing (default: 4)
+- `SCHEDULE_MAX_DATA_PARSE_JOBS`: Maximum concurrent parse jobs (default: 30)
+- `DISPATCHER_DB_DOWNTIME_TOLERANCE`: Database reconnection timeout (default: 40 seconds)
