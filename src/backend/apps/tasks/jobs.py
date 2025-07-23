@@ -32,7 +32,7 @@ class BaseTask(object):
             if instance_data.status == JobStatusChoices.WAITING:
                 instance_data.status = JobStatusChoices.RUNNING
                 instance_data.save()
-            elif instance_data['status'] == JobStatusChoices.RUNNING:
+            elif instance_data.status == JobStatusChoices.RUNNING:
                 logger.info(f'Job {pk} is being ran by another process, exiting')
                 return False
         return True

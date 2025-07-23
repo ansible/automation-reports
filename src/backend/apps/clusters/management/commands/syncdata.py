@@ -22,7 +22,7 @@ class Command(BaseCommand):
         parser.add_argument('--until',
                             dest='until',
                             action='store',
-                            help='End date for  sync (e.g. --until=2025-12-21)')
+                            help='End date for sync (e.g. --until=2025-12-21)')
 
     def handle(self, *args, **options):
 
@@ -63,7 +63,7 @@ class Command(BaseCommand):
 
         try:
             job = SyncJob.objects.create(
-                name=f'Sync historical data for {since} to {until}',
+                name=f'Sync historical data from {since} to {until}',
                 type=JobTypeChoices.SYNC_JOBS,
                 launch_type=JobLaunchTypeChoices.MANUAL,
                 cluster=cluster,
