@@ -14,7 +14,8 @@ from backend.apps.clusters.models import (
     Job,
     JobLabel,
     Host,
-    JobHostSummary, Project)
+    JobHostSummary,
+    Project)
 from backend.apps.clusters.schemas import (
     ExternalJobSchema,
     NameDescriptionModelSchema,
@@ -25,6 +26,14 @@ logger = logging.getLogger("automation-dashboard")
 
 
 class DataParser:
+    """
+   DataParser is responsible for extracting and transforming external job data
+   from a ClusterSyncData instance. It provides properties and methods to
+   retrieve or create related model instances (such as Organization, JobTemplate,
+   Inventory, etc.) and to parse and persist job and host summary information
+   into the database. The class ensures data consistency and handles updates
+   or creation of related objects as needed.
+   """
 
     def __init__(self, data_id):
         self.data = None
@@ -38,156 +47,80 @@ class DataParser:
 
     @property
     def organization(self) -> Organization | None:
-        logger.info("Getting organization for cluster: {}".format(self.cluster))
         external_organization = self.data.summary_fields.organization
-        data = external_organization.model_dump()
-        external_id = data.pop("id")
         if external_organization:
-            organization = (Organization.objects.
-                            filter(external_id=external_id, cluster=self.cluster).first())
-            if organization is None:
-                logger.info("No organization found, let's create new")
-                organization = (Organization.objects.
-                                create(external_id=external_id, cluster=self.cluster, **data))
-                logger.info("New organization created.")
-            else:
-                logger.info("Organization already exists, updating.")
-                organization.name = data.pop("name")
-                organization.description = data.pop("description", "")
-                organization.save()
-                logger.info("Organization updated.")
-            return organization
+            return Organization.create_or_update(
+                cluster=self.cluster,
+                external_id=external_organization.id,
+                name=external_organization.name,
+                description=external_organization.description,
+            )
         return None
 
     @property
     def job_template(self) -> JobTemplate:
-        logger.info("Getting job template for cluster: {}".format(self.cluster))
         external_job_template = self.data.summary_fields.job_template
-        template_name = external_job_template.name if external_job_template else self.data.name
-        template_description = external_job_template.description if external_job_template else self.data.description
-        external_id = external_job_template.id if external_job_template else -1
-
-        if external_id > 0:
-            job_template = JobTemplate.objects.filter(cluster=self.cluster, external_id=external_id).first()
-        else:
-            job_template = JobTemplate.objects.filter(cluster=self.cluster, name=template_name).first()
-        if job_template is None:
-            logger.info("No job template found, let's create new")
-            job_template = JobTemplate.objects.create(cluster=self.cluster, external_id=external_id, name=template_name, description=template_description)
-            logger.info("New job template created.")
-        else:
-            logger.info("Job template already exists, updating.")
-            job_template.description = template_description
-            job_template.name = template_name
-            job_template.external_id = external_id if external_id > 0 else job_template.external_id
-            job_template.save()
-            logger.info("Job template updated.")
-        job_template.save()
-
-        return job_template
+        return JobTemplate.create_or_update(
+            cluster=self.cluster,
+            external_id=external_job_template.id if external_job_template else -1,
+            name=external_job_template.name if external_job_template else self.data.name,
+            description=external_job_template.description if external_job_template else self.data.description,
+        )
 
     @property
     def launched_by(self) -> AAPUser | None:
-        logger.info("Getting AAP user for cluster: {}".format(self.cluster))
         external_launched_by = self.data.launched_by
-        if external_launched_by is not None:
-            data = external_launched_by.model_dump()
-            external_id = data.pop("id")
-            launched_by = AAPUser.objects.filter(cluster=self.cluster, external_id=external_id).first()
-            if launched_by is None:
-                logger.info("No AAP user, let's create new")
-                launched_by = AAPUser.objects.create(cluster=self.cluster, external_id=external_id, **data)
-                logger.info("New AAP user created.")
-            else:
-                logger.info("AAP user already exists, updating.")
-                launched_by.name = data.pop("name")
-                launched_by.type = data.pop("type")
-                launched_by.save()
-                logger.info("AAP user updated.")
-            return launched_by
+        if external_launched_by:
+            return AAPUser.create_or_update(
+                cluster=self.cluster,
+                external_id=external_launched_by.id,
+                name=external_launched_by.name,
+                type=external_launched_by.type,
+            )
         return None
 
     @property
-    def inventory(self):
-        logger.info("Getting inventory for cluster: {}".format(self.cluster))
+    def inventory(self) -> Inventory | None:
         external_inventory = self.data.summary_fields.inventory
-        if external_inventory is not None:
-            data = external_inventory.model_dump()
-            external_id = data.pop("id")
-            inventory = Inventory.objects.filter(cluster=self.cluster, external_id=external_id).first()
-            if inventory is None:
-                logger.info("No inventory found, let's create new")
-                inventory = Inventory.objects.create(cluster=self.cluster, external_id=external_id, **data)
-                logger.info("New inventory created.")
-            else:
-                logger.info("Inventory already exists, updating.")
-                inventory.name = data.pop("name")
-                inventory.description = data.pop("description", "")
-                inventory.save()
-                logger.info("Inventory updated.")
-            return inventory
+        if external_inventory:
+            return Inventory.create_or_update(
+                cluster=self.cluster,
+                external_id=external_inventory.id,
+                name=external_inventory.name,
+                description=external_inventory.description,
+            )
         return None
 
     @property
     def execution_environment(self) -> ExecutionEnvironment | None:
-        logger.info("Getting execution environment for cluster: {}".format(self.cluster))
         external_execution_environment = self.data.summary_fields.execution_environment
         if external_execution_environment is not None:
-            data = external_execution_environment.model_dump()
-            external_id = data.pop("id")
-
-            execution_environment = (ExecutionEnvironment.objects
-                                     .filter(
+            return ExecutionEnvironment.create_or_update(
                 cluster=self.cluster,
-                external_id=external_id).first())
-            if execution_environment is None:
-                logger.info("No execution environment found, let's create new")
-                execution_environment = ExecutionEnvironment.objects.create(cluster=self.cluster, external_id=external_id, **data)
-                logger.info("New execution environment created.")
-            else:
-                logger.info("Execution environment already exists, updating.")
-                execution_environment.name = data.pop("name")
-                execution_environment.description = data.pop("description", "")
-                execution_environment.save()
-                logger.info("Execution environment updated.")
-            return execution_environment
+                external_id=external_execution_environment.id,
+                name=external_execution_environment.name,
+                description=external_execution_environment.description,
+            )
         return None
 
     @property
-    def instance_group(self):
-        logger.info("Getting instance group for cluster: {}".format(self.cluster))
+    def instance_group(self) -> InstanceGroup | None:
         external_instance_group = self.data.summary_fields.instance_group
         if external_instance_group is not None:
-            data = external_instance_group.model_dump()
-            external_id = data.pop("id")
-            instance_group = InstanceGroup.objects.filter(cluster=self.cluster, external_id=external_id).first()
-            if instance_group is None:
-                logger.info("No instance group found, let's create new")
-                instance_group = InstanceGroup.objects.create(cluster=self.cluster, external_id=external_id, **data)
-                logger.info("New instance group created.")
-            else:
-                logger.info("Instance group already exists, updating.")
-                instance_group.name = data.pop("name")
-                instance_group.is_container_group = data.pop("is_container_group", False)
-                instance_group.save()
-                logger.info("New instance group created.")
-            return instance_group
+            return InstanceGroup.create_or_update(
+                cluster=self.cluster,
+                external_id=external_instance_group.id,
+                name=external_instance_group.name,
+                is_container_group=external_instance_group.is_container_group,
+            )
         return None
 
     def get_label(self, external_label: LabelModelSchema) -> Label:
-        name = external_label.name
-        external_id = external_label.id
-        label = Label.objects.filter(cluster=self.cluster, external_id=external_id).first()
-        if label is None:
-            logger.info("No label found, let's create new")
-            label = Label.objects.create(cluster=self.cluster, external_id=external_id, name=name)
-            logger.info("New label created.")
-        else:
-            logger.info("Label already exists, updating.")
-            label.name = name
-            label.save()
-            logger.info("Label updated.")
-        return label
+        return Label.create_or_update(
+            cluster=self.cluster,
+            external_id=external_label.id,
+            name=external_label.name,
+        )
 
     @property
     def labels(self):
@@ -202,25 +135,16 @@ class DataParser:
             yield self.get_label(label)
 
     @property
-    def project(self):
-        logger.info("Getting project for cluster: {}".format(self.cluster))
+    def project(self) -> Project | None:
         external_project = self.data.summary_fields.project
         if external_project is not None:
-            data = external_project.model_dump()
-            external_id = data.pop("id")
-            project = Project.objects.filter(cluster=self.cluster, external_id=external_id).first()
-            if project is None:
-                logger.info("No project found, let's create new")
-                project = Project.objects.create(cluster=self.cluster, external_id=external_id, **data)
-                logger.info("New project created.")
-            else:
-                logger.info("Project already exists, updating.")
-                project.name = data.pop("name")
-                project.description = data.pop("description", "")
-                project.scm_type = data.pop("scm_type", "")
-                project.save()
-                logger.info("Project updated.")
-            return project
+            return Project.create_or_update(
+                cluster=self.cluster,
+                external_id=external_project.id,
+                name=external_project.name,
+                description=external_project.description,
+                scm_type=external_project.scm_type,
+            )
         return None
 
     def get_host(self, host: NameDescriptionModelSchema | None, host_name: str) -> Host:
@@ -228,24 +152,12 @@ class DataParser:
         description = host.description if host else ""
         external_id = host.id if host else -1
 
-        if host is not None:
-            db_host = Host.objects.filter(cluster=self.cluster, external_id=host.id).first()
-        else:
-            db_host = Host.objects.filter(cluster=self.cluster, name=host_name).first()
-
-        if db_host is None:
-            logger.info("No host found, let's create new")
-            db_host = Host.objects.create(cluster=self.cluster, external_id=external_id, name=name, description=description)
-            logger.info("New host created.")
-        else:
-            logger.info("Host already exists, updating.")
-            db_host.name = name
-            db_host.description = description
-            db_host.external_id = external_id if external_id > 0 else db_host.external_id
-            db_host.save()
-            logger.info("Host updated.")
-
-        return db_host
+        return Host.create_or_update(
+            cluster=self.cluster,
+            external_id=external_id,
+            name=name,
+            description=description,
+        )
 
     @property
     def host_summaries(self):

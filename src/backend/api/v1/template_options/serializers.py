@@ -1,9 +1,14 @@
 from rest_framework import serializers
 
-from backend.apps.clusters.models import Organization, Cluster, Label, JobTemplate, Project
+from backend.apps.clusters.models import (
+    Organization,
+    Cluster,
+    Label,
+    JobTemplate,
+    Project)
 
 
-class ClusterSerializer(serializers.ModelSerializer):
+class ClusterSerializer(serializers.ModelSerializer[Cluster]):
     class Meta:
         model = Cluster
         fields = ("id", "address")
@@ -18,21 +23,21 @@ class FilterKeyValueSerializer(serializers.Serializer):
         fields = ("key", "value", "cluster_id")
 
 
-class OrganizationSerializer(FilterKeyValueSerializer):
+class OrganizationSerializer(FilterKeyValueSerializer[Organization]):
     class Meta:
         model = Organization
 
 
-class LabelSerializer(FilterKeyValueSerializer):
+class LabelSerializer(FilterKeyValueSerializer[Label]):
     class Meta:
         model = Label
 
 
-class JobTemplateSerializer(FilterKeyValueSerializer):
+class JobTemplateSerializer(FilterKeyValueSerializer[JobTemplate]):
     class Meta:
         model = JobTemplate
 
 
-class ProjectSerializer(FilterKeyValueSerializer):
+class ProjectSerializer(FilterKeyValueSerializer[Project]):
     class Meta:
         model = Project

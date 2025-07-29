@@ -41,3 +41,5 @@ storybook-static
 .venv
 clusters.yaml
 .yarn
+# Local settings
+local_settings.py

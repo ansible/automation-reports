@@ -3,7 +3,7 @@ from rest_framework import serializers
 from backend.apps.clusters.models import JobTemplate
 
 
-class TemplateSerializer(serializers.ModelSerializer):
+class TemplateSerializer(serializers.ModelSerializer[JobTemplate]):
     name = serializers.CharField(read_only=True)
     description = serializers.CharField(read_only=True)
 

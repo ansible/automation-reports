@@ -1,4 +1,6 @@
+from django.db.models import QuerySet
 from rest_framework import mixins, status
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -9,10 +11,10 @@ from backend.apps.common.models import Settings, SettingsChoices
 class SettingsView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     serializer_class = SettingsSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Settings]:
         return Settings.objects.all()
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request: Request, *args, **kwargs) -> Response:
         data = request.data
         _type = data.get('type', None)
         if _type is None:

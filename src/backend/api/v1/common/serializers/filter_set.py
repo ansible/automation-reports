@@ -3,7 +3,7 @@ from rest_framework import serializers
 from backend.apps.common.models import FilterSet
 
 
-class FilterSetSerializer(serializers.ModelSerializer):
+class FilterSetSerializer(serializers.ModelSerializer[FilterSet]):
     id = serializers.IntegerField(read_only=True)
 
     class Meta:

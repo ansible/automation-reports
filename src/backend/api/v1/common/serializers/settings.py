@@ -3,7 +3,7 @@ from rest_framework import serializers
 from backend.apps.common.models import Settings, SettingsChoices, Currency
 
 
-class SettingsSerializer(serializers.ModelSerializer):
+class SettingsSerializer(serializers.ModelSerializer[Settings]):
     type = serializers.CharField()
 
     class Meta:

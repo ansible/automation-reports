@@ -29,8 +29,13 @@ SECRET_KEY = 'django-insecure-cu=@gv*8$8+rr2-^-8^g00!ib_9-utgu!26#q#@)!y%3#wt^1#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-allowed_hosts_str = os.environ.get("ALLOWED_HOSTS", "")
-ALLOWED_HOSTS = allowed_hosts_str.split(",")
+
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'localhost:8000',
+    'localhost:3000'
+]
 
 # Application definition
 
@@ -42,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django_generate_series',
     'corsheaders',
     'rest_framework',
     'django_filters',
@@ -100,25 +106,35 @@ WSGI_APPLICATION = 'django_config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DB_NAME = os.environ.get('DB_NAME')
-DB_USER = os.environ.get('DB_USER')
-DB_PASSWORD = os.environ.get('DB_PASSWORD')
-DB_HOST = os.environ.get('DB_HOST', 'localhost' )
-DB_PORT = os.environ.get('DB_PORT', '5432')
-LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING')
+
+LOG_LEVEL = 'INFO'
 
 TEST_DATABASE_PREFIX = 'test'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PASSWORD,
-        'HOST': DB_HOST,
-        'PORT': DB_PORT,
+        'NAME': 'DB_NAME',
+        'USER': 'DB_USER',
+        'PASSWORD': 'DB_PASSWORD',
+        'HOST': 'DB_HOST',
+        'PORT': 'DB_PORT',
     }
 }
+
+# Defaults
+
+# Default Time taken to manually execute automation (min)
+DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES = 60
+
+# Default Time taken to manually create automation (min)
+DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES = 60
+
+#Default average cost of an employee per minute
+DEFAULT_MANUAL_COST_AUTOMATION = 50
+
+#Deafult cost per minute of AAP
+DEFAULT_AUTOMATED_PROCESS_COST = 20
 
 LOGGING = {
     "version": 1,
@@ -200,6 +216,12 @@ CORS_ALLOWED_ORIGINS = [
 
 SHOW_URLLIB3_INSECURE_REQUEST_WARNING = True
 
+### Local settings
+local_config_file = os.path.join(BASE_DIR, "django_config", "local_settings.py")
+try:
+    include(optional(local_config_file), scope=locals())
+except ImportError:
+    pass
 # Load settings from REPORTER_SETTINGS_DIR
 settings_dir = os.environ.get('REPORTER_SETTINGS_DIR', '/etc/reporter/conf.d/')
 settings_files = os.path.join(settings_dir, '*.py')

@@ -9,14 +9,18 @@ from backend.api.v1.template_options.serializers import (
     OrganizationSerializer,
     ClusterSerializer,
     LabelSerializer,
-    JobTemplateSerializer, ProjectSerializer)
-from backend.apps.clusters.helpers import get_costs
+    JobTemplateSerializer,
+    ProjectSerializer)
 from backend.apps.clusters.models import (
     DateRangeChoices,
     Cluster,
     Organization,
     Label,
-    JobTemplate, CostsChoices, Project, Job)
+    JobTemplate,
+    CostsChoices,
+    Project,
+    Job,
+    Costs)
 from backend.apps.common.models import Currency, Settings, FilterSet
 
 
@@ -36,7 +40,7 @@ class TemplateOptionsView(APIView):
         job_templates = JobTemplate.objects.filter(id__in=Job.objects.values_list('job_template', flat=True)).order_by("name")
         currencies = Currency.objects.all().order_by("name")
 
-        costs = get_costs()
+        costs = Costs.get()
 
         filter_sets = FilterSet.objects.all().order_by("name")
 
@@ -50,8 +54,8 @@ class TemplateOptionsView(APIView):
             "date_ranges": date_range,
             "job_templates": JobTemplateSerializer(job_templates, many=True).data,
             "projects": ProjectSerializer(projects, many=True).data,
-            "manual_cost_automation": costs[CostsChoices.MANUAL].value,
-            "automated_process_cost": costs[CostsChoices.AUTOMATED].value,
+            "manual_cost_automation": costs[CostsChoices.MANUAL],
+            "automated_process_cost": costs[CostsChoices.AUTOMATED],
             "currency": Settings.currency(),
             "enable_template_creation_time": Settings.enable_template_creation_time(),
             "filter_sets": FilterSetSerializer(filter_sets, many=True).data,

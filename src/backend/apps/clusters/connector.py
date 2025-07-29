@@ -78,7 +78,7 @@ class ApiConnector(ABC):
             logger.error(f'GET request failed with status {response.status_code}')
             return None
         product_name = response.headers.get("X-Api-Product-Name", None)
-        if product_name is None or  product_name == "AWX":
+        if product_name is None or product_name == "AWX":
             raise Exception("Not supported product.")
         response = response.json()
         return response

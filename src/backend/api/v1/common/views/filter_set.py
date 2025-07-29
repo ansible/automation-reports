@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet
 
@@ -14,5 +15,5 @@ class FilterSetView(
     mixins.DestroyModelMixin):
     serializer_class = FilterSetSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[FilterSet]:
         return FilterSet.objects.all().order_by("name")
