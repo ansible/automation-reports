@@ -1,0 +1,38 @@
+name: Build
+
+# Required GHA setup:
+# GHA variables:
+#  - REGISTRY_REDHAT_IO_USERNAME
+# GHA secrets:
+#  - REGISTRY_REDHAT_IO_PASSWORD
+
+on:
+  push:
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Log in to Red Hat Registry
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: registry.redhat.io
+          username: ${{ vars.REGISTRY_REDHAT_IO_USERNAME }}
+          password: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+      - run: podman info
+      # - run: podman build -f docker/Dockerfile.backend -t aapreport-backend:v0 .
+      - name: Buildah Action
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: aapreport-backend
+          tags: v0
+          containerfiles: |
+            ./docker/Dockerfile.backend
+      - run: podman image inspect aapreport-backend:v0
+      - run: podman image ls | grep aapreport-backend
+      # test built image
+      - run: podman run --rm aapreport-backend:v0 /venv/bin/python ./manage.py -h
