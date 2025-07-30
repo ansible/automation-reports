@@ -105,6 +105,45 @@ podman exec automation-reporter-web /venv/bin/python ./manage.py syncdata --sinc
 # periodic sync executes every one hour - environ CRON_SYNC="0 */1 * * *"
 ```
 
+#### Upgrade PostgreSQL from 13 to 15
+
+The automation dashboard uses PostgreSQL if package was built after 2025.07.10.
+User needs to manually upgrade PostgreSQL disk data.
+
+Create a backup before upgrade , while still on PostgreSQL 13:
+
+```bash
+systemctl stop --user automation-reporter-task.service automation-reporter-web.service
+podman exec -it postgresql /usr/bin/pg_dumpall -U postgres > dumpfile
+systemctl stop --user postgresql
+podman volume export postgresql -o volume-postgresql-13.tar
+```
+
+Destroy old postgresql volume, and redeploy to re-create volume with PostgreSQL 15.
+After deploy, leave only postgresql running, and restore database content from dumpfile.
+
+```bash
+podman rm postgresql
+podman volume rm postgresql
+
+# deploy, to switch to PostgreSQL 15
+ansible-playbook -i inventory ansible.containerized_installer.reporter_install
+
+systemctl stop --user automation-reporter-task.service automation-reporter-web.service
+# podman exec -it postgresql psql -U postgres < dumpfile
+podman cp dumpfile postgresql:/
+podman exec -it postgresql bash
+# now run inside container
+psql -U postgres -c '\l'
+psql -U postgres -c 'DROP DATABASE aapreports;'
+psql -U postgres -c 'CREATE DATABASE aapreports;'
+psql -U postgres aapreports < /dumpfile
+exit
+
+# redeploy, to start application containers
+ansible-playbook -i inventory ansible.containerized_installer.reporter_install
+```
+
 ### Uninstall using bundled installer
 
 Uninstall application.
