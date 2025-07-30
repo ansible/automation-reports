@@ -29,7 +29,7 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
           <DashboardTotals title={'Number of hosts jobs are running on'} result={props.value} />
         </CardTitle>
         <CardBody>
-          <div className={`chart-wrap host-chart ${chartData.items.length === 0 && 'no-data'}`}>
+          <div className={`pf-v6-u-h-initial pf-v6-u-w-100 host-chart ${chartData.items.length === 0 && 'no-data'}`}>
             <Chart
               height={250}
               ariaDesc="Number of hosts jobs are running on"

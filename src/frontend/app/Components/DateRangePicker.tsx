@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { BaseDropdown } from '@app/Components';
 import { DateRangePickerProps, FilterOption, datePickerDefaultProps } from '@app/Types';
-
 import { DatePicker, Flex, FlexItem, isValidDate, yyyyMMddFormat } from '@patternfly/react-core';
 import { useAppSelector } from '@app/hooks';
 import { dateRangeOptions } from '@app/Store';

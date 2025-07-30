@@ -19,7 +19,6 @@ import {
   Spinner,
   TextInput,
 } from '@patternfly/react-core';
-import '@app/styles/addEditView.scss';
 import { AddEditViewProps, FilterProps } from '@app/Types';
 import { deepClone, formatDateTimeToDate } from '@app/Utils';
 import { FilterSet } from '@app/Types';
@@ -162,7 +161,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       id={'filter-set-menu-toggle'}
       aria-label={' Save as report'}
       splitButtonItems={[
-        <MenuToggleAction id="split-button-save" key="split-action-save" onClick={toggleClick} aria-label="Save">
+        <MenuToggleAction key="split-action-save" onClick={toggleClick} aria-label="Save" className='pf-v6-u-w-100'>
           Save as report
         </MenuToggleAction>,
       ]}
@@ -170,7 +169,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
   );
 
   const select = (
-    <div ref={containerRefDropdown} className="save-as-report">
+    <div ref={containerRefDropdown} className="save-as-report pf-v6-u-mr-md">
       <Popper
         trigger={menuToggle}
         triggerRef={toggleRef}
@@ -183,63 +182,79 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
   );
 
   const modal = (
-    <Modal
-      position="top"
-      variant={ModalVariant.small}
-      isOpen={isModalOpen}
-      onClose={closeModal}
-      aria-labelledby="form-modal-set-filter"
-      aria-describedby="modal-box-set-filter-form"
-      className="add-edit-report-modal"
-    >
-      <ModalHeader
-        title={modalVariant === 'create' ? 'Create report' : modalVariant === 'edit' ? 'Edit report' : 'Delete report'}
-        descriptorId="modal-box-description-form"
-        labelId="form-filter-set-title"
-      />
-      <ModalBody>
-        {modalVariant !== 'delete' && (
-          <div className={'modal-wrap'}>
-            {filterSaveError && <Alert variant="danger" isInline title={filterSaveError} />}
-            {filterSaveProcess && (
-              <div className={'modal-loader'}>
-                <Spinner className={'spinner'} diameter="40px" aria-label="Loader" />
-              </div>
-            )}
-            <Form id="modal-set-view-form" className={filterSaveProcess ? 'hidden' : ''} onSubmit={onFormSubmit}>
-              <FormGroup isRequired label={'Report name'}>
-                <TextInput
-                  value={filterNameValue}
-                  onChange={handleFilterNameValueChange}
-                  autoComplete={'false'}
-                  isRequired
-                  type="text"
-                  id="name"
-                  name="name"
-                />
-              </FormGroup>
-            </Form>
-          </div>
-        )}
-        {modalVariant === 'delete' && (
-          <div className={'modal-wrap'}>Do you really want to delete filter set {filterNameValue}?</div>
-        )}
-      </ModalBody>
-      <ModalFooter>
-        <Button
-          key="create"
-          variant="primary"
-          form="modal-set-view-form"
-          isDisabled={!filterNameValue?.trim()?.length || filterSaveProcess}
-          onClick={saveFilter}
-        >
-          {modalVariant === 'create' ? 'Create' : modalVariant === 'edit' ? 'Save' : 'Delete'}
-        </Button>
-        <Button key="cancel" variant="link" onClick={closeModal} isDisabled={filterSaveProcess}>
-          Cancel
-        </Button>
-      </ModalFooter>
-    </Modal>
+    <>
+      <style>
+        {`
+          .modal-wrap {
+            min-height: 66px;
+          }
+          .pf-v6-c-form.hidden {
+            display: none;
+          }
+          .add-edit-report-modal-button:focus {
+            --pf-v6-c-button--BackgroundColor: transparent;
+          }
+        `}
+      </style>
+      <Modal
+        position="top"
+        variant={ModalVariant.small}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        aria-labelledby="form-modal-set-filter"
+        aria-describedby="modal-box-set-filter-form"
+        className='pf-v6-u-mt-4xl'
+      >
+        <ModalHeader
+          title={modalVariant === 'create' ? 'Create report' : modalVariant === 'edit' ? 'Edit report' : 'Delete report'}
+          descriptorId="modal-box-description-form"
+          labelId="form-filter-set-title"
+        />
+        <ModalBody>
+          {modalVariant !== 'delete' && (
+            <div className={'modal-wrap'}>
+              {filterSaveError && <Alert variant="danger" isInline title={filterSaveError} />}
+              {filterSaveProcess && (
+                <div className={'pf-v6-l-flex pf-m-justify-content-center pf-v6-u-py-md'}>
+                  <Spinner className={'spinner'} diameter="40px" aria-label="Loader" />
+                </div>
+              )}
+              <Form id="modal-set-view-form" className={filterSaveProcess ? 'hidden' : ''} onSubmit={onFormSubmit}>
+                <FormGroup isRequired label={'Report name'}>
+                  <TextInput
+                    value={filterNameValue}
+                    onChange={handleFilterNameValueChange}
+                    autoComplete={'false'}
+                    isRequired
+                    type="text"
+                    id="name"
+                    name="name"
+                  />
+                </FormGroup>
+              </Form>
+            </div>
+          )}
+          {modalVariant === 'delete' && (
+            <div className={'modal-wrap'}>Do you really want to delete filter set {filterNameValue}?</div>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            key="create"
+            variant="primary"
+            form="modal-set-view-form"
+            isDisabled={!filterNameValue?.trim()?.length || filterSaveProcess}
+            onClick={saveFilter}
+            className="add-edit-report-modal-button"
+          >
+            {modalVariant === 'create' ? 'Create' : modalVariant === 'edit' ? 'Save' : 'Delete'}
+          </Button>
+          <Button className="add-edit-report-modal-button" key="cancel" variant="link" onClick={closeModal} isDisabled={filterSaveProcess}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal>
+    </>
   );
 
   return (

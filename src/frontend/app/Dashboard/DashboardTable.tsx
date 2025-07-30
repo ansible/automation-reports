@@ -135,14 +135,14 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
 
   return (
     <>
-      <Card className="dashboard-table">
+      <Card>
         <CardBody>
           {props.loading && (
             <div className={'table-loader'}>
               <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />
             </div>
           )}
-          <Flex className="pf-v6-u-mb-lg pf-v6-u-align-items-flex-start">
+          <Flex className="pf-v6-u-mb-lg pf-v6-u-align-items-flex-start pf-m-row-gap-sm">
             <FlexItem>
               <Form onSubmit={(e) => e.preventDefault()}>
                 <FormGroup
@@ -189,16 +189,16 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                 </FormGroup>
               </Form>
             </FlexItem>
-            <FlexItem className={'switch-time-taken-automation'}>{switchEnableTemplateCreationTime}</FlexItem>
+            <FlexItem className={'switch-time-taken-automation pf-v6-u-mt-xl-on-lg'}>{switchEnableTemplateCreationTime}</FlexItem>
             {props.data.count > 0 && (
-              <FlexItem className={'cvs-export-btn'}>
+              <FlexItem className={'pf-v6-u-ml-auto-on-lg pf-v6-u-w-100-on-sm pf-v6-u-w-auto-on-lg pf-v6-u-mt-sm-on-sm pf-v6-u-mt-0-on-lg'}>
                 <Button id={'csv-export'} onClick={exportToCsv} variant="secondary" isInline>
                   Export as CSV
                 </Button>
               </FlexItem>
             )}
           </Flex>
-          <Grid hasGutter className="mgb-36">
+          <Grid hasGutter className="pf-v6-u-mb-xl">
             <GridItem className="pf-m-12-col pf-m-6-col-on-md pf-m-3-col-on-2xl">
               <Card className="card">
                 <CardBody>

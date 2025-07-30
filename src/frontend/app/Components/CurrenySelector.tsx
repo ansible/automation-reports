@@ -15,14 +15,31 @@ const CurrencySelector: React.FunctionComponent = () => {
   };
 
   const filterSelector = (
-    <BaseDropdown
-      id={'currency-options-menu'}
-      options={currencyChoices}
-      selectedItem={selectedItem}
-      onSelect={onSelect}
-      idKey={'id'}
-      valueKey={'name'}
-    ></BaseDropdown>
+    <>
+      <style>
+        {`
+          #currency-options-menu {
+            min-width: 200px;
+          }
+
+          #currency-options-menu-toggle {
+            min-width: 200px;
+            background: transparent;
+            @media (max-width: 1300px) {
+              min-width: 250px !important;
+            }
+          }
+        `}
+      </style>
+      <BaseDropdown
+        id={'currency-options-menu'}
+        options={currencyChoices}
+        selectedItem={selectedItem}
+        onSelect={onSelect}
+        idKey={'id'}
+        valueKey={'name'}
+      ></BaseDropdown>
+    </>
   );
 
   return filterSelector;

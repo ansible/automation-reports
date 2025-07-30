@@ -6,11 +6,21 @@ interface IAppLayout {
 }
 
 const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
+  const mastheadStyle: React.CSSProperties = {
+    backgroundColor: 'var(--pf-v6-global--BackgroundColor--dark-100)',
+    height: '76px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.267)',
+    position: 'sticky',
+  };
+  const brandStyle: React.CSSProperties = {
+    alignSelf: 'center',
+    border: 'none',
+  };
   const masthead = (
-    <Masthead>
-      <MastheadMain>
-        <MastheadBrand data-codemods>
-          <MastheadLogo data-codemods>
+    <Masthead style={mastheadStyle}>
+      <MastheadMain style={{ alignSelf: 'stretch' }}>
+        <MastheadBrand data-codemods style={brandStyle}>
+          <MastheadLogo data-codemods style={{ maxHeight: 'unset' }}>
             <a href="/" aria-label="home">
               <svg
                 style={{ height: '48px' }}
