@@ -79,8 +79,8 @@ cd src/backend_workers
 ## Frontend
 
 ```bash
-yarn --version  # 3.8.6
+npm --version
 cd src/frontend
-yarn install
-yarn run start:dev
+npm install
+npm run start:dev
 ```
