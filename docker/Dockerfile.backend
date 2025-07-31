@@ -1,7 +1,7 @@
 # https://catalog.redhat.com/software/containers/ansible-automation-platform-25/controller-rhel8/650a5670acdb2bef1d5d3a1b?container-tabs=dockerfile
 
 # =============================================================================
-FROM registry.redhat.io/ubi9/nodejs-20 AS web-builder
+FROM registry.redhat.io/ubi9/nodejs-22 AS web-builder
 
 ENV DESCRIPTION="Red Hat Automation Platform - reports frontend \
 "
