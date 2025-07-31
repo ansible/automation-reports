@@ -50,8 +50,8 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
   const allViews = useAppSelector(viewsById);
   const dispatch = useAppDispatch();
   const interval = React.useRef<number | undefined>(undefined);
-  const refreshInterval: string = process.env.DATA_REFRESH_INTERVAL_SECONDS
-    ? process.env.DATA_REFRESH_INTERVAL_SECONDS
+  const refreshInterval: string = import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
+    ? import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
     : '60';
 
   const setInterval = () => {

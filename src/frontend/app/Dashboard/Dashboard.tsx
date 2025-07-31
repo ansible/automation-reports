@@ -37,8 +37,8 @@ import {
 import { CurrencySelector } from '@app/Components';
 import { IdNameItem } from '@app/Types/ReportDetailsType';
 
-const refreshInterval: string = process.env.DATA_REFRESH_INTERVAL_SECONDS
-  ? process.env.DATA_REFRESH_INTERVAL_SECONDS
+const refreshInterval: string = import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
+  ? import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
   : '60';
 
 const Dashboard: React.FunctionComponent = () => {

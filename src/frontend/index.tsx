@@ -4,7 +4,7 @@ import App from '@app/index';
 import { Provider } from 'react-redux';
 import { store } from '@app/Store/store';
 
-if (process.env.NODE_ENV !== 'production') {
+if (import.meta.env.NODE_ENV !== 'production') {
   const config = {
     rules: [
       {
@@ -14,8 +14,9 @@ if (process.env.NODE_ENV !== 'production') {
     ],
   };
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const axe = require('react-axe');
-  axe(React, ReactDOM, 1000, config).then();
+  import('react-axe').then((axe) => {
+    axe.default(React, ReactDOM, 1000, config);
+  });
 }
 
 const root = ReactDOM.createRoot(document.getElementById('app') as Element);
