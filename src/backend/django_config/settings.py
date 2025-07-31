@@ -15,7 +15,7 @@ import traceback
 from pathlib import Path
 
 from split_settings.tools import optional, include
-from tests.testapp.project.settings import BASE_DIR
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,7 +34,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'localhost:8000',
-    'localhost:3000'
+    'localhost:3000',
+    'testserver'
 ]
 
 # Application definition
@@ -109,16 +110,21 @@ WSGI_APPLICATION = 'django_config.wsgi.application'
 
 LOG_LEVEL = 'INFO'
 
-TEST_DATABASE_PREFIX = 'test'
+
+DB_NAME = 'DB_NAME'
+DB_USER = 'DB_USER',
+DB_PASSWORD = 'DB_PASSWORD'
+DB_HOST = 'DB_HOST'
+DB_PORT = 'DB_PORT'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'DB_NAME',
-        'USER': 'DB_USER',
-        'PASSWORD': 'DB_PASSWORD',
-        'HOST': 'DB_HOST',
-        'PORT': 'DB_PORT',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
     }
 }
 
