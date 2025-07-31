@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-let apiUrl = process.env.API_URL;
+let apiUrl = import.meta.env.VITE_API_URL;
 
 if (!apiUrl) {
   throw new Error('Missing API url');

@@ -25,10 +25,11 @@
     "skipLibCheck": true,
   },
   "include": [
+    "vite.config.ts",
     "./src/frontend/**/*.ts",
     "./src/frontend/**/*.tsx",
     "./src/frontend/**/*.jsx",
-    "./src/frontend/**/*.js"
+    "./src/frontend/**/*.js",
   ],
   "exclude": ["node_modules",]
 }
