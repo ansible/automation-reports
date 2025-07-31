@@ -10,33 +10,33 @@ import {
   ToolbarGroup,
   ToolbarItem,
 } from '@patternfly/react-core';
-import { useAppDispatch, useAppSelector } from '@app/hooks';
-import {
-  fetchTemplateOptions,
-  filterChoicesData,
-  filterChoicesDataById,
-  filterOptions,
-  filterOptionsById,
-  filterRetrieveError,
-  filterSetOptions,
-  setView,
-  viewsById,
-} from '@app/Store';
 import { AddEditView, BaseDropdown, DateRangePicker, MultiChoiceDropdown } from '@app/Components';
 import { FilterComponentProps, FilterOption, FilterProps, RequestFilter } from '@app/Types';
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
 import '../styles/filters.scss';
 import { ViewSelector } from '@app/Components/ViewsSelector';
 import { formatDateTimeToDate } from '@app/Utils';
+import useFilterStore from '@app/Store/filterStore';
+import useCommonStore  from '@app/Store/commonStore';
+import {
+  useFilterChoicesData,
+  useFilterChoicesDataById,
+  useFilterRetrieveError,
+  useFilterOptionsById,
+} from '@app/Store/filterSelectors';
+import {
+  useViewsById,
+} from '@app/Store/commonSelectors';
+
 
 export const Filters: React.FunctionComponent<FilterComponentProps> = (props: FilterComponentProps) => {
-  const filterOptionsList = useAppSelector(filterOptions);
-  const filterChoicesList = useAppSelector(filterChoicesData);
-  const viewChoices = useAppSelector(filterSetOptions);
-  const error = useAppSelector(filterRetrieveError);
+  const filterOptionsList = useFilterStore((state) => state.filterOptions);
+  const filterChoicesList = useFilterChoicesData();
+  const viewChoices = useCommonStore((state) => state.filterSetOptions);
+  const error = useFilterRetrieveError();
   const [selectedOption, selectOption] = React.useState<string | number>();
-  const filterOptionsDict = useAppSelector(filterOptionsById) as Record<string, FilterOption>;
-  const filterChoicesDataByOption = useAppSelector(filterChoicesDataById);
+  const filterOptionsDict = useFilterOptionsById();
+  const filterChoicesDataByOption = useFilterChoicesDataById();
   const [filterSelection, selectFilter] = React.useState<FilterProps>({
     organization: [],
     job_template: [],
@@ -47,8 +47,9 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     start_date: undefined,
     end_date: undefined,
   });
-  const allViews = useAppSelector(viewsById);
-  const dispatch = useAppDispatch();
+  const fetchTemplateOptions = useFilterStore((state) => state.fetchTemplateOptions);
+  const setView = useCommonStore((state) => state.setView);
+  const allViews = useViewsById();
   const interval = React.useRef<number | undefined>(undefined);
   const refreshInterval: string = import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
     ? import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
@@ -72,7 +73,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
 
   const fetchFilters = async () => {
     clearInterval();
-    await dispatch(fetchTemplateOptions());
+    await fetchTemplateOptions();
     setInterval();
   };
 
@@ -128,7 +129,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       ['project']: [],
       ['label']: [],
     }));
-    dispatch(setView(null));
+    setView(null);
   };
 
   const viewSelected = (viewId: string | number | null | undefined) => {

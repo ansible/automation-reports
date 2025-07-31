@@ -1,26 +1,28 @@
 import * as React from 'react';
-import { useAppDispatch, useAppSelector } from '@app/hooks';
-import { filterSetOptions, selectedView, setView } from '@app/Store';
 import { BaseDropdown } from '@app/Components/BaseDropdown';
+import useCommonStore  from '@app/Store/commonStore';
 
 type ViewSelectorProps = {
   onSelect: (itemId: string | number | null) => void;
 };
 
 const ViewSelector: React.FunctionComponent<ViewSelectorProps> = (props: ViewSelectorProps) => {
-  const viewChoices = useAppSelector(filterSetOptions);
-  const selectedItem = useAppSelector(selectedView);
-  const dispatch = useAppDispatch();
+  const viewChoices = useCommonStore((state) => state.filterSetOptions);
+  const selectedItem = useCommonStore((state) => state.selectedView);
+  const setView = useCommonStore((state) => state.setView);
+
+
   const onSelect = (event?: React.MouseEvent, itemId?: string | number) => {
     if (itemId) {
       const viewID = typeof itemId === 'string' ? parseInt(itemId) : itemId;
-      dispatch(setView(viewID));
+      setView(viewID);
       props.onSelect(viewID);
     } else {
-      dispatch(setView(null));
+      setView(null);
       props.onSelect(null);
     }
   };
+  
 
   return (
     <BaseDropdown

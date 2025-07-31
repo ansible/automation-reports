@@ -2,13 +2,12 @@ import * as React from 'react';
 import { BaseDropdown } from '@app/Components';
 import { DateRangePickerProps, FilterOption, datePickerDefaultProps } from '@app/Types';
 import { DatePicker, Flex, FlexItem, isValidDate, yyyyMMddFormat } from '@patternfly/react-core';
-import { useAppSelector } from '@app/hooks';
-import { dateRangeOptions } from '@app/Store';
+import useFilterStore from '@app/Store/filterStore';
 
 export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (props: DateRangePickerProps) => {
   props = { ...datePickerDefaultProps, ...props };
-  const dateChoices = useAppSelector(dateRangeOptions);
   const [dateOptions, setDateChoices] = React.useState<FilterOption[]>([]);
+  const dateChoices = useFilterStore((state) => state.dateRangeOptions);
 
   React.useEffect(() => {
     if (dateChoices?.length) {

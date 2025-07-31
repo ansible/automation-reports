@@ -1,16 +1,20 @@
 import * as React from 'react';
-import { useAppDispatch, useAppSelector } from '@app/hooks';
-import { currencyOptions, selectedCurrency } from '@app/Store';
 import { BaseDropdown } from '@app/Components/BaseDropdown';
-import { setCurrency } from '@app/Store/commonSlice';
+import useCommonStore from '@app/Store/commonStore';
+import {
+  useCurrencyOptions,
+  useSelectedCurrency,
+} from '@app/Store/commonSelectors';
+
 const CurrencySelector: React.FunctionComponent = () => {
-  const currencyChoices = useAppSelector(currencyOptions);
-  const selectedItem = useAppSelector(selectedCurrency);
-  const dispatch = useAppDispatch();
+  const currencyChoices = useCurrencyOptions();
+  const selectedItem = useSelectedCurrency();
+  const setCurrency = useCommonStore((state) => state.setCurrency);
+
   const onSelect = (_event?: React.MouseEvent, itemId?: string | number | undefined) => {
     if (itemId) {
       const currencyId = typeof itemId === 'string' ? parseInt(itemId) : itemId;
-      dispatch(setCurrency(currencyId));
+      setCurrency(currencyId);
     }
   };
 

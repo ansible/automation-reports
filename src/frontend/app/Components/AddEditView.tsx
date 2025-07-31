@@ -22,22 +22,28 @@ import {
 import { AddEditViewProps, FilterProps } from '@app/Types';
 import { deepClone, formatDateTimeToDate } from '@app/Utils';
 import { FilterSet } from '@app/Types';
-import { useAppDispatch, useAppSelector } from '@app/hooks';
-import { deleteView, saveView, selectedView, viewSaveError, viewSavingProcess, viewsById } from '@app/Store';
+import useCommonStore from '@app/Store/commonStore';
+import {
+  useViewsById,
+  useViewSavingProcess,
+  useViewSaveError,
+} from '@app/Store/commonSelectors';
 
 const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditViewProps) => {
   const [isModalOpen, setModalOpen] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
   const [modalVariant, setModalVariant] = React.useState<string>('create');
   const [filterNameValue, setFilterNameValue] = React.useState('');
-  const filterSaveProcess = useAppSelector(viewSavingProcess);
-  const filterSaveError = useAppSelector(viewSaveError);
+  const filterSaveProcess = useViewSavingProcess();
+  const filterSaveError = useViewSaveError();
   const menuRef = React.useRef<HTMLDivElement>(null);
   const toggleRef = React.useRef<HTMLButtonElement>(null);
   const containerRefDropdown = React.useRef<HTMLDivElement>(null);
-  const selectedViewItem = useAppSelector(selectedView);
-  const allViews = useAppSelector(viewsById);
-  const dispatch = useAppDispatch();
+  const selectedViewItem = useCommonStore((state) => state.selectedView);
+  const allViews = useViewsById();
+
+  const saveView = useCommonStore((state) => state.saveView);
+  const deleteView = useCommonStore((state) => state.deleteView);
 
   const handleMenuClickOutside = (event: MouseEvent) => {
     if (isMenuOpen && !containerRefDropdown.current?.contains(event.target as Node)) {
@@ -63,15 +69,16 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
     setFilterNameValue(value);
   };
 
-  const saveFilter = () => {
+  const saveFilter = async () => {
     if (modalVariant === 'delete') {
-      dispatch(deleteView(selectedViewItem as number)).then((response) => {
+      deleteView(selectedViewItem as number).then((response) => {
         if (!response?.['error']) {
           closeModal();
           props.onViewDelete();
           setModalVariant('create');
         }
       });
+
     } else {
       const filters = deepClone(props.filters) as FilterProps;
       const viewData = {
@@ -96,7 +103,8 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
           viewData.filters.end_date = formatDateTimeToDate(filters.end_date);
         }
       }
-      dispatch(saveView(viewData)).then((response) => {
+
+      saveView(viewData).then((response) => {
         if (!response?.['error']) {
           closeModal();
         }

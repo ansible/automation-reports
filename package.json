@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "20 || 21 || 22"
+  },
   "main": "./src/frontend/index.tsx",
   "scripts": {
     "prebuild": "npm run type-check && npm run clean",
@@ -91,7 +94,8 @@
     "victory-pie": "^37.3.5",
     "victory-scatter": "^37.3.5",
     "victory-stack": "^37.3.5",
-    "victory-voronoi-container": "^37.3.5"
+    "victory-voronoi-container": "^37.3.5",
+    "zustand": "^5.0.6"
   },
   "resolutions": {
     "@patternfly/react-core": "6.2.2"
