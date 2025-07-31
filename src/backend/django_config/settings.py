@@ -18,6 +18,7 @@ from pathlib import Path
 
 from split_settings.tools import optional, include
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,8 +31,14 @@ SECRET_KEY = 'django-insecure-cu=@gv*8$8+rr2-^-8^g00!ib_9-utgu!26#q#@)!y%3#wt^1#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-allowed_hosts_str = os.environ.get("ALLOWED_HOSTS", "")
-ALLOWED_HOSTS = allowed_hosts_str.split(",")
+
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'localhost:8000',
+    'localhost:3000',
+    'testserver'
+]
 
 # Application definition
 
@@ -107,14 +114,15 @@ WSGI_APPLICATION = 'django_config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DB_NAME = os.environ.get('DB_NAME')
-DB_USER = os.environ.get('DB_USER')
-DB_PASSWORD = os.environ.get('DB_PASSWORD')
-DB_HOST = os.environ.get('DB_HOST', 'localhost')
-DB_PORT = os.environ.get('DB_PORT', '5432')
-LOG_LEVEL = "DEBUG"
 
-TEST_DATABASE_PREFIX = 'test'
+LOG_LEVEL = 'INFO'
+
+
+DB_NAME = 'DB_NAME'
+DB_USER = 'DB_USER',
+DB_PASSWORD = 'DB_PASSWORD'
+DB_HOST = 'DB_HOST'
+DB_PORT = 'DB_PORT'
 
 DATABASES = {
     'default': {

@@ -4,4 +4,12 @@ readme = "README.md"
 requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "backend.django_config.settings"
+addopts = "-create-db --nomigrations --tb=native --ds=backend.tests.settings_for_test"
+testpaths = [
+  "tests"
+  ]
+
+filterwarnings = [
+  "ignore::django.utils.deprecation.RemovedInDjango50Warning",
+  "ignore::django.utils.deprecation.RemovedInDjango51Warning",
+]
