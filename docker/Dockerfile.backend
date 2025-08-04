@@ -1,7 +1,7 @@
 # https://catalog.redhat.com/software/containers/ansible-automation-platform-25/controller-rhel8/650a5670acdb2bef1d5d3a1b?container-tabs=dockerfile
 
 # =============================================================================
-FROM registry.redhat.io/ubi9/nodejs-20 AS web-builder
+FROM registry.redhat.io/ubi9/nodejs-22 AS web-builder
 
 ENV DESCRIPTION="Red Hat Automation Platform - reports frontend \
 "
@@ -16,25 +16,19 @@ ENV LC_ALL=en_US.UTF-8
 
 RUN node --version
 RUN npm --version
-RUN npx --version
-RUN npm install -g corepack
 
-# COPY . /code
 RUN mkdir -p /code
-COPY package.json yarn.lock .yarnrc.yml /code/
+COPY package.json package-lock.json /code/
 WORKDIR /code
-# RUN corepack enable
-RUN corepack install
-RUN yarn install
+RUN npm install
 # RUN yarn install --immutable
-COPY .eslintrc.js stylePaths.js tsconfig.json webpack.common.js webpack.dev.js webpack.prod.js /code/
+COPY .eslintrc.js stylePaths.js tsconfig.json vite.config.ts /code/
 COPY src /code/src
 RUN rm -fr dist/
 # env variables needed at build time
-RUN echo '' > .env
 # we are happy with relative URLs
-RUN echo 'API_URL=/' >> .env
-RUN yarn build
+ENV VITE_API_URL=./
+RUN npm run build
 
 # https://github.com/sclorg/nginx-container/blob/master/1.22/README.md
 # FROM registry.redhat.io/ubi8/nginx-122
@@ -88,7 +82,7 @@ WORKDIR /code/src/backend
 ENV PYTHONPATH=/code/src
 RUN mkdir -p /etc/reporter/conf.d
 
-COPY --from=web-builder /code/dist /opt/app-root/src
+COPY --from=web-builder /code/src/frontend/dist /opt/app-root/src
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 RUN mkdir /code/docker/
