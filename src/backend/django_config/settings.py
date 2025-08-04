@@ -112,7 +112,7 @@ LOG_LEVEL = 'INFO'
 
 
 DB_NAME = 'DB_NAME'
-DB_USER = 'DB_USER',
+DB_USER = 'DB_USER'
 DB_PASSWORD = 'DB_PASSWORD'
 DB_HOST = 'DB_HOST'
 DB_PORT = 'DB_PORT'
@@ -231,9 +231,9 @@ except ImportError:
 # Load settings from REPORTER_SETTINGS_DIR
 settings_dir = os.environ.get('REPORTER_SETTINGS_DIR', '/etc/reporter/conf.d/')
 settings_files = os.path.join(settings_dir, '*.py')
-try:
-    include(optional(settings_files), scope=locals())
-except ImportError:
-    traceback.print_exc()
-    sys.exit(1)
-
+if os.path.isdir(settings_dir):
+    try:
+        include(optional(settings_files), scope=locals())
+    except ImportError:
+        traceback.print_exc()
+        sys.exit(1)
