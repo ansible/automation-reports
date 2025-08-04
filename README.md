@@ -111,6 +111,25 @@ python manage.py run_dispatcher --cancel <task_uuid>
 
 **Note**: The dispatcher must be running for sync tasks to be processed. In production, this should be run as a separate service.
 
+### Tests
+
+```bash
+# set -o allexport; source .env; set +o allexport;
+
+cd src/backend
+cat <<EOF >django_config/local_settings.py
+DB_NAME = "aapreports"
+DB_USER = "root"
+DB_PASSWORD = "TODO"
+DB_HOST = "localhost"
+DB_PORT = 5432
+EOF
+docker exec -it aapreport-db-1 psql -c 'ALTER USER root CREATEDB;'
+
+export PYTHONPATH=$PWD/.. # pip install -e .
+pytest --cov=backend
+```
+
 ## Frontend
 
 ```bash
