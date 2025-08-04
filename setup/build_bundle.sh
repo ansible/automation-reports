@@ -6,7 +6,10 @@ set -e
   ansible-playbook -i inventory ansible.containerized_installer.util_podman_login
 )
 
-AAP_REPORTER_IMAGE="${AAP_REPORTER_IMAGE:-registry.redhat.io/ansible-automation-platform-24/aapreport-backend:latest}"
+# GHA pushes to quay.io/aap/automation-reports:latest,
+# but all other images are at registry.redhat.io.
+AAP_REPORTER_IMAGE="${AAP_REPORTER_IMAGE:-registry.redhat.io/ansible-automation-platform-24/automation-reports:latest}"
+# AAP_REPORTER_IMAGE="${AAP_REPORTER_IMAGE:-quay.io/aap/automation-reports:latest}"
 podman build -f docker/Dockerfile.backend -t $AAP_REPORTER_IMAGE . # --no-cache
 
 cd setup/

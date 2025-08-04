@@ -3,8 +3,10 @@ name: Build
 # Required GHA setup:
 # GHA variables:
 #  - REGISTRY_REDHAT_IO_USERNAME
+#  - REGISTRY_QUAY_IO_USERNAME
 # GHA secrets:
 #  - REGISTRY_REDHAT_IO_PASSWORD
+#  - REGISTRY_QUAY_IO_PASSWORD
 
 on:
   push:
@@ -24,15 +26,25 @@ jobs:
           username: ${{ vars.REGISTRY_REDHAT_IO_USERNAME }}
           password: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
       - run: podman info
-      # - run: podman build -f docker/Dockerfile.backend -t aapreport-backend:v0 .
       - name: Buildah Action
+        id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-          image: aapreport-backend
-          tags: v0
+          image: automation-reports
+          tags: ${{ github.ref_name }}
           containerfiles: |
             ./docker/Dockerfile.backend
-      - run: podman image inspect aapreport-backend:v0
-      - run: podman image ls | grep aapreport-backend
-      # test built image
-      - run: podman run --rm aapreport-backend:v0 /venv/bin/python ./manage.py -h
+      - run: podman image inspect automation-reports:${{ github.ref_name }}
+      - run: podman image ls | grep automation-reports
+      - name: Test built image
+        run: podman run --rm automation-reports:${{ github.ref_name }} /venv/bin/python ./manage.py -h
+      - name: Push To quay.io
+        id: push-to-quay
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: quay.io/aap
+          username: ${{ vars.REGISTRY_QUAY_IO_USERNAME }}
+          password: ${{ secrets.REGISTRY_QUAY_IO_PASSWORD }}
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
