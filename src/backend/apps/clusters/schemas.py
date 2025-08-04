@@ -35,6 +35,20 @@ class DateRangeSchema(BaseModel):
         }
 
 
+class QueryParams(BaseModel):
+    date_range: DateRangeSchema | None = None
+    organization: List[int] | None = None
+    job_template: List[int] | None = None
+    label: List[int] | None = None
+    project: List[int] | None = None
+    cluster: List[int] | None = None
+
+
+class RelatedLinks(BaseModel):
+    successful_jobs: str | None = ""
+    failed_jobs: str | None = ""
+
+
 class NameDescriptionModelSchema(FrozenModel):
     id: int
     name: str
@@ -44,7 +58,7 @@ class NameDescriptionModelSchema(FrozenModel):
 class InstanceGroup(FrozenModel):
     id: int
     name: str
-    is_container_group: bool
+    is_container_group: bool | None = False
 
 
 class LabelModelSchema(FrozenModel):
@@ -61,6 +75,7 @@ class ProjectSchema(FrozenModel):
     id: int
     name: str
     scm_type: str | None = ""
+    description: str | None = ""
 
 
 class SummaryFields(FrozenModel):
@@ -117,3 +132,49 @@ class ExternalJobSchema(FrozenModel):
     launch_type: Literal["manual", "relaunch", "callback", "scheduled", "dependency", "workflow", "webhook", "sync", "scm"]
     created: datetime
     modified: datetime
+
+
+class ReportDataValue(FrozenModel):
+    value: float | int | None = 0
+
+
+class TopUsers(FrozenModel):
+    user_id: int
+    user_name: str
+    count: int
+
+
+class TopProjects(FrozenModel):
+    project_id: int
+    project_name: str
+    count: int
+
+
+class ReportData(FrozenModel):
+    total_number_of_unique_hosts: ReportDataValue | None = ReportDataValue(value=0)
+    total_number_of_successful_jobs: ReportDataValue | None = ReportDataValue(value=0)
+    total_number_of_failed_jobs: ReportDataValue | None = ReportDataValue(value=0)
+    total_number_of_job_runs: ReportDataValue | None = ReportDataValue(value=0)
+    total_number_of_host_job_runs: ReportDataValue | None = ReportDataValue(value=0)
+    total_hours_of_automation: ReportDataValue | None = ReportDataValue(value=0)
+    cost_of_automated_execution: ReportDataValue | None = ReportDataValue(value=0)
+    cost_of_manual_automation: ReportDataValue | None = ReportDataValue(value=0)
+    total_saving: ReportDataValue | None = ReportDataValue(value=0)
+    total_time_saving: ReportDataValue | None = ReportDataValue(value=0)
+    users: List[TopUsers] | None = []
+    projects: List[TopProjects] | None = []
+
+
+class ChartItem(BaseModel):
+    x: datetime | None = None
+    y: int | None = None
+
+
+class ChartData(BaseModel):
+    items: List[ChartItem] | None = []
+    range: str | None = None
+
+
+class ChartsData(FrozenModel):
+    host_chart: ChartData | None = ChartData()
+    job_chart: ChartData | None = ChartData()

@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet
 
@@ -8,5 +9,5 @@ from backend.apps.clusters.models import JobTemplate
 class TemplateView(mixins.ListModelMixin, mixins.UpdateModelMixin, GenericViewSet):
     serializer_class = TemplateSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[JobTemplate]:
         return JobTemplate.objects.all()

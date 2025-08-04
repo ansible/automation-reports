@@ -1,10 +1,27 @@
+from dateutil.relativedelta import relativedelta
 from rest_framework import serializers
 
-from backend.apps.clusters.helpers import sec2time
 from backend.apps.clusters.models import Job
 
 
-class JobSerializer(serializers.ModelSerializer):
+def sec2time(sec: int) -> str:
+    """
+    This function converts a number of seconds into a human-readable string format,
+    displaying hours, minutes, and seconds.
+    It uses `relativedelta` to break down the total seconds and combines days into hours for the output.
+    If the total time is less than one hour, it omits the hours part for brevity.
+    """
+    rd = relativedelta(seconds=sec)
+    hours = rd.hours + (24 * rd.days)
+    seconds = round(rd.seconds)
+    return (
+        f"{hours}h {rd.minutes}min {seconds}sec"
+        if hours > 0
+        else f"{rd.minutes}min {seconds}sec"
+    )
+
+
+class JobSerializer(serializers.ModelSerializer[Job]):
     runs = serializers.IntegerField(read_only=True)
     elapsed = serializers.DecimalField(max_digits=10, decimal_places=2)
     elapsed_str = serializers.SerializerMethodField()

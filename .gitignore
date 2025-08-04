@@ -39,3 +39,5 @@ storybook-static
 .env
 .venv
 clusters.yaml
+# Local settings
+local_settings.py

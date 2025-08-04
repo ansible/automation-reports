@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django_generate_series',
     'corsheaders',
     'rest_framework',
     'django_filters',
@@ -217,6 +218,20 @@ CORS_ALLOWED_ORIGINS = [
 ]
 # CORS_ORIGIN_ALLOW_ALL = True
 
+# Defaults
+
+# Default Time taken to manually execute automation (min)
+DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES = 60
+
+# Default Time taken to manually create automation (min)
+DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES = 60
+
+#Default average cost of an employee per minute
+DEFAULT_MANUAL_COST_AUTOMATION = 50
+
+#Deafult cost per minute of AAP
+DEFAULT_AUTOMATED_PROCESS_COST = 20
+
 
 # feature flags
 FLAG_SOURCES = ('flags.sources.SettingsFlagsSource',)
@@ -284,6 +299,14 @@ for options in CELERYBEAT_SCHEDULE.values():
     task_name = options['task']
     new_options['schedule'] = options['schedule'].total_seconds()
     DISPATCHER_SCHEDULE[task_name] = new_options
+
+
+### Local settings
+local_config_file = os.path.join(BASE_DIR, "django_config", "local_settings.py")
+try:
+    include(optional(local_config_file), scope=locals())
+except ImportError:
+    pass
 
 # Load settings from REPORTER_SETTINGS_DIR
 settings_dir = os.environ.get('REPORTER_SETTINGS_DIR', '/etc/reporter/conf.d/')
