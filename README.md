@@ -114,6 +114,7 @@ python manage.py run_dispatcher --cancel <task_uuid>
 ## Frontend
 
 ```bash
+nvm use v22
 npm --version
 cd src/frontend
 npm install
