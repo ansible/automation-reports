@@ -264,7 +264,7 @@ class DataParser:
                 ok_hosts_count += host_summary.get("ok", 0)
                 processed_hosts_count += host_summary.get("processed", 0)
                 skipped_hosts_count += host_summary.get("skipped", 0)
-                failed_hosts_count += 1 if host_summary.get("failed", True) is False else 0
+                failed_hosts_count += 1 if host_summary.get("failed", True) is True else 0
                 ignored_hosts_count += host_summary.get("ignored", 0)
                 rescued_hosts_count += host_summary.get("rescued", 0)
                 logger.info("Creating new host summary.")

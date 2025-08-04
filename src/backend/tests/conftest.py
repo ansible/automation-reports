@@ -4,7 +4,7 @@ import pytest
 import pytz
 from django.core.cache import cache
 
-from backend.apps.clusters.models import Cluster, Organization, Label, JobTemplate, Project, Job, JobTypeChoices, JobLaunchTypeChoices, InstanceGroup, ExecutionEnvironment, Inventory, AAPUser, JobStatusChoices, Host, JobHostSummary
+from backend.apps.clusters.models import Cluster, Organization, Label, JobTemplate, Project, Job, JobTypeChoices, JobLaunchTypeChoices, InstanceGroup, ExecutionEnvironment, Inventory, AAPUser, JobStatusChoices, Host, JobHostSummary, ClusterSyncData
 from backend.apps.common.models import Currency, FilterSet
 
 
@@ -16,6 +16,7 @@ def pytest_configure(config):
     import sys
 
     sys._called_from_test = True
+
 
 def pytest_unconfigure(config):
     import sys
@@ -89,7 +90,7 @@ def projects(cluster):
 
 @pytest.fixture
 def instance_group(cluster):
-    return InstanceGroup.objects.create(name="Instance Group A", cluster=cluster, external_id=1)
+    return InstanceGroup.objects.create(name="Instance Group A", cluster=cluster, external_id=1, is_container_group=False)
 
 
 @pytest.fixture
@@ -105,7 +106,6 @@ def inventory(cluster):
 @pytest.fixture
 def aap_user(cluster):
     return AAPUser.objects.create(name="AAP User", cluster=cluster, external_id=1, type="user")
-
 
 @pytest.fixture
 def jobs(
@@ -233,3 +233,295 @@ def host_summaries(jobs, hosts):
     ]
 
     return JobHostSummary.objects.bulk_create(summaries)
+
+
+@pytest.fixture
+def api_organizations_existing():
+    return [
+        {
+            "id": 1,
+            "type": "organization",
+            "name": "Organization B",
+            "description": "",
+        },
+        {
+            "id": 2,
+            "type": "organization",
+            "name": "Organization A",
+            "description": "Description for organization A",
+        }
+    ]
+
+
+@pytest.fixture
+def api_organizations_new():
+    return [
+        {
+            "id": 3,
+            "type": "organization",
+            "name": "Organization C",
+            "description": "Description for organization C",
+        },
+        {
+            "id": 4,
+            "type": "organization",
+            "name": "Organization D",
+            "description": "Description for organization D",
+        }
+    ]
+
+
+@pytest.fixture
+def api_organizations(api_organizations_existing, api_organizations_new):
+    return api_organizations_existing + api_organizations_new
+
+
+@pytest.fixture
+def api_job_templates_existing():
+    return [
+        {
+            "id": 1,
+            "type": "job_template",
+            "name": "Job Template A",
+            "description": "",
+        },
+        {
+            "id": 2,
+            "type": "job_template",
+            "name": "Job Template B",
+            "description": "Description for job template B",
+        },
+        {
+            "id": 4,
+            "type": "job_template",
+            "name": "Job Template C",
+            "description": "",
+        }
+
+    ]
+
+
+@pytest.fixture
+def api_job_templates_new():
+    return [
+        {
+            "id": 5,
+            "type": "job_template",
+            "name": "Job Template D",
+            "description": "Description for job template D",
+        },
+        {
+            "id": 6,
+            "type": "job_template",
+            "name": "Job Template E",
+            "description": "Description for job template E",
+        },
+
+    ]
+
+
+@pytest.fixture
+def api_job_templates(api_job_templates_existing, api_job_templates_new):
+    return api_job_templates_existing + api_job_templates_new
+
+
+@pytest.fixture
+def api_jobs(api_organizations_existing, api_job_templates_existing):
+    return [
+        {
+            "id": 1,
+            "type": "job",
+            "name": "Job Template A",
+            "description": "",
+            "launched_by": {
+                "id": 1,
+                "name": "AAP User",
+                "type": "user",
+            },
+            "summary_fields": {
+                "organization": api_organizations_existing[0],
+                "job_template": api_job_templates_existing[0],
+                "inventory": {
+                    "id": 1,
+                    "name": "Inventory A",
+                    "description": "Description for inventory A",
+                },
+                "execution_environment": {
+                    "id": 1,
+                    "name": "Execution Environment",
+                    "description": "Execution Environment description",
+                },
+                "instance_group": {
+                    "id": 1,
+                    "name": "Instance Group A",
+                    "is_container_group": False,
+                },
+                "labels": {
+                    "count": 1,
+                    "results": [
+                        {
+                            "id": 1,
+                            "name": "Label A",
+                        }
+                    ]
+                },
+                "project": {
+                    "id": 1,
+                    "name": "Project A",
+                    "scm_type": "",
+                    "description": "",
+                }
+            },
+            "started": "2025-04-05T18:30:03.963413Z",
+            "finished": "2025-04-05T18:30:12.226281Z",
+            "created": "2025-04-05T18:30:02.730338Z",
+            "modified": "2025-04-05T18:30:03.739997Z",
+            "elapsed": 8.263,
+            "failed": False,
+            "status": "successful",
+            "job_type": "run",
+            "launch_type": "manual"
+        },
+        {
+            "id": 2,
+            "type": "job",
+            "name": "Job Template B",
+            "description": "",
+            "launched_by": {
+                "id": 1,
+                "name": "AAP User",
+                "type": "user",
+            },
+            "summary_fields": {
+                "organization": api_organizations_existing[1],
+                "job_template": api_job_templates_existing[1],
+                "inventory": {
+                    "id": 1,
+                    "name": "Inventory A",
+                    "description": "Description for inventory A",
+                },
+                "execution_environment": {
+                    "id": 1,
+                    "name": "Execution Environment",
+                    "description": "Execution Environment description",
+                },
+                "instance_group": {
+                    "id": 1,
+                    "name": "Instance Group A",
+                    "is_container_group": False,
+                },
+                "labels": {
+                    "count": 2,
+                    "results": [
+                        {
+                            "id": 2,
+                            "name": "Label B",
+                        },
+                        {
+                            "id": 3,
+                            "name": "Label C",
+                        }
+                    ]
+                },
+                "project": {
+                    "id": 2,
+                    "name": "Project B",
+                    "scm_type": "",
+                    "description": "Project B description",
+                }
+            },
+            "started": "2025-04-05T18:30:03.963413Z",
+            "finished": "2025-04-05T18:30:12.226281Z",
+            "created": "2025-04-05T18:30:02.851402Z",
+            "modified": "2025-04-05T18:30:03.739997Z",
+            "elapsed": 8.263,
+            "failed": False,
+            "status": "successful",
+            "job_type": "run",
+            "launch_type": "manual"
+        }
+    ]
+
+@pytest.fixture
+def api_host_summaries():
+    return [
+        {
+            "id": 1,
+            "host_name": "Host A",
+            "changed": 0,
+            "dark": 0,
+            "failures": 0,
+            "ok": 3,
+            "processed": 1,
+            "skipped": 0,
+            "failed": False,
+            "ignored": 0,
+            "rescued": 0,
+            "created": "2025-04-05T18:30:02.851402Z",
+            "modified": "2025-04-05T18:30:02.851402Z",
+            "summary_fields": {
+                "host": {
+                    "id": 1,
+                    "name": "Host A",
+                    "description": "",
+                }
+            }
+        },
+        {
+            "id": 2,
+            "host_name": "Host B",
+            "changed": 0,
+            "dark": 0,
+            "failures": 0,
+            "ok": 2,
+            "processed": 1,
+            "skipped": 0,
+            "failed": False,
+            "ignored": 0,
+            "rescued": 0,
+            "created": "2025-04-05T18:30:02.851402Z",
+            "modified": "2025-04-05T18:30:02.851402Z",
+            "summary_fields": {
+                "host": {
+                    "id": 2,
+                    "name": "Host B",
+                    "description": "",
+                }
+            }
+        },
+        {
+            "id": 3,
+            "host_name": "Host C",
+            "changed": 0,
+            "dark": 0,
+            "failures": 0,
+            "ok": 4,
+            "processed": 1,
+            "skipped": 0,
+            "failed": False,
+            "ignored": 0,
+            "rescued": 0,
+            "created": "2025-04-05T18:30:02.851402Z",
+            "modified": "2025-04-05T18:30:02.851402Z",
+            "summary_fields": {
+                "host": {
+                    "id": 3,
+                    "name": "Host C",
+                    "description": "",
+                }
+            }
+        }
+    ]
+
+@pytest.fixture
+def cluster_sync_data(cluster, api_jobs, api_host_summaries):
+    data = api_jobs[1]
+    data["host_summaries"] = [
+        api_host_summaries[1],
+        api_host_summaries[2],
+    ]
+
+    return ClusterSyncData.objects.create(
+        cluster=cluster,
+        data=data,
+    )
