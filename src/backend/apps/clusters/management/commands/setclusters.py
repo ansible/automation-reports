@@ -1,10 +1,10 @@
 import sys
-import traceback
 
 import pydantic
 import yaml
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.template.backends import django
 
 from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.models import Cluster
@@ -22,10 +22,10 @@ class Command(BaseCommand):
         path = options['path'][0] if len(options['path']) == 1 else options['path']
         try:
             db_clusters = {i.address: i for i in Cluster.objects.all()}
-        except Exception as ex:
-            traceback.print_exc()
-            self.stdout.write(self.style.ERROR('Error creating clusters: {}'.format(ex)))
-            return
+        except django.db.ProgrammingError:
+            self.stdout.write(self.style.ERROR('Cluster table does not exist.'))
+            sys.exit(1)
+
         self.stdout.write('Reading YAML file.')
         try:
             with open(path, 'r') as f:

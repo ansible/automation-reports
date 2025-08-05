@@ -48,19 +48,16 @@ class Command(BaseCommand):
             running_data = ctl.control_with_reply('status')
             if len(running_data) != 1:
                 raise CommandError('Did not receive expected number of replies')
-            print(yaml.dump(running_data[0], default_flow_style=False))
             return
         if options.get('schedule'):
-            print('NOT YET IMPLEMENTED')
-            return
+            raise NotImplementedError()
         if options.get('running'):
             ctl = get_control_from_settings()
             running_data = ctl.control_with_reply('running')
-            print(yaml.dump(running_data, default_flow_style=False))
+            logger.debug('Running tasks: %s', running_data)
             return
         if options.get('reload'):
-            print('NOT YET IMPLEMENTED')
-            return
+            raise NotImplementedError()
         if options.get('cancel'):
             cancel_str = options.get('cancel')
             try:
@@ -75,7 +72,7 @@ class Command(BaseCommand):
                 # For each task UUID, send an individual cancel command
                 result = ctl.control_with_reply('cancel', data={'uuid': task_id})
                 results.append(result)
-            print(yaml.dump(results, default_flow_style=False))
+            logger.debug('Tasks: %s', results)
             return
 
         run_service()

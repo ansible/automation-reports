@@ -30,8 +30,4 @@ def get_auto_max_workers():
     # Here is what is different from health checks,
     auto_max = max(mem_capacity, cpu_capacity)
 
-    # add magic number of extra workers to ensure
-    # we have a few extra workers to run the heartbeat
-    auto_max += 7
-
     return auto_max

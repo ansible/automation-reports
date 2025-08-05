@@ -2,6 +2,7 @@ import json
 import sys
 from datetime import datetime, timezone
 
+import django
 import urllib3
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -57,22 +58,23 @@ class Command(BaseCommand):
 
         try:
             cluster = Cluster.objects.first()
-        except:
-            self.stdout.write(self.style.ERROR('Cluster table or cluster instance does not exist.'))
+        except django.db.ProgrammingError:
+            self.stdout.write(self.style.ERROR('Cluster table does not exist.'))
             sys.exit(1)
 
-        try:
-            job = SyncJob.objects.create(
-                name=f'Sync historical data from {since} to {until}',
-                type=JobTypeChoices.SYNC_JOBS,
-                launch_type=JobLaunchTypeChoices.MANUAL,
-                cluster=cluster,
-                job_args=job_args
-            )
-            job.signal_start()
-        except Exception as e:
-            self.stdout.write(self.style.ERROR('Failed to create Sync task.'))
+        if cluster is None:
+            self.stdout.write(self.style.ERROR('Cluster instance does not exist.'))
             sys.exit(1)
+
+        job = SyncJob.objects.create(
+            name=f'Sync historical data from {since} to {until}',
+            type=JobTypeChoices.SYNC_JOBS,
+            launch_type=JobLaunchTypeChoices.MANUAL,
+            cluster=cluster,
+            job_args=job_args
+        )
+        job.signal_start()
+
         self.stdout.write(self.style.SUCCESS(f'Successfully created Sync task for Cluster {cluster}.'))
 
     def parse_range(self, _since, _until):

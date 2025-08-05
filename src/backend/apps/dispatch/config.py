@@ -58,7 +58,7 @@ def get_dispatcherd_config(for_service: bool = False):
             },
             "OnStartProducer": {
                 "task_list": {
-                    "lambda: print(\"This task runs on startup\")": {}
+                    "lambda:": {}
                 }
             },
             "ControlProducer": None
