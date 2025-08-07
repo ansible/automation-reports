@@ -44,7 +44,8 @@ from backend.apps.clusters.models import (
     JobHostSummary,
     Cluster,
     Costs,
-    DateRangeChoices)
+    DateRangeChoices,
+    JobLabel)
 from backend.apps.clusters.schemas import (
     ReportData,
     ReportDataValue,
@@ -99,19 +100,42 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
     def get_queryset(self) -> QuerySet[Job]:
         return self.get_base_queryset()
 
-    def get_unique_host_count(self, options: dict[str, Any]) -> int:
-        qs = Job.objects.successful_or_failed()
-        qs = self.filter_queryset(qs)
-        qs = filter_by_range(self.request, queryset=qs)
-
-        count = (JobHostSummary.objects
-                 .filter(
-            job_id__in=qs.values_list("id", flat=True))
-                 .values("host_id")
-                 .distinct()
-                 .count())
-
-        return count
+    def get_unique_host_count(self, options: QueryParams) -> int:
+        qs = (JobHostSummary.objects
+        .filter(
+            job__num_hosts__gt=0,
+            job__status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED]
+        )
+        )
+        date_range = options.date_range
+        if date_range:
+            if date_range.start:
+                qs = qs.filter(
+                    job__finished__gte=date_range.start,
+                )
+            if date_range.end:
+                qs = qs.filter(
+                    job__finished__lte=date_range.end,
+                )
+        for attr in [
+            "organization",
+            "job_template",
+            "project",
+            "cluster"]:
+            value = getattr(options, attr)
+            if value and isinstance(value, list) and len(value) > 0:
+                key = f'job__{attr}_id__in'
+                qs = qs.filter(
+                    **{
+                        key: value
+                    }
+                )
+        if options.label and len(options.label) > 0:
+            qs = qs.filter(
+                id__in=JobLabel.objects.filter(label_id__in=options.label)
+            )
+        qs = qs.values("host_id").distinct()
+        return qs.count()
 
     def get_details(self, request: Request) -> ReportData:
         filtered_qs = Job.objects.successful_or_failed()
