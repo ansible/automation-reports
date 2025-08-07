@@ -89,10 +89,9 @@ RUN mkdir /code/docker/
 COPY docker/supervisord_reporter_web.conf /etc/
 COPY docker/stop-supervisor /usr/local/bin/stop-supervisor
 COPY docker/launch_awx_rsyslog.sh /usr/bin/launch_awx_rsyslog.sh
-# TEMP launch_automation_reporter.sh ?
 COPY docker/launch_automation_reporter.sh /code/docker/launch_automation_reporter.sh
-RUN curl -L -o /usr/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && chmod a+x /usr/bin/dumb-init
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+RUN pip3 install dumb-init
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
 CMD ["/code/docker/launch_automation_reporter.sh"]
 EXPOSE 8053
 
