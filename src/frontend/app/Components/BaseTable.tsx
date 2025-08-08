@@ -4,8 +4,7 @@ import { Pagination } from '@patternfly/react-core';
 import { CustomInput } from '@app/Components';
 import { ColumnProps, PaginationProps, SortProps, TableResult } from '@app/Types';
 import { deepClone, formatCurrency, formatNumber } from '@app/Utils';
-import { useAppSelector } from '@app/hooks';
-import { currencySign } from '@app/Store';
+import { useCurrencySign } from '@app/Store/commonSelectors';
 
 export type ColumnError = {
   rowNum: number;
@@ -29,7 +28,7 @@ export const BaseTable: React.FunctionComponent<{
   const [page, setPage] = React.useState(1);
   const [perPage, setPerPage] = React.useState(10);
   const [editingError, setEditingError] = React.useState<ColumnError | undefined>(undefined);
-  const selectedCurrencySign = useAppSelector(currencySign);
+  const selectedCurrencySign = useCurrencySign();
 
   const getSortParams = (columnIndex: number): ThProps['sort'] => ({
     sortBy: {

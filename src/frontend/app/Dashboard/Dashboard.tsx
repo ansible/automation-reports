@@ -17,15 +17,6 @@ import {
   TableResult,
   UrlParams,
 } from '@app/Types';
-import { useAppDispatch, useAppSelector } from '@app/hooks';
-import {
-  automatedProcessCost,
-  filterRetrieveError,
-  manualCostAutomation,
-  saveEnableTemplateCreationTime,
-  setAutomatedProcessCost,
-  setManualProcessCost,
-} from '@app/Store';
 import ErrorState from '@patternfly/react-component-groups/dist/dynamic/ErrorState';
 import {
   DashboardBarChart,
@@ -37,12 +28,20 @@ import {
 import { CurrencySelector } from '@app/Components';
 import { IdNameItem } from '@app/Types/ReportDetailsType';
 
+import useFilterStore from '@app/Store/filterStore';
+import useCommonStore  from '@app/Store/commonStore';
+import {
+  useAutomatedProcessCost,
+  useFilterRetrieveError,
+  useManualCostAutomation
+} from '@app/Store/filterSelectors';
+
 const refreshInterval: string = import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
   ? import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
   : '60';
 
 const Dashboard: React.FunctionComponent = () => {
-  const filterError = useAppSelector(filterRetrieveError);
+  const filterError = useFilterRetrieveError();
   const [tableData, setTableData] = React.useState<TableResponse>({ count: 0, results: [] } as TableResponse);
   const [detailData, setDetailData] = React.useState<ReportDetail>({} as ReportDetail);
   const [loadDataError, setLoadDataError] = React.useState<boolean>(false);
@@ -55,14 +54,17 @@ const Dashboard: React.FunctionComponent = () => {
     page_size: 10,
   } as PaginationParams);
   const [ordering, setOrdering] = React.useState<string>('name');
-  const hourly_manual_costs = useAppSelector(manualCostAutomation);
-  const hourly_automated_process_costs = useAppSelector(automatedProcessCost);
+  const hourly_manual_costs = useManualCostAutomation();
+  const hourly_automated_process_costs = useAutomatedProcessCost();
   const interval = React.useRef<number | undefined>(undefined);
   const requestParamsData = React.useRef<RequestFilter>(requestParams as RequestFilter);
   const controller = React.useRef<AbortController | undefined>(undefined);
   const detailController = React.useRef<AbortController | undefined>(undefined);
   const containerLineRefChart = React.useRef<HTMLDivElement>(null);
-  const dispatch = useAppDispatch();
+
+  const saveEnableTemplateCreationTime = useCommonStore((state) => state.saveEnableTemplateCreationTime);
+  const setAutomatedProcessCost = useFilterStore((state) => state.setAutomatedProcessCost);
+  const setManualProcessCost = useFilterStore((state) => state.setManualProcessCost);
 
   const handelError = (error: unknown) => {
     if (error?.['name'] !== 'CanceledError') {
@@ -174,9 +176,9 @@ const Dashboard: React.FunctionComponent = () => {
         .then(() => {
           fetchServerTableData(true, false);
           if (type === 'manual') {
-            dispatch(setManualProcessCost(value));
+            setManualProcessCost(value);
           } else {
-            dispatch(setAutomatedProcessCost(value));
+            setAutomatedProcessCost(value);
           }
         })
         .catch((e) => {
@@ -296,14 +298,14 @@ const Dashboard: React.FunctionComponent = () => {
     setTimeout(pdfDownload, 150);
   };
 
-  const onEnableTemplateCreationTimeChange = (checked: boolean) => {
+  const onEnableTemplateCreationTimeChange = async (checked: boolean) => {
     clearTimeout();
     setLoading(true);
-    dispatch(saveEnableTemplateCreationTime(checked)).then((response) => {
+    saveEnableTemplateCreationTime(checked).then((response) => {
       if (!response?.['error']) {
         fetchServerTableData(true, true);
       } else {
-        handelError(response['error']);
+        handelError(response.error);
       }
     });
   };

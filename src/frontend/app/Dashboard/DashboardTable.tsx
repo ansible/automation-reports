@@ -16,29 +16,32 @@ import {
   Switch,
   Tooltip,
 } from '@patternfly/react-core';
-
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import { BaseTable, CustomInput } from '@app/Components';
-import { useAppSelector } from '@app/hooks';
-
-import { automatedProcessCost, currencySign, enableTemplateCreationTime, manualCostAutomation } from '@app/Store';
 import '../styles/table.scss';
 import { ColumnProps, DashboardTableProps } from '@app/Types';
 import { formatCurrency, formatNumber } from '@app/Utils';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
 import { IdNameItem } from '@app/Types/ReportDetailsType';
+import {
+  useEnableTemplateCreationTime,
+  useCurrencySign,
+} from '@app/Store/commonSelectors';
+import {
+  useAutomatedProcessCost,
+  useManualCostAutomation
+} from '@app/Store/filterSelectors';
 
 export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (props: DashboardTableProps) => {
-  const hourly_manual_costs = useAppSelector(manualCostAutomation);
-  const hourly_automated_process_costs = useAppSelector(automatedProcessCost);
-  const selectedCurrencySign = useAppSelector(currencySign);
-
+  const hourly_manual_costs = useManualCostAutomation();
+  const hourly_automated_process_costs = useAutomatedProcessCost();
+  const selectedCurrencySign = useCurrencySign();
   const [hourlyManualCostsChangedError, setHourlyManualCostsChangedError] = React.useState<string | null>(null);
   const [hourlyAutomatedProcessCostsChangedError, setHourlyAutomatedProcessCostsChangedError] = React.useState<
     string | null
   >(null);
+  const switchEnableTemplateCreationTimeIsChecked = useEnableTemplateCreationTime();
 
-  const switchEnableTemplateCreationTimeIsChecked = useAppSelector(enableTemplateCreationTime);
   const handlePageChange = (newPage: number) => {
     props.onPaginationChange({ page: newPage, page_size: props.pagination.page_size });
   };
