@@ -1,11 +1,14 @@
+import json
+import sys
 from datetime import datetime, timezone
 
+import django
 import urllib3
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from backend.apps.clusters.connector import ApiConnector
-from backend.apps.clusters.models import Cluster
+from backend.apps.clusters.models import Cluster, JobLaunchTypeChoices
+from backend.apps.scheduler.models import SyncJob, JobTypeChoices
 
 
 class Command(BaseCommand):
@@ -20,7 +23,7 @@ class Command(BaseCommand):
         parser.add_argument('--until',
                             dest='until',
                             action='store',
-                            help='End date for  sync (e.g. --until=2025-12-21)')
+                            help='End date for sync (e.g. --until=2025-12-21)')
 
     def handle(self, *args, **options):
 
@@ -33,39 +36,46 @@ class Command(BaseCommand):
         if _since is None or _until is None:
             confirm = input('Interval not specified. Syncing data may take a long time. Continue Y/N:')
             if confirm != 'Y':
-                return
+                sys.exit(1)
 
         since, until = self.parse_range(_since, _until)
 
         if since is not None and until is not None and since > until:
             self.stdout.write(self.style.ERROR('Start date is greater than end date'))
-            return
+            sys.exit(1)
 
-        self.stdout.write('Check if cluster table exists.')
+        args = {
+            'since': since.isoformat() if since is not None else None,
+            'until': until.isoformat(),
+            'managed': True
+        }
+
+        job_args = None
+        try:
+            job_args = json.dumps(args)
+        except TypeError as e:
+            self.stdout.write(self.style.ERROR('Error parsing arguments: {}'.format(e)))
 
         try:
-            Cluster.objects.first()
-        except:
+            cluster = Cluster.objects.first()
+        except django.db.ProgrammingError:
             self.stdout.write(self.style.ERROR('Cluster table does not exist.'))
-            return
+            sys.exit(1)
 
-        clusters = Cluster.objects.all()
-        if clusters.count() == 0:
-            self.stdout.write(self.style.ERROR('No clusters found.'))
+        if cluster is None:
+            self.stdout.write(self.style.ERROR('Cluster instance does not exist.'))
+            sys.exit(1)
 
-        for cluster in clusters:
-            connector = ApiConnector(
-                cluster=cluster,
-                since=since,
-                until=until,
-                managed=True
-            )
-            try:
-                self.stdout.write(f'Start syncing cluster {cluster}.')
-                connector.sync()
-                self.stdout.write(self.style.SUCCESS(f'Cluster {cluster} synced.'))
-            except Exception as e:
-                print(e)
+        job = SyncJob.objects.create(
+            name=f'Sync historical data from {since} to {until}',
+            type=JobTypeChoices.SYNC_JOBS,
+            launch_type=JobLaunchTypeChoices.MANUAL,
+            cluster=cluster,
+            job_args=job_args
+        )
+        job.signal_start()
+
+        self.stdout.write(self.style.SUCCESS(f'Successfully created Sync task for Cluster {cluster}.'))
 
     def parse_range(self, _since, _until):
         since = self.parse_date(_since) if _since else None
