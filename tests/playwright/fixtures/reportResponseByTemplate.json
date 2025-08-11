@@ -1,0 +1,25 @@
+{
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "name": "Job template 1",
+            "runs": 32,
+            "elapsed": "14712.15",
+            "cluster": 2,
+            "elapsed_str": "4h 5min 12sec",
+            "num_hosts": 163,
+            "time_taken_manually_execute_minutes": 60,
+            "time_taken_create_automation_minutes": 60,
+            "successful_runs": 32,
+            "failed_runs": 0,
+            "automated_costs": "18147.76",
+            "manual_costs": "440100.00",
+            "savings": "421952.24",
+            "job_template_id": 101,
+            "time_savings": "568487.85",
+            "time_savings_str": "157h 54min 47sec"
+        }
+    ]
+}

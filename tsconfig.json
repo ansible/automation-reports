@@ -30,6 +30,7 @@
     "./src/frontend/**/*.tsx",
     "./src/frontend/**/*.jsx",
     "./src/frontend/**/*.js",
+    "playwright.config.ts",
   ],
   "exclude": ["node_modules",]
 }

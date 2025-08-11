@@ -1,0 +1,767 @@
+{
+    "clusters": [
+        {
+            "id": 2,
+            "address": "localhost"
+        }
+    ],
+    "currencies": [
+        {
+            "id": 3,
+            "name": "British Pound Sterling",
+            "iso_code": "GBP",
+            "symbol": "£"
+        },
+        {
+            "id": 5,
+            "name": "Chinese Yuan Renminbi",
+            "iso_code": "CNY",
+            "symbol": "¥"
+        },
+        {
+            "id": 2,
+            "name": "Euro",
+            "iso_code": "EUR",
+            "symbol": "€"
+        },
+        {
+            "id": 4,
+            "name": "Japanese yen",
+            "iso_code": "JPY",
+            "symbol": "¥"
+        },
+        {
+            "id": 1,
+            "name": "United States dollar",
+            "iso_code": "USD",
+            "symbol": "$"
+        }
+    ],
+    "organizations": [
+        {
+            "key": 11,
+            "value": "Organization 1",
+            "cluster_id": 2
+        },
+        {
+            "key": 20,
+            "value": "Organization 10",
+            "cluster_id": 2
+        },
+        {
+            "key": 12,
+            "value": "Organization 2",
+            "cluster_id": 2
+        },
+        {
+            "key": 13,
+            "value": "Organization 3",
+            "cluster_id": 2
+        },
+        {
+            "key": 14,
+            "value": "Organization 4",
+            "cluster_id": 2
+        },
+        {
+            "key": 15,
+            "value": "Organization 5",
+            "cluster_id": 2
+        },
+        {
+            "key": 16,
+            "value": "Organization 6",
+            "cluster_id": 2
+        },
+        {
+            "key": 17,
+            "value": "Organization 7",
+            "cluster_id": 2
+        },
+        {
+            "key": 18,
+            "value": "Organization 8",
+            "cluster_id": 2
+        },
+        {
+            "key": 19,
+            "value": "Organization 9",
+            "cluster_id": 2
+        }
+    ],
+    "labels": [
+        {
+            "key": 11,
+            "value": "Label 1",
+            "cluster_id": 2
+        },
+        {
+            "key": 20,
+            "value": "Label 10",
+            "cluster_id": 2
+        },
+        {
+            "key": 12,
+            "value": "Label 2",
+            "cluster_id": 2
+        },
+        {
+            "key": 13,
+            "value": "Label 3",
+            "cluster_id": 2
+        },
+        {
+            "key": 14,
+            "value": "Label 4",
+            "cluster_id": 2
+        },
+        {
+            "key": 15,
+            "value": "Label 5",
+            "cluster_id": 2
+        },
+        {
+            "key": 16,
+            "value": "Label 6",
+            "cluster_id": 2
+        },
+        {
+            "key": 17,
+            "value": "Label 7",
+            "cluster_id": 2
+        },
+        {
+            "key": 18,
+            "value": "Label 8",
+            "cluster_id": 2
+        },
+        {
+            "key": 19,
+            "value": "Label 9",
+            "cluster_id": 2
+        }
+    ],
+    "date_ranges": [
+        {
+            "key": "last_year",
+            "value": "Past year"
+        },
+        {
+            "key": "last_6_month",
+            "value": "Past 6 months"
+        },
+        {
+            "key": "last_3_month",
+            "value": "Past 3 months"
+        },
+        {
+            "key": "last_month",
+            "value": "Past month"
+        },
+        {
+            "key": "year_to_date",
+            "value": "Year to date"
+        },
+        {
+            "key": "quarter_to_date",
+            "value": "Quarter to date"
+        },
+        {
+            "key": "month_to_date",
+            "value": "Month to date"
+        },
+        {
+            "key": "last_3_years",
+            "value": "Past 3 years"
+        },
+        {
+            "key": "last_2_years",
+            "value": "Past 2 years"
+        },
+        {
+            "key": "custom",
+            "value": "Custom"
+        }
+    ],
+    "job_templates": [
+        {
+            "key": 101,
+            "value": "Job template 1",
+            "cluster_id": 2
+        },
+        {
+            "key": 110,
+            "value": "Job template 10",
+            "cluster_id": 2
+        },
+        {
+            "key": 200,
+            "value": "Job template 100",
+            "cluster_id": 2
+        },
+        {
+            "key": 111,
+            "value": "Job template 11",
+            "cluster_id": 2
+        },
+        {
+            "key": 112,
+            "value": "Job template 12",
+            "cluster_id": 2
+        },
+        {
+            "key": 113,
+            "value": "Job template 13",
+            "cluster_id": 2
+        },
+        {
+            "key": 114,
+            "value": "Job template 14",
+            "cluster_id": 2
+        },
+        {
+            "key": 115,
+            "value": "Job template 15",
+            "cluster_id": 2
+        },
+        {
+            "key": 116,
+            "value": "Job template 16",
+            "cluster_id": 2
+        },
+        {
+            "key": 117,
+            "value": "Job template 17",
+            "cluster_id": 2
+        },
+        {
+            "key": 118,
+            "value": "Job template 18",
+            "cluster_id": 2
+        },
+        {
+            "key": 119,
+            "value": "Job template 19",
+            "cluster_id": 2
+        },
+        {
+            "key": 102,
+            "value": "Job template 2",
+            "cluster_id": 2
+        },
+        {
+            "key": 120,
+            "value": "Job template 20",
+            "cluster_id": 2
+        },
+        {
+            "key": 121,
+            "value": "Job template 21",
+            "cluster_id": 2
+        },
+        {
+            "key": 122,
+            "value": "Job template 22",
+            "cluster_id": 2
+        },
+        {
+            "key": 123,
+            "value": "Job template 23",
+            "cluster_id": 2
+        },
+        {
+            "key": 124,
+            "value": "Job template 24",
+            "cluster_id": 2
+        },
+        {
+            "key": 125,
+            "value": "Job template 25",
+            "cluster_id": 2
+        },
+        {
+            "key": 126,
+            "value": "Job template 26",
+            "cluster_id": 2
+        },
+        {
+            "key": 127,
+            "value": "Job template 27",
+            "cluster_id": 2
+        },
+        {
+            "key": 128,
+            "value": "Job template 28",
+            "cluster_id": 2
+        },
+        {
+            "key": 129,
+            "value": "Job template 29",
+            "cluster_id": 2
+        },
+        {
+            "key": 103,
+            "value": "Job template 3",
+            "cluster_id": 2
+        },
+        {
+            "key": 130,
+            "value": "Job template 30",
+            "cluster_id": 2
+        },
+        {
+            "key": 131,
+            "value": "Job template 31",
+            "cluster_id": 2
+        },
+        {
+            "key": 132,
+            "value": "Job template 32",
+            "cluster_id": 2
+        },
+        {
+            "key": 133,
+            "value": "Job template 33",
+            "cluster_id": 2
+        },
+        {
+            "key": 134,
+            "value": "Job template 34",
+            "cluster_id": 2
+        },
+        {
+            "key": 135,
+            "value": "Job template 35",
+            "cluster_id": 2
+        },
+        {
+            "key": 136,
+            "value": "Job template 36",
+            "cluster_id": 2
+        },
+        {
+            "key": 137,
+            "value": "Job template 37",
+            "cluster_id": 2
+        },
+        {
+            "key": 138,
+            "value": "Job template 38",
+            "cluster_id": 2
+        },
+        {
+            "key": 139,
+            "value": "Job template 39",
+            "cluster_id": 2
+        },
+        {
+            "key": 104,
+            "value": "Job template 4",
+            "cluster_id": 2
+        },
+        {
+            "key": 140,
+            "value": "Job template 40",
+            "cluster_id": 2
+        },
+        {
+            "key": 141,
+            "value": "Job template 41",
+            "cluster_id": 2
+        },
+        {
+            "key": 142,
+            "value": "Job template 42",
+            "cluster_id": 2
+        },
+        {
+            "key": 143,
+            "value": "Job template 43",
+            "cluster_id": 2
+        },
+        {
+            "key": 144,
+            "value": "Job template 44",
+            "cluster_id": 2
+        },
+        {
+            "key": 145,
+            "value": "Job template 45",
+            "cluster_id": 2
+        },
+        {
+            "key": 146,
+            "value": "Job template 46",
+            "cluster_id": 2
+        },
+        {
+            "key": 147,
+            "value": "Job template 47",
+            "cluster_id": 2
+        },
+        {
+            "key": 148,
+            "value": "Job template 48",
+            "cluster_id": 2
+        },
+        {
+            "key": 149,
+            "value": "Job template 49",
+            "cluster_id": 2
+        },
+        {
+            "key": 105,
+            "value": "Job template 5",
+            "cluster_id": 2
+        },
+        {
+            "key": 150,
+            "value": "Job template 50",
+            "cluster_id": 2
+        },
+        {
+            "key": 151,
+            "value": "Job template 51",
+            "cluster_id": 2
+        },
+        {
+            "key": 152,
+            "value": "Job template 52",
+            "cluster_id": 2
+        },
+        {
+            "key": 153,
+            "value": "Job template 53",
+            "cluster_id": 2
+        },
+        {
+            "key": 154,
+            "value": "Job template 54",
+            "cluster_id": 2
+        },
+        {
+            "key": 155,
+            "value": "Job template 55",
+            "cluster_id": 2
+        },
+        {
+            "key": 156,
+            "value": "Job template 56",
+            "cluster_id": 2
+        },
+        {
+            "key": 157,
+            "value": "Job template 57",
+            "cluster_id": 2
+        },
+        {
+            "key": 158,
+            "value": "Job template 58",
+            "cluster_id": 2
+        },
+        {
+            "key": 159,
+            "value": "Job template 59",
+            "cluster_id": 2
+        },
+        {
+            "key": 106,
+            "value": "Job template 6",
+            "cluster_id": 2
+        },
+        {
+            "key": 160,
+            "value": "Job template 60",
+            "cluster_id": 2
+        },
+        {
+            "key": 161,
+            "value": "Job template 61",
+            "cluster_id": 2
+        },
+        {
+            "key": 162,
+            "value": "Job template 62",
+            "cluster_id": 2
+        },
+        {
+            "key": 163,
+            "value": "Job template 63",
+            "cluster_id": 2
+        },
+        {
+            "key": 164,
+            "value": "Job template 64",
+            "cluster_id": 2
+        },
+        {
+            "key": 165,
+            "value": "Job template 65",
+            "cluster_id": 2
+        },
+        {
+            "key": 166,
+            "value": "Job template 66",
+            "cluster_id": 2
+        },
+        {
+            "key": 167,
+            "value": "Job template 67",
+            "cluster_id": 2
+        },
+        {
+            "key": 168,
+            "value": "Job template 68",
+            "cluster_id": 2
+        },
+        {
+            "key": 169,
+            "value": "Job template 69",
+            "cluster_id": 2
+        },
+        {
+            "key": 107,
+            "value": "Job template 7",
+            "cluster_id": 2
+        },
+        {
+            "key": 170,
+            "value": "Job template 70",
+            "cluster_id": 2
+        },
+        {
+            "key": 171,
+            "value": "Job template 71",
+            "cluster_id": 2
+        },
+        {
+            "key": 172,
+            "value": "Job template 72",
+            "cluster_id": 2
+        },
+        {
+            "key": 173,
+            "value": "Job template 73",
+            "cluster_id": 2
+        },
+        {
+            "key": 174,
+            "value": "Job template 74",
+            "cluster_id": 2
+        },
+        {
+            "key": 175,
+            "value": "Job template 75",
+            "cluster_id": 2
+        },
+        {
+            "key": 176,
+            "value": "Job template 76",
+            "cluster_id": 2
+        },
+        {
+            "key": 177,
+            "value": "Job template 77",
+            "cluster_id": 2
+        },
+        {
+            "key": 178,
+            "value": "Job template 78",
+            "cluster_id": 2
+        },
+        {
+            "key": 179,
+            "value": "Job template 79",
+            "cluster_id": 2
+        },
+        {
+            "key": 108,
+            "value": "Job template 8",
+            "cluster_id": 2
+        },
+        {
+            "key": 180,
+            "value": "Job template 80",
+            "cluster_id": 2
+        },
+        {
+            "key": 181,
+            "value": "Job template 81",
+            "cluster_id": 2
+        },
+        {
+            "key": 182,
+            "value": "Job template 82",
+            "cluster_id": 2
+        },
+        {
+            "key": 183,
+            "value": "Job template 83",
+            "cluster_id": 2
+        },
+        {
+            "key": 184,
+            "value": "Job template 84",
+            "cluster_id": 2
+        },
+        {
+            "key": 185,
+            "value": "Job template 85",
+            "cluster_id": 2
+        },
+        {
+            "key": 186,
+            "value": "Job template 86",
+            "cluster_id": 2
+        },
+        {
+            "key": 187,
+            "value": "Job template 87",
+            "cluster_id": 2
+        },
+        {
+            "key": 188,
+            "value": "Job template 88",
+            "cluster_id": 2
+        },
+        {
+            "key": 189,
+            "value": "Job template 89",
+            "cluster_id": 2
+        },
+        {
+            "key": 109,
+            "value": "Job template 9",
+            "cluster_id": 2
+        },
+        {
+            "key": 190,
+            "value": "Job template 90",
+            "cluster_id": 2
+        },
+        {
+            "key": 191,
+            "value": "Job template 91",
+            "cluster_id": 2
+        },
+        {
+            "key": 192,
+            "value": "Job template 92",
+            "cluster_id": 2
+        },
+        {
+            "key": 193,
+            "value": "Job template 93",
+            "cluster_id": 2
+        },
+        {
+            "key": 194,
+            "value": "Job template 94",
+            "cluster_id": 2
+        },
+        {
+            "key": 195,
+            "value": "Job template 95",
+            "cluster_id": 2
+        },
+        {
+            "key": 196,
+            "value": "Job template 96",
+            "cluster_id": 2
+        },
+        {
+            "key": 197,
+            "value": "Job template 97",
+            "cluster_id": 2
+        },
+        {
+            "key": 198,
+            "value": "Job template 98",
+            "cluster_id": 2
+        },
+        {
+            "key": 199,
+            "value": "Job template 99",
+            "cluster_id": 2
+        }
+    ],
+    "projects": [
+        {
+            "key": 1,
+            "value": "Project 1",
+            "cluster_id": 2
+        },
+        {
+            "key": 10,
+            "value": "Project 10",
+            "cluster_id": 2
+        },
+        {
+            "key": 2,
+            "value": "Project 2",
+            "cluster_id": 2
+        },
+        {
+            "key": 3,
+            "value": "Project 3",
+            "cluster_id": 2
+        },
+        {
+            "key": 4,
+            "value": "Project 4",
+            "cluster_id": 2
+        },
+        {
+            "key": 5,
+            "value": "Project 5",
+            "cluster_id": 2
+        },
+        {
+            "key": 6,
+            "value": "Project 6",
+            "cluster_id": 2
+        },
+        {
+            "key": 7,
+            "value": "Project 7",
+            "cluster_id": 2
+        },
+        {
+            "key": 8,
+            "value": "Project 8",
+            "cluster_id": 2
+        },
+        {
+            "key": 9,
+            "value": "Project 9",
+            "cluster_id": 2
+        }
+    ],
+    "manual_cost_automation": 45.0,
+    "automated_process_cost": 63.0,
+    "currency": 3,
+    "enable_template_creation_time": true,
+    "filter_sets": [
+        {
+            "id": 60,
+            "name": "report_1",
+            "filters": {
+                "date_range": "month_to_date"
+            }
+        },
+        {
+            "id": 62,
+            "name": "report_2",
+            "filters": {
+                "date_range": "last_6_month"
+            }
+        },
+        {
+            "id": 66,
+            "name": "report_3",
+            "filters": {
+                "date_range": "month_to_date"
+            }
+        }
+    ]
+}
