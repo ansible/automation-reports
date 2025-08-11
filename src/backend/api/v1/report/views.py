@@ -2,7 +2,6 @@ import csv
 import decimal
 import logging
 from collections import OrderedDict
-from typing import Any
 
 from django.db import models
 from django.db.models import (
@@ -12,9 +11,8 @@ from django.db.models import (
     Q,
     OuterRef,
     Subquery,
-    Func,
     Value,
-    QuerySet)
+    QuerySet, Func)
 from django.db.models.functions import Trunc, Coalesce
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -132,7 +130,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
                 )
         if options.label and len(options.label) > 0:
             qs = qs.filter(
-                id__in=JobLabel.objects.filter(label_id__in=options.label)
+                job__id__in=JobLabel.objects.filter(label_id__in=options.label).values('job_id')
             )
         qs = qs.values("host_id").distinct()
         return qs.count()
@@ -218,12 +216,12 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             return result
 
         base_chart_qs = (Job.objects
+        .successful_or_failed()
         .values(
             date=Trunc(
                 expression="finished",
                 kind=kind,
                 output_field=models.DateTimeField()))
-        .successful_or_failed()
         .filter(
             date=OuterRef("term")
         ))
