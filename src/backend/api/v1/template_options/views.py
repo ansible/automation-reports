@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 
 from backend.api.v1.common.serializers.currency import CurrencySerializer
 from backend.api.v1.common.serializers.filter_set import FilterSetSerializer
+from backend.api.v1.mixins import AdminOnlyViewSet
 from backend.api.v1.template_options.serializers import (
     OrganizationSerializer,
     ClusterSerializer,
@@ -24,7 +25,7 @@ from backend.apps.clusters.models import (
 from backend.apps.common.models import Currency, Settings, FilterSet
 
 
-class TemplateOptionsView(APIView):
+class TemplateOptionsView(AdminOnlyViewSet, APIView):
 
     def get(self, request: Request) -> Response:
         date_range = [

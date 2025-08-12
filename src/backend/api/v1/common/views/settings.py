@@ -5,10 +5,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from backend.api.v1.common.serializers.settings import SettingsSerializer
+from backend.api.v1.mixins import AdminOnlyViewSet
 from backend.apps.common.models import Settings, SettingsChoices
 
 
-class SettingsView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+class SettingsView(AdminOnlyViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     serializer_class = SettingsSerializer
 
     def get_queryset(self) -> QuerySet[Settings]:

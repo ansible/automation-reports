@@ -52,11 +52,12 @@ from backend.apps.clusters.schemas import (
     QueryParams)
 from backend.apps.common.models import Settings, Currency
 from backend.django_config import settings
+from backend.api.v1.mixins import AdminOnlyViewSet
 
 logger = logging.getLogger("automation-dashboard")
 
 
-class ReportsView(mixins.ListModelMixin, GenericViewSet):
+class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
     filter_backends = [CustomReportFilter, DjangoFilterBackend, filters.OrderingFilter]
     serializer_class = JobSerializer
     ordering_fields = ["name", "successful_runs", "failed_runs",
