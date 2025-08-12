@@ -1,6 +1,6 @@
+import pytz
 from datetime import datetime, timedelta
 
-import pytz
 from django.db import models
 
 from backend.apps.aap_auth.schema import AAPToken
