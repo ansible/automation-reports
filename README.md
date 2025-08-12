@@ -145,6 +145,10 @@ npm --version
 cd src/frontend
 npm install
 npm run start:dev
+
+# run frontend tests
+npx playwright install chromium
+npx playwright test --headed
 ```
 
 ## Task ManagerPerformance Tuning
