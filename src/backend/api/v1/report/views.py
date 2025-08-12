@@ -230,11 +230,11 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         base_chart_qs = filter_by_range(self.request, queryset=base_chart_qs)
 
         job_chart_qs = base_chart_qs.annotate(
-            runs=Coalesce(Func(F("id"), function="COUNT"), Value(0))
+            runs=Count("id")
         ).values("runs").order_by()
 
         host_chart_qs = base_chart_qs.annotate(
-            num_hosts=Coalesce(Func(F("num_hosts"), function="SUM"), Value(0))
+            num_hosts=Sum("num_hosts")
         ).values("num_hosts").order_by()
 
         date_sequence_queryset = generate_series(
@@ -244,8 +244,8 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             span=5,
             output_field=models.DateTimeField
         ).annotate(
-            runs=Subquery(job_chart_qs),
-            hosts=Subquery(host_chart_qs),
+            runs=Coalesce(Subquery(job_chart_qs), Value(0)),
+            hosts=Coalesce(Subquery(host_chart_qs), Value(0)),
         )
 
         for data in date_sequence_queryset:
