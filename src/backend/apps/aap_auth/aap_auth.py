@@ -9,7 +9,7 @@ from backend.apps.aap_auth.models import JwtUserToken, JwtUserRefreshToken
 from backend.apps.aap_auth.schema import AAPAuthSettings, AAPToken
 from backend.apps.users.models import User
 from backend.apps.users.schemas import UserResponseSchema
-from backend.django_config import settings
+from django.conf import settings
 
 logger = logging.getLogger("automation-dashboard")
 

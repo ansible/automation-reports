@@ -41,3 +41,16 @@ DEFAULT_MANUAL_COST_AUTOMATION = 50
 
 #Deafult cost per minute of AAP
 DEFAULT_AUTOMATED_PROCESS_COST = 20
+
+JWT_ACCESS_TOKEN_LIFETIME_SECONDS = 60
+JWT_REFRESH_TOKEN_LIFETIME_SECONDS = 7200
+
+AAP_AUTH_PROVIDER = {
+    'name': 'test_name',
+    'protocol': 'https',
+    'url': 'localhost',
+    'user_data_endpoint': '/api/v1/me/',
+    'check_ssl': False,
+    'client_id': 'test_client_id',
+    'client_secret': 'test_client_secret',
+}

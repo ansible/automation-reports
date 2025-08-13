@@ -542,3 +542,15 @@ def superuser():
         is_superuser=True,
         is_platform_auditor=False
     )
+
+@pytest.fixture
+def regularuser():
+    return User.objects.create(
+        username="test",
+        first_name="John",
+        last_name="Doe",
+        email="john.doe@test.com",
+        is_active=True,
+        is_superuser=False,
+        is_platform_auditor=False
+    )

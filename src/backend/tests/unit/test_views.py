@@ -192,11 +192,42 @@ test_report_disabled_time_taken_to_create_automation_save_expected_data = {
     ]
 }
 
+ENDPOINTS = {
+    "get": [
+        "/api/v1/common/currencies/",
+        "/api/v1/common/settings/",
+        "/api/v1/template_options/",
+        "/api/v1/report/?page=1&page_size=10&date_range=month_to_date",
+        "/api/v1/report/details/?page=1&page_size=10&date_range=year_to_date",
+        "/api/v1/report/csv/?date_range=last_month"
+    ],
+    "post": [
+        "/api/v1/costs/",
+        "/api/v1/common/filter_set/",
+        "/api/v1/common/settings/",
+        "/api/v1/common/settings/",
+        "/api/v1/report/pdf/?date_range=last_month",
+    ],
+    "put": [
+        "/api/v1/templates/1/",
+        "/api/v1/common/filter_set/1/",
+    ],
+    "delete": [
+        "/api/v1/common/filter_set/1/"
+    ],
+}
+
 
 @pytest.fixture(scope="function")
 def mock_auth(superuser):
     with mock.patch("backend.apps.aap_auth.authentication.AAPAuthentication.authenticate") as mock_authenticate:
         mock_authenticate.return_value = superuser, None
+        yield mock_authenticate
+
+@pytest.fixture(scope="function")
+def mock_auth_user(regularuser):
+    with mock.patch("backend.apps.aap_auth.authentication.AAPAuthentication.authenticate") as mock_authenticate:
+        mock_authenticate.return_value = regularuser, None
         yield mock_authenticate
 
 
@@ -411,3 +442,39 @@ class TestViews:
         client = APIClient()
         response = client.post("/api/v1/report/pdf/?date_range=last_month")
         assert response.status_code == 200
+
+    def test_not_authenticated(self, filter_sets, job_templates):
+        client = APIClient()
+        for url in ENDPOINTS["get"]:
+            response = client.get(url)
+            assert response.status_code == 401
+
+        for url in ENDPOINTS["post"]:
+            response = client.post(url)
+            assert response.status_code == 401
+
+        for url in ENDPOINTS["put"]:
+            response = client.put(url)
+            assert response.status_code == 401
+
+        for url in ENDPOINTS["delete"]:
+            response = client.delete(url)
+            assert response.status_code == 401
+
+    def test_insufficient_permissions(self, mock_auth_user, filter_sets, job_templates):
+        client = APIClient()
+        for url in ENDPOINTS["get"]:
+            response = client.get(url)
+            assert response.status_code == 403
+
+        for url in ENDPOINTS["post"]:
+            response = client.post(url)
+            assert response.status_code == 403
+
+        for url in ENDPOINTS["put"]:
+            response = client.put(url)
+            assert response.status_code == 403
+
+        for url in ENDPOINTS["delete"]:
+            response = client.delete(url)
+            assert response.status_code == 403
