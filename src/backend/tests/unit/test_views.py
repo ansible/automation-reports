@@ -232,9 +232,9 @@ def mock_auth_user(regularuser):
 
 
 @pytest.fixture(scope="function")
-def mock_auth(superuser):
+def mock_auth_user(regularuser):
     with mock.patch("backend.apps.aap_auth.authentication.AAPAuthentication.authenticate") as mock_authenticate:
-        mock_authenticate.return_value = superuser, None
+        mock_authenticate.return_value = regularuser, None
         yield mock_authenticate
 
 

@@ -9,6 +9,7 @@ from django.conf import settings
 from backend.apps.aap_auth.models import JwtUserToken, JwtUserRefreshToken
 from backend.apps.aap_auth.schema import AAPToken
 from backend.apps.users.models import User
+from backend.django_config import settings
 
 
 class JWTToken:
