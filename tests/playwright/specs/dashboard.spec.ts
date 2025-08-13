@@ -32,9 +32,6 @@ test.describe("Dashboard", () => {
     
     for (let i = 0; i < count; i++) {
       const item = menuReportItems.nth(i);
-      const text = await item.textContent();
-    
-      console.log(`Item ${i}: ${text}`);
       await expect(item).toBeVisible();
     }    
 

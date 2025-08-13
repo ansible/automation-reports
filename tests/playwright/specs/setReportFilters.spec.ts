@@ -66,12 +66,14 @@ async function editReportTest(
     newReportName,
     expectedFinalSelector,
     expectedFinalText,
+    isEdited = false,
   }: {
     mockResponse: object;
     statusCode?: number;
     newReportName: string;
     expectedFinalSelector: Parameters<Page['getByRole']>[0];
     expectedFinalText: string;
+    isEdited?: boolean;
   }
 ) {
     await mockFilterSetReportRoute(page, 60, mockResponse, statusCode);
@@ -81,6 +83,9 @@ async function editReportTest(
     await expect(page.locator("#name")).toHaveValue("report_1");
     await fillInput(page, newReportName);
     await saveReport(page, "Save");
+    if (isEdited) {
+      await page.getByRole('button', { name: 'report_1' }).click();
+    }
     await expect(page.getByRole(expectedFinalSelector, { name: expectedFinalText })).toBeVisible();
 }
 
@@ -150,8 +155,9 @@ test.describe("Set report filters", () => {
         mockResponse: {"id":60,"name":"report_10","filters":{"date_range":"month_to_date"}},
         statusCode: 200,
         newReportName: "report_10",
-        expectedFinalSelector: "button",
-        expectedFinalText: "report_10"
+        expectedFinalSelector: "menuitem",
+        expectedFinalText: "report_10",
+        isEdited: true,
     })
   })
 
@@ -191,4 +197,3 @@ test.describe("Set report filters", () => {
       });
   })
 })
-
