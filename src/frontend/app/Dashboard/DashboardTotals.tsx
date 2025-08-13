@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Icon, Tooltip, Flex, FlexItem } from '@patternfly/react-core';
+import { Button, Flex, FlexItem, Icon, Tooltip } from '@patternfly/react-core';
 import { ExternalLinkSquareAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 
 type urlProps = {

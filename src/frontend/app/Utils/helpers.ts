@@ -161,7 +161,7 @@ export const svgToPng = async (svgElement: SVGSVGElement | undefined | null): Pr
   canvas.width = svgElement.clientWidth;
   canvas.height = svgElement.clientHeight;
 
-  // @ts-ignore
+  // @ts-expect-error: getContext may be null, but we know canvas is valid
   canvas.getContext('2d').drawImage(img, 0, 0, svgElement.clientWidth, svgElement.clientHeight);
   const retVal = canvas.toDataURL(`image/'png'`, 1.0);
 

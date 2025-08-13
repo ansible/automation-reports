@@ -14,7 +14,7 @@ if (import.meta.env.NODE_ENV !== 'production') {
       },
     ],
   };
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+   
   import('react-axe').then((axe) => {
     axe.default(React, ReactDOM, 1000, config);
   });

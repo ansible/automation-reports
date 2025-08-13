@@ -72,7 +72,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
         automatedProcessCost: data.automated_process_cost,
         projectOptions: data.projects,
       });
-    } catch (e) {
+    } catch {
       set({ loading: 'failed', error: true });
     }
   },
