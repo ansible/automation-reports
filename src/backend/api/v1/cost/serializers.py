@@ -3,7 +3,7 @@ from rest_framework import serializers
 from backend.apps.clusters.models import Costs, CostsChoices
 
 
-class CostSerializer(serializers.ModelSerializer):
+class CostSerializer(serializers.ModelSerializer[Costs]):
     class Meta:
         model = Costs
         fields = ("id", "type", "value")

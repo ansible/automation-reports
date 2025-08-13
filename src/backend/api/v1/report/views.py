@@ -1,24 +1,35 @@
 import csv
 import decimal
+import logging
 from collections import OrderedDict
 
-from django.db.models import Count, Sum, F, Q
+from django.db import models
+from django.db.models import (
+    Count,
+    Sum,
+    F,
+    Q,
+    OuterRef,
+    Subquery,
+    Value,
+    QuerySet, Func)
+from django.db.models.functions import Trunc, Coalesce
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from django_generate_series.models import generate_series
 from django_weasyprint.views import WeasyTemplateResponse
 from rest_framework import mixins, filters, status
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from backend.api.v1.report.filters import CustomReportFilter, filter_by_range, get_filter_options
-from backend.api.v1.report.serializers import JobSerializer
-from backend.apps.clusters.helpers import (
-    get_costs,
-    get_report_data,
-    get_unique_host_count,
-    get_chart_data,
-    get_related_links,
+from backend.api.v1.report.filters import (
+    CustomReportFilter,
+    filter_by_range,
+    get_filter_options)
+from backend.api.v1.report.serializers import (
+    JobSerializer,
     sec2time)
 from backend.apps.clusters.models import (
     Job,
@@ -27,9 +38,22 @@ from backend.apps.clusters.models import (
     JobTemplate,
     Organization,
     Label,
-    Project)
+    Project,
+    JobHostSummary,
+    Cluster,
+    Costs,
+    DateRangeChoices,
+    JobLabel)
+from backend.apps.clusters.schemas import (
+    ReportData,
+    ReportDataValue,
+    ChartsData,
+    ChartItem,
+    QueryParams)
 from backend.apps.common.models import Settings, Currency
 from backend.django_config import settings
+
+logger = logging.getLogger("automation-dashboard")
 
 
 class ReportsView(mixins.ListModelMixin, GenericViewSet):
@@ -40,18 +64,15 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
                        "automated_costs", "savings", "runs"]
     ordering = ["name"]
 
-    def get_base_queryset(self):
-        costs = get_costs()
-        automated_cost_value = costs[CostsChoices.AUTOMATED].value / decimal.Decimal(60)
-        manual_cost_value = costs[CostsChoices.MANUAL].value
+    def get_base_queryset(self) -> QuerySet[Job]:
+        costs = Costs.get()
+        automated_cost_value = costs[CostsChoices.AUTOMATED] / decimal.Decimal(60)
+        manual_cost_value = costs[CostsChoices.MANUAL]
 
         enable_template_creation_time = Settings.enable_template_creation_time()
 
         qs = (
-            Job.objects.filter(
-                status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED],
-                num_hosts__gt=0
-            ).
+            Job.objects.successful_or_failed().
             values(
                 "name",
                 "cluster",
@@ -74,72 +95,191 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             ))
         return filter_by_range(self.request, queryset=qs)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Job]:
         return self.get_base_queryset()
 
-    def get_details(self, request):
-        filtered_qs = Job.objects.all()
+    def get_unique_host_count(self, options: QueryParams) -> int:
+        qs = (JobHostSummary.objects
+        .filter(
+            job__num_hosts__gt=0,
+            job__status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED]
+        )
+        )
+        date_range = options.date_range
+        if date_range:
+            if date_range.start:
+                qs = qs.filter(
+                    job__finished__gte=date_range.start,
+                )
+            if date_range.end:
+                qs = qs.filter(
+                    job__finished__lte=date_range.end,
+                )
+        for attr in [
+            "organization",
+            "job_template",
+            "project",
+            "cluster"]:
+            value = getattr(options, attr)
+            if value and isinstance(value, list) and len(value) > 0:
+                key = f'job__{attr}_id__in'
+                qs = qs.filter(
+                    **{
+                        key: value
+                    }
+                )
+        if options.label and len(options.label) > 0:
+            qs = qs.filter(
+                job__id__in=JobLabel.objects.filter(label_id__in=options.label).values('job_id')
+            )
+        qs = qs.values("host_id").distinct()
+        return qs.count()
+
+    def get_details(self, request: Request) -> ReportData:
+        filtered_qs = Job.objects.successful_or_failed()
         filtered_qs = self.filter_queryset(filtered_qs)
+        filtered_qs = filter_by_range(self.request, queryset=filtered_qs)
         ### TOP USERS ###
-        top_users_qs = (filter_by_range(request, filtered_qs)
-                        .filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED], num_hosts__gt=0))
-        top_users_qs = (top_users_qs.filter(launched_by__isnull=False, launched_by__type='user').
+        top_users_qs = (filtered_qs.filter(launched_by__isnull=False, launched_by__type='user').
                         values(
             user_id=F("launched_by"),
             user_name=F("launched_by__name")
         ).annotate(count=Count("id")).order_by("launched_by").order_by("-count"))[:5]
 
-        qs = self.filter_queryset(self.get_base_queryset())
-
-        report_data = get_report_data(qs)
-
         ## TOP PROJECTS ##
-        top_projects_qs = (filter_by_range(request, filtered_qs).
-                           filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED], num_hosts__gt=0))
-        top_projects_qs = (top_projects_qs.filter(project__isnull=False).values(
+        top_projects_qs = (filtered_qs.filter(project__isnull=False).values(
             "project_id",
             project_name=F("project__name")
         ).annotate(count=Count("id")).order_by("project_id").order_by("-count"))[:5]
 
         ## UNIQUE HOSTS ###
-        unique_host = get_unique_host_count(options=get_filter_options(request))
+        unique_host = self.get_unique_host_count(options=get_filter_options(request))
 
-        top_data = {
-            "users": list(top_users_qs),
-            "projects": list(top_projects_qs),
-        }
+        qs = self.filter_queryset(self.get_base_queryset())
 
-        return {
-            **top_data,
-            **unique_host,
-            **report_data,
-        }
+        report_data_qs = qs.aggregate(
+            total_runs=Sum("runs"),
+            total_successful_runs=Sum("successful_runs"),
+            total_failed_runs=Sum("failed_runs"),
+            total_num_hosts=Sum("num_hosts"),
+            total_elapsed=Sum("elapsed"),
+            total_manual_time=Sum("manual_time"),
+            total_manual_costs=Sum("manual_costs"),
+            total_automated_costs=Sum("automated_costs"),
+            total_savings=Sum("savings"),
+            total_time_savings=Sum("time_savings"),
+        )
+
+        report_data = ReportData(
+            total_number_of_unique_hosts=ReportDataValue(value=unique_host),
+            total_number_of_successful_jobs=ReportDataValue(value=report_data_qs["total_successful_runs"]),
+            total_number_of_failed_jobs=ReportDataValue(value=report_data_qs["total_failed_runs"]),
+            total_number_of_job_runs=ReportDataValue(value=report_data_qs["total_runs"]),
+            total_number_of_host_job_runs=ReportDataValue(value=report_data_qs["total_num_hosts"]),
+            total_hours_of_automation=ReportDataValue(
+                value=round((report_data_qs["total_elapsed"] / 3600), 2) if report_data_qs["total_elapsed"] is not None else 0),
+            cost_of_automated_execution=ReportDataValue(
+                value=round(report_data_qs["total_automated_costs"], 2) if report_data_qs["total_automated_costs"] is not None else 0
+            ),
+            cost_of_manual_automation=ReportDataValue(
+                value=round(report_data_qs["total_manual_costs"], 2) if report_data_qs["total_manual_costs"] is not None else 0
+            ),
+            total_saving=ReportDataValue(
+                value=round(report_data_qs["total_savings"], 2) if report_data_qs["total_savings"] is not None else 0
+            ),
+            total_time_saving=ReportDataValue(
+                value=round((report_data_qs["total_time_savings"] / 3600), 2) if report_data_qs["total_time_savings"] is not None else 0
+            ),
+            users=list(top_users_qs),
+            projects=list(top_projects_qs),
+        )
+
+        return report_data
+
+    def get_chart_series(self, options: QueryParams) -> ChartsData:
+        result = ChartsData()
+
+        date_range = options.date_range
+        if date_range is None:
+            logger.debug(f"Date range is empty. {options}")
+            return result
+
+        start_date = date_range.start
+        end_date = date_range.end
+
+        kind = DateRangeChoices.db_kind(start_date, end_date)
+        result.host_chart.range = kind
+        result.job_chart.range = kind
+
+        if start_date is None or end_date is None:
+            logger.debug(f"Start date or end date is empty. {options}")
+            return result
+
+        base_chart_qs = (Job.objects
+        .successful_or_failed()
+        .values(
+            date=Trunc(
+                expression="finished",
+                kind=kind,
+                output_field=models.DateTimeField()))
+        .filter(
+            date=OuterRef("term")
+        ))
+
+        base_chart_qs = self.filter_queryset(base_chart_qs)
+        base_chart_qs = filter_by_range(self.request, queryset=base_chart_qs)
+
+        job_chart_qs = base_chart_qs.annotate(
+            runs=Count("id")
+        ).values("runs").order_by()
+
+        host_chart_qs = base_chart_qs.annotate(
+            num_hosts=Sum("num_hosts")
+        ).values("num_hosts").order_by()
+
+        date_sequence_queryset = generate_series(
+            start=start_date,
+            stop=end_date,
+            step=f'1 {kind}s',
+            span=5,
+            output_field=models.DateTimeField
+        ).annotate(
+            runs=Coalesce(Subquery(job_chart_qs), Value(0)),
+            hosts=Coalesce(Subquery(host_chart_qs), Value(0)),
+        )
+
+        for data in date_sequence_queryset:
+            result.job_chart.items.append(
+                ChartItem(x=data.term, y=data.runs),
+            )
+            result.host_chart.items.append(
+                ChartItem(x=data.term, y=data.hosts),
+            )
+
+        return result
 
     @action(methods=["get"], detail=False)
-    def details(self, request):
-        details_data = self.get_details(request)
-        ## CHARTS ###
-        chart_qs = Job.objects.filter(status__in=[JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED], num_hosts__gt=0)
-        chart_qs = self.filter_queryset(chart_qs)
-        chart_qs = filter_by_range(request, chart_qs)
-        charts_data = get_chart_data(chart_qs, request=request)
-
-        related_links = get_related_links(request)
-
+    def details(self, request: Request) -> Response:
         options = get_filter_options(request)
-        opt_organizations = options.get("organization", None)
+
+        details_data = self.get_details(request)
+
+        ## CHARTS ###
+        charts_data = self.get_chart_series(options)
+
+        related_links = Cluster.related_links(options.date_range)
 
         qs = self.filter_queryset(self.get_base_queryset())
         excluded_templates = JobTemplate.objects.exclude(id__in=qs.values_list("job_template_id", flat=True)).order_by("name")
-        if opt_organizations is not None:
-            excluded_templates = excluded_templates.filter(organization__in=opt_organizations)
+        if options.organization is not None:
+            excluded_templates = excluded_templates.filter(organization__in=options.organization)
         excluded_templates = {
             "excluded_templates": [{'id': template.id, 'name': template.name} for template in excluded_templates]
         }
 
         response_data = {
-            **details_data,
-            **charts_data,
+            **details_data.model_dump(),
+            **charts_data.model_dump(),
             **related_links,
             **excluded_templates,
         }
@@ -147,7 +287,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         return Response(data=response_data, status=status.HTTP_200_OK)
 
     @action(methods=["get"], detail=False)
-    def csv(self, request):
+    def csv(self, request: Request) -> Response:
         qs = self.filter_queryset(self.get_base_queryset())
         response = HttpResponse(
             content_type="text/plain",
@@ -198,7 +338,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
         return response
 
     @action(methods=["post"], detail=False)
-    def pdf(self, request):
+    def pdf(self, request: Request) -> WeasyTemplateResponse:
         table_qs = self.filter_queryset(self.get_base_queryset())
 
         currency_value = Settings.currency()
@@ -221,7 +361,7 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             ("project", Project, "Project"),
             ("label", Label, "Label"),
         ]:
-            param_data = options.get(param[0], None)
+            param_data = getattr(options, param[0], None)
             if param_data is not None:
                 qs = param[1].objects.filter(id__in=param_data)
                 options_data[param[0]] = {
@@ -235,8 +375,8 @@ class ReportsView(mixins.ListModelMixin, GenericViewSet):
             "currency": currency_sign,
             "job_chart": request.data.get("job_chart", None),
             "host_chart": request.data.get("host_chart", None),
-            "start_date": options["date_range"].start.strftime('%Y-%m-%d'),
-            "end_date": options["date_range"].end.strftime('%Y-%m-%d'),
+            "start_date": options.date_range.start.strftime('%Y-%m-%d'),
+            "end_date": options.date_range.end.strftime('%Y-%m-%d'),
             "filters": options_data,
             "enable_template_creation_time": Settings.enable_template_creation_time()
         }

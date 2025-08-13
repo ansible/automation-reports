@@ -216,7 +216,7 @@ class ApiConnector:
                 self.cluster.aap_version = ClusterVersionChoices.AAP24
                 self.cluster.save()
             return True
-        return False
+        raise Exception(f'Not valid version for cluster {self.cluster.base_url}.')
 
     def sync_jobs(self):
         for job in self.jobs:

@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from rest_framework import mixins
 from rest_framework.viewsets import GenericViewSet
 
@@ -8,5 +9,5 @@ from backend.apps.common.models import Currency
 class CurrencyView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     serializer_class = CurrencySerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Currency]:
         return Currency.objects.all().order_by("name")
