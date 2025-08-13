@@ -32,5 +32,8 @@ django-solo~=2.4.0
 
 ansible-runner~=2.4.1
 django-ansible-base==2025.5.8
+channels_redis~=4.2.1
+
+redis~=6.2.0
 channels~=4.2.2
 cryptography~=45.0.4

@@ -456,7 +456,7 @@ class TestConnector:
             [api_host_summaries[1], api_host_summaries[2]],
         ]
         connector = ApiConnector(cluster)
-        connector.sync()
+        connector.sync_jobs()
         db_data = ClusterSyncData.objects.all()
         assert len(db_data) == 2
 
