@@ -159,7 +159,7 @@ class AAPAuth:
             timeout=30,
         )
 
-        if  not response.ok:
+        if not response.ok:
             logger.error("An error occurred revoking AAP token. %s", response.content)
             result["success"] = False
             result["message"] = response.content
