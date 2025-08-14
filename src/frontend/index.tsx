@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from '@app/index';
 import { Provider } from 'react-redux';
 import { store } from '@app/Store/store';
+import '@app/client/requestInterceptors';
 
 if (import.meta.env.NODE_ENV !== 'production') {
   const config = {

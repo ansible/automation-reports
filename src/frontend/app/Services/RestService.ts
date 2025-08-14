@@ -30,6 +30,32 @@ const buildQueryString = (params: object): string => {
   return query.toString() ? `?${query.toString()}` : '';
 };
 
+const fetchAapSettings = async () => {
+  return api.get('/api/v1/aap_auth/settings/');
+};
+
+const authorizeUser = async (authCode: string, callback_uri: string) => {
+  return api
+    .post('/api/v1/aap_auth/token/', {
+      auth_code: authCode,
+      redirect_uri: callback_uri,
+    })
+    .then((response) => response.data);
+};
+
+const refreshAccessToken = async (accessToken: string, refreshToken: string) => {
+  return api
+    .post('/api/v1/aap_auth/refresh_token/', {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    })
+    .then((response) => response.data);
+};
+
+const getMyUserData = async () => {
+  return api.get('/api/v1/users/me').then((response) => response.data);
+}
+
 const fetchTemplateOptions = async () => {
   return api.get('api/v1/template_options/');
 };
@@ -111,6 +137,10 @@ const deleteView = async (viewId: number) => {
 };
 
 export const RestService = {
+  fetchAapSettings: fetchAapSettings,
+  authorizeUser: authorizeUser,
+  getMyUserData: getMyUserData,
+  refreshAccessToken: refreshAccessToken,
   fetchTemplateOptions: fetchTemplateOptions,
   fetchReports: fetchReports,
   fetchReportDetails: fetchReportDetails,

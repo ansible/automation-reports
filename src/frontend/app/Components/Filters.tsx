@@ -27,6 +27,9 @@ import {
 import {
   useViewsById,
 } from '@app/Store/commonSelectors';
+import { useRef } from 'react';
+import { useAuthStore } from '@app/Store/authStore';
+
 
 
 export const Filters: React.FunctionComponent<FilterComponentProps> = (props: FilterComponentProps) => {
@@ -55,6 +58,9 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     ? import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
     : '60';
 
+  const hasFetched = useRef(false);
+  const getMyUserData = useAuthStore((state) => state.getMyUserData);
+
   const setInterval = () => {
     interval.current = window.setTimeout(
       () => {
@@ -74,15 +80,19 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
   const fetchFilters = async () => {
     clearInterval();
     await fetchTemplateOptions();
-    setInterval();
+  //  setInterval();
   };
 
   React.useEffect(() => {
     const execute = async () => {
       await fetchFilters();
+      await getMyUserData();
       selectOption(filterOptionsList[0].key);
     };
-    execute().then();
+    if (!hasFetched.current) {
+      execute().then();
+      hasFetched.current = true;
+  }
   }, []);
 
   React.useEffect(() => {
