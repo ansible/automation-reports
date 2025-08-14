@@ -95,6 +95,13 @@ python manage.py syncdata
 
 The dispatcher processes all background tasks including data syncs and parsing:
 
+Automation Dashboard admininstrator is required to setup a scheduled task.
+Open https://HOST:8447/admin/scheduler/syncschedule/ and click "Add syck schedule":
+- name: `5 minutes`
+- enabled: true
+- rrule: `DTSTART;TZID=Europe/Ljubljana:20250630T070000 FREQ=MINUTELY;INTERVAL=5`
+- cluster: select your cluster
+
 ```bash
 # Start the dispatcher service
 python manage.py run_dispatcher

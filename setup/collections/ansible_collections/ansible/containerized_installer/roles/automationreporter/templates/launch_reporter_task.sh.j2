@@ -8,5 +8,4 @@
 /code/src/backend/wait-for-migrations-reporter.sh
 
 # exec supervisord -c /etc/supervisord_task.conf
-cd ../backend_workers
-exec /venv/bin/python periodic.py
+exec /venv/bin/python manage.py run_dispatcher
