@@ -24,7 +24,7 @@ time-machine~=2.16.0
 cryptography~=45.0.4
 coverage~=7.10.2
 pytest-cov~=6.2.1
-split_settings==1.0.0
+split-settings==1.0.0
 PyJWT==2.10.1
 
 django-flags>=5.0.13

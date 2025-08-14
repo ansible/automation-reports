@@ -57,7 +57,7 @@ class AAPAuth:
             allow_redirects=False,
             timeout=30,
         )
-        if response.status_code != 201:
+        if response.status_code != requests.codes.ok:
             logger.error("An error occurred obtaining AAP token. %s", response.content)
             raise AuthenticationFailed("Obtaining of AAP token failed. An error occurred connecting to AAP authorization server.")
 
@@ -154,12 +154,12 @@ class AAPAuth:
         response = requests.post(
             url=f'{self.url}/o/revoke_token/',
             data=token_params,
-            verify=False,
+            verify=self.check_ssl,
             allow_redirects=False,
             timeout=30,
         )
 
-        if response.status_code != 200:
+        if response.status_code != requests.codes.ok:
             logger.error("An error occurred revoking AAP token. %s", response.content)
             result["success"] = False
             result["message"] = response.content

@@ -36,9 +36,10 @@ class TestJWTToken:
     def test_get_payload_returns_expected_fields(self):
         jwt_token = JWTToken()
         user = MagicMock()
-        user.username = "testuser"
-        payload = jwt_token.get_payload(user, 100)
-        assert payload["user_name"] == "testuser"
+        user.username = "test_user"
+        payload = jwt_token.get_payload(user, 100, "test_jti")
+        assert payload["sub"] == "test_user"
+        assert payload["jti"] == "test_jti"
         assert "iat" in payload
         assert "exp" in payload
 
@@ -48,7 +49,7 @@ class TestJWTToken:
         user = MagicMock()
         aap_token = MagicMock()
         mock_jut.create_token.return_value = "token_obj"
-        user.username = "testuser"
+        user.username = "test_user"
         user.log_login = MagicMock()
         jwt_token.acquire_token(user, aap_token)
         result = jwt_token.acquire_token(user, aap_token)

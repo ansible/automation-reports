@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.api.v1.users.serilaizers import UserSerializer
+from backend.api.v1.users.serializers import UserSerializer
 from backend.apps.aap_auth.authentication import AAPAuthentication
 
 

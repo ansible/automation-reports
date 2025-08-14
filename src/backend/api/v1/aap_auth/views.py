@@ -99,7 +99,7 @@ class AAPLogoutView(BaseAAPView):
         result = aap_auth.logout(access_token=access_token)
         if result["success"]:
             return Response(
-                data={"You have successfully logged out."},
+                data={"message": "You have successfully logged out."},
                 status=status.HTTP_200_OK)
 
         return Response(

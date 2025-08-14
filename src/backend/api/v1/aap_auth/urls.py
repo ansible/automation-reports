@@ -8,7 +8,7 @@ from backend.api.v1.aap_auth.views import (
 )
 
 urlpatterns = [
-    path("settings/", AAPSettingsView.as_view(), name="AAPTokenView"),
+    path("settings/", AAPSettingsView.as_view(), name="AAPSettingsView"),
     path("token/", AAPTokenView.as_view(), name="AAPTokenView"),
     path("refresh_token/", AAPRefreshTokenView.as_view(), name="AAPRefreshTokenView"),
     path("logout/", AAPLogoutView.as_view(), name="LogoutView"),

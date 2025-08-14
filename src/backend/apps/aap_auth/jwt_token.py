@@ -4,11 +4,11 @@ from typing import Dict
 
 import jwt
 import pytz
+from django.conf import settings
 
 from backend.apps.aap_auth.models import JwtUserToken, JwtUserRefreshToken
 from backend.apps.aap_auth.schema import AAPToken
 from backend.apps.users.models import User
-from django.conf import settings
 
 
 class JWTToken:
@@ -30,17 +30,18 @@ class JWTToken:
         # Encodes payload into a JWT using the secret key
         return jwt.encode(payload, secret_key, algorithm=self.algorithm)
 
-    def get_payload(self, user: User, lifetime_seconds: int) -> Dict[str, any]:
+    def get_payload(self, user: User, lifetime_seconds: int, jti: str) -> Dict[str, any]:
         exp = self.now + timedelta(seconds=lifetime_seconds)
         return {
-            'user_name': user.username,
+            'sub': user.username,
             'iat': self.now,
             'exp': exp,
+            'jti': jti,
         }
 
     def acquire_token(self, user: User, aap_token: AAPToken) -> JwtUserToken:
         jti = self.jti
-        payload = self.get_payload(user, self.access_token_lifetime_seconds)
+        payload = self.get_payload(user, self.access_token_lifetime_seconds, jti)
         token = self._generate_token(payload=payload, secret_key=jti)
         user.log_login()
         return JwtUserToken.create_token(
@@ -54,7 +55,7 @@ class JWTToken:
     def acquire_refresh_token(self, user: User, access_token: JwtUserToken) -> JwtUserRefreshToken:
         # Creates and stores a JWT refresh token for the user
         jti = self.jti
-        payload = self.get_payload(user, self.refresh_token_lifetime_seconds)
+        payload = self.get_payload(user, self.refresh_token_lifetime_seconds, jti)
         token = self._generate_token(payload=payload, secret_key=jti)
         return JwtUserRefreshToken.create_token(
             user=user,
