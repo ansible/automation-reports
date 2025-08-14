@@ -5,10 +5,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from backend.api.v1.cost.serializers import CostSerializer, CostCreateSerializer
+from backend.api.v1.mixins import AdminOnlyViewSet
 from backend.apps.clusters.models import Costs, CostsChoices
 
 
-class CostView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+class CostView(AdminOnlyViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     serializer_class = CostSerializer
 
     def get_queryset(self) -> QuerySet[Costs]:

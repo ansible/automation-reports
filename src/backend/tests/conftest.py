@@ -6,6 +6,7 @@ from django.core.cache import cache
 
 from backend.apps.clusters.models import Cluster, Organization, Label, JobTemplate, Project, Job, JobTypeChoices, JobLaunchTypeChoices, InstanceGroup, ExecutionEnvironment, Inventory, AAPUser, JobStatusChoices, Host, JobHostSummary, ClusterSyncData
 from backend.apps.common.models import Currency, FilterSet
+from backend.apps.users.models import User
 
 
 def pytest_addoption(parser):
@@ -106,6 +107,7 @@ def inventory(cluster):
 @pytest.fixture
 def aap_user(cluster):
     return AAPUser.objects.create(name="AAP User", cluster=cluster, external_id=1, type="user")
+
 
 @pytest.fixture
 def jobs(
@@ -442,6 +444,7 @@ def api_jobs(api_organizations_existing, api_job_templates_existing):
         }
     ]
 
+
 @pytest.fixture
 def api_host_summaries():
     return [
@@ -513,6 +516,7 @@ def api_host_summaries():
         }
     ]
 
+
 @pytest.fixture
 def cluster_sync_data(cluster, api_jobs, api_host_summaries):
     data = api_jobs[1]
@@ -524,4 +528,29 @@ def cluster_sync_data(cluster, api_jobs, api_host_summaries):
     return ClusterSyncData.objects.create(
         cluster=cluster,
         data=data,
+    )
+
+
+@pytest.fixture
+def superuser():
+    return User.objects.create(
+        username="test",
+        first_name="John",
+        last_name="Doe",
+        email="john.doe@test.com",
+        is_active=True,
+        is_superuser=True,
+        is_platform_auditor=False
+    )
+
+@pytest.fixture
+def regularuser():
+    return User.objects.create(
+        username="test",
+        first_name="John",
+        last_name="Doe",
+        email="john.doe@test.com",
+        is_active=True,
+        is_superuser=False,
+        is_platform_auditor=False
     )

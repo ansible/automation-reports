@@ -60,8 +60,13 @@ INSTALLED_APPS = [
     'backend.apps.scheduler',
     'backend.apps.dispatch',
     'backend.apps.tasks',
+    'backend.apps.users',
+    'backend.apps.aap_auth',
     'solo',
 ]
+
+AUTH_USER_MODEL = "users.User"
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -86,7 +91,8 @@ REST_FRAMEWORK = {
     # TEMP - only until oauth2 is implemented.
     # We need this because nginx uses BasicAuth
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'backend.apps.aap_auth.authentication.AAPAuthentication',
     ],
 }
 
@@ -223,6 +229,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:9000",
+    "http://localhost:8080",
+    "http://0.0.0.0:8080",
 ]
 # CORS_ORIGIN_ALLOW_ALL = True
 
@@ -307,6 +315,19 @@ for options in CELERYBEAT_SCHEDULE.values():
     task_name = options['task']
     new_options['schedule'] = options['schedule'].total_seconds()
     DISPATCHER_SCHEDULE[task_name] = new_options
+
+JWT_ACCESS_TOKEN_LIFETIME_SECONDS = 60
+JWT_REFRESH_TOKEN_LIFETIME_SECONDS = (60 * 60 * 24)
+
+AAP_AUTH_PROVIDER = {
+    'name': 'AAP', # User-friendly name to show in UI login page
+    'protocol': 'https',
+    'url': '<aap url>',
+    'user_data_endpoint': '<aap url like /api/gateway/v1/me/>',
+    'check_ssl': False,
+    'client_id': '<client ID>',
+    'client_secret': '<client secret>',
+}
 
 
 ### Local settings

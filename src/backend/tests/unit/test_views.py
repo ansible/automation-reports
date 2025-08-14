@@ -2,6 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime
+from unittest import mock
 
 import pytest
 import pytz
@@ -191,6 +192,44 @@ test_report_disabled_time_taken_to_create_automation_save_expected_data = {
     ]
 }
 
+ENDPOINTS = {
+    "get": [
+        "/api/v1/common/currencies/",
+        "/api/v1/common/settings/",
+        "/api/v1/template_options/",
+        "/api/v1/report/?page=1&page_size=10&date_range=month_to_date",
+        "/api/v1/report/details/?page=1&page_size=10&date_range=year_to_date",
+        "/api/v1/report/csv/?date_range=last_month"
+    ],
+    "post": [
+        "/api/v1/costs/",
+        "/api/v1/common/filter_set/",
+        "/api/v1/common/settings/",
+        "/api/v1/common/settings/",
+        "/api/v1/report/pdf/?date_range=last_month",
+    ],
+    "put": [
+        "/api/v1/templates/1/",
+        "/api/v1/common/filter_set/1/",
+    ],
+    "delete": [
+        "/api/v1/common/filter_set/1/"
+    ],
+}
+
+
+@pytest.fixture(scope="function")
+def mock_auth(superuser):
+    with mock.patch("backend.apps.aap_auth.authentication.AAPAuthentication.authenticate") as mock_authenticate:
+        mock_authenticate.return_value = superuser, None
+        yield mock_authenticate
+
+@pytest.fixture(scope="function")
+def mock_auth_user(regularuser):
+    with mock.patch("backend.apps.aap_auth.authentication.AAPAuthentication.authenticate") as mock_authenticate:
+        mock_authenticate.return_value = regularuser, None
+        yield mock_authenticate
+
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestViews:
@@ -206,7 +245,7 @@ class TestViews:
             {'id': 1, 'name': 'United states dollar', 'iso_code': 'USD', 'symbol': '$'}
         ]
     ])
-    def test_currency(self, currencies, expected):
+    def test_currency(self, mock_auth, currencies, expected):
         client = APIClient()
         response = client.get('/api/v1/common/currencies/')
         assert response.status_code == 200
@@ -215,7 +254,7 @@ class TestViews:
         assert data == expected
 
     @pytest.mark.parametrize('expected', [test_template_expected_data])
-    def test_template_options(self, currencies, projects, jobs, filter_sets, labels, expected):
+    def test_template_options(self, mock_auth, currencies, projects, jobs, filter_sets, labels, expected):
         client = APIClient()
         response = client.get("/api/v1/template_options/")
         assert response.status_code == 200
@@ -224,7 +263,7 @@ class TestViews:
 
     @pytest.mark.parametrize('expected', [test_report_expected_data])
     @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
-    def test_report(self, host_summaries, projects, expected):
+    def test_report(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         response = client.get('/api/v1/report/?page=1&page_size=10&date_range=month_to_date')
         assert response.status_code == 200
@@ -233,7 +272,7 @@ class TestViews:
 
     @pytest.mark.parametrize('expected', [test_report_past_month_expected_data])
     @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
-    def test_report_past_month(self, host_summaries, projects, expected):
+    def test_report_past_month(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         response = client.get("/api/v1/report/?page=1&page_size=10&date_range=last_month")
         assert response.status_code == 200
@@ -249,7 +288,7 @@ class TestViews:
         }
     ])
     @time_machine.travel(datetime(2025, 12, 31, 22, 1, 45, tzinfo=pytz.UTC))
-    def test_report_by_project(self, host_summaries, projects, expected):
+    def test_report_by_project(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         project = Project.objects.get(name="Project B")
         response = client.get(f"/api/v1/report/?page=1&page_size=10&date_range=year_to_date&project={project.id}")
@@ -265,14 +304,14 @@ class TestViews:
 
     @pytest.mark.parametrize('expected', [test_report_details_expected_data])
     @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
-    def test_report_details(self, host_summaries, projects, expected):
+    def test_report_details(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         response = client.get("/api/v1/report/details/?page=1&page_size=10&date_range=year_to_date")
         assert response.status_code == 200
         data = response.json()
         assert data == expected
 
-    def test_update_template_manual_time(self, job_templates):
+    def test_update_template_manual_time(self, mock_auth, job_templates):
         client = APIClient()
         job_template = JobTemplate.objects.get(name="Job Template A")
         data = dict(time_taken_manually_execute_minutes=120, time_taken_create_automation_minutes=30)
@@ -282,7 +321,7 @@ class TestViews:
         assert job_template.time_taken_manually_execute_minutes == 120
         assert job_template.time_taken_create_automation_minutes == 30
 
-    def test_update_manual_costs(self):
+    def test_update_manual_costs(self, mock_auth):
         client = APIClient()
         data = dict(type="manual", value=1000)
         response = client.post(f"/api/v1/costs/", content_type='application/json', data=json.dumps(data))
@@ -290,7 +329,7 @@ class TestViews:
         costs = Costs.get()
         assert costs[CostsChoices.MANUAL] == 1000
 
-    def test_update_automated_costs(self):
+    def test_update_automated_costs(self, mock_auth):
         client = APIClient()
         data = dict(type="automated", value=1000)
         response = client.post(f"/api/v1/costs/", content_type='application/json', data=json.dumps(data))
@@ -298,7 +337,7 @@ class TestViews:
         costs = Costs.get()
         assert costs[CostsChoices.AUTOMATED] == 1000
 
-    def test_create_new_report(self):
+    def test_create_new_report(self, mock_auth):
         client = APIClient()
         data = dict(name="Report 3", filters=dict(date_range='last_month'))
         response = client.post("/api/v1/common/filter_set/", content_type='application/json', data=json.dumps(data))
@@ -307,7 +346,7 @@ class TestViews:
         assert filter_set.name == "Report 3"
         assert filter_set.filters == dict(date_range='last_month')
 
-    def test_create_new_report_same_name(self, filter_sets):
+    def test_create_new_report_same_name(self, mock_auth, filter_sets):
         data = dict(name="Report 1", filters=dict(date_range='last_month'))
         client = APIClient()
         response = client.post("/api/v1/common/filter_set/", content_type='application/json', data=json.dumps(data))
@@ -315,7 +354,7 @@ class TestViews:
         data = response.json()
         assert data == {'name': ['Filter name already exists.']}
 
-    def test_update_report(self, filter_sets):
+    def test_update_report(self, mock_auth, filter_sets):
         client = APIClient()
         filter_set = FilterSet.objects.get(name="Report 1")
         data = dict(name="Report 1 updated", filters=dict(date_range='last_year'))
@@ -324,7 +363,7 @@ class TestViews:
         filter_set = FilterSet.objects.get(name="Report 1 updated")
         assert filter_set.filters == dict(date_range='last_year')
 
-    def test_delete_report(self, filter_sets):
+    def test_delete_report(self, mock_auth, filter_sets):
         client = APIClient()
         filter_set = FilterSet.objects.get(name="Report 1")
         response = client.delete(f"/api/v1/common/filter_set/{filter_set.id}/")
@@ -332,7 +371,7 @@ class TestViews:
         with pytest.raises(FilterSet.DoesNotExist):
             FilterSet.objects.get(name="Report 1")
 
-    def test_change_currency(self, currencies):
+    def test_change_currency(self, mock_auth, currencies):
         client = APIClient()
         us_currency = Currency.objects.get(iso_code="USD")
         template_response = client.get("/api/v1/template_options/")
@@ -350,7 +389,7 @@ class TestViews:
         template_data = template_response.json()
         assert template_data["currency"] == currency.id
 
-    def test_disable_time_taken_to_create_automation_save(self):
+    def test_disable_time_taken_to_create_automation_save(self, mock_auth):
         client = APIClient()
         data = dict(type="enable_template_creation_time", value=False)
         response = client.post(f"/api/v1/common/settings/", content_type='application/json', data=json.dumps(data))
@@ -360,7 +399,7 @@ class TestViews:
 
     @pytest.mark.parametrize('expected', [test_report_disabled_time_taken_to_create_automation_save_expected_data])
     @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
-    def test_report_disabled_time_taken_to_create_automation_save(self, host_summaries, projects, expected):
+    def test_report_disabled_time_taken_to_create_automation_save(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         data = dict(type="enable_template_creation_time", value=False)
         response = client.post(f"/api/v1/common/settings/", content_type='application/json', data=json.dumps(data))
@@ -371,7 +410,7 @@ class TestViews:
         assert data == expected
 
     @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
-    def test_export_csv(self, host_summaries, projects):
+    def test_export_csv(self, mock_auth, host_summaries, projects):
         client = APIClient()
         response = client.get("/api/v1/report/csv/?date_range=last_month")
         assert response.status_code == 200
@@ -399,7 +438,43 @@ class TestViews:
             assert body[0][index] == data[1]
 
     @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
-    def test_export_pdf(self, host_summaries, projects, currencies):
+    def test_export_pdf(self, mock_auth, host_summaries, projects, currencies):
         client = APIClient()
         response = client.post("/api/v1/report/pdf/?date_range=last_month")
         assert response.status_code == 200
+
+    def test_not_authenticated(self, filter_sets, job_templates):
+        client = APIClient()
+        for url in ENDPOINTS["get"]:
+            response = client.get(url)
+            assert response.status_code == 401
+
+        for url in ENDPOINTS["post"]:
+            response = client.post(url)
+            assert response.status_code == 401
+
+        for url in ENDPOINTS["put"]:
+            response = client.put(url)
+            assert response.status_code == 401
+
+        for url in ENDPOINTS["delete"]:
+            response = client.delete(url)
+            assert response.status_code == 401
+
+    def test_insufficient_permissions(self, mock_auth_user, filter_sets, job_templates):
+        client = APIClient()
+        for url in ENDPOINTS["get"]:
+            response = client.get(url)
+            assert response.status_code == 403
+
+        for url in ENDPOINTS["post"]:
+            response = client.post(url)
+            assert response.status_code == 403
+
+        for url in ENDPOINTS["put"]:
+            response = client.put(url)
+            assert response.status_code == 403
+
+        for url in ENDPOINTS["delete"]:
+            response = client.delete(url)
+            assert response.status_code == 403
