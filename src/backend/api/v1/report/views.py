@@ -3,6 +3,7 @@ import decimal
 import logging
 from collections import OrderedDict
 
+from django.conf import settings
 from django.db import models
 from django.db.models import (
     Count,
@@ -12,7 +13,7 @@ from django.db.models import (
     OuterRef,
     Subquery,
     Value,
-    QuerySet, Func)
+    QuerySet)
 from django.db.models.functions import Trunc, Coalesce
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -51,7 +52,6 @@ from backend.apps.clusters.schemas import (
     ChartItem,
     QueryParams)
 from backend.apps.common.models import Settings, Currency
-from backend.django_config import settings
 from backend.api.v1.mixins import AdminOnlyViewSet
 
 logger = logging.getLogger("automation-dashboard")
