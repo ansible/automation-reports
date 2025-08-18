@@ -70,7 +70,7 @@ class DataParser:
     @property
     def launched_by(self) -> AAPUser | None:
         external_launched_by = self.data.launched_by
-        if external_launched_by:
+        if external_launched_by and external_launched_by.id:
             return AAPUser.create_or_update(
                 cluster=self.cluster,
                 external_id=external_launched_by.id,

@@ -89,9 +89,9 @@ class SummaryFields(FrozenModel):
 
 
 class LaunchedBy(FrozenModel):
-    id: int
-    name: str
-    type: str
+    id: int | None = None
+    name: str | None = None
+    type: str | None = None
 
 
 class HostSummarySummaryFieldsSchema(FrozenModel):
