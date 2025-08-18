@@ -2,6 +2,8 @@ import datetime
 import logging
 from urllib.parse import urlsplit
 
+import pytz
+from django.conf import settings
 import requests
 from django.db import transaction
 
@@ -50,14 +52,24 @@ class ApiConnector:
                 self.since = self.cluster_sync_data.last_job_finished_date
             else:
                 '''
-                Due to the possibility of a lot of data, we enable sync for the first sync only for the last day.
+                Due to the possibility of a lot of data, 
+                we enable sync for the initial sync configured in settings.
                 '''
-                yesterday = datetime.datetime.combine(
-                    datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1),
-                    datetime.datetime.min.time(),
-                    tzinfo=datetime.timezone.utc)
+                initial_sync_days = getattr(settings, "INITIAL_SYNC_DAYS", 1)
+                initial_sync_since = getattr(settings, "INITIAL_SYNC_SINCE", None)
 
-                self.since = yesterday
+                _date = None
+
+                if initial_sync_since is not None:
+                    try:
+                        _date = datetime.datetime.fromisoformat(initial_sync_since)
+                    except ValueError:
+                        _date = None
+
+                if _date is None:
+                    _date = datetime.datetime.now(pytz.UTC) - datetime.timedelta(days=initial_sync_days)
+
+                self.since = datetime.datetime.combine(_date.astimezone(pytz.UTC), datetime.datetime.min.time()).astimezone(pytz.UTC)
 
     @property
     def headers(self):

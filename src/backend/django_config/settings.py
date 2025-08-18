@@ -342,6 +342,11 @@ AAP_AUTH_PROVIDER = {
     'client_secret': '<client secret>',
 }
 
+# Initial sync timedelta in days
+INITIAL_SYNC_DAYS = 1
+
+# Initial sync date (overrides INITIAL_SYNC_DAYS)
+INITIAL_SYNC_SINCE = '2025-08-08'
 
 ### Local settings
 local_config_file = os.path.join(BASE_DIR, "django_config", "local_settings.py")
