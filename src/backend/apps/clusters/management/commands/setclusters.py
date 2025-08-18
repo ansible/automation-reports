@@ -7,6 +7,7 @@ from django.db import transaction
 from django.template.backends import django
 
 from backend.apps.clusters.connector import ApiConnector
+from backend.apps.clusters.encryption import encrypt_value
 from backend.apps.clusters.models import Cluster
 from backend.apps.clusters.schemas import ClusterSettings
 
@@ -47,6 +48,7 @@ class Command(BaseCommand):
         error = False
         with transaction.atomic():
             for cluster in yaml_clusters:
+                cluster["access_token"] = encrypt_value(cluster["access_token"])
                 self.stdout.write(self.style.NOTICE('Adding cluster: address={}'.format(cluster.get("address"))))
                 try:
                     new_cluster = ClusterSettings(**cluster)

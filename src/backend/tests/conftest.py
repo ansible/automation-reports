@@ -4,6 +4,7 @@ import pytest
 import pytz
 from django.core.cache import cache
 
+from backend.apps.clusters.encryption import encrypt_value
 from backend.apps.clusters.models import Cluster, Organization, Label, JobTemplate, Project, Job, JobTypeChoices, JobLaunchTypeChoices, InstanceGroup, ExecutionEnvironment, Inventory, AAPUser, JobStatusChoices, Host, JobHostSummary, ClusterSyncData
 from backend.apps.common.models import Currency, FilterSet
 from backend.apps.users.models import User
@@ -47,7 +48,7 @@ def cluster():
         protocol="https",
         address="localhost",
         port=8000,
-        access_token="<PASSWORD>",
+        access_token=encrypt_value("<PASSWORD>"),
         verify_ssl=False)
 
 

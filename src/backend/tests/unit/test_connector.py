@@ -1,11 +1,11 @@
 import json
-
-from requests import Response
 from http import HTTPStatus
+
 import pytest
+from requests import Response
 
 from backend.apps.clusters.connector import ApiConnector
-from backend.apps.clusters.models import ClusterVersionChoices, Cluster, Organization, JobTemplate, Job, ClusterSyncData
+from backend.apps.clusters.models import ClusterVersionChoices, Cluster, Organization, JobTemplate, ClusterSyncData
 
 
 def get_response(**kwargs):

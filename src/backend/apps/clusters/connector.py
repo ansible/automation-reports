@@ -5,6 +5,7 @@ from urllib.parse import urlsplit
 import requests
 from django.db import transaction
 
+from backend.apps.clusters.encryption import decrypt_value
 from backend.apps.clusters.models import (
     ClusterSyncData,
     ClusterSyncStatus,
@@ -29,6 +30,8 @@ class ApiConnector:
         self.cluster = cluster
         self.timeout = timeout
         self.managed = managed
+
+        self.access_token = decrypt_value(cluster.access_token)
 
         try:
             cluster_sync_data = ClusterSyncStatus.objects.get(cluster=self.cluster)
@@ -59,7 +62,7 @@ class ApiConnector:
     @property
     def headers(self):
         return {
-            'Authorization': f'Bearer {self.cluster.access_token}',
+            'Authorization': f'Bearer {self.access_token}',
             'Content-Type': 'application/json',
             'Accept': 'application/json',
         }

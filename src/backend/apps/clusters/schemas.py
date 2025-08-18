@@ -13,7 +13,7 @@ class ClusterSettings(FrozenModel):
     protocol: str
     address: str
     port: int
-    access_token: str
+    access_token: bytes
     verify_ssl: bool = True
 
 
