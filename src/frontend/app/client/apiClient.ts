@@ -12,6 +12,9 @@ const client = axios.create({
   baseURL: apiUrl,
   timeout: 40000,
   withCredentials: true,
+  withXSRFToken: true,
+  xsrfCookieName: 'csrftoken',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: {
     'Content-Type': 'application/json',
   },
