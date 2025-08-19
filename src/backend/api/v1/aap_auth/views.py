@@ -4,11 +4,13 @@ from http import HTTPStatus
 from django.conf import settings
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.apps.aap_auth.aap_auth import AAPAuth
+from backend.apps.aap_auth.authentication import AAPAuthentication
 from backend.apps.aap_auth.models import JwtUserToken, JwtUserRefreshToken
 
 logger = logging.getLogger("automation-dashboard")
@@ -42,6 +44,7 @@ def make_response(tokens: dict[str, JwtUserToken | JwtUserRefreshToken]) -> Resp
 class BaseAAPView(APIView):
     authentication_classes = ()
     permission_classes = ()
+
 
     def handle_exception(self, exc):
         """
@@ -101,12 +104,20 @@ class AAPRefreshTokenView(BaseAAPView):
 
 
 class AAPLogoutView(BaseAAPView):
+
     def post(self, request: Request) -> Response:
 
         access_token = request.COOKIES.get(settings.AUTH_COOKIE_ACCESS_TOKEN_NAME) or None
 
         if access_token is None:
-            raise ValueError("Invalid authorization data for AAP logout. 'access_token' is missing.")
+            refresh_token = request.COOKIES.get(settings.AUTH_COOKIE_REFRESH_TOKEN_NAME)
+            if refresh_token is None:
+                raise ValueError("Invalid authorization data for AAP logout. 'access_token' is missing.")
+
+            refresh_token_db = JwtUserRefreshToken.get_user_token(refresh_token)
+            if refresh_token_db is None:
+                raise ValueError("Invalid authorization data for AAP logout. 'access_token' is missing.")
+            access_token = refresh_token_db.access_token.token
 
         aap_auth = AAPAuth()
         result = aap_auth.logout(access_token=access_token)
