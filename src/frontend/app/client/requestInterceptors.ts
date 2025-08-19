@@ -2,22 +2,6 @@ import api from "./apiClient";
 import { useAuthStore } from '@app/Store/authStore';
 import { AxiosResponse, AxiosError } from "axios";
 
-
-api.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().accessToken;
-    if (token && config.headers && config.url !== "/api/v1/aap_auth/refresh_token/") {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
-  (error: AxiosError) => {
-    console.error("Request error", error);
-    return Promise.reject(error);
-  }
-);
-
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
@@ -31,7 +15,6 @@ api.interceptors.response.use(
 
     if (error?.response?.status === 401) {
       if (originalConfig.url === "/api/v1/aap_auth/refresh_token/") {
-        console.log("LOGOUT");
         logout();
         return Promise.reject(error);
       } else {
@@ -49,4 +32,3 @@ api.interceptors.response.use(
   }
 );
 
-  

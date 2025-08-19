@@ -10,7 +10,8 @@ apiUrl = apiUrl.replace(/\/$|$/, '/');
 
 const client = axios.create({
   baseURL: apiUrl,
-  timeout: 20000,
+  timeout: 40000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },

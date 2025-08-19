@@ -43,17 +43,14 @@ const authorizeUser = async (authCode: string, callback_uri: string) => {
     .then((response) => response.data);
 };
 
-const refreshAccessToken = async (accessToken: string, refreshToken: string) => {
+const refreshAccessToken = async () => {
   return api
-    .post('/api/v1/aap_auth/refresh_token/', {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    })
+    .post('/api/v1/aap_auth/refresh_token/', {})
     .then((response) => response.data);
 };
 
 const getMyUserData = async () => {
-  return api.get('/api/v1/users/me').then((response) => response.data);
+  return api.get('/api/v1/users/me/').then((response) => response.data);
 }
 
 const fetchTemplateOptions = async () => {
