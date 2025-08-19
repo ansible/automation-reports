@@ -17,16 +17,13 @@ export const Login: React.FunctionComponent = () => {
   const hasFetched = useRef(false);
   const initialized = useRef(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const errorMessage = 'Something went wrong during authorization. Please contact your system administrator.';
-  const aapUrl: string = import.meta.env.AAP_URL
-    ? import.meta.env.AAP_URL
-    : 'https://10.44.17.180';
   
   const loginWithAAP = () => {
-    window.location.href = `${aapUrl}/o/authorize?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}`;
+    window.location.href = `${appSettings?.url}/?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}`;
   };
-  const navigate = useNavigate();
 
   const handleLogin = (code: string) => {
     authorizeUser(code).then(() => {
