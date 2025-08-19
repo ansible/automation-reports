@@ -41,7 +41,7 @@ class Cluster(CreatUpdateModel):
     protocol = models.CharField(max_length=10)
     address = models.CharField(max_length=255)
     port = models.IntegerField()
-    access_token = models.TextField()
+    access_token = models.BinaryField()
     verify_ssl = models.BooleanField(default=True)
     aap_version = models.CharField(max_length=15, choices=ClusterVersionChoices.choices, default=ClusterVersionChoices.AAP24)
 
