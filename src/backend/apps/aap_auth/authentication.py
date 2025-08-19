@@ -37,6 +37,9 @@ class AAPAuthentication(BaseAuthentication):
         if db_token is None:
             return None
 
+        if not db_token.user.is_active:
+            return None
+
         enforce_csrf(request)
 
         return db_token.user, token
