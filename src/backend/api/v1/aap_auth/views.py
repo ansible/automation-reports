@@ -2,15 +2,14 @@ import logging
 from http import HTTPStatus
 
 from django.conf import settings
+from django.middleware import csrf
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.apps.aap_auth.aap_auth import AAPAuth
-from backend.apps.aap_auth.authentication import AAPAuthentication
 from backend.apps.aap_auth.models import JwtUserToken, JwtUserRefreshToken
 
 logger = logging.getLogger("automation-dashboard")
@@ -88,6 +87,7 @@ class AAPTokenView(BaseAAPView):
 
         aap_auth = AAPAuth()
         tokens = aap_auth.authorize(auth_code, redirect_uri)
+        csrf.get_token(request)
         return make_response(tokens)
 
 
@@ -100,6 +100,7 @@ class AAPRefreshTokenView(BaseAAPView):
 
         aap_auth = AAPAuth()
         tokens = aap_auth.refresh_token(refresh_token=refresh_token)
+        csrf.get_token(request)
         return make_response(tokens)
 
 

@@ -17,7 +17,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from split_settings.tools import optional, include
-
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -235,6 +235,12 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 # CORS_ORIGIN_ALLOW_ALL = True
 
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CORS_ALLOW_HEADERS = (
+     *default_headers,
+    "x-xsrf-token"
+)
+CSRF_HEADER_NAME = "HTTP_X_XSRF_TOKEN"
 # Defaults
 
 # Default Time taken to manually execute automation (min)
