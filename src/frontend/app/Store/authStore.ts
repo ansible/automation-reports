@@ -7,6 +7,7 @@ type AuthStoreState = {
   myUserData: MyUserData | null;
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
   error: boolean;
+  logErrorMessage?: string | null;
 }
 
 type AuthStoreActions = {
@@ -15,6 +16,7 @@ type AuthStoreActions = {
   refreshAccessToken: () => Promise<void>;
   getMyUserData: () => Promise<void>;
   logout: () => Promise<void>;
+  logError: (message: string) => void;
 }
 
 type AuthStoreSelectors = {
@@ -26,6 +28,7 @@ export const useAuthStore = create<AuthStoreState & AuthStoreActions & AuthStore
   myUserData: null,
   loading: 'idle',
   error: false,
+  logErrorMessage: null,
 
   fetchAppSettings: async () => {
     set({ loading: 'pending', error: false });
@@ -86,7 +89,10 @@ export const useAuthStore = create<AuthStoreState & AuthStoreActions & AuthStore
       return Promise.reject(error);
     }
   },
-  isAuthenticated: () => !!get().myUserData
+  isAuthenticated: () => !!get().myUserData,
+  logError: (message: string) => {
+    set({ logErrorMessage: message });
+  },
 }));
 
 

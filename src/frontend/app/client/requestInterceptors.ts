@@ -8,8 +8,13 @@ api.interceptors.response.use(
   },
   async (error: AxiosError) => {
     const originalConfig = error.config;
-    const { refreshAccessToken, logout } = useAuthStore.getState();
+    const { refreshAccessToken, logout, logError } = useAuthStore.getState();
     if (!originalConfig) {
+      return Promise.reject(error);
+    }
+
+    if (error?.response?.status === 403) {
+      logError("You don't have permissions to view this content.");
       return Promise.reject(error);
     }
 

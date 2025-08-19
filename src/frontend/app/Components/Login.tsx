@@ -19,10 +19,12 @@ export const Login: React.FunctionComponent = () => {
   const location = useLocation();
 
   const errorMessage = 'Something went wrong during authorization. Please contact your system administrator.';
-
-  const loginWithAAp = () => {
-    const baseUrl = 'https://10.44.17.180';
-    window.location.href = `${baseUrl}/o/authorize?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}`;
+  const aapUrl: string = import.meta.env.AAP_URL
+    ? import.meta.env.AAP_URL
+    : 'https://10.44.17.180';
+  
+  const loginWithAAP = () => {
+    window.location.href = `${aapUrl}/o/authorize?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}`;
   };
   const navigate = useNavigate();
 
@@ -66,7 +68,7 @@ export const Login: React.FunctionComponent = () => {
           <Alert variant="danger" isInline title={errorMessage} />
         ) : (
           <Button
-            onClick={loginWithAAp}
+            onClick={loginWithAAP}
             className="btn-pdf pf-v6-u-ml-auto-on-xl pf-v6-u-ml-0"
             variant="primary"
           >

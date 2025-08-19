@@ -4,7 +4,7 @@ import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Text/text.css';
 import '@patternfly/react-styles/css/utilities/Flex/flex.css';
-import { Flex, FlexItem, Grid, GridItem, Spinner, Toolbar, ToolbarItem } from '@patternfly/react-core';
+import { Alert, Flex, FlexItem, Grid, GridItem, Spinner, Toolbar, ToolbarItem } from '@patternfly/react-core';
 import { RestService } from '@app/Services';
 import { deepClone, svgToPng } from '@app/Utils';
 import {
@@ -35,6 +35,7 @@ import {
   useFilterRetrieveError,
   useManualCostAutomation
 } from '@app/Store/filterSelectors';
+import { useAuthStore } from '@app/Store/authStore';
 
 const refreshInterval: string = import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
   ? import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
@@ -61,6 +62,7 @@ const Dashboard: React.FunctionComponent = () => {
   const controller = React.useRef<AbortController | undefined>(undefined);
   const detailController = React.useRef<AbortController | undefined>(undefined);
   const containerLineRefChart = React.useRef<HTMLDivElement>(null);
+  const logErrorMessage = useAuthStore((state) => state.logErrorMessage);
 
   const saveEnableTemplateCreationTime = useCommonStore((state) => state.saveEnableTemplateCreationTime);
   const setAutomatedProcessCost = useFilterStore((state) => state.setAutomatedProcessCost);
@@ -333,7 +335,12 @@ const Dashboard: React.FunctionComponent = () => {
           />
         </div>
       )}
-      {!loadDataError && !filterError && (
+      {logErrorMessage && 
+      <div className={'main-layout'}>
+        <Alert variant="danger" isInline title={logErrorMessage} />
+      </div>
+      }
+      {!loadDataError && !filterError && !logErrorMessage && (
         <div className={'main-layout'}>
           {(loading || pdfLoading) && (
             <div className={'loader'}>

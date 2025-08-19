@@ -10,7 +10,7 @@
   "scripts": {
     "prebuild": "npm run type-check && npm run clean",
     "build": "tsc --noEmit && vite build",
-    "start": "sirv dist --cors --single --host --port 8080",
+    "start": "sirv dist --cors --single --host",
     "start:dev": "vite",
     "test": "jest",
     "test:watch": "jest --watch",
