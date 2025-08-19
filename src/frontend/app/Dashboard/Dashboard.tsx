@@ -320,11 +320,11 @@ const Dashboard: React.FunctionComponent = () => {
           'Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.'
         }
         pdfBtnText={
-          !loadDataError && !filterError && !loading && !pdfLoading && tableData?.count > 0 ? 'Share as PDF' : undefined
+          !loadDataError && !filterError && !logErrorMessage && !loading && !pdfLoading && tableData?.count > 0 ? 'Share as PDF' : undefined
         }
         onPdfBtnClick={onPdfBtnClick}
       ></Header>
-      {(loadDataError || filterError) && (
+      {((loadDataError || filterError) && !logErrorMessage) && (
         <div className={'error'}>
           <ErrorState
             titleText="Something went wrong"
