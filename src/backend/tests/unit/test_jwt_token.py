@@ -122,20 +122,8 @@ class TestJWTToken:
         db_token.access_token.token = "access"
         mock_get_token.return_value = db_token
         mock_decode.return_value = {"foo": "bar"}
-        result = jwt_token.decode_refresh_token("token", "access")
+        result = jwt_token.decode_refresh_token("token")
         assert result == db_token
-
-    @patch("backend.apps.aap_auth.jwt_token.JwtUserRefreshToken.get_user_token")
-    @patch("backend.apps.aap_auth.jwt_token.JWTToken._decode")
-    def test_decode_refresh_token_invalid_access(self, mock_decode, mock_get_token):
-        jwt_token = JWTToken()
-        db_token = MagicMock()
-        db_token.id = 1
-        db_token.access_token.token = "other"
-        mock_get_token.return_value = db_token
-        mock_decode.return_value = {"foo": "bar"}
-        result = jwt_token.decode_refresh_token("token", "access")
-        assert result is None
 
     @patch("backend.apps.aap_auth.jwt_token.JwtUserRefreshToken.get_user_token")
     @patch("backend.apps.aap_auth.jwt_token.JWTToken._decode")
@@ -145,5 +133,5 @@ class TestJWTToken:
         db_token.id = 1
         mock_get_token.return_value = db_token
         mock_decode.return_value = None
-        result = jwt_token.decode_refresh_token("token", "access")
+        result = jwt_token.decode_refresh_token("token")
         assert result is None

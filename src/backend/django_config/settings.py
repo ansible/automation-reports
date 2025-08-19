@@ -232,6 +232,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://0.0.0.0:8080",
 ]
+CORS_ALLOW_CREDENTIALS = True
 # CORS_ORIGIN_ALLOW_ALL = True
 
 # Defaults
@@ -318,6 +319,12 @@ for options in CELERYBEAT_SCHEDULE.values():
 
 JWT_ACCESS_TOKEN_LIFETIME_SECONDS = 60
 JWT_REFRESH_TOKEN_LIFETIME_SECONDS = (60 * 60 * 24)
+AUTH_COOKIE_ACCESS_TOKEN_NAME = 'access_token'
+AUTH_COOKIE_REFRESH_TOKEN_NAME = 'refresh_token'
+AUTH_COOKIE_PATH = '/'
+AUTH_COOKIE_SECURE = False
+AUTH_COOKIE_HTTPONLY = True
+AUTH_COOKIE_SAMESITE = 'Lax'
 
 AAP_AUTH_PROVIDER = {
     'name': 'AAP', # User-friendly name to show in UI login page

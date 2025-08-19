@@ -89,7 +89,7 @@ class JWTToken:
         decoded_token = self._decode(token=token, secret_key=db_token.jti)
         return db_token if decoded_token else None
 
-    def decode_refresh_token(self, token: str, access_token: str) -> JwtUserRefreshToken | None:
+    def decode_refresh_token(self, token: str) -> JwtUserRefreshToken | None:
         # Validates and returns the refresh token object if valid and matches access token
         db_token = JwtUserRefreshToken.get_user_token(token=token)
         if db_token is None or db_token.id is None:
@@ -97,4 +97,4 @@ class JWTToken:
         decoded_token = self._decode(token=token, secret_key=db_token.jti)
         if decoded_token is None:
             return None
-        return db_token if db_token.access_token.token == access_token else None
+        return db_token
