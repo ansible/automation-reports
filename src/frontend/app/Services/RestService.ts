@@ -6,7 +6,7 @@ import {
   RequestFilter,
   TableResponse,
   TableResult,
-  UrlParams,
+  UrlParams
 } from '@app/Types';
 
 const downloadAttachment = (data: never, name: string) => {
@@ -38,8 +38,14 @@ const authorizeUser = async (authCode: string, callback_uri: string) => {
   return api
     .post('/api/v1/aap_auth/token/', {
       auth_code: authCode,
-      redirect_uri: callback_uri,
+      redirect_uri: callback_uri
     })
+    .then((response) => response.data);
+};
+
+const logoutUser = async () => {
+  return api
+    .post('/api/v1/aap_auth/logout/')
     .then((response) => response.data);
 };
 
@@ -51,7 +57,7 @@ const refreshAccessToken = async () => {
 
 const getMyUserData = async () => {
   return api.get('/api/v1/users/me/').then((response) => response.data);
-}
+};
 
 const fetchTemplateOptions = async () => {
   return api.get('api/v1/template_options/');
@@ -61,7 +67,7 @@ const fetchReports = async (signal: AbortSignal, params: UrlParams): Promise<Tab
   const queryString = buildQueryString(params);
   return api
     .get(`api/v1/report/${queryString}`, {
-      signal: signal,
+      signal: signal
     })
     .then((response) => response.data);
 };
@@ -70,7 +76,7 @@ const fetchReportDetails = async (signal: AbortSignal, params: RequestFilter): P
   const queryString = buildQueryString(params);
   return api
     .get(`api/v1/report/details/${queryString}`, {
-      signal: signal,
+      signal: signal
     })
     .then((response) => response.data);
 };
@@ -80,8 +86,8 @@ const exportToCSV = async (params: RequestFilter & OrderingParams): Promise<void
   return api
     .get(`api/v1/report/csv/${queryString}`, {
       headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-      },
+        'Content-Type': 'text/csv; charset=utf-8'
+      }
     })
     .then((response) => {
       downloadAttachment(response.data as never, 'report.csv');
@@ -92,7 +98,7 @@ const exportToCSV = async (params: RequestFilter & OrderingParams): Promise<void
 const exportToPDF = async (
   params: RequestFilter & OrderingParams,
   jobChart: string | null,
-  hostChart: string | null,
+  hostChart: string | null
 ): Promise<void> => {
   const queryString = buildQueryString(params);
   return api
@@ -110,7 +116,7 @@ const updateCosts = async (payload) => {
 const updateTemplate = async (item: TableResult) => {
   return api.put(`api/v1/templates/${item.job_template_id}/`, {
     time_taken_manually_execute_minutes: item.time_taken_manually_execute_minutes,
-    time_taken_create_automation_minutes: item.time_taken_create_automation_minutes,
+    time_taken_create_automation_minutes: item.time_taken_create_automation_minutes
   });
 };
 
@@ -150,4 +156,5 @@ export const RestService = {
   exportToCSV: exportToCSV,
   exportToPDF: exportToPDF,
   saveEnableTemplateCreationTime: saveEnableTemplateCreationTime,
+  logoutUser: logoutUser
 };

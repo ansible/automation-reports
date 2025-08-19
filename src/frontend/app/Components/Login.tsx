@@ -4,7 +4,8 @@ import { useAuthStore } from '@app/Store/authStore';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { AppSettings } from '@app/Types/AuthTypes';
-import logo from '../../assets/images/logo.svg'
+import logo from '../../assets/images/logo.svg';
+
 
 export const Login: React.FunctionComponent = () => {
   const [loading, setLoading] = useState(false);
@@ -16,13 +17,20 @@ export const Login: React.FunctionComponent = () => {
   const hasFetched = useRef(false);
   const initialized = useRef(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  const errorMessage = "Something went wrong during authorization. Please contact your system administrator.";
+
+  const errorMessage = 'Something went wrong during authorization. Please contact your system administrator.';
 
   const loginWithAAp = () => {
     const baseUrl = 'https://10.44.17.180';
     window.location.href = `${baseUrl}/o/authorize?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}`;
-  }
+  };
+  const navigate = useNavigate();
+
+  const handleLogin = (code: string) => {
+    authorizeUser(code).then(() => {
+      navigate('/');
+    });
+  };
 
   useEffect(() => {
     if (!hasFetched.current) {
@@ -34,12 +42,7 @@ export const Login: React.FunctionComponent = () => {
       setLoading(true);
       const code = searchParams.get('code');
       if (code) {
-        authorizeUser(code)
-          .then(() => setLoading(false))
-          .catch(() => {
-            setLoading(false);
-            navigate('/login');
-          });
+        handleLogin(code);
       } else {
         setLoading(false);
         console.error('Authorization code is missing');

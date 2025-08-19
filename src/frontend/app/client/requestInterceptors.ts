@@ -15,13 +15,13 @@ api.interceptors.response.use(
 
     if (error?.response?.status === 401) {
       if (originalConfig.url === "/api/v1/aap_auth/refresh_token/") {
-        logout();
+        //logout();
         return Promise.reject(error);
       } else {
         try {
           await refreshAccessToken();
         } catch (error) {
-          logout();
+          //logout();
           return Promise.reject(error);
         }
         return api(originalConfig);
