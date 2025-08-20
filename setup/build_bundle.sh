@@ -1,16 +1,27 @@
 #!/bin/bash
 set -e
 
-(
-  cd setup/
-  ansible-playbook -i inventory ansible.containerized_installer.util_podman_login
-)
-
 # GHA pushes to quay.io/aap/automation-reports:latest,
 # but all other images are at registry.redhat.io.
 AAP_REPORTER_IMAGE="${AAP_REPORTER_IMAGE:-registry.redhat.io/ansible-automation-platform-24/automation-reports:latest}"
 # AAP_REPORTER_IMAGE="${AAP_REPORTER_IMAGE:-quay.io/aap/automation-reports:latest}"
-podman build -f docker/Dockerfile.backend -t $AAP_REPORTER_IMAGE . # --no-cache
+
+# Building in GHA: we want to use the container image already built by GHA.
+# We just need to pull existing image from quay.io, and tag it with different name.
+USE_QUAY_IO_IMAGE="${USE_QUAY_IO_IMAGE:-0}"
+QUAY_IO_IMAGE_TAG="${QUAY_IO_IMAGE_TAG:-main}"
+
+if [ "$USE_QUAY_IO_IMAGE" == "0" ]
+then
+  (
+    cd setup/
+    ansible-playbook -i inventory ansible.containerized_installer.util_podman_login
+  )
+  podman build -f docker/Dockerfile.backend -t $AAP_REPORTER_IMAGE . # --no-cache
+else
+  podman pull quay.io/aap/automation-reports:$QUAY_IO_IMAGE_TAG
+  podman tag quay.io/aap/automation-reports:$QUAY_IO_IMAGE_TAG $AAP_REPORTER_IMAGE
+fi
 
 cd setup/
 /bin/rm -f bundle/images/*
