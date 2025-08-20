@@ -76,11 +76,24 @@ jobs:
           registry: quay.io
           username: ${{ vars.REGISTRY_QUAY_IO_USERNAME }}
           password: ${{ secrets.REGISTRY_QUAY_IO_PASSWORD }}
+      - name: Prepare inventory
+        run: |
+          cat <<EOF >setup/inventory
+          [automationreporter]
+          aap24_reports.novalocal ansible_connection=local
+          [automationreporter:vars]
+          [all:vars]
+          registry_username=${{ vars.REGISTRY_REDHAT_IO_USERNAME }}
+          registry_password=${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+          bundle_install=true
+          bundle_dir=$PWD/setup/bundle
+          EOF
       - name: Build bundle
-        run: USE_QUAY_IO_IMAGE=1 setup/build_bundle.sh
+        run: USE_QUAY_IO_IMAGE=1 QUAY_IO_IMAGE_TAG=${{ github.ref_name }} setup/build_bundle.sh
       - name: Upload bundle artifact
         uses: actions/upload-artifact@v4
         with:
           name: ansible-automation-reports-containerized-setup-bundle.tar.gz
           path: setup/bundle/ansible-automation-reports-containerized-setup-bundle.tar.gz
+          retention-days: 31
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/gha-bundle'
