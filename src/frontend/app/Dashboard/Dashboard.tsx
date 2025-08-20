@@ -4,7 +4,7 @@ import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Text/text.css';
 import '@patternfly/react-styles/css/utilities/Flex/flex.css';
-import { Flex, FlexItem, Grid, GridItem, Spinner, Toolbar, ToolbarItem } from '@patternfly/react-core';
+import { Alert, Flex, FlexItem, Grid, GridItem, Spinner, Toolbar, ToolbarItem } from '@patternfly/react-core';
 import { RestService } from '@app/Services';
 import { deepClone, svgToPng } from '@app/Utils';
 import {
@@ -35,6 +35,7 @@ import {
   useFilterRetrieveError,
   useManualCostAutomation
 } from '@app/Store/filterSelectors';
+import { useAuthStore } from '@app/Store/authStore';
 
 const refreshInterval: string = import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
   ? import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
@@ -61,6 +62,7 @@ const Dashboard: React.FunctionComponent = () => {
   const controller = React.useRef<AbortController | undefined>(undefined);
   const detailController = React.useRef<AbortController | undefined>(undefined);
   const containerLineRefChart = React.useRef<HTMLDivElement>(null);
+  const logErrorMessage = useAuthStore((state) => state.logErrorMessage);
 
   const saveEnableTemplateCreationTime = useCommonStore((state) => state.saveEnableTemplateCreationTime);
   const setAutomatedProcessCost = useFilterStore((state) => state.setAutomatedProcessCost);
@@ -318,11 +320,11 @@ const Dashboard: React.FunctionComponent = () => {
           'Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.'
         }
         pdfBtnText={
-          !loadDataError && !filterError && !loading && !pdfLoading && tableData?.count > 0 ? 'Share as PDF' : undefined
+          !loadDataError && !filterError && !logErrorMessage && !loading && !pdfLoading && tableData?.count > 0 ? 'Share as PDF' : undefined
         }
         onPdfBtnClick={onPdfBtnClick}
       ></Header>
-      {(loadDataError || filterError) && (
+      {((loadDataError || filterError) && !logErrorMessage) && (
         <div className={'error'}>
           <ErrorState
             titleText="Something went wrong"
@@ -333,7 +335,12 @@ const Dashboard: React.FunctionComponent = () => {
           />
         </div>
       )}
-      {!loadDataError && !filterError && (
+      {logErrorMessage && 
+      <div className={'main-layout'}>
+        <Alert variant="danger" isInline title={logErrorMessage} />
+      </div>
+      }
+      {!loadDataError && !filterError && !logErrorMessage && (
         <div className={'main-layout'}>
           {(loading || pdfLoading) && (
             <div className={'loader'}>

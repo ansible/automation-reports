@@ -231,6 +231,13 @@ def mock_auth_user(regularuser):
         yield mock_authenticate
 
 
+@pytest.fixture(scope="function")
+def mock_auth_user(regularuser):
+    with mock.patch("backend.apps.aap_auth.authentication.AAPAuthentication.authenticate") as mock_authenticate:
+        mock_authenticate.return_value = regularuser, None
+        yield mock_authenticate
+
+
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestViews:
 

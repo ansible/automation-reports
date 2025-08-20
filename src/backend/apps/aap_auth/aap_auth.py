@@ -2,6 +2,7 @@ import logging
 
 import requests
 import urllib3
+from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 
 from backend.apps.aap_auth.jwt_token import JWTToken
@@ -9,7 +10,6 @@ from backend.apps.aap_auth.models import JwtUserToken, JwtUserRefreshToken
 from backend.apps.aap_auth.schema import AAPAuthSettings, AAPToken
 from backend.apps.users.models import User
 from backend.apps.users.schemas import UserResponseSchema
-from django.conf import settings
 
 logger = logging.getLogger("automation-dashboard")
 
@@ -57,7 +57,7 @@ class AAPAuth:
             allow_redirects=False,
             timeout=30,
         )
-        if response.status_code != requests.codes.ok:
+        if not response.ok:
             logger.error("An error occurred obtaining AAP token. %s", response.content)
             raise AuthenticationFailed("Obtaining of AAP token failed. An error occurred connecting to AAP authorization server.")
 
@@ -114,10 +114,10 @@ class AAPAuth:
             raise ValueError("Obtaining of AAP user failed.")
         return User.create_or_update_aap_user(users.results[0])
 
-    def refresh_token(self, refresh_token: str, access_token: str) -> dict[str, JwtUserToken | JwtUserRefreshToken]:
+    def refresh_token(self, refresh_token: str) -> dict[str, JwtUserToken | JwtUserRefreshToken]:
         # Refreshes JWT tokens using the AAP refresh token
         jwt_token = JWTToken()
-        refresh_token = jwt_token.decode_refresh_token(token=refresh_token, access_token=access_token)
+        refresh_token = jwt_token.decode_refresh_token(token=refresh_token)
 
         if refresh_token is None:
             raise NotAuthenticated("Refresh token is invalid.")
@@ -159,11 +159,12 @@ class AAPAuth:
             timeout=30,
         )
 
-        if response.status_code != requests.codes.ok:
+        if not response.ok:
             logger.error("An error occurred revoking AAP token. %s", response.content)
             result["success"] = False
             result["message"] = response.content
             result["status_code"] = response.status_code
+            return result
 
         token.revoke_token()
         result["success"] = True

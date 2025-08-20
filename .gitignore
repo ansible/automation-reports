@@ -39,5 +39,13 @@ storybook-static
 .env
 .venv
 clusters.yaml
+
 # Local settings
 local_settings.py
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

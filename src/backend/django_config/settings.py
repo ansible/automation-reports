@@ -17,7 +17,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from split_settings.tools import optional, include
-
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -232,8 +232,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://0.0.0.0:8080",
 ]
+CORS_ALLOW_CREDENTIALS = True
 # CORS_ORIGIN_ALLOW_ALL = True
 
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CORS_ALLOW_HEADERS = (
+     *default_headers,
+    "x-xsrf-token"
+)
+CSRF_HEADER_NAME = "HTTP_X_XSRF_TOKEN"
 # Defaults
 
 # Default Time taken to manually execute automation (min)
@@ -318,6 +325,12 @@ for options in CELERYBEAT_SCHEDULE.values():
 
 JWT_ACCESS_TOKEN_LIFETIME_SECONDS = 60
 JWT_REFRESH_TOKEN_LIFETIME_SECONDS = (60 * 60 * 24)
+AUTH_COOKIE_ACCESS_TOKEN_NAME = 'access_token'
+AUTH_COOKIE_REFRESH_TOKEN_NAME = 'refresh_token'
+AUTH_COOKIE_PATH = '/'
+AUTH_COOKIE_SECURE = False
+AUTH_COOKIE_HTTPONLY = True
+AUTH_COOKIE_SAMESITE = 'Lax'
 
 AAP_AUTH_PROVIDER = {
     'name': 'AAP', # User-friendly name to show in UI login page

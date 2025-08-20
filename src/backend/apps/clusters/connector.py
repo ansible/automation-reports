@@ -78,7 +78,7 @@ class ApiConnector:
         except requests.exceptions.RequestException as e:
             logger.error(f'GET request failed with exception {e}')
             return None
-        if response.status_code != 200:
+        if not response.ok:
             logger.error(f'GET request failed with status {response.status_code}')
             return None
         product_name = response.headers.get("X-Api-Product-Name", None)
