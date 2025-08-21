@@ -1,7 +1,10 @@
 import json
+from datetime import datetime
 from http import HTTPStatus
 
 import pytest
+import pytz
+import time_machine
 from requests import Response
 
 from backend.apps.clusters.connector import ApiConnector
@@ -463,3 +466,33 @@ class TestConnector:
         for i, data in enumerate(db_data):
             assert data.cluster_id == expected[i]['cluster_id']
             assert dict(data.data) == expected[i]['data']
+
+    def test_since_iso_date(self, settings, cluster):
+        settings.INITIAL_SYNC_SINCE = '2025-05-06'
+        connector = ApiConnector(cluster)
+        assert str(connector.since) == '2025-05-06 00:00:00+00:00'
+
+    @time_machine.travel(datetime(2025, 10, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    def test_since_without_iso_date(self, settings, cluster):
+        delattr(settings, "INITIAL_SYNC_SINCE")
+        settings.INITIAL_SYNC_DAYS = 5
+        connector = ApiConnector(cluster)
+        assert str(connector.since) == '2025-10-16 00:00:00+00:00'
+        assert connector.until is None
+
+    @time_machine.travel(datetime(2025, 10, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    def test_since_without_iso_date_without_timedelta_days(self, settings, cluster):
+        delattr(settings, "INITIAL_SYNC_SINCE")
+        delattr(settings, "INITIAL_SYNC_DAYS")
+        connector = ApiConnector(cluster)
+        assert str(connector.since) == '2025-10-20 00:00:00+00:00'
+        assert connector.until is None
+
+    def test_since_until(self, cluster):
+        since = datetime(2025, 10, 1, 22, 1, 45, tzinfo=pytz.UTC)
+        until = datetime(2025, 10, 31, 22, 1, 45, tzinfo=pytz.UTC)
+        since = datetime.combine(since, datetime.min.time()).astimezone(pytz.UTC)
+        until = datetime.combine(until, datetime.max.time()).astimezone(pytz.UTC)
+        connector = ApiConnector(cluster, since=since, until=until)
+        assert str(connector.since) == '2025-10-01 00:00:00+00:00'
+        assert str(connector.until) == '2025-10-31 23:59:59.999999+00:00'
