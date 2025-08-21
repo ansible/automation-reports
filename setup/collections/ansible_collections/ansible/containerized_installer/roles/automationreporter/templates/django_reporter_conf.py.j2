@@ -25,3 +25,14 @@ AAP_AUTH_PROVIDER = {
     "client_id": "{{ aap_auth_provider_client_id }}",
     "client_secret": "{{ aap_auth_provider_client_secret }}",
 }
+
+# Initial sync timedelta in days
+INITIAL_SYNC_DAYS = {{ initial_sync_days | int }}
+# Initial sync date (overrides INITIAL_SYNC_DAYS)
+{% if initial_sync_since is defined %}
+INITIAL_SYNC_SINCE = "{{ initial_sync_since }}"
+{% endif %}
+
+SHOW_URLLIB3_INSECURE_REQUEST_WARNING = {{ show_urllib3_insecure_request_warning | default(True) }}
+# django DEBUG=0
+DEBUG = {{ django_debug | default(False) }}

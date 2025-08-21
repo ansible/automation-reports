@@ -16,12 +16,25 @@ aap_auth_provider_check_ssl=true
 aap_auth_provider_client_id=TODO
 aap_auth_provider_client_secret=TODO
 
+# Specify amount of old data to synchronoize after installation.
+# The initial_sync_days=N requests N days of old data, counting from "today".
+# The initial_sync_since requsets data from the specified data until "today".
+# If boht are specified, the initial_sync_since will be used.
+initial_sync_days=1
+# initial_sync_since=2025-08-08
+
+# Hide warnings when insecure https request are made.
+# Use this if your AAP uses self-signed TLS certificate.
+# show_urllib3_insecure_request_warning=False
+
 # Force clean install-like
 # reporter_update_secret=true
 # HTTP/HTTPS settings
 # nginx_disable_https=true
 # nginx_http_port=8083
 # nginx_https_port=8447
+# Enable Django DEBUG.
+# django_debug=True
 
 [database]
 aap24_reports.novalocal ansible_connection=local
