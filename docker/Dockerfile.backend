@@ -22,7 +22,7 @@ COPY package.json package-lock.json /code/
 WORKDIR /code
 RUN npm install
 # RUN yarn install --immutable
-COPY .eslintrc.js stylePaths.js tsconfig.json vite.config.ts /code/
+COPY stylePaths.js tsconfig.json vite.config.ts /code/
 COPY src /code/src
 RUN rm -fr dist/
 # env variables needed at build time
