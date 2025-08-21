@@ -24,9 +24,9 @@ import { deepClone, formatDateTimeToDate } from '@app/Utils';
 import { FilterSet } from '@app/Types';
 import useCommonStore from '@app/Store/commonStore';
 import {
-  useViewsById,
-  useViewSavingProcess,
   useViewSaveError,
+  useViewSavingProcess,
+  useViewsById,
 } from '@app/Store/commonSelectors';
 
 const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditViewProps) => {

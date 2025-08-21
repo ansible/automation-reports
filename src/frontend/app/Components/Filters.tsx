@@ -21,8 +21,8 @@ import useCommonStore  from '@app/Store/commonStore';
 import {
   useFilterChoicesData,
   useFilterChoicesDataById,
-  useFilterRetrieveError,
   useFilterOptionsById,
+  useFilterRetrieveError,
 } from '@app/Store/filterSelectors';
 import {
   useViewsById,

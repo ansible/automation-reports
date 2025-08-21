@@ -24,8 +24,8 @@ import { formatCurrency, formatNumber } from '@app/Utils';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
 import { IdNameItem } from '@app/Types/ReportDetailsType';
 import {
-  useEnableTemplateCreationTime,
   useCurrencySign,
+  useEnableTemplateCreationTime,
 } from '@app/Store/commonSelectors';
 import {
   useAutomatedProcessCost,

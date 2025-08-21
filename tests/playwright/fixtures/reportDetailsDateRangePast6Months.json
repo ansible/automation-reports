@@ -1,0 +1,402 @@
+{
+    "users": [
+        {
+            "user_id": 11,
+            "user_name": "User 1",
+            "count": 8
+        },
+        {
+            "user_id": 19,
+            "user_name": "User 9",
+            "count": 7
+        },
+        {
+            "user_id": 15,
+            "user_name": "User 5",
+            "count": 6
+        },
+        {
+            "user_id": 13,
+            "user_name": "User 3",
+            "count": 6
+        },
+        {
+            "user_id": 14,
+            "user_name": "User 4",
+            "count": 5
+        }
+    ],
+    "projects": [
+        {
+            "project_id": 8,
+            "project_name": "Project 8",
+            "count": 8
+        },
+        {
+            "project_id": 6,
+            "project_name": "Project 6",
+            "count": 7
+        },
+        {
+            "project_id": 10,
+            "project_name": "Project 10",
+            "count": 6
+        },
+        {
+            "project_id": 3,
+            "project_name": "Project 3",
+            "count": 5
+        },
+        {
+            "project_id": 5,
+            "project_name": "Project 5",
+            "count": 5
+        }
+    ],
+    "total_number_of_unique_hosts": {
+        "value": 10
+    },
+    "total_number_of_successful_jobs": {
+        "value": 50
+    },
+    "total_number_of_failed_jobs": {
+        "value": 0
+    },
+    "total_number_of_job_runs": {
+        "value": 50
+    },
+    "total_number_of_host_job_runs": {
+        "value": 239
+    },
+    "total_hours_of_automation": {
+        "value": 8.79
+    },
+    "cost_of_automated_execution": {
+        "value": 133268.44
+    },
+    "cost_of_manual_automation": {
+        "value": 644400.0
+    },
+    "total_saving": {
+        "value": 511131.56
+    },
+    "total_time_saving": {
+        "value": 192.82
+    },
+    "host_chart": {
+        "items": [
+            {
+                "x": "2025-02-01T00:00:00Z",
+                "y": 239
+            },
+            {
+                "x": "2025-03-01T00:00:00Z",
+                "y": 0
+            },
+            {
+                "x": "2025-04-01T00:00:00Z",
+                "y": 0
+            },
+            {
+                "x": "2025-05-01T00:00:00Z",
+                "y": 0
+            },
+            {
+                "x": "2025-06-01T00:00:00Z",
+                "y": 0
+            },
+            {
+                "x": "2025-07-01T00:00:00Z",
+                "y": 0
+            }
+        ],
+        "range": "month"
+    },
+    "job_chart": {
+        "items": [
+            {
+                "x": "2025-02-01T00:00:00Z",
+                "y": 50
+            },
+            {
+                "x": "2025-03-01T00:00:00Z",
+                "y": 0
+            },
+            {
+                "x": "2025-04-01T00:00:00Z",
+                "y": 0
+            },
+            {
+                "x": "2025-05-01T00:00:00Z",
+                "y": 0
+            },
+            {
+                "x": "2025-06-01T00:00:00Z",
+                "y": 0
+            },
+            {
+                "x": "2025-07-01T00:00:00Z",
+                "y": 0
+            }
+        ],
+        "range": "month"
+    },
+    "related_links": {
+        "successful_jobs": "http://localhost:8080/#/jobs?job.finished__gte=2025-02-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-07-31T23%3A59%3A59.999999%2B00%3A00&job.status__exact=successful",
+        "failed_jobs": "http://localhost:8080/#/jobs?job.status__exact=failed&job.finished__gte=2025-02-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-07-31T23%3A59%3A59.999999%2B00%3A00"
+    },
+    "excluded_templates": [
+        {
+            "id": 101,
+            "name": "Job template 1"
+        },
+        {
+            "id": 110,
+            "name": "Job template 10"
+        },
+        {
+            "id": 200,
+            "name": "Job template 100"
+        },
+        {
+            "id": 112,
+            "name": "Job template 12"
+        },
+        {
+            "id": 114,
+            "name": "Job template 14"
+        },
+        {
+            "id": 115,
+            "name": "Job template 15"
+        },
+        {
+            "id": 116,
+            "name": "Job template 16"
+        },
+        {
+            "id": 117,
+            "name": "Job template 17"
+        },
+        {
+            "id": 118,
+            "name": "Job template 18"
+        },
+        {
+            "id": 119,
+            "name": "Job template 19"
+        },
+        {
+            "id": 120,
+            "name": "Job template 20"
+        },
+        {
+            "id": 121,
+            "name": "Job template 21"
+        },
+        {
+            "id": 124,
+            "name": "Job template 24"
+        },
+        {
+            "id": 126,
+            "name": "Job template 26"
+        },
+        {
+            "id": 127,
+            "name": "Job template 27"
+        },
+        {
+            "id": 128,
+            "name": "Job template 28"
+        },
+        {
+            "id": 131,
+            "name": "Job template 31"
+        },
+        {
+            "id": 132,
+            "name": "Job template 32"
+        },
+        {
+            "id": 133,
+            "name": "Job template 33"
+        },
+        {
+            "id": 134,
+            "name": "Job template 34"
+        },
+        {
+            "id": 135,
+            "name": "Job template 35"
+        },
+        {
+            "id": 136,
+            "name": "Job template 36"
+        },
+        {
+            "id": 138,
+            "name": "Job template 38"
+        },
+        {
+            "id": 141,
+            "name": "Job template 41"
+        },
+        {
+            "id": 147,
+            "name": "Job template 47"
+        },
+        {
+            "id": 148,
+            "name": "Job template 48"
+        },
+        {
+            "id": 149,
+            "name": "Job template 49"
+        },
+        {
+            "id": 105,
+            "name": "Job template 5"
+        },
+        {
+            "id": 150,
+            "name": "Job template 50"
+        },
+        {
+            "id": 151,
+            "name": "Job template 51"
+        },
+        {
+            "id": 153,
+            "name": "Job template 53"
+        },
+        {
+            "id": 154,
+            "name": "Job template 54"
+        },
+        {
+            "id": 155,
+            "name": "Job template 55"
+        },
+        {
+            "id": 156,
+            "name": "Job template 56"
+        },
+        {
+            "id": 157,
+            "name": "Job template 57"
+        },
+        {
+            "id": 158,
+            "name": "Job template 58"
+        },
+        {
+            "id": 160,
+            "name": "Job template 60"
+        },
+        {
+            "id": 161,
+            "name": "Job template 61"
+        },
+        {
+            "id": 163,
+            "name": "Job template 63"
+        },
+        {
+            "id": 164,
+            "name": "Job template 64"
+        },
+        {
+            "id": 169,
+            "name": "Job template 69"
+        },
+        {
+            "id": 171,
+            "name": "Job template 71"
+        },
+        {
+            "id": 173,
+            "name": "Job template 73"
+        },
+        {
+            "id": 174,
+            "name": "Job template 74"
+        },
+        {
+            "id": 175,
+            "name": "Job template 75"
+        },
+        {
+            "id": 176,
+            "name": "Job template 76"
+        },
+        {
+            "id": 178,
+            "name": "Job template 78"
+        },
+        {
+            "id": 180,
+            "name": "Job template 80"
+        },
+        {
+            "id": 182,
+            "name": "Job template 82"
+        },
+        {
+            "id": 183,
+            "name": "Job template 83"
+        },
+        {
+            "id": 184,
+            "name": "Job template 84"
+        },
+        {
+            "id": 185,
+            "name": "Job template 85"
+        },
+        {
+            "id": 186,
+            "name": "Job template 86"
+        },
+        {
+            "id": 187,
+            "name": "Job template 87"
+        },
+        {
+            "id": 188,
+            "name": "Job template 88"
+        },
+        {
+            "id": 109,
+            "name": "Job template 9"
+        },
+        {
+            "id": 190,
+            "name": "Job template 90"
+        },
+        {
+            "id": 191,
+            "name": "Job template 91"
+        },
+        {
+            "id": 192,
+            "name": "Job template 92"
+        },
+        {
+            "id": 195,
+            "name": "Job template 95"
+        },
+        {
+            "id": 196,
+            "name": "Job template 96"
+        },
+        {
+            "id": 197,
+            "name": "Job template 97"
+        },
+        {
+            "id": 199,
+            "name": "Job template 99"
+        }
+    ]
+}
