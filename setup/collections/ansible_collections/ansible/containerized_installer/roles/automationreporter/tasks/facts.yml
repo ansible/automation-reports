@@ -61,11 +61,6 @@
       - '{{ reporter_conf_dir }}/uwsgi.ini:/etc/tower/uwsgi.ini:ro,z'
       - '{{ nginx_conf_dir }}/reporter.conf:/etc/nginx/nginx.conf:ro,z'
 
-- name: Add htpasswd to automation reporter volumes
-  ansible.builtin.set_fact:
-    _nginx_volumes: "{{ _nginx_volumes + [ nginx_conf_dir + '/htpasswd:/etc/nginx/htpasswd:ro,z' ] }}"
-  when: nginx_hack_enable_basic_auth | bool
-
 - name: Add postgresql socket directory to common automation reporter volumes
   ansible.builtin.set_fact:
     _common_volumes: '{{ _common_volumes + _postgresql_volumes }}'

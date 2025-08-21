@@ -1,16 +1,40 @@
 [automationreporter]
 aap24_reports.novalocal ansible_connection=local
+
 [automationreporter:vars]
-# force clean install-like
+# Configure AAP OAUht2 authentication.
+# aap_auth_provider_name - human friendly name, it is shown on login page.
+aap_auth_provider_name=my-AAP
+# aap_auth_provider_protocol - http or https
+aap_auth_provider_protocol=https
+# aap_auth_provider_url - AAP IP or DNS name
+aap_auth_provider_url=my-aap.example.com
+# aap_auth_provider_check_ssl - enforce TLS check or not.
+aap_auth_provider_check_ssl=true
+# aap_auth_provider_client_id and aap_auth_provider_client_secret -
+# they are obtained from AAP when OAuth2 application is created in AAP.
+aap_auth_provider_client_id=TODO
+aap_auth_provider_client_secret=TODO
+
+# Specify amount of old data to synchronoize after installation.
+# The initial_sync_days=N requests N days of old data, counting from "today".
+# The initial_sync_since requsets data from the specified data until "today".
+# If boht are specified, the initial_sync_since will be used.
+initial_sync_days=1
+# initial_sync_since=2025-08-08
+
+# Hide warnings when insecure https request are made.
+# Use this if your AAP uses self-signed TLS certificate.
+# show_urllib3_insecure_request_warning=False
+
+# Force clean install-like
 # reporter_update_secret=true
-# TEMP
+# HTTP/HTTPS settings
 # nginx_disable_https=true
 # nginx_http_port=8083
 # nginx_https_port=8447
-# nginx_hack_enable_basic_auth=true
-# nginx_hack_basic_auth_username=admin
-# NOTE: nginx_hack_basic_auth_password needs to be same as reporter_admin_password, since UWSGI is used
-# nginx_hack_basic_auth_password="{{ reporter_admin_password }}"
+# Enable Django DEBUG.
+# django_debug=True
 
 [database]
 aap24_reports.novalocal ansible_connection=local
