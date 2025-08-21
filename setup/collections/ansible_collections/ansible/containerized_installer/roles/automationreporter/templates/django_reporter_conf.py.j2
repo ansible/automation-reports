@@ -12,3 +12,16 @@ CORS_ALLOWED_ORIGINS = [
 # Avoid using URL - https URLS with untrusted certificate will not work.
 # Use local filesystem instead.
 WEASYPRINT_BASEURL = '/code/src/backend/templates'
+
+JWT_ACCESS_TOKEN_LIFETIME_SECONDS = 60
+JWT_REFRESH_TOKEN_LIFETIME_SECONDS = 7200
+
+AAP_AUTH_PROVIDER = {
+    "name": "{{ aap_auth_provider_name }}",
+    "protocol": "{{ aap_auth_provider_protocol }}",
+    "url": "{{ aap_auth_provider_url }}",
+    "user_data_endpoint": '/api/gateway/v1/me/',
+    "check_ssl": "{{ aap_auth_provider_check_ssl }}",
+    "client_id": "{{ aap_auth_provider_client_id }}",
+    "client_secret": "{{ aap_auth_provider_client_secret }}",
+}

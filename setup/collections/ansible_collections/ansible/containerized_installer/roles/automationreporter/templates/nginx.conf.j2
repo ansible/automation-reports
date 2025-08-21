@@ -150,7 +150,9 @@ http {
         }
 
         location / {
-            alias /opt/app-root/src/;
+            # URLs /login and /auth-callback are also here
+            root /opt/app-root/src;
+            try_files $uri $uri/ /index.html;
         }
     }
 

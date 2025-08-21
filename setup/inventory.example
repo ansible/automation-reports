@@ -1,9 +1,24 @@
 [automationreporter]
 aap24_reports.novalocal ansible_connection=local
+
 [automationreporter:vars]
-# force clean install-like
+# Configure AAP OAUht2 authentication.
+# aap_auth_provider_name - human friendly name, it is shown on login page.
+aap_auth_provider_name=my-AAP
+# aap_auth_provider_protocol - http or https
+aap_auth_provider_protocol=https
+# aap_auth_provider_url - AAP IP or DNS name
+aap_auth_provider_url=my-aap.example.com
+# aap_auth_provider_check_ssl - enforce TLS check or not.
+aap_auth_provider_check_ssl=true
+# aap_auth_provider_client_id and aap_auth_provider_client_secret -
+# they are obtained from AAP when OAuth2 application is created in AAP.
+aap_auth_provider_client_id=TODO
+aap_auth_provider_client_secret=TODO
+
+# Force clean install-like
 # reporter_update_secret=true
-# TEMP
+# HTTP/HTTPS settings
 # nginx_disable_https=true
 # nginx_http_port=8083
 # nginx_https_port=8447
