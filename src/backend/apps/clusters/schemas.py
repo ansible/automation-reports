@@ -9,12 +9,19 @@ class FrozenModel(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
+class SyncSchedule(BaseModel):
+    name: str
+    rrule: str
+    enabled: bool | None = True
+
+
 class ClusterSettings(FrozenModel):
     protocol: str
     address: str
     port: int
     access_token: bytes
     verify_ssl: bool = True
+    sync_schedules: List[SyncSchedule] | None = []
 
 
 class ClusterSchema(ClusterSettings):
