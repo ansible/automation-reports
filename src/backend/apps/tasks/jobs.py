@@ -7,7 +7,7 @@ from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.models import JobStatusChoices
 from backend.apps.clusters.parser import DataParser
 from backend.apps.scheduler.models import SyncJob
-from backend.django_config import settings
+from django.conf import settings
 from backend.utils.update_models import update_model
 
 logger = logging.getLogger('automation_dashboard.tasks.jobs')

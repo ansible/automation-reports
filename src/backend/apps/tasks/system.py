@@ -6,7 +6,7 @@ from django.utils.translation import gettext_noop
 
 from backend.apps.clusters.models import JobStatusChoices
 from backend.apps.scheduler.models import SyncScheduleState, SyncSchedule, SyncJob, JobTypeChoices
-from backend.django_config import settings
+from django.conf import settings
 
 logger = logging.getLogger('automation_dashboard.tasks.system')
 
