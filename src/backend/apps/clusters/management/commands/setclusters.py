@@ -154,7 +154,7 @@ class Command(BaseCommand):
                     db_schedule = db_schedules.pop(sync_schedule["name"], None)
                     if db_schedule is None:
                         SyncScheduleModel.objects.create(
-                            cluster=db_cluster,
+                            cluster=new_cluster,
                             name=sync_schedule["name"],
                             rrule=sync_schedule["rrule"],
                             enabled=sync_schedule["enabled"],
@@ -171,8 +171,9 @@ class Command(BaseCommand):
                 for key, _db_schedule in db_schedules.items():
                     _db_schedule.delete()
 
-            for key, value in db_clusters.items():
-                value.delete()
+            if not error:
+                for key, value in db_clusters.items():
+                    value.delete()
         if error:
             sys.exit(1)
         self.stdout.write(self.style.SUCCESS('Successfully set up AAP clusters'))
