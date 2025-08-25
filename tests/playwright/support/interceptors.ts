@@ -1,3 +1,59 @@
+export async function mockAuthSettingsRoute(
+  page: import("playwright").Page, 
+  status: number = 200
+): Promise<void> {
+  await page.route("**/api/v1/aap_auth/settings/", async (route) => {
+    await route.fulfill({
+      status: status,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        "name": "AAP",
+        "url": "https://10.44.17.180/o/authorize",
+        "client_id": "test_id",
+        "scope": "read",
+        "approval_prompt": "auto",
+        "response_type": "code"
+      }),
+    });
+  });
+}
+
+export async function mockTokenRoute(
+  page: import("playwright").Page, 
+  status: number = 204
+): Promise<void> {
+  await page.route("**/api/v1/aap_auth/token/", async (route) => {
+    await route.fulfill({
+      status: status,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        auth_code: "auth_code",
+        redirect_uri: "http://localhost:9000/auth-callback"
+      }),
+    });
+  });
+}
+
+export async function mockMeRoute(
+  page: import("playwright").Page, 
+  status: number = 204
+): Promise<void> {
+  await page.route("**/api/v1/users/me/", async (route) => {
+    await route.fulfill({
+      status: status,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        "id": 2,
+        "first_name": "Red Hat User",
+        "last_name": "Red Hat User",
+        "email": "user@redhat.si",
+        "is_superuser": true,
+        "is_platform_auditor": false
+    }),
+    });
+  });
+}
+
 export async function mockTemplateOptionsRoute(
   page: import("playwright").Page,
   body: any, 

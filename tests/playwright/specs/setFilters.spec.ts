@@ -1,13 +1,12 @@
 import { test, expect, Page } from '@playwright/test';
 import {
-  mockTemplateOptionsRoute,
   mockReportRoute,
   mockReportDetailsRoute,
   mockSettingsRoute,
   mockCostsRoute,
   mockSingleTemplateOptionRoute,
  } from "../support/interceptors.ts";
-import { checkCardContent, generateExpectedTotals, generateCostAndSavingsValues } from "../support/helpers.ts";
+import { checkCardContent, generateExpectedTotals, generateCostAndSavingsValues, loginUser } from "../support/helpers.ts";
 import reportDetailsWithData from "../fixtures/reportDetailsWithData.json" assert { type: "json"};
 import reportDateRange from "../fixtures/reportDateRange.json" assert { type: "json"};
 import templateOptions from "../fixtures/templateOptions.json" assert { type: "json"};
@@ -64,9 +63,12 @@ async function verifyCostAndSavingsValues(
 
 test.describe("Set filters", () => {
   test.beforeEach(async ({ page }) => {
-    await mockTemplateOptionsRoute(page, templateOptions);
-    await mockReportRoute(page, reportDateRange);
-    await mockReportDetailsRoute(page, reportDetailsWithData);
+    await loginUser(
+      page,
+      templateOptions,
+      reportDateRange,
+      reportDetailsWithData
+    );
     await page.goto("/");
   });
 
@@ -151,7 +153,11 @@ test.describe("Set filters", () => {
       reportDateRangePast6Months,
       "?date_range=last_6_month&page=1&page_size=10&ordering=name"
     );
-    await mockReportDetailsRoute(page, reportDetailsDateRangePast6Months, "?date_range=last_6_month");
+    await mockReportDetailsRoute(
+      page,
+      reportDetailsDateRangePast6Months,
+      "?date_range=last_6_month"
+    );
     await page.getByRole('button', { name: 'Month to date' }).click();
     await page.getByRole('menuitem', { name: 'Past 6 months' }).click();
 
@@ -163,8 +169,12 @@ test.describe("Set filters", () => {
     await mockSettingsRoute(page, {"type":"currency","value":2});
     await page.getByRole("button", { name: "British Pound Sterling" }).click();
     await page.getByRole("menuitem", { name: "Euro" }).click();
-    await expect(page.getByRole("button", { name: "Euro" })).toBeVisible();
-    await expect(page.getByText("€48,321,900.00")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Euro" })
+    ).toBeVisible();
+    await expect(
+      page.getByText("€48,321,900.00")
+    ).toBeVisible();
 
     await verifyCostAndSavingsValues(
       page,

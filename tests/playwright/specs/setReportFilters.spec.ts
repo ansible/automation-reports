@@ -1,11 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
 import {
   mockTemplateOptionsRoute,
-  mockReportRoute,
-  mockReportDetailsRoute,
   mockFilterSetRoute,
   mockFilterSetReportRoute
  } from "../support/interceptors.ts";
+import { loginUser } from "../support/helpers.ts";
 import reportDetails from "../fixtures/reportDetails.json" assert { type: "json"};
 import templateOptions from "../fixtures/templateOptions.json" assert { type: "json"};
 import templateOptionsAddReport from "../fixtures/templateOptionsAddReport.json" assert { type: "json"};
@@ -52,9 +51,13 @@ async function deleteReportTest(
     await saveReport(page, "Delete");
   
     if (expectError) {
-      await expect(page.getByRole("heading", { name: "Delete report" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Delete report" })
+      ).toBeVisible();
     } else {
-      await expect(page.getByRole("button", { name: "Select a report" })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Select a report" })
+      ).toBeVisible();
     }
 }
 
@@ -86,40 +89,63 @@ async function editReportTest(
     if (isEdited) {
       await page.getByRole('button', { name: 'report_1' }).click();
     }
-    await expect(page.getByRole(expectedFinalSelector, { name: expectedFinalText })).toBeVisible();
+    await expect(
+      page.getByRole(expectedFinalSelector, { name: expectedFinalText })
+    ).toBeVisible();
 }
 
 test.describe("Set report filters", () => {
   test.beforeEach(async ({ page }) => {
-    await mockTemplateOptionsRoute(page, templateOptions);
-    await mockReportRoute(page, {"count":0,"next":null,"previous":null,"results":[]});
-    await mockReportDetailsRoute(page, reportDetails);
+    await loginUser(
+      page,
+      templateOptions,
+      {"count":0,"next":null,"previous":null,"results":[]},
+      reportDetails
+    );
     await page.goto("/");
   });
 
   test("Should show create a report popup", async ({ page }) => {
     await page.getByRole("button", { name: "Save as report", exact: true }).click();
-    await expect(page.locator("#name")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Create" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+    await expect(
+      page.locator("#name")
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Create" })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Cancel" })
+    ).toBeVisible();
   })
 
   test("Should show edit a report popup", async ({ page}) => {
     await selectAReport(page, "report_1");
     await saveAsReportAction(page);
     await selectMenuItem(page, "Edit current report", "Edit report");
-    await expect(page.locator("#name")).toHaveValue("report_1");
-    await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+    await expect(
+      page.locator("#name")
+    ).toHaveValue("report_1");
+    await expect(
+      page.getByRole("button", { name: "Save" })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Cancel" })
+    ).toBeVisible();
   })
 
   test("Should show delete a report popup", async ({ page}) => {
     await selectAReport(page, "report_1");
     await saveAsReportAction(page);
     await selectMenuItem(page, "Delete current report", "Delete report");
-    await expect(page.getByText("Do you really want to delete filter set report_1")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+    await expect(
+      page.getByText("Do you really want to delete filter set report_1")
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Delete" })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Cancel" })
+    ).toBeVisible();
   })
 
   test("Should add new report", async ({ page }) => {
@@ -138,7 +164,11 @@ test.describe("Set report filters", () => {
     await expect(page.locator("#name")).toBeVisible();
     await fillInput(page, "report_1");
     await saveReport(page, "Create");
-    await expect(page.getByRole("heading", { name: "Danger alert: Error saving view. Filter name already exists." })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { 
+        name: "Danger alert: Error saving view. Filter name already exists." 
+      })
+    ).toBeVisible();
   })
 
   test("Should show internal server error when adding new report", async ({ page }) => {
@@ -147,7 +177,9 @@ test.describe("Set report filters", () => {
     await expect(page.locator("#name")).toBeVisible();
     await fillInput(page, "report_3");
     await saveReport(page, "Create");
-    await expect(page.getByRole('heading', { name: 'Danger alert: Error saving' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Danger alert: Error saving' })
+    ).toBeVisible();
   })
 
   test("Should edit report", async ({ page }) => {
