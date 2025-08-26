@@ -1,4 +1,12 @@
 import { expect, Page } from '@playwright/test';
+import {
+  mockAuthSettingsRoute,
+  mockTokenRoute,
+  mockMeRoute,
+  mockTemplateOptionsRoute,
+  mockReportRoute,
+  mockReportDetailsRoute
+} from "../support/interceptors.ts";
 
 export async function checkCardContent(
   page: Page,
@@ -42,4 +50,18 @@ export async function generateCostAndSavingsValues(
     { label: "Total savings/cost avoided", value: totalSavingsCostAvoided },
     { label: "Total hours saved/avoided", value: totalHoursSavedAvoided },
   ];
+}
+
+export async function loginUser(
+  page: Page,
+  templateOptionsResponse: Record<string, any>,
+  reportRouteResponse: Record<string, any>,
+  reportDetailsResponse: Record<string, any>
+) {
+  await mockAuthSettingsRoute(page);
+  await mockTokenRoute(page);
+  await mockMeRoute(page);
+  await mockTemplateOptionsRoute(page, templateOptionsResponse);
+  await mockReportRoute(page, reportRouteResponse);
+  await mockReportDetailsRoute(page, reportDetailsResponse);
 }

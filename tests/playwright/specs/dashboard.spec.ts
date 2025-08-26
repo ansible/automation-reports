@@ -1,10 +1,10 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import {
   mockTemplateOptionsRoute,
   mockReportRoute,
   mockReportDetailsRoute,
  } from "../support/interceptors.ts";
-import { checkCardContent, generateExpectedTotals, generateCostAndSavingsValues } from "../support/helpers.ts";
+import { loginUser, checkCardContent, generateExpectedTotals, generateCostAndSavingsValues } from "../support/helpers.ts";
 import reportDateRangePast6Months from "../fixtures/reportDateRangePast6Months.json" assert { type: "json"};
 import reportDetailsDateRangePast6Months from "../fixtures/reportDetailsDateRangePast6Months.json" assert { type: "json"};
 import reportDetails from "../fixtures/reportDetails.json" assert { type: "json"};
@@ -12,15 +12,22 @@ import templateOptions from "../fixtures/templateOptions.json" assert { type: "j
 
 test.describe("Dashboard", () => {
   test.beforeEach(async ({ page }) => {
-    await mockTemplateOptionsRoute(page, templateOptions);
-    await mockReportRoute(page, {"count":0,"next":null,"previous":null,"results":[]});
-    await mockReportDetailsRoute(page, reportDetails);
+    await loginUser(
+      page,
+      templateOptions,
+      {"count":0,"next":null,"previous":null,"results":[]},
+      reportDetails
+    );
     await page.goto("/");
   });
 
   test("Should show dashboard page", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "Automation Dashboard" })).toBeVisible();
-    await expect(page.getByText("Discover the significant cost")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Automation Dashboard" })
+    ).toBeVisible();
+    await expect(
+      page.getByText("Discover the significant cost")
+    ).toBeVisible();
 
     const selectReportBtn = page.getByRole("button", { name: "Select a report" });
     await expect(selectReportBtn).toBeVisible();
@@ -75,8 +82,12 @@ test.describe("Dashboard", () => {
       await expect(item).toContainText(dateRangeOptions[i]);
     }
 
-    await expect(page.getByRole("button", { name: "Save as report", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "British Pound Sterling" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Save as report", exact: true })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "British Pound Sterling" })
+    ).toBeVisible();
 
     const expectedTotals = await generateExpectedTotals("0", "0", "0", "0.00");
     await checkCardContent(page, expectedTotals);
@@ -214,10 +225,24 @@ test.describe("Dashboard", () => {
 
   test("Should show an error", async ({ page }) => {
     await mockTemplateOptionsRoute(page, {}, 500);
-    await mockReportRoute(page, {}, "?date_range=month_to_date&page=1&page_size=10&ordering=name", 500);
-    await mockReportDetailsRoute(page, {}, "?date_range=month_to_date", 500);
-    await expect(page.getByRole('heading', { name: 'Something went wrong' })).toBeVisible();
-    await expect(page.getByText('Please contact your system')).toBeVisible();
+    await mockReportRoute(
+      page,
+      {},
+      "?date_range=month_to_date&page=1&page_size=10&ordering=name",
+      500
+    );
+    await mockReportDetailsRoute(
+      page,
+      {},
+      "?date_range=month_to_date",
+      500
+    );
+    await expect(
+      page.getByRole('heading', { name: 'Something went wrong' })
+    ).toBeVisible();
+    await expect(
+      page.getByText('Please contact your system')
+    ).toBeVisible();
   })
 })
 
