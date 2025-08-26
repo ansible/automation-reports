@@ -11,6 +11,10 @@ aap_auth_provider_protocol=https
 aap_auth_provider_url=my-aap.example.com
 # aap_auth_provider_check_ssl - enforce TLS check or not.
 aap_auth_provider_check_ssl=true
+# aap_auth_provider_user_data_endpoint depends on AAP version:
+#   AAP 2.4 (controller API): /api/v2/me/
+#   AAP 2.5 (gateway API): /api/gateway/v1/me/
+aap_auth_provider_user_data_endpoint=/api/v2/me/
 # aap_auth_provider_client_id and aap_auth_provider_client_secret -
 # they are obtained from AAP when OAuth2 application is created in AAP.
 aap_auth_provider_client_id=TODO
