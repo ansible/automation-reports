@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { RestService } from '@app/Services';
 import { AppSettings, AuthResponse, MyUserData } from '@app/Types/AuthTypes';
+import { AxiosError } from 'axios';
 
 type AuthStoreState = {
   appSettings: AppSettings | null;
@@ -38,10 +39,12 @@ export const useAuthStore = create<AuthStoreState & AuthStoreActions & AuthStore
       set({ appSettings, loading: 'succeeded' });
     } catch {
       set({ loading: 'failed', error: true });
+      return Promise.reject();
     }
   },
   authorizeUser: async (authCode: string) => {
     if (!authCode) {
+      // eslint-disable-next-line no-undef
       console.error('Authorization code is required');
       return;
     }
@@ -53,9 +56,11 @@ export const useAuthStore = create<AuthStoreState & AuthStoreActions & AuthStore
         loading: 'succeeded'
       });
       await get().getMyUserData();
-    } catch {
+    } catch(e: unknown) {
       set({ loading: 'failed', error: true });
-      return Promise.reject({ message: 'Failed authorization' });
+      const error = e as AxiosError;
+      // @ts-ignore
+      return Promise.reject({ message: error.response?.data?.message ?? 'Failed authorization' });
     }
   },
   refreshAccessToken: async () => {

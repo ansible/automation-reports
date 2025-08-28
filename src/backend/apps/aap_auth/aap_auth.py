@@ -110,8 +110,8 @@ class AAPAuth:
 
         users = UserResponseSchema(**user_response.json())
         if users.count != 1:
-            logger.error(f"Failed to validate token with AAP: {str(users)}")
-            raise ValueError("Obtaining of AAP user failed.")
+            logger.error(f"Failed to retrieve AAP user. {str(users)}")
+            raise ValueError("Failed to retrieve AAP user.")
         return User.create_or_update_aap_user(users.results[0])
 
     def refresh_token(self, refresh_token: str) -> dict[str, JwtUserToken | JwtUserRefreshToken]:

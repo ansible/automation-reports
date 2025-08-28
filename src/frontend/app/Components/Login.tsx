@@ -19,8 +19,10 @@ export const Login: React.FunctionComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const errorMessage = 'Something went wrong during authorization. Please contact your system administrator.';
-  
+  const defaultErrorMessage = 'Something went wrong during authorization. Please contact your system administrator.';
+
+  const [errorMessage, seterrorMessage] = useState('false');
+
   const loginWithAAP = () => {
     window.location.href = `${appSettings?.url}/?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}`;
   };
@@ -28,12 +30,19 @@ export const Login: React.FunctionComponent = () => {
   const handleLogin = (code: string) => {
     authorizeUser(code).then(() => {
       navigate('/');
+    }).catch((e) => {
+      seterrorMessage((
+        e?.message ? e.message + ' Please contact your system administrator.' : defaultErrorMessage));
+    }).finally(() => {
+      setLoading(false);
     });
   };
 
   useEffect(() => {
     if (!hasFetched.current) {
-      fetchAppSettings();
+      fetchAppSettings().catch(() => {
+        seterrorMessage(defaultErrorMessage);
+      });
       hasFetched.current = true;
     }
 
@@ -44,7 +53,7 @@ export const Login: React.FunctionComponent = () => {
         handleLogin(code);
       } else {
         setLoading(false);
-        console.error('Authorization code is missing');
+        seterrorMessage('Authorization code is missing');
       }
       initialized.current = true;
     }
