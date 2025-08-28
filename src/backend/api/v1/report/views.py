@@ -3,6 +3,7 @@ import decimal
 import logging
 from collections import OrderedDict
 
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.db import models
 from django.db.models import (
@@ -215,6 +216,10 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
         if start_date is None or end_date is None:
             logger.debug(f"Start date or end date is empty. {options}")
             return result
+
+        if kind == 'month' or kind == 'year':
+            start_date = start_date.replace(day=1)
+            end_date = end_date.replace(day=1)
 
         base_chart_qs = (Job.objects
         .successful_or_failed()
