@@ -86,7 +86,10 @@ class AAPTokenView(BaseAAPView):
             raise AuthenticationFailed("Invalid redirect URI for AAP token. 'redirect_uri' is missing.")
 
         aap_auth = AAPAuth()
-        tokens = aap_auth.authorize(auth_code, redirect_uri)
+        try:
+            tokens = aap_auth.authorize(auth_code, redirect_uri)
+        except Exception as e:
+            return Response(data={"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         csrf.get_token(request)
         return make_response(tokens)
 
@@ -99,7 +102,10 @@ class AAPRefreshTokenView(BaseAAPView):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         aap_auth = AAPAuth()
-        tokens = aap_auth.refresh_token(refresh_token=refresh_token)
+        try:
+            tokens = aap_auth.refresh_token(refresh_token=refresh_token)
+        except Exception as e:
+            return Response(data={"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         csrf.get_token(request)
         return make_response(tokens)
 

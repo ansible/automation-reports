@@ -19,7 +19,7 @@ api.interceptors.response.use(
     }
 
     if (error?.response?.status === 401) {
-      if (originalConfig.url === "/api/v1/aap_auth/refresh_token/") {
+      if (originalConfig.url === "/api/v1/aap_auth/refresh_token/" || originalConfig.url === "/api/v1/aap_auth/token/") {
         //logout();
         return Promise.reject(error);
       } else {
