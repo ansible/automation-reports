@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from '@app/index';
-import { Provider } from 'react-redux';
-import { store } from '@app/Store/store';
+
 import '@app/client/requestInterceptors';
 
 if (import.meta.env.NODE_ENV !== 'production') {
@@ -24,8 +23,6 @@ const root = ReactDOM.createRoot(document.getElementById('app') as Element);
 
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
       <App />
-    </Provider>
   </React.StrictMode>,
 );
