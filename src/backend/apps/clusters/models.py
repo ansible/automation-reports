@@ -594,39 +594,32 @@ class Costs(CreatUpdateModel):
     def get(cls, from_db: bool = False) -> dict[str, decimal.Decimal]:
 
         """
-        This function retrieves the current cost entries (manual and automated) from the cache or database.
+        This function retrieves the current cost entries (manual and automated) from the database.
         If any cost type is missing, it creates it with a default value from settings.
-        The cache is updated if new entries are created.
         The function ensures both cost types always exist and returns a dictionary mapping cost type to cost instance.
         """
-
-        costs = cache.get('costs') if not from_db else None
-
-        if not costs:
-            costs = {cost.type: cost.value for cost in list(Costs.objects.all())}
-            cache.set('costs', costs, 3600)
-
-        set_cache = False
+        costs = {cost.type: cost.value for cost in list(Costs.objects.all())}
 
         manual_cost = costs.get(CostsChoices.MANUAL, None)
+        automated_cost = costs.get(CostsChoices.AUTOMATED, None)
+
+        if manual_cost and automated_cost:
+            return costs
+
         if manual_cost is None:
-            set_cache = True
             default_value = decimal.Decimal(settings.DEFAULT_MANUAL_COST_AUTOMATION)
             Costs.objects.create(
                 type=CostsChoices.MANUAL,
                 value=default_value,
             )
 
-        automated_cost = costs.get(CostsChoices.AUTOMATED, None)
         if automated_cost is None:
             default_value = decimal.Decimal(settings.DEFAULT_AUTOMATED_PROCESS_COST)
             Costs.objects.create(
                 type=CostsChoices.AUTOMATED,
                 value=default_value,
             )
-            set_cache = True
 
-        if set_cache:
-            costs = {cost.type: cost.value for cost in list(Costs.objects.all())}
-            cache.set('costs', costs, 3600)
+        costs = {cost.type: cost.value for cost in list(Costs.objects.all())}
+
         return costs
