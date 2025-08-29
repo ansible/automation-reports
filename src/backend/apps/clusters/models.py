@@ -591,7 +591,7 @@ class Costs(CreatUpdateModel):
         return f'{self.type}: {self.value}'
 
     @classmethod
-    def get(cls, from_db: bool = False) -> dict[str, decimal.Decimal]:
+    def get(cls) -> dict[str, decimal.Decimal]:
 
         """
         This function retrieves the current cost entries (manual and automated) from the database.
