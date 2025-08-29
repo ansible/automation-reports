@@ -32,7 +32,7 @@ class CostView(AdminOnlyViewSet, mixins.ListModelMixin, mixins.CreateModelMixin,
             instance.value = value
             instance.save()
 
-        costs = Costs.get(from_db=True)
+        costs = Costs.get()
         response_data = {
             "manual_cost_automation": costs[CostsChoices.MANUAL],
             "automated_process_cost": costs[CostsChoices.AUTOMATED]
