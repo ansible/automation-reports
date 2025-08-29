@@ -69,23 +69,6 @@
     state: created
   notify: Restart reporter web
 
-- name: DEBUG env - Initialize the automation reporter database
-  containers.podman.podman_container:
-    name: automation-reporter-init
-    image: '{{ _reporter_image_be }}'
-    command: sleep 1 # inf
-    detach: false
-    rm: true
-    log_driver: '{{ container_log_driver }}'
-    user: '{{ ansible_user_uid }}'
-    userns: keep-id
-    network: host
-    secrets: '{{ _common_secrets }}'
-    volume: '{{ _common_volumes }}'
-  changed_when: false
-  run_once: true
-  ignore_errors: true
-
 - name: Initialize the automation reporter database
   containers.podman.podman_container:
     name: automation-reporter-init

@@ -64,6 +64,33 @@ nano setup/inventory
 
 ### Install using bundled installer
 
+#### Prerequisites
+
+##### SSO authentication
+
+The AAP will be used as OAuth2 provider for SSO authentication.
+
+First create OAuth2 application at https://AAP_CONTROLLER_FQDN:8443/#/applications:
+
+- Name: automation-dashboard-sso
+- Authorization grant type: authorization-code
+- Organization: Default
+- Redirect URIs: https://AUTOMATION_DASHBOARD_FQDN:8447/auth-callback
+- Client type: Confidential
+
+Store the `client_id` and `client_secret`.
+The values are input into `inventory` file.
+
+Next create a token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
+
+- OAuth application: automation-dashboard-sso
+- Scope: read
+
+Store access token and refresh token value.
+The access token is used in `clusters.yaml`.
+
+#### Run installer
+
 ```bash
 VMIP=...
 scp setup/bundle/ansible-automation-reports-containerized-setup-bundle.tar.gz cloud-user@$VMIP:/tmp/
@@ -80,21 +107,6 @@ ansible-playbook -i inventory ansible.containerized_installer.reporter_install
 ```
 
 #### Configure application
-
-File `clusters.yaml` needs to contain an AAP OAuth2 application and token.
-Create OAuth2 application at https://AAP_CONTROLLER_FQDN:8443/#/applications:
-
-- Authorization grant type: Resource owner password-based
-- Organization: Default
-- Redirect URIs: empty
-- Client type: Confidential
-
-Create token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
-
-- Scope: read
-
-Store access token and refresh token value.
-The access token is used in clusters.yaml.
 
 ```bash
 cp clusters.example.yaml clusters.yaml
