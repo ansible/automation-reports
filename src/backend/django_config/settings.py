@@ -272,7 +272,7 @@ IS_K8S = False
 
 CLUSTER_HOST_ID = socket.gethostname()
 
-DISPATCHERD_DEBUGGING_SOCKFILE = "/tmp/demo_dispatcher.sock"
+DISPATCHERD_DEBUGGING_SOCKFILE = f"/run/user/{os.getuid()}/automation-dashboard-dispatcher.sock"
 
 # The number of processes spawned by the callback receiver to process job
 # events into the database
