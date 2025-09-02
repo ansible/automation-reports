@@ -46,7 +46,7 @@ class Command(BaseCommand):
 
         args = {
             'since': since.isoformat() if since is not None else None,
-            'until': until.isoformat(),
+            'until': until.isoformat() if until is not None else None,
             'managed': True
         }
 
@@ -65,9 +65,13 @@ class Command(BaseCommand):
         if cluster is None:
             self.stdout.write(self.style.ERROR('Cluster instance does not exist.'))
             sys.exit(1)
-
+        name = "Sync historical data"
+        if since is not None:
+            name = "{} since {}".format(name, since.isoformat())
+        if until is not None:
+            name = "{} until {}".format(name, until.isoformat())
         job = SyncJob.objects.create(
-            name=f'Sync historical data from {since} to {until}',
+            name=name,
             type=JobTypeChoices.SYNC_JOBS,
             launch_type=JobLaunchTypeChoices.MANUAL,
             cluster=cluster,
