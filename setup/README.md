@@ -40,7 +40,14 @@ Open http://HOST_IP:8083/.
 
 ## Bundled installer
 
-### Build bundled installer
+### Build bundled installer - using GitHub actions
+
+The bundled installer is build by GitHub action in two steps.
+The first step builds a container image and pushes it to a container image registry (quay.io).
+The second steps uses the container image and produces a bundled installer (a tarball).
+Bundled installer is available for download as GHA artifact, from corresponding GHA job.
+
+### Build bundled installer - manually
 
 Bundled installer is build on build host, and deployed on other VMs.
 Bundled installer contains also needed container images.
