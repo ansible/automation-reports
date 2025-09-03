@@ -57,6 +57,7 @@
       # - 'redis_run:/run/redis:z'
       # - '{{ rsyslog_run_dir }}:/run/awx-rsyslog:z'
       - '{{ supervisor_run_dir }}:/run/supervisor:z'
+      - '{{ dispatcher_run_dir }}:/run/dispatcher:z'
     _nginx_volumes:
       - '{{ dashboard_conf_dir }}/uwsgi.ini:/etc/tower/uwsgi.ini:ro,z'
       - '{{ nginx_conf_dir }}/dashboard.conf:/etc/nginx/nginx.conf:ro,z'

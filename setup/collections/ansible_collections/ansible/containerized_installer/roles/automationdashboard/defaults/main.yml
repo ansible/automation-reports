@@ -51,6 +51,9 @@ nginx_user_headers: []
 ### supervisor
 supervisor_run_dir: '{{ aap_volumes_dir }}/dashboard/supervisor/run'
 
+### dispatcher
+dispatcher_run_dir: '{{ aap_volumes_dir }}/dashboard/dispatcher/run'
+
 ### TLS CA
 ca_trust_bundle: /etc/pki/tls/certs/ca-bundle.crt
 ...

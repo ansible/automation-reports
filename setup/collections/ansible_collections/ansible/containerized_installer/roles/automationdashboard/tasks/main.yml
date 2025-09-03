@@ -32,6 +32,9 @@
 - name: Configure supervisor
   ansible.builtin.include_tasks: supervisor.yml
 
+- name: Configure dispatcher
+  ansible.builtin.include_tasks: dispatcher.yml
+
 - name: Configure podman secrets
   ansible.builtin.include_tasks: secrets.yml
 
