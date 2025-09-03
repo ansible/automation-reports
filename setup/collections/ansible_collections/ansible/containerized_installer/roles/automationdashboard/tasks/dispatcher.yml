@@ -1,0 +1,6 @@
+---
+- name: Create the dispatcher directory
+  ansible.builtin.file:
+    path: '{{ dispatcher_run_dir }}'
+    mode: '0770'
+    state: directory

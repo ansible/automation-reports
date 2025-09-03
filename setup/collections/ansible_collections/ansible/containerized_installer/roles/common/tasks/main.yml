@@ -126,11 +126,11 @@
             dest: '{{ images_tmp.path }}'
             mode: '0644'
 
-      # PostgreSQL image bundled with AAPReporter installer should not replace
+      # PostgreSQL image bundled with AAPDashboard installer should not replace
       # the same image bundled with AAP installer.
       # Check if AAP installer already loaded the images.
-      # Downside: AAPReporter installer will never refresh PostgreSQL image.
-      # In addition, bundled AAPReporter installer includes only images for postgres and reporter.
+      # Downside: AAPDashboard installer will never refresh PostgreSQL image.
+      # In addition, bundled AAPDashboard installer includes only images for postgres and dashboard.
       # Do not try to load other images.
     - name: TEMP List existing container images
       containers.podman.podman_image_info:
@@ -145,7 +145,7 @@
       vars:
         image: '{{ (item | basename).split(":")[0] }}'
       when: |
-        item == _reporter_image_be
+        item == _dashboard_image_be
         or (item == _postgresql_image and _existing_postgresql_image_result.images | length == 0)
 
     - name: Load the controlplane container images
@@ -155,7 +155,7 @@
       vars:
         image: '{{ (item | basename).split(":")[0] }}'
       when:
-        item == _reporter_image_be
+        item == _dashboard_image_be
         or (item == _postgresql_image and _existing_postgresql_image_result.images | length == 0)
 
     - name: Load the executionplane container images
@@ -166,7 +166,7 @@
       loop: '{{ (__de_images | default([])) | union(__ee_images | default([])) | unique }}'
       vars:
         image: '{{ (item | basename).split(":")[0] }}'
-      when: false  # not for reporter-only deploy
+      when: false  # not for dashboard-only deploy
 
     - name: Set io.containers.autoupdate=local label
       ansible.builtin.set_fact:

@@ -1,6 +1,6 @@
 ---
 - name: Collect services facts
-  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes:automationreporter
+  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes:automationdashboard
   gather_facts: false
   become: false
   tasks:
@@ -14,14 +14,14 @@
       ansible.builtin.service_facts:
       become: true
 
-- name: Uninstall the Automation Reporter
-  hosts: automationreporter
+- name: Uninstall the Automation Dashboard
+  hosts: automationdashboard
   gather_facts: false
   become: false
   tasks:
-    - name: Uninstall the automation reporter
+    - name: Uninstall the automation dashboard
       ansible.builtin.import_role:
-        name: automationreporter
+        name: automationdashboard
         tasks_from: uninstall.yml
 
 - name: Uninstall the database

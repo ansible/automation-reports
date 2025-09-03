@@ -33,6 +33,8 @@ INITIAL_SYNC_DAYS = {{ initial_sync_days | int }}
 INITIAL_SYNC_SINCE = "{{ initial_sync_since }}"
 {% endif %}
 
+DISPATCHERD_DEBUGGING_SOCKFILE = "/run/dispatcher/automation-dashboard-dispatcher.sock"
+
 SHOW_URLLIB3_INSECURE_REQUEST_WARNING = {{ show_urllib3_insecure_request_warning | default(True) }}
 # django DEBUG=0
 DEBUG = {{ django_debug | default(False) }}

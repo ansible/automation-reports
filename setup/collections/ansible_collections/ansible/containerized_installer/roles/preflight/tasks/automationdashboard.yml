@@ -1,0 +1,17 @@
+---
+- name: Ensure dashboard admin password is provided
+  ansible.builtin.assert:
+    that:
+      - dashboard_admin_password is defined
+      - dashboard_admin_password | length
+    fail_msg: 'dashboard_admin_password must be set and not empty'
+
+- name: Ensure dashboard postgresql host and password are provided
+  ansible.builtin.assert:
+    that:
+      - dashboard_pg_host is defined
+      - dashboard_pg_host | length
+      - dashboard_pg_password is defined
+      - dashboard_pg_password | length
+    fail_msg: 'dashboard_pg_host and dashboard_pg_password must be set and not empty'
+...

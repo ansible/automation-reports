@@ -3,7 +3,7 @@
 # =============================================================================
 FROM registry.redhat.io/ubi9/nodejs-22 AS web-builder
 
-ENV DESCRIPTION="Red Hat Automation Platform - reports frontend \
+ENV DESCRIPTION="Red Hat Automation Platform - dashboard frontend \
 "
 
 LABEL description="$DESCRIPTION"
@@ -39,7 +39,7 @@ RUN npm run build
 # =============================================================================
 FROM registry.redhat.io/ubi9/ubi-minimal:latest
 
-ENV DESCRIPTION="Red Hat Automation Platform - reports backend \
+ENV DESCRIPTION="Red Hat Automation Platform - dashboard backend \
 "
 
 LABEL description="$DESCRIPTION"
@@ -79,19 +79,19 @@ RUN /venv/bin/pip install -r /code/requirements.txt
 COPY src/backend /code/src/backend
 WORKDIR /code/src/backend
 ENV PYTHONPATH=/code/src
-RUN mkdir -p /etc/reporter/conf.d
+RUN mkdir -p /etc/dashboard/conf.d
 
 COPY --from=web-builder /code/src/frontend/dist /opt/app-root/src
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 RUN mkdir /code/docker/
-COPY docker/supervisord_reporter_web.conf /etc/
+COPY docker/supervisord_dashboard_web.conf /etc/
 COPY docker/stop-supervisor /usr/local/bin/stop-supervisor
 COPY docker/launch_awx_rsyslog.sh /usr/bin/launch_awx_rsyslog.sh
-COPY docker/launch_automation_reporter.sh /code/docker/launch_automation_reporter.sh
+COPY docker/launch_automation_dashboard.sh /code/docker/launch_automation_dashboard.sh
 RUN pip3 install dumb-init
 ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
-CMD ["/code/docker/launch_automation_reporter.sh"]
+CMD ["/code/docker/launch_automation_dashboard.sh"]
 EXPOSE 8053
 
 RUN chmod 0777 /var/log/nginx /var/lib/nginx /var/lib/nginx/tmp /var/lib/awx/

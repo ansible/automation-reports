@@ -1,0 +1,59 @@
+---
+### container
+container_log_driver: journald
+
+### common
+aap_volumes_dir: '{{ ansible_user_dir }}/aap'
+
+### dashboard
+dashboard_admin_user: admin
+dashboard_admin_email: admin@example.com
+dashboard_firewall_zone: public
+dashboard_data_dir: '{{ aap_volumes_dir }}/dashboard/data'
+dashboard_conf_dir: '{{ aap_volumes_dir }}/dashboard/etc'
+dashboard_container_label: 'level:s0:c100,c200'
+dashboard_container_requires: []
+# dashboard_container_requires:
+#   - redis
+# dashboard_daphne_port: 8051
+dashboard_uwsgi_port: 8053
+dashboard_uwsgi_processes: 5
+dashboard_update_secret: false
+dashboard_event_workers: 4
+
+### database
+dashboard_pg_username: aapdashboard
+dashboard_pg_database: aapdashboard
+dashboard_pg_port: 5432
+dashboard_pg_sslmode: prefer
+
+### postinstall
+# dashboard_postinstall_ignore_files: []
+# dashboard_postinstall_repo_ref: main
+# dashboard_postinstall_async_delay: 1
+# dashboard_postinstall_async_retries: 30
+
+### nginx
+nginx_conf_dir: '{{ aap_volumes_dir }}/dashboard/nginx/etc'
+nginx_disable_https: false
+nginx_disable_hsts: false
+nginx_http_port: 8083
+nginx_https_port: 8447
+nginx_client_max_body_size: 5m
+nginx_user_headers: []
+
+### receptor
+# receptor_conf_dir: "{{ aap_volumes_dir }}/receptor/etc"
+
+### rsyslog
+# rsyslog_run_dir: '{{ aap_volumes_dir }}/dashboard/rsyslog/run'
+
+### supervisor
+supervisor_run_dir: '{{ aap_volumes_dir }}/dashboard/supervisor/run'
+
+### dispatcher
+dispatcher_run_dir: '{{ aap_volumes_dir }}/dashboard/dispatcher/run'
+
+### TLS CA
+ca_trust_bundle: /etc/pki/tls/certs/ca-bundle.crt
+...

@@ -1,8 +1,8 @@
 ---
-# - name: Create the automation reporter rsyslog container
+# - name: Create the automation dashboard rsyslog container
 #   containers.podman.podman_container:
-#     name: automation-reporter-rsyslog
-#     image: '{{ _reporter_image }}'
+#     name: automation-dashboard-rsyslog
+#     image: '{{ _dashboard_image }}'
 #     command: '{{ __rsyslog_cmd }}'
 #     generate_systemd:
 #       container_prefix: ''
@@ -19,12 +19,12 @@
 #     label:
 #       '{{ _autoupdate_label }}'
 #     state: created
-#   notify: Restart reporter rsyslog
+#   notify: Restart dashboard rsyslog
 
-- name: Create the automation reporter task container
+- name: Create the automation dashboard task container
   containers.podman.podman_container:
-    name: automation-reporter-task
-    image: '{{ _reporter_image_be }}'
+    name: automation-dashboard-task
+    image: '{{ _dashboard_image_be }}'
     command: '{{ __task_cmd }}'
     generate_systemd:
       container_prefix: ''
@@ -42,14 +42,14 @@
     label:
       '{{ _autoupdate_label }}'
     state: created
-  notify: Restart reporter task
+  notify: Restart dashboard task
 
-# web -> reporter-api container
-# task -> reporter-worker container
-- name: Create the automation reporter web container
+# web -> dashboard-api container
+# task -> dashboard-worker container
+- name: Create the automation dashboard web container
   containers.podman.podman_container:
-    name: automation-reporter-web
-    image: '{{ _reporter_image_be }}'
+    name: automation-dashboard-web
+    image: '{{ _dashboard_image_be }}'
     command: '{{ __web_cmd }}'
     generate_systemd:
       container_prefix: ''
@@ -67,12 +67,12 @@
     label:
       '{{ _autoupdate_label }}'
     state: created
-  notify: Restart reporter web
+  notify: Restart dashboard web
 
-- name: Initialize the automation reporter database
+- name: Initialize the automation dashboard database
   containers.podman.podman_container:
-    name: automation-reporter-init
-    image: '{{ _reporter_image_be }}'
+    name: automation-dashboard-init
+    image: '{{ _dashboard_image_be }}'
     command: '/venv/bin/python manage.py migrate --noinput'
     detach: false
     rm: true
@@ -91,9 +91,9 @@
 
 - name: Create django super user
   containers.podman.podman_container:
-    name: automation-reporter-init
-    image: '{{ _reporter_image_be }}'
-    command: '/venv/bin/python manage.py createsuperuser --username={{ reporter_admin_user }} --email={{ reporter_admin_email }} --noinput'
+    name: automation-dashboard-init
+    image: '{{ _dashboard_image_be }}'
+    command: '/venv/bin/python manage.py createsuperuser --username={{ dashboard_admin_user }} --email={{ dashboard_admin_email }} --noinput'
     detach: false
     rm: true
     log_driver: '{{ container_log_driver }}'
@@ -112,9 +112,9 @@
 
 - name: Update django super user password
   containers.podman.podman_container:
-    name: automation-reporter-init
-    image: '{{ _reporter_image_be }}'
-    command: '/venv/bin/python manage.py update_password --username={{ reporter_admin_user }} --password={{ reporter_admin_password }}'
+    name: automation-dashboard-init
+    image: '{{ _dashboard_image_be }}'
+    command: '/venv/bin/python manage.py update_password --username={{ dashboard_admin_user }} --password={{ dashboard_admin_password }}'
     detach: false
     rm: true
     log_driver: '{{ container_log_driver }}'
@@ -133,8 +133,8 @@
 
 # - name: Create the default organization
 #   containers.podman.podman_container:
-#     name: automation-reporter-init
-#     image: '{{ _reporter_image_be }}'
+#     name: automation-dashboard-init
+#     image: '{{ _dashboard_image_be }}'
 #     command: 'awx-manage create_preload_data'
 #     detach: false
 #     rm: true

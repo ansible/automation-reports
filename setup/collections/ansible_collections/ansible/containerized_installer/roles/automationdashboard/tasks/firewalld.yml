@@ -1,13 +1,13 @@
 ---
-- name: Manage automation reporter firewalld ports
+- name: Manage automation dashboard firewalld ports
   ansible.posix.firewalld:
     port: '{{ item }}/tcp'
     permanent: true
     state: '{{ __firewalld_state }}'
     immediate: true
-    zone: '{{ reporter_firewall_zone }}'
+    zone: '{{ dashboard_firewall_zone }}'
   become: true
-  loop: '{{ _reporter_ports }}'
+  loop: '{{ _dashboard_ports }}'
   when:
     - ansible_facts.services.get('firewalld.service', {}) | length
     - ansible_facts.services['firewalld.service']['status'] == 'enabled'

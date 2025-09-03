@@ -13,7 +13,7 @@
     _postgresql_image: '{{ registry_url }}/{{ registry_ns_rhel }}/{{ postgresql_image }}'
     _receptor_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ receptor_image }}'
     _redis_image: '{{ registry_url }}/{{ registry_ns_rhel }}/{{ redis_image }}'
-    _reporter_image_be: '{{ registry_url }}/{{ registry_ns_aap }}/{{ reporter_image_be }}'
+    _dashboard_image_be: '{{ registry_url }}/{{ registry_ns_aap }}/{{ dashboard_image_be }}'
 
   run_once: true
 
@@ -52,10 +52,10 @@
     _images: '{{ _images | default([]) | union([_postgresql_image]) }}'
   when: inventory_hostname in groups.get('database', [])
 
-- name: Add reporter backend image to the list
+- name: Add dashboard backend image to the list
   ansible.builtin.set_fact:
-    _images: '{{ _images | default([]) | union([_reporter_image_be]) }}'
-  when: inventory_hostname in groups.get('automationreporter', [])
+    _images: '{{ _images | default([]) | union([_dashboard_image_be]) }}'
+  when: inventory_hostname in groups.get('automationdashboard', [])
 
 - name: Add DE images to the list
   ansible.builtin.set_fact:

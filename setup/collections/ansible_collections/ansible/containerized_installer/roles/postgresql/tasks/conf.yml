@@ -19,10 +19,10 @@
   until: _ping.is_available | bool
 
 - block:
-    - name: Create the automation reporter postgres user
+    - name: Create the automation dashboard postgres user
       community.postgresql.postgresql_user:
-        name: "{{ reporter_pg_username }}"
-        password: "{{ reporter_pg_password }}"
+        name: "{{ dashboard_pg_username }}"
+        password: "{{ dashboard_pg_password }}"
         port: "{{ pg_port }}"
         state: present
         login_user: postgres
@@ -30,22 +30,22 @@
       become_user: postgres
       environment: '{{ extra_env | default({}) | combine(postgresql_default_options, list_merge="keep") }}'
       when:
-        - "reporter_pg_username is defined and reporter_pg_username != ''"
-        - "reporter_pg_password is defined and reporter_pg_password != ''"
+        - "dashboard_pg_username is defined and dashboard_pg_username != ''"
+        - "dashboard_pg_password is defined and dashboard_pg_password != ''"
 
-    - name: Create the postgresql database for automation reporter
+    - name: Create the postgresql database for automation dashboard
       postgresql_db:
-        name: "{{ reporter_pg_database }}"
-        owner: "{{ reporter_pg_username }}"
+        name: "{{ dashboard_pg_database }}"
+        owner: "{{ dashboard_pg_username }}"
         port: "{{ pg_port }}"
         state: present
         login_user: postgres
       become: true
       become_user: postgres
       when:
-        - "reporter_pg_username is defined and reporter_pg_username != ''"
-        - "reporter_pg_database is defined and reporter_pg_database != ''"
+        - "dashboard_pg_username is defined and dashboard_pg_username != ''"
+        - "dashboard_pg_database is defined and dashboard_pg_database != ''"
   when: 
-    - not reporter_pg_containerized
-    - groups['automationreporter'] | default([]) | length
+    - not dashboard_pg_containerized
+    - groups['automationdashboard'] | default([]) | length
 ...

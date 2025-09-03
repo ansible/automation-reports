@@ -355,8 +355,8 @@ try:
 except ImportError:
     pass
 
-# Load settings from REPORTER_SETTINGS_DIR
-settings_dir = os.environ.get('REPORTER_SETTINGS_DIR', '/etc/reporter/conf.d/')
+# Load settings from DASHBOARD_SETTINGS_DIR
+settings_dir = os.environ.get('DASHBOARD_SETTINGS_DIR', '/etc/dashboard/conf.d/')
 settings_files = os.path.join(settings_dir, '*.py')
 if os.path.isdir(settings_dir):
     try:

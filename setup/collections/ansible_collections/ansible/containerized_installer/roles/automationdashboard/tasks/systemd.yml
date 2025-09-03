@@ -1,5 +1,5 @@
 ---
-- name: Ensure automation reporter containers are enabled and started
+- name: Ensure automation dashboard containers are enabled and started
   ansible.builtin.systemd:
     name: '{{ item }}'
     state: started
