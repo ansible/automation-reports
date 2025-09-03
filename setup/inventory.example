@@ -1,7 +1,7 @@
-[automationreporter]
-aap24_reports.novalocal ansible_connection=local
+[automationdashboard]
+aap24_dashboard.novalocal ansible_connection=local
 
-[automationreporter:vars]
+[automationdashboard:vars]
 # Configure AAP OAUht2 authentication.
 # aap_auth_provider_name - human friendly name, it is shown on login page.
 aap_auth_provider_name=my-AAP
@@ -32,7 +32,7 @@ initial_sync_days=1
 # show_urllib3_insecure_request_warning=False
 
 # Force clean install-like
-# reporter_update_secret=true
+# dashboard_update_secret=true
 # HTTP/HTTPS settings
 # nginx_disable_https=true
 # nginx_http_port=8083
@@ -41,7 +41,7 @@ initial_sync_days=1
 # django_debug=True
 
 [database]
-aap24_reports.novalocal ansible_connection=local
+aap24_dashboard.novalocal ansible_connection=local
 
 [all:vars]
 postgresql_admin_username=postgres
@@ -49,22 +49,22 @@ postgresql_admin_password=TODO
 # registry_username=
 # registry_password=
 
-# AAP Reporter - mandatory
+# AAP Dashboard - mandatory
 # --------------------------
-reporter_pg_containerized=True
-reporter_admin_password=TODO
-reporter_pg_host=aap24_reports.novalocal
-reporter_pg_username=aapreporter
-reporter_pg_password=TODO
-reporter_pg_database=aapreports
+dashboard_pg_containerized=True
+dashboard_admin_password=TODO
+dashboard_pg_host=aap24_dashboard.novalocal
+dashboard_pg_username=aapdashboard
+dashboard_pg_password=TODO
+dashboard_pg_database=aapdashboard
 #
 # test bundle
 # ansible-playbook -i inventory ansible.containerized_installer.reporter_bundle # to generate ./bundle
 bundle_install=true
 # <full path to the bundle directory>
-bundle_dir=/home/ec2-user/ansible-automation-reports-containerized-setup/bundle
+bundle_dir=/home/ec2-user/ansible-automation-dashboard-containerized-setup/bundle
 #
-# AAP Reporter - extra variables needed when installing next to non-containerized AAP
+# AAP Dashboard - extra variables needed when installing next to non-containerized AAP
 # --------------------------
 # postgresql_admin_username={{ pg_username }}
 # postgresql_admin_password={{ pg_password }}

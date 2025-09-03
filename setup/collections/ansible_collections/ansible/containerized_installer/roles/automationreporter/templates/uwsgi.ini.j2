@@ -1,6 +1,6 @@
 [uwsgi]
-socket = 127.0.0.1:{{ reporter_uwsgi_port }}
-processes = {{ reporter_uwsgi_processes }}
+socket = 127.0.0.1:{{ dashboard_uwsgi_port }}
+processes = {{ dashboard_uwsgi_processes }}
 vacuum = true
 no-orphans = true
 master = true
@@ -8,7 +8,7 @@ lazy-apps = true
 max-requests = 1000
 buffer-size = 32768
 harakiri = 120
-master-fifo = /var/lib/awx/reporterfifo
+master-fifo = /var/lib/awx/dashboardfifo
 
 if-env = UWSGI_MOUNT_PATH
 mount = %(_)=backend.django_config.wsgi:application

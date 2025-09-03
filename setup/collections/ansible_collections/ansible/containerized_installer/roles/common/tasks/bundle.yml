@@ -40,7 +40,7 @@
       # - automationhub
       - database
       # - execution_nodes
-      - automationreporter
+      - automationdashboard
 
 - name: Include container image tasks
   ansible.builtin.include_tasks: images.yml

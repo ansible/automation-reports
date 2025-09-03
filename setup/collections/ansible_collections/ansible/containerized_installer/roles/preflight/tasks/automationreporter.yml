@@ -1,17 +1,17 @@
 ---
-- name: Ensure reporter admin password is provided
+- name: Ensure dashboard admin password is provided
   ansible.builtin.assert:
     that:
-      - reporter_admin_password is defined
-      - reporter_admin_password | length
-    fail_msg: 'reporter_admin_password must be set and not empty'
+      - dashboard_admin_password is defined
+      - dashboard_admin_password | length
+    fail_msg: 'dashboard_admin_password must be set and not empty'
 
-- name: Ensure reporter postgresql host and password are provided
+- name: Ensure dashboard postgresql host and password are provided
   ansible.builtin.assert:
     that:
-      - reporter_pg_host is defined
-      - reporter_pg_host | length
-      - reporter_pg_password is defined
-      - reporter_pg_password | length
-    fail_msg: 'reporter_pg_host and reporter_pg_password must be set and not empty'
+      - dashboard_pg_host is defined
+      - dashboard_pg_host | length
+      - dashboard_pg_password is defined
+      - dashboard_pg_password | length
+    fail_msg: 'dashboard_pg_host and dashboard_pg_password must be set and not empty'
 ...

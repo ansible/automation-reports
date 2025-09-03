@@ -5,8 +5,8 @@
 #    rm /tmp/passwd
 #fi
 
-/code/src/backend/wait-for-migrations-reporter.sh
+/code/src/backend/wait-for-migrations-dashboard.sh
 
-exec supervisord -c /etc/supervisord_reporter_web.conf
+exec supervisord -c /etc/supervisord_dashboard_web.conf
 # nginx -g 'daemon off;' &
 # /venv/bin/python manage.py runserver 0.0.0.0:8000 &

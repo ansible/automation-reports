@@ -18,7 +18,7 @@
         name: preflight
 
 - name: Install common container components
-  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes:automationreporter
+  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes:automationdashboard
   any_errors_fatal: true
   gather_facts: false
   become: false
@@ -47,7 +47,7 @@
     - name: Install and configure postgresql
       ansible.builtin.import_role:
         name: postgresql
-      when: reporter_pg_containerized
+      when: dashboard_pg_containerized
 
 - name: Install the database - non-containerized
   hosts: database
@@ -59,15 +59,15 @@
       ansible.builtin.import_role:
         name: postgresql
         tasks_from: conf.yml
-      when: not reporter_pg_containerized
+      when: not dashboard_pg_containerized
 
-- name: Install the Automation Reporter
+- name: Install the Automation Dashboard
   any_errors_fatal: true
-  hosts: automationreporter
+  hosts: automationdashboard
   gather_facts: false
   become: false
   tasks:
-    - name: Install and configuration automation reporter
+    - name: Install and configuration automation dashboard
       ansible.builtin.import_role:
-        name: automationreporter
+        name: automationdashboard
 ...

@@ -22,7 +22,7 @@ jobs:
           --health-timeout=5s
           --health-retries=5
     env:
-      DATABASE_URL: postgres://testuser:testpass@localhost:5432/aapreports
+      DATABASE_URL: postgres://testuser:testpass@localhost:5432/aapdashboard
     steps:
       - name: Setup DB
         run: |
@@ -43,7 +43,7 @@ jobs:
         run: |
           cd src/backend
           cat <<EOF >django_config/local_settings.py
-          DB_NAME = "aapreports"
+          DB_NAME = "aapdashboard"
           DB_USER = "testuser"
           DB_PASSWORD = "testpass"
           DB_HOST = "localhost"

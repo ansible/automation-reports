@@ -1,17 +1,17 @@
 ---
-- name: Set automation reporter facts
+- name: Set automation dashboard facts
   ansible.builtin.include_tasks: facts.yml
 
-- name: Create the reporter directories
+- name: Create the dashboard directories
   ansible.builtin.file:
     path: '{{ item }}'
     mode: '0770'
     state: directory
   loop:
-    - '{{ reporter_conf_dir }}/conf.d'
-    # - '{{ reporter_data_dir }}/job_execution'
-    # - '{{ reporter_data_dir }}/projects'
-    # - '{{ reporter_data_dir }}/rsyslog'
+    - '{{ dashboard_conf_dir }}/conf.d'
+    # - '{{ dashboard_data_dir }}/job_execution'
+    # - '{{ dashboard_data_dir }}/projects'
+    # - '{{ dashboard_data_dir }}/rsyslog'
 
 - name: Configure postgresql
   ansible.builtin.include_tasks: postgresql.yml
@@ -35,48 +35,48 @@
 - name: Configure podman secrets
   ansible.builtin.include_tasks: secrets.yml
 
-# - name: Create the reporter configuration
+# - name: Create the dashboard configuration
 #   ansible.builtin.template:
 #     src: settings.py.j2
-#     dest: '{{ reporter_conf_dir }}/settings.py'
+#     dest: '{{ dashboard_conf_dir }}/settings.py'
 #     mode: '0640'
 #   notify:
-#     - Restart reporter rsyslog
-#     - Restart reporter task
-#     - Restart reporter web
+#     - Restart dashboard rsyslog
+#     - Restart dashboard task
+#     - Restart dashboard web
 
-- name: Create the reporter extra configurations
+- name: Create the dashboard extra configurations
   ansible.builtin.template:
     src: '{{ item }}.py.j2'
-    dest: '{{ reporter_conf_dir }}/conf.d/{{ item }}.py'
+    dest: '{{ dashboard_conf_dir }}/conf.d/{{ item }}.py'
     mode: '0640'
   loop:
-    - django_reporter_conf
+    - django_dashboard_conf
     # - cluster_host_id
     # - container_groups
     # - execution_environments
     # - insights
     # - subscription_usage_model
   notify:
-    # - Restart reporter rsyslog
-    - Restart reporter task
-    - Restart reporter web
+    # - Restart dashboard rsyslog
+    - Restart dashboard task
+    - Restart dashboard web
 
-- name: Create the reporter uwsgi configuration
+- name: Create the dashboard uwsgi configuration
   ansible.builtin.template:
     src: uwsgi.ini.j2
-    dest: '{{ reporter_conf_dir }}/uwsgi.ini'
+    dest: '{{ dashboard_conf_dir }}/uwsgi.ini'
     mode: '0640'
-  notify: Restart reporter web
+  notify: Restart dashboard web
 
 - name: Create task/web custom command
   ansible.builtin.template:
     src: '{{ item }}.j2'
-    dest: '{{ reporter_conf_dir }}/{{ item }}'
+    dest: '{{ dashboard_conf_dir }}/{{ item }}'
     mode: '0755'
   loop:
-    - launch_reporter_task.sh
-    - launch_reporter_web.sh
+    - launch_dashboard_task.sh
+    - launch_dashboard_web.sh
 
 - name: Configure containers
   ansible.builtin.include_tasks: containers.yml

@@ -30,9 +30,9 @@
   ansible.builtin.include_tasks: receptor.yml
   when: groups.get('execution_nodes', []) | length > 0
 
-- name: Include reporter checks
-  ansible.builtin.include_tasks: automationreporter.yml
-  when: groups.get('automationreporter', []) | length > 0
+- name: Include dashboard checks
+  ansible.builtin.include_tasks: automationdashboard.yml
+  when: groups.get('automationdashboard', []) | length > 0
 
 - name: Include bundle checks
   when: bundle_install | default(false) | bool

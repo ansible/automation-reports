@@ -1,19 +1,19 @@
 ---
-# - name: Restart reporter rsyslog
+# - name: Restart dashboard rsyslog
 #   ansible.builtin.systemd:
-#     name: automation-reporter-rsyslog.service
+#     name: automation-dashboard-rsyslog.service
 #     scope: user
 #     state: restarted
 
-- name: Restart reporter task
+- name: Restart dashboard task
   ansible.builtin.systemd:
-    name: automation-reporter-task.service
+    name: automation-dashboard-task.service
     scope: user
     state: restarted
 
-- name: Restart reporter web
+- name: Restart dashboard web
   ansible.builtin.systemd:
-    name: automation-reporter-web.service
+    name: automation-dashboard-web.service
     scope: user
     state: restarted
 ...

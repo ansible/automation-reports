@@ -1,4 +1,4 @@
-# AAP reports containerized installer
+# AAP dashboard containerized installer
 
 This is installer for automation-dashboard.
 It is based on "AAP containerized installer".
@@ -22,7 +22,7 @@ podman login registry.redhat.io -u USERNAME
 Build image:
 
 ```bash
-podman build -f docker/Dockerfile.backend -t registry.redhat.io/ansible-automation-platform-24/aapreport-backend:latest .
+podman build -f docker/Dockerfile.backend -t registry.redhat.io/ansible-automation-platform-24/automation-dashboard:latest .
 ```
 
 Run installer.
@@ -33,7 +33,7 @@ ansible --version  # 2.14.17, py3.9
 cp -i inventory.example inventory
 nano inventory
 ansible-galaxy collection install -r requirements.yml
-ansible-playbook -i inventory ansible.containerized_installer.reporter_install
+ansible-playbook -i inventory ansible.containerized_installer.dashboard_install
 ```
 
 Open http://HOST_IP:8083/.
@@ -66,7 +66,7 @@ nano setup/inventory
 
 ./setup/build_bundle.sh
 # ...
-# Bundled installer is at bundle/automation-reports-bundled-installer.tar.gz
+# Bundled installer is at bundle/automation-dashboard-bundled-installer.tar.gz
 ```
 
 ### Install using bundled installer
@@ -100,17 +100,17 @@ The access token is used in `clusters.yaml`.
 
 ```bash
 VMIP=...
-scp setup/bundle/ansible-automation-reports-containerized-setup-bundle.tar.gz cloud-user@$VMIP:/tmp/
+scp setup/bundle/ansible-automation-dashboard-containerized-setup-bundle.tar.gz cloud-user@$VMIP:/tmp/
 
 ssh cloud-user@$VMIP
 sudo dnf install ansible-core
-tar -xzf /tmp/ansible-automation-reports-containerized-setup-bundle.tar.gz
-cd ansible-automation-reports-containerized-setup/
+tar -xzf /tmp/ansible-automation-dashboard-containerized-setup-bundle.tar.gz
+cd ansible-automation-dashboard-containerized-setup/
 
 cp -i inventory.example inventory
 nano inventory
 ansible-galaxy collection install -r requirements.yml
-ansible-playbook -i inventory ansible.containerized_installer.reporter_install
+ansible-playbook -i inventory ansible.containerized_installer.dashboard_install
 ```
 
 #### Configure application
@@ -118,9 +118,9 @@ ansible-playbook -i inventory ansible.containerized_installer.reporter_install
 ```bash
 cp clusters.example.yaml clusters.yaml
 nano clusters.yaml
-podman cp clusters.yaml automation-reporter-web:/
-podman exec automation-reporter-web /venv/bin/python ./manage.py setclusters /clusters.yaml
-podman exec automation-reporter-web /venv/bin/python ./manage.py syncdata --since=2025-01-01 --until=2025-03-01
+podman cp clusters.yaml automation-dashboard-web:/
+podman exec automation-dashboard-web /venv/bin/python ./manage.py setclusters /clusters.yaml
+podman exec automation-dashboard-web /venv/bin/python ./manage.py syncdata --since=2025-01-01 --until=2025-03-01
 # periodic sync executes every one hour - environ CRON_SYNC="0 */1 * * *"
 ```
 
@@ -132,7 +132,7 @@ User needs to manually upgrade PostgreSQL disk data.
 Create a backup before upgrade , while still on PostgreSQL 13:
 
 ```bash
-systemctl stop --user automation-reporter-task.service automation-reporter-web.service
+systemctl stop --user automation-dashboard-task.service automation-dashboard-web.service
 podman exec -it postgresql /usr/bin/pg_dumpall -U postgres > dumpfile
 systemctl stop --user postgresql
 podman volume export postgresql -o volume-postgresql-13.tar
@@ -146,29 +146,29 @@ podman rm postgresql
 podman volume rm postgresql
 
 # deploy, to switch to PostgreSQL 15
-ansible-playbook -i inventory ansible.containerized_installer.reporter_install
+ansible-playbook -i inventory ansible.containerized_installer.dashboard_install
 
-systemctl stop --user automation-reporter-task.service automation-reporter-web.service
+systemctl stop --user automation-dashboard-task.service automation-dashboard-web.service
 # podman exec -it postgresql psql -U postgres < dumpfile
 podman cp dumpfile postgresql:/
 podman exec -it postgresql bash
 # now run inside container
 psql -U postgres -c '\l'
-psql -U postgres -c 'DROP DATABASE aapreports;'
-psql -U postgres -c 'CREATE DATABASE aapreports;'
-psql -U postgres aapreports < /dumpfile
+psql -U postgres -c 'DROP DATABASE aapdashboard;'
+psql -U postgres -c 'CREATE DATABASE aapdashboard;'
+psql -U postgres aapdashboard < /dumpfile
 exit
 
 # redeploy, to start application containers
-ansible-playbook -i inventory ansible.containerized_installer.reporter_install
+ansible-playbook -i inventory ansible.containerized_installer.dashboard_install
 ```
 
 ### Uninstall using bundled installer
 
 Uninstall application.
 Database can be uninstalled too (`uninstall_database` flag).
-Warning - this will destroy database container and database data volume - it will destroy whole AAP database if database container is shared by AAP and automation-reports.
+Warning - this will destroy database container and database data volume - it will destroy whole AAP database if database container is shared by AAP and automation-dashboard.
 
 ```bash
-ansible-playbook -i inventory ansible.containerized_installer.reporter_uninstall  # -e uninstall_database=0
+ansible-playbook -i inventory ansible.containerized_installer.dashboard_uninstall  # -e uninstall_database=0
 ```

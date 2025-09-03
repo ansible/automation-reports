@@ -1,8 +1,8 @@
 ---
 - name: Generate TLS certificate and key
   when:
-    - reporter_tls_cert is not defined
-    - reporter_tls_key is not defined
+    - dashboard_tls_cert is not defined
+    - dashboard_tls_key is not defined
   block:
     - name: Install python-cryptography
       ansible.builtin.package:
@@ -10,42 +10,42 @@
       become: true
       when: not ostree | bool
 
-    - name: Check the current reporter private key
+    - name: Check the current dashboard private key
       ansible.builtin.stat:
-        path: '{{ reporter_conf_dir }}/reporter.key'
-      register: _reporter_tls_key
+        path: '{{ dashboard_conf_dir }}/dashboard.key'
+      register: _dashboard_tls_key
 
     - name: Generate a private key
       community.crypto.openssl_privatekey:
-        path: '{{ reporter_conf_dir }}/reporter.key'
+        path: '{{ dashboard_conf_dir }}/dashboard.key'
         mode: '0400'
-      when: not _reporter_tls_key.stat.exists | bool
+      when: not _dashboard_tls_key.stat.exists | bool
 
-    - name: Check the current reporter certificate
+    - name: Check the current dashboard certificate
       ansible.builtin.stat:
-        path: '{{ reporter_conf_dir }}/reporter.cert'
-      register: _reporter_tls_cert
+        path: '{{ dashboard_conf_dir }}/dashboard.cert'
+      register: _dashboard_tls_cert
 
-    - name: Create the reporter TLS certificate
-      when: not _reporter_tls_cert.stat.exists | bool
+    - name: Create the dashboard TLS certificate
+      when: not _dashboard_tls_cert.stat.exists | bool
       block:
         - name: Generate a certificate signing request
           community.crypto.openssl_csr_pipe:
-            common_name: '{{ _reporter_hostname }}'
+            common_name: '{{ _dashboard_hostname }}'
             country_name: 'US'
             locality_name: 'Raleigh'
             organization_name: 'Red Hat'
             organizational_unit_name: 'Ansible'
             state_or_province_name: 'North Carolina'
-            subject_alt_name: '{{ ["DNS:" + _reporter_hostname] + _reporter_ips }}'
-            privatekey_path: '{{ reporter_conf_dir }}/reporter.key'
-          register: _reporter_tls_csr
+            subject_alt_name: '{{ ["DNS:" + _dashboard_hostname] + _dashboard_ips }}'
+            privatekey_path: '{{ dashboard_conf_dir }}/dashboard.key'
+          register: _dashboard_tls_csr
 
         - name: Generate a self signed x509 certificate
           community.crypto.x509_certificate:
-            path: '{{ reporter_conf_dir }}/reporter.cert'
-            csr_content: '{{ _reporter_tls_csr.csr }}'
-            privatekey_path: '{{ reporter_conf_dir }}/reporter.key'
+            path: '{{ dashboard_conf_dir }}/dashboard.cert'
+            csr_content: '{{ _dashboard_tls_csr.csr }}'
+            privatekey_path: '{{ dashboard_conf_dir }}/dashboard.key'
             provider: ownca
             ownca_path: '{{ _ca_tls_dir }}/ca.cert'
             ownca_privatekey_path: '{{ _ca_tls_dir }}/ca.key'
@@ -53,22 +53,22 @@
 
 - name: Import TLS certificate and key
   when:
-    - reporter_tls_cert is defined
-    - reporter_tls_key is defined
+    - dashboard_tls_cert is defined
+    - dashboard_tls_key is defined
   block:
-    - name: Copy reporter TLS certificate
+    - name: Copy dashboard TLS certificate
       ansible.builtin.copy:
-        src: '{{ reporter_tls_cert }}'
-        dest: '{{ reporter_conf_dir }}/reporter.cert'
+        src: '{{ dashboard_tls_cert }}'
+        dest: '{{ dashboard_conf_dir }}/dashboard.cert'
         mode: '0640'
-        remote_src: '{{ reporter_tls_remote | default(false) }}'
-      notify: Restart reporter web
+        remote_src: '{{ dashboard_tls_remote | default(false) }}'
+      notify: Restart dashboard web
 
-    - name: Copy reporter TLS key
+    - name: Copy dashboard TLS key
       ansible.builtin.copy:
-        src: '{{ reporter_tls_key }}'
-        dest: '{{ reporter_conf_dir }}/reporter.key'
+        src: '{{ dashboard_tls_key }}'
+        dest: '{{ dashboard_conf_dir }}/dashboard.key'
         mode: '0400'
-        remote_src: '{{ reporter_tls_remote | default(false) }}'
-      notify: Restart reporter web
+        remote_src: '{{ dashboard_tls_remote | default(false) }}'
+      notify: Restart dashboard web
 ...

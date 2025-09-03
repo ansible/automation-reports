@@ -1,112 +1,112 @@
 ---
-- name: Set reporter hostname, port(s) and protocol
+- name: Set dashboard hostname, port(s) and protocol
   ansible.builtin.set_fact:
-    _reporter_hostname: '{{ routable_hostname | default(ansible_host) }}'
-    _reporter_port: '{{ (nginx_disable_https | bool) | ternary(nginx_http_port, nginx_https_port) }}'
-    _reporter_ports: ['{{ nginx_http_port }}']
-    _reporter_protocol: '{{ (nginx_disable_https | bool) | ternary("http", "https") }}'
+    _dashboard_hostname: '{{ routable_hostname | default(ansible_host) }}'
+    _dashboard_port: '{{ (nginx_disable_https | bool) | ternary(nginx_http_port, nginx_https_port) }}'
+    _dashboard_ports: ['{{ nginx_http_port }}']
+    _dashboard_protocol: '{{ (nginx_disable_https | bool) | ternary("http", "https") }}'
 
-- name: Add https port to reporter port list
+- name: Add https port to dashboard port list
   ansible.builtin.set_fact:
-    _reporter_ports: '{{ _reporter_ports | union([nginx_https_port]) }}'
+    _dashboard_ports: '{{ _dashboard_ports | union([nginx_https_port]) }}'
   when: not nginx_disable_https | bool
 
-- name: Set reporter URL
+- name: Set dashboard URL
   ansible.builtin.set_fact:
-    _reporter_url: '{{ _reporter_protocol }}://{{ _reporter_hostname }}:{{ _reporter_port }}'
+    _dashboard_url: '{{ _dashboard_protocol }}://{{ _dashboard_hostname }}:{{ _dashboard_port }}'
 
-- name: Set reporter IPs
+- name: Set dashboard IPs
   ansible.builtin.set_fact:
-    _reporter_ips: '{{ _reporter_ips | default([]) | union(["IP:" + item]) }}'
+    _dashboard_ips: '{{ _dashboard_ips | default([]) | union(["IP:" + item]) }}'
   loop: '{{ ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }}'
 
 - name: Add postgresql container to requires when on the same node
   ansible.builtin.set_fact:
-    reporter_container_requires: '{{ reporter_container_requires | union(["postgresql"]) }}'
+    dashboard_container_requires: '{{ dashboard_container_requires | union(["postgresql"]) }}'
   when:
    - inventory_hostname in groups.get('database', [])
-   # The reporter is alwasy containerized. The systemd service is of --user scope,
+   # The dashboard is alwasy containerized. The systemd service is of --user scope,
    # and can "Requires" only on other --user services.
-   # The postgresql service is in global systemd scope, so reporter must not depend on it.
-   - reporter_pg_containerized
+   # The postgresql service is in global systemd scope, so dashboard must not depend on it.
+   - dashboard_pg_containerized
 
-- name: Set automation reporter volumes
+- name: Set automation dashboard volumes
   ansible.builtin.set_fact:
     _common_secrets:
-      - 'reporter_secret_key,target=/etc/reporter/SECRET_KEY,mode=0400,uid={{ ansible_user_uid }}'
-      # - 'reporter_channels,target=/etc/tower/conf.d/channels.py,mode=0400,uid={{ ansible_user_uid }}'
-      - 'reporter_postgres,target=/etc/reporter/conf.d/postgres.py,mode=0400,uid={{ ansible_user_uid }}'
+      - 'dashboard_secret_key,target=/etc/dashboard/SECRET_KEY,mode=0400,uid={{ ansible_user_uid }}'
+      # - 'dashboard_channels,target=/etc/tower/conf.d/channels.py,mode=0400,uid={{ ansible_user_uid }}'
+      - 'dashboard_postgres,target=/etc/dashboard/conf.d/postgres.py,mode=0400,uid={{ ansible_user_uid }}'
     _common_volumes:
       - '{{ _ca_tls_dir }}/extracted:/etc/pki/ca-trust/extracted:z'
-      # - '{{ reporter_conf_dir }}/settings.py:/etc/reporter/settings.py:ro,z'
-      # - '{{ reporter_conf_dir }}/conf.d/callback_receiver_workers.py:/etc/tower/conf.d/callback_receiver_workers.py:ro,z'
-      # - '{{ reporter_conf_dir }}/conf.d/cluster_host_id.py:/etc/tower/conf.d/cluster_host_id.py:ro,z'
-      # - '{{ reporter_conf_dir }}/conf.d/container_groups.py:/etc/tower/conf.d/container_groups.py:ro,z'
-      # - '{{ reporter_conf_dir }}/conf.d/execution_environments.py:/etc/tower/conf.d/execution_environments.py:ro,z'
-      # - '{{ reporter_conf_dir }}/conf.d/insights.py:/etc/tower/conf.d/insights.py:ro,z'
-      # - '{{ reporter_conf_dir }}/conf.d/subscription_usage_model.py:/etc/tower/conf.d/subscription_usage_model.py:ro,z'
-      - '{{ reporter_conf_dir }}/conf.d/django_reporter_conf.py:/etc/reporter/conf.d/django_reporter_conf.py:ro,z'
+      # - '{{ dashboard_conf_dir }}/settings.py:/etc/dashboard/settings.py:ro,z'
+      # - '{{ dashboard_conf_dir }}/conf.d/callback_receiver_workers.py:/etc/tower/conf.d/callback_receiver_workers.py:ro,z'
+      # - '{{ dashboard_conf_dir }}/conf.d/cluster_host_id.py:/etc/tower/conf.d/cluster_host_id.py:ro,z'
+      # - '{{ dashboard_conf_dir }}/conf.d/container_groups.py:/etc/tower/conf.d/container_groups.py:ro,z'
+      # - '{{ dashboard_conf_dir }}/conf.d/execution_environments.py:/etc/tower/conf.d/execution_environments.py:ro,z'
+      # - '{{ dashboard_conf_dir }}/conf.d/insights.py:/etc/tower/conf.d/insights.py:ro,z'
+      # - '{{ dashboard_conf_dir }}/conf.d/subscription_usage_model.py:/etc/tower/conf.d/subscription_usage_model.py:ro,z'
+      - '{{ dashboard_conf_dir }}/conf.d/django_dashboard_conf.py:/etc/dashboard/conf.d/django_dashboard_conf.py:ro,z'
     _service_volumes:
-      # - '{{ reporter_data_dir }}/job_execution:{{ reporter_data_dir }}/job_execution:z'
-      # - '{{ reporter_data_dir }}/projects:{{ reporter_data_dir }}/projects:z'
-      # - '{{ reporter_data_dir }}/rsyslog:/var/lib/awx/rsyslog:z'
-      - '{{ reporter_conf_dir }}/launch_reporter_task.sh:/usr/bin/launch_reporter_task.sh:ro,z'
-      - '{{ reporter_conf_dir }}/launch_reporter_web.sh:/usr/bin/launch_reporter_web.sh:ro,z'
+      # - '{{ dashboard_data_dir }}/job_execution:{{ dashboard_data_dir }}/job_execution:z'
+      # - '{{ dashboard_data_dir }}/projects:{{ dashboard_data_dir }}/projects:z'
+      # - '{{ dashboard_data_dir }}/rsyslog:/var/lib/awx/rsyslog:z'
+      - '{{ dashboard_conf_dir }}/launch_dashboard_task.sh:/usr/bin/launch_dashboard_task.sh:ro,z'
+      - '{{ dashboard_conf_dir }}/launch_dashboard_web.sh:/usr/bin/launch_dashboard_web.sh:ro,z'
       # - '{{ receptor_conf_dir }}/receptor.conf:/etc/receptor/receptor.conf:ro,z'
       # - 'receptor_run:/run/receptor:U'
       # - 'redis_run:/run/redis:z'
       # - '{{ rsyslog_run_dir }}:/run/awx-rsyslog:z'
       - '{{ supervisor_run_dir }}:/run/supervisor:z'
     _nginx_volumes:
-      - '{{ reporter_conf_dir }}/uwsgi.ini:/etc/tower/uwsgi.ini:ro,z'
-      - '{{ nginx_conf_dir }}/reporter.conf:/etc/nginx/nginx.conf:ro,z'
+      - '{{ dashboard_conf_dir }}/uwsgi.ini:/etc/tower/uwsgi.ini:ro,z'
+      - '{{ nginx_conf_dir }}/dashboard.conf:/etc/nginx/nginx.conf:ro,z'
 
-- name: Add postgresql socket directory to common automation reporter volumes
+- name: Add postgresql socket directory to common automation dashboard volumes
   ansible.builtin.set_fact:
     _common_volumes: '{{ _common_volumes + _postgresql_volumes }}'
   vars:
     _postgresql_volumes:
-      - '{{ reporter_pg_socket }}:{{ reporter_pg_socket }}:z'
-  when: reporter_pg_socket is defined
+      - '{{ dashboard_pg_socket }}:{{ dashboard_pg_socket }}:z'
+  when: dashboard_pg_socket is defined
 
-- name: Set rsyslog/task/web automation reporter volumes
+- name: Set rsyslog/task/web automation dashboard volumes
   ansible.builtin.set_fact:
     # _rsyslog_volumes: '{{ _common_volumes + _service_volumes }}'
     _task_volumes: '{{ _common_volumes + _service_volumes }}'
     _web_volumes: '{{ _common_volumes + _service_volumes + _nginx_volumes }}'
 
-- name: Add tls to web automation reporter volumes
+- name: Add tls to web automation dashboard volumes
   ansible.builtin.set_fact:
     _web_volumes: '{{ _web_volumes + _tls_volumes }}'
   vars:
     _tls_volumes:
-      - '{{ reporter_conf_dir }}/reporter.cert:/etc/tower/reporter.cert:ro,z'
-      - '{{ reporter_conf_dir }}/reporter.key:/etc/tower/reporter.key:ro,z'
+      - '{{ dashboard_conf_dir }}/dashboard.cert:/etc/tower/dashboard.cert:ro,z'
+      - '{{ dashboard_conf_dir }}/dashboard.key:/etc/tower/dashboard.key:ro,z'
   when: not nginx_disable_https | bool
 
 - name: Set systemd requires
   ansible.builtin.set_fact:
-    __systemd_requires: '{{ reporter_container_requires | sort | product([".service"]) | map("join") | list }}'
+    __systemd_requires: '{{ dashboard_container_requires | sort | product([".service"]) | map("join") | list }}'
 
 - name: Set environment variables for recent AAP releases
   ansible.builtin.set_fact:
     # __rsyslog_cmd: /usr/bin/launch_awx_rsyslog.sh
     # __rsyslog_env:
     #   SUPERVISOR_CONFIG_PATH: /etc/supervisord_rsyslog.conf
-    __task_cmd: /usr/bin/launch_reporter_task.sh
+    __task_cmd: /usr/bin/launch_dashboard_task.sh
     __task_env:
       SUPERVISOR_CONFIG_PATH: /etc/supervisord_task.conf
-    __web_cmd: /usr/bin/launch_reporter_web.sh
+    __web_cmd: /usr/bin/launch_dashboard_web.sh
     __web_env:
       SUPERVISOR_CONFIG_PATH: /etc/supervisord_web.conf
 
 - name: Set facts for systemd services
   ansible.builtin.set_fact:
     __services:
-      - automation-reporter-task.service
-      - automation-reporter-web.service
+      - automation-dashboard-task.service
+      - automation-dashboard-web.service
 
 # - name: Add rsyslog to systemd services list
 #   ansible.builtin.set_fact:
-#     __services: '{{ __services | union(["automation-reporter-rsyslog.service"]) }}'
+#     __services: '{{ __services | union(["automation-dashboard-rsyslog.service"]) }}'
 ...
