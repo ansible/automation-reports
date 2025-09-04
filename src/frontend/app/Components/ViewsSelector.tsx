@@ -33,7 +33,7 @@ const ViewSelector: React.FunctionComponent<ViewSelectorProps> = (props: ViewSel
       onSelect={onSelect}
       idKey={'id'}
       valueKey={'name'}
-      placeholder={'Select a report'}
+      placeholder={'Select a Report'}
       nullable={true}
     ></BaseDropdown>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Flex, FlexItem, Icon, Tooltip } from '@patternfly/react-core';
-import { ExternalLinkSquareAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
+import { ExternalLinkSquareAltIcon, InfoCircleIcon, InfoIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 
 type urlProps = {
   url?: string;
@@ -11,6 +11,7 @@ type CardProps = {
   title: string | '';
   result: number | string | null;
   tooltip?: string;
+  infoIcon?: boolean
   url?: urlProps;
 };
 
@@ -33,7 +34,12 @@ export const DashboardTotals: React.FunctionComponent<CardProps> = (props) => {
             {props.tooltip && (
               <Tooltip content={props.tooltip}>
                 <Icon size="md" className="pf-v6-u-ml-sm">
+                  {props.infoIcon && (
+                  <InfoCircleIcon/>
+                  )}
+                  {!props.infoIcon && (
                   <OutlinedQuestionCircleIcon />
+                  )}
                 </Icon>
               </Tooltip>
             )}

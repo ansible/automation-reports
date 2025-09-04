@@ -1,4 +1,5 @@
 import { PaginationParams } from '@app/Types/FilterTypes';
+import React from 'react';
 
 export type PaginationProps = {
   onPageChange: (newPage: number) => void;
@@ -111,4 +112,6 @@ export type DashboardTopTableProps = {
   title: string;
   columns: ColumnProps[];
   data: TopUser[] | TopProject[];
+  tooltip?: string | React.ReactNode
+  infoIcon?: boolean
 };

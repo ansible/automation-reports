@@ -288,7 +288,7 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
         qs = self.filter_queryset(self.get_base_queryset())
         response = HttpResponse(
             content_type="text/plain",
-            headers={"Content-Disposition": 'attachment; filename="report.csv"'},
+            headers={"Content-Disposition": 'attachment; filename="AAP_Automation_Dashboard_Report.csv"'},
         )
 
         enable_template_creation_time = Settings.enable_template_creation_time()
@@ -382,7 +382,7 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
             request,
             template='report.html',
             context=context,
-            filename='report.pdf',
+            filename='AAP_Automation_Dashboard_Report.PDF',
             headers={
-                "Content-Disposition": 'attachment; filename="report.pdf"'
+                "Content-Disposition": 'attachment; filename="AAP_Automation_Dashboard_Report.PDF"'
             })

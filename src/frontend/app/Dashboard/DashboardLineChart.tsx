@@ -32,7 +32,11 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
       </style>
       <Card style={{ height: 'inherit' }}>
         <CardTitle>
-          <DashboardTotals title={'Number of times jobs were run'} result={props.value} />
+          <DashboardTotals
+            title={'Number of times jobs were run'} result={props.value}
+            tooltip={'This is the total number of individual job executions.'}
+            infoIcon={true}
+          />
         </CardTitle>
         <CardBody style={{ width: '100%' }}>
           <div className={`pf-v6-u-h-initial pf-v6-u-w-100 jobs-chart ${chartData.items.length === 0 && 'no-data'}`}>
