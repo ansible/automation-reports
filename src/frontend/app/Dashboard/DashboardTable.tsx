@@ -10,8 +10,6 @@ import {
   Grid,
   GridItem,
   Icon,
-  Label,
-  LabelGroup,
   Spinner,
   Switch,
   Tooltip,
@@ -22,7 +20,6 @@ import '../styles/table.scss';
 import { ColumnProps, DashboardTableProps } from '@app/Types';
 import { formatCurrency, formatNumber } from '@app/Utils';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
-import { IdNameItem } from '@app/Types/ReportDetailsType';
 import {
   useCurrencySign,
   useEnableTemplateCreationTime,
@@ -117,25 +114,6 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
     { name: 'manual_costs', title: 'Manual cost', type: 'currency', isVisible: true },
     { name: 'savings', title: 'Savings', type: 'currency', isVisible: true },
   ];
-
-  const excludedTemplatesElement = props.excludedTemplates.length > 0 && (
-    <Flex>
-      <FlexItem>
-        <LabelGroup
-          className={'excluded-templates-group'}
-          key={'excluded-templates'}
-          categoryName={'Templates not used'}
-          isClosable={false}
-          numLabels={5}
-        >
-          {props.excludedTemplates.map((item: IdNameItem) => {
-            return <Label key={item.id}>{item.name}</Label>;
-          })}
-        </LabelGroup>
-      </FlexItem>
-    </Flex>
-  );
-
   return (
     <>
       <Card>
@@ -261,7 +239,6 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
               </Card>
             </GridItem>
           </Grid>
-          {excludedTemplatesElement}
           <BaseTable
             pagination={{
               onPageChange: handlePageChange,

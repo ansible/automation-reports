@@ -275,19 +275,10 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
 
         related_links = Cluster.related_links(options.date_range)
 
-        qs = self.filter_queryset(self.get_base_queryset())
-        excluded_templates = JobTemplate.objects.exclude(id__in=qs.values_list("job_template_id", flat=True)).order_by("name")
-        if options.organization is not None:
-            excluded_templates = excluded_templates.filter(organization__in=options.organization)
-        excluded_templates = {
-            "excluded_templates": [{'id': template.id, 'name': template.name} for template in excluded_templates]
-        }
-
         response_data = {
             **details_data.model_dump(),
             **charts_data.model_dump(),
             **related_links,
-            **excluded_templates,
         }
 
         return Response(data=response_data, status=status.HTTP_200_OK)

@@ -1,5 +1,4 @@
 import { PaginationParams } from '@app/Types/FilterTypes';
-import { IdNameItem } from '@app/Types/ReportDetailsType';
 
 export type PaginationProps = {
   onPageChange: (newPage: number) => void;
@@ -63,7 +62,6 @@ export type DashboardTableProps = {
   costOfManualAutomation: ValueIndex;
   costOfAutomatedExecution: ValueIndex;
   totalTimeSavings: ValueIndex;
-  excludedTemplates: IdNameItem[];
   loading: boolean;
 };
 
@@ -107,7 +105,6 @@ export type ReportDetail = {
   host_chart: ChartData;
   total_time_saving: ValueIndex;
   related_links?: ReportDetailLinks;
-  excluded_templates?: IdNameItem[];
 };
 
 export type DashboardTopTableProps = {
