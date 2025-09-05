@@ -87,7 +87,8 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     const execute = async () => {
       await fetchFilters();
       await getMyUserData();
-      const index = filterOptionsList.findIndex((v)=>v.key==='job_template')
+      let index = filterOptionsList.findIndex((v)=>v.key==='job_template');
+      index = index >= 0 ? index : 0;
       selectOption(filterOptionsList[index].key);
     };
     if (!hasFetched.current) {

@@ -399,7 +399,7 @@ const Dashboard: React.FunctionComponent = () => {
                     <div style={{ height: '100%' }}>
                       <DashboardTopTable
                         title={'Top 5 projects'}
-                        tooltip={'This section lists the top five automation projects based on the number of running jobs.'}
+                        tooltip={'This section lists the top five automation projects based on the number of jobs executed.'}
                         infoIcon={true}
                         columns={topProjectColumns}
                         data={detailData?.projects ? detailData.projects : []}

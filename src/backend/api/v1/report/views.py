@@ -287,7 +287,7 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
     def csv(self, request: Request) -> Response:
         qs = self.filter_queryset(self.get_base_queryset())
         response = HttpResponse(
-            content_type="text/plain",
+            content_type="text/csv; charset=UTF-8",
             headers={"Content-Disposition": 'attachment; filename="AAP_Automation_Dashboard_Report.csv"'},
         )
 
@@ -384,5 +384,5 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
             context=context,
             filename='AAP_Automation_Dashboard_Report.PDF',
             headers={
-                "Content-Disposition": 'attachment; filename="AAP_Automation_Dashboard_Report.PDF"'
+                "Content-Disposition": 'attachment; filename="AAP_Automation_Dashboard_Report.pdf"'
             })

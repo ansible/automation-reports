@@ -58,7 +58,7 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
             <CardBody>
               <DashboardTotals
                 title={'Total hours of automation'}
-                tooltip={'This represents the cumulative time that Ansible Automation Platform spent running jobs.'}
+                tooltip={'This represents the cumulative time that Ansible Automation Platform spent jobs executed.'}
                 infoIcon={true}
                 result={
                   props?.data?.total_hours_of_automation?.value || props?.data?.total_hours_of_automation?.value === 0
