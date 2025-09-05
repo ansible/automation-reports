@@ -80,6 +80,7 @@ COPY src/backend /code/src/backend
 WORKDIR /code/src/backend
 ENV PYTHONPATH=/code/src
 RUN mkdir -p /etc/dashboard/conf.d
+RUN /venv/bin/python manage.py collectstatic
 
 COPY --from=web-builder /code/src/frontend/dist /opt/app-root/src
 
