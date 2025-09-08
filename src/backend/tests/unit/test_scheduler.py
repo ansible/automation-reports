@@ -295,3 +295,13 @@ class TestScheduler:
     def test_get_end_date(self, rrule, expected_result):
         ruleset = SyncSchedule.rrulestr(rrule)
         assert expected_result == SyncSchedule.get_end_date(ruleset)
+
+    def test_disabled_sync_schedule(self, cluster):
+        schedule = SyncSchedule.objects.create(
+            name="Disabled Schedule",
+            enabled=False,
+            rrule="DTSTART;TZID=UTC:20240101T000000 RRULE:FREQ=MINUTELY;INTERVAL=1;COUNT=1",
+            cluster=cluster,
+        )
+        schedule.update_computed_fields()
+        assert schedule.next_run is None
