@@ -17,7 +17,7 @@ test_template_expected_data = {
     'clusters': [{'id': 1, 'address': 'localhost'}],
     'currencies': [
         {'id': 2, 'name': 'EUR', 'iso_code': 'EUR', 'symbol': '€'},
-        {'id': 1, 'name': 'United states dollar', 'iso_code': 'USD', 'symbol': '$'}
+        {'id': 1, 'name': 'United States Dollar', 'iso_code': 'USD', 'symbol': '$'}
     ],
     'organizations': [
         {'key': 2, 'value': 'Organization A', 'cluster_id': 1}
@@ -246,7 +246,7 @@ class TestViews:
     @pytest.mark.parametrize('expected', [
         [
             {'id': 2, 'name': 'EUR', 'iso_code': 'EUR', 'symbol': '€'},
-            {'id': 1, 'name': 'United states dollar', 'iso_code': 'USD', 'symbol': '$'}
+            {'id': 1, 'name': 'United States Dollar', 'iso_code': 'USD', 'symbol': '$'}
         ]
     ])
     def test_currency(self, mock_auth, currencies, expected):

@@ -7,7 +7,7 @@ def insert_currencies(apps, schema_editor):
     initial_data = [
         {
             'iso_code': 'USD',
-            'name': 'United States dollar',
+            'name': 'United States Dollar',
             'symbol': '$',
         },
         {
@@ -22,7 +22,7 @@ def insert_currencies(apps, schema_editor):
         },
         {
             'iso_code': 'JPY',
-            'name': 'Japanese yen',
+            'name': 'Japanese Yen',
             'symbol': '¥',
         },
         {

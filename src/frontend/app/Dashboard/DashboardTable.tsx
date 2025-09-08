@@ -83,7 +83,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
 
   const switchEnableTemplateCreationTime = (
     <Switch
-      label="Include Time taken to create automation in calculation"
+      label="Include time taken to create automation into calculation"
       id="switch-time-taken-automation"
       isChecked={switchEnableTemplateCreationTimeIsChecked}
       aria-checked={switchEnableTemplateCreationTimeIsChecked}
@@ -92,7 +92,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
   );
 
   const columns: ColumnProps[] = [
-    { name: 'name', title: 'Name', isVisible: true },
+    { name: 'name', title: 'Template Name', isVisible: true },
     { name: 'runs', title: 'Number of job executions', type: 'number', isVisible: true },
     { name: 'num_hosts', title: 'Host executions', type: 'number', isVisible: true },
     {
@@ -105,7 +105,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
     {
       name: 'time_taken_create_automation_minutes',
       title: 'Time taken to create automation (min)',
-      info: { tooltip: 'Please enter the time that an engineer would spend to automatize this job' },
+      info: { tooltip: 'Please enter the time an engineer would spend to automate this job' },
       isEditable: true,
       isVisible: switchEnableTemplateCreationTimeIsChecked,
     },
@@ -127,7 +127,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             <FlexItem>
               <Form onSubmit={(e) => e.preventDefault()}>
                 <FormGroup
-                  label={`Average cost of an employee minute (${selectedCurrencySign})`}
+                  label={`Average cost of per minute to manually run the job (${selectedCurrencySign})`}
                   labelHelp={
                     <Tooltip content="Please enter an average cost per minute for the engineer manually running jobs">
                       <Icon size="md" className="pf-v6-u-ml-sm">
@@ -150,7 +150,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             <FlexItem>
               <Form onSubmit={(e) => e.preventDefault()}>
                 <FormGroup
-                  label={`Cost per minute of AAP (${selectedCurrencySign})`}
+                  label={`Average cost per minute of running on AAP (${selectedCurrencySign})`}
                   labelHelp={
                     <Tooltip content="Please enter an average cost per minute of running a job in the Ansible Automation Platform">
                       <Icon size="md" className="pf-v6-u-ml-sm">

@@ -90,7 +90,7 @@ const exportToCSV = async (params: RequestFilter & OrderingParams): Promise<void
       }
     })
     .then((response) => {
-      downloadAttachment(response.data as never, 'report.csv');
+      downloadAttachment(response.data as never, 'AAP_Automation_Dashboard_Report.csv');
       Promise.resolve();
     });
 };
@@ -104,7 +104,7 @@ const exportToPDF = async (
   return api
     .post(`api/v1/report/pdf/${queryString}`, { job_chart: jobChart, host_chart: hostChart }, { responseType: 'blob' })
     .then((response) => {
-      downloadAttachment(response.data as never, 'report.pdf');
+      downloadAttachment(response.data as never, 'AAP_Automation_Dashboard_Report.pdf');
       Promise.resolve();
     });
 };

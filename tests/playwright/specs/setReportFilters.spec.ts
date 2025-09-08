@@ -14,7 +14,7 @@ async function saveReport(page: Page, buttonName: string) {
 }
 
 async function saveAsReportAction(page: Page) {
-  await page.getByRole("button", { name: "Save as report" }).click();
+  await page.getByRole("button", { name: "Save as Report" }).click();
 }
 
 async function fillInput(page: Page, value: string) {
@@ -47,7 +47,7 @@ async function deleteReportTest(
     await selectAReport(page, "report_1");
     await saveAsReportAction(page);
     await selectMenuItem(page, "Delete current report", "Delete report");
-    await expect(page.getByText("Do you really want to delete filter set report_1")).toBeVisible();
+    await expect(page.getByText("Do you really want to delete the report: report_1")).toBeVisible();
     await saveReport(page, "Delete");
   
     if (expectError) {
@@ -106,7 +106,7 @@ test.describe("Set report filters", () => {
   });
 
   test("Should show create a report popup", async ({ page }) => {
-    await page.getByRole("button", { name: "Save as report", exact: true }).click();
+    await page.getByRole("button", { name: "Save as Report", exact: true }).click();
     await expect(
       page.locator("#name")
     ).toBeVisible();
@@ -138,7 +138,7 @@ test.describe("Set report filters", () => {
     await saveAsReportAction(page);
     await selectMenuItem(page, "Delete current report", "Delete report");
     await expect(
-      page.getByText("Do you really want to delete filter set report_1")
+      page.getByText("Do you really want to delete the report: report_1")
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Delete" })
@@ -151,7 +151,7 @@ test.describe("Set report filters", () => {
   test("Should add new report", async ({ page }) => {
     await mockFilterSetRoute(page, {"id":66,"name":"report_3","filters":{"date_range":"month_to_date"}});
     await mockTemplateOptionsRoute(page, templateOptionsAddReport);
-    await page.getByRole("button", { name: "Save as report", exact: true }).click();
+    await page.getByRole("button", { name: "Save as Report", exact: true }).click();
     await expect(page.locator("#name")).toBeVisible();
     await fillInput(page, "report_3");
     await saveReport(page, "Create");
@@ -160,7 +160,7 @@ test.describe("Set report filters", () => {
 
   test("Should show error when adding report with existing name", async ({ page }) => {
     await mockFilterSetRoute(page, {"name":["Filter name already exists."]}, 400);
-    await page.getByRole("button", { name: "Save as report", exact: true }).click();
+    await page.getByRole("button", { name: "Save as Report", exact: true }).click();
     await expect(page.locator("#name")).toBeVisible();
     await fillInput(page, "report_1");
     await saveReport(page, "Create");
@@ -173,7 +173,7 @@ test.describe("Set report filters", () => {
 
   test("Should show internal server error when adding new report", async ({ page }) => {
     await mockFilterSetRoute(page, {}, 500);
-    await page.getByRole("button", { name: "Save as report", exact: true }).click();
+    await page.getByRole("button", { name: "Save as Report", exact: true }).click();
     await expect(page.locator("#name")).toBeVisible();
     await fillInput(page, "report_3");
     await saveReport(page, "Create");

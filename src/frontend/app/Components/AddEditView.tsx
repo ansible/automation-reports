@@ -167,10 +167,10 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       onClick={toggleClick}
       isExpanded={isMenuOpen}
       id={'filter-set-menu-toggle'}
-      aria-label={' Save as report'}
+      aria-label={' Save as Report'}
       splitButtonItems={[
         <MenuToggleAction key="split-action-save" onClick={toggleClick} aria-label="Save" className='pf-v6-u-w-100'>
-          Save as report
+          Save as Report
         </MenuToggleAction>,
       ]}
     ></MenuToggle>
@@ -237,13 +237,14 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
                     type="text"
                     id="name"
                     name="name"
+                    maxLength={255}
                   />
                 </FormGroup>
               </Form>
             </div>
           )}
           {modalVariant === 'delete' && (
-            <div className={'modal-wrap'}>Do you really want to delete filter set {filterNameValue}?</div>
+            <div className={'modal-wrap'}>Do you really want to delete the report: {filterNameValue}?</div>
           )}
         </ModalBody>
         <ModalFooter>

@@ -87,7 +87,9 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     const execute = async () => {
       await fetchFilters();
       await getMyUserData();
-      selectOption(filterOptionsList[0].key);
+      let index = filterOptionsList.findIndex((v)=>v.key==='job_template');
+      index = index >= 0 ? index : 0;
+      selectOption(filterOptionsList[index].key);
     };
     if (!hasFetched.current) {
       execute().then();
@@ -257,6 +259,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       onChange={onDateRangeChange}
       dateFrom={filterSelection.start_date}
       dateTo={filterSelection.end_date}
+      label={"Duration"}
     ></DateRangePicker>
   );
 

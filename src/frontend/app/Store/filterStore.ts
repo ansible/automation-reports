@@ -20,10 +20,10 @@ type FilterStoreActions = {
 
 const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
   filterOptions: [
-    { key: 'job_template', value: 'Template' },
+    { key: 'label', value: 'Label' },
     { key: 'organization', value: 'Organization' },
     { key: 'project', value: 'Project' },
-    { key: 'label', value: 'Label' },
+    { key: 'job_template', value: 'Template' },
   ],
   automatedProcessCost: 0,
   clusters: [],

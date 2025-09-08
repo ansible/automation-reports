@@ -311,6 +311,17 @@ const Dashboard: React.FunctionComponent = () => {
     });
   };
 
+  const topUsersToolTip = (
+    <div>
+      <div>This section lists the top five users of Ansible Automation Platform, with a breakdown of the total number of jobs run by each user.</div>
+      <ul>
+        <br/>
+        <li><strong>○ NOTE:</strong> Scheduled jobs can affect these results, because they do not represent a real, logged-in user. </li>
+      </ul>
+    </div>
+  );
+
+  // @ts-ignore
   return (
     <div>
       <Header
@@ -319,7 +330,7 @@ const Dashboard: React.FunctionComponent = () => {
           'Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.'
         }
         pdfBtnText={
-          !loadDataError && !filterError && !logErrorMessage && !loading && !pdfLoading && tableData?.count > 0 ? 'Share as PDF' : undefined
+          !loadDataError && !filterError && !logErrorMessage && !loading && !pdfLoading && tableData?.count > 0 ? 'Save as PDF' : undefined
         }
         onPdfBtnClick={onPdfBtnClick}
       ></Header>
@@ -388,6 +399,8 @@ const Dashboard: React.FunctionComponent = () => {
                     <div style={{ height: '100%' }}>
                       <DashboardTopTable
                         title={'Top 5 projects'}
+                        tooltip={'This section lists the top five automation projects based on the number of jobs executed.'}
+                        infoIcon={true}
                         columns={topProjectColumns}
                         data={detailData?.projects ? detailData.projects : []}
                       ></DashboardTopTable>
@@ -397,6 +410,8 @@ const Dashboard: React.FunctionComponent = () => {
                     <div style={{ height: '100%' }}>
                       <DashboardTopTable
                         title={'Top 5 users'}
+                        tooltip={topUsersToolTip}
+                        infoIcon={true}
                         columns={topUsersColumns}
                         data={detailData?.users ? detailData.users : []}
                       ></DashboardTopTable>

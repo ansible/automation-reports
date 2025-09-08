@@ -46,7 +46,7 @@ test.describe("Dashboard", () => {
     await expect(templateDropdownBtn).toBeVisible();
     await templateDropdownBtn.click();
     await expect(page.locator("#filter-faceted-options-menu")).toBeVisible();
-    const expectedTemplateOptions = ["Template", "Organization", "Project", "Label"];
+    const expectedTemplateOptions = ["Label", "Organization", "Project", "Template"];
     const menuTemplateOptions = page.locator("#filter-faceted-options-menu");
     const templateItems = menuTemplateOptions.getByRole("menuitem");
     for (let i = 0; i < expectedTemplateOptions.length; i++) {
@@ -83,7 +83,7 @@ test.describe("Dashboard", () => {
     }
 
     await expect(
-      page.getByRole("button", { name: "Save as report", exact: true })
+      page.getByRole("button", { name: "Save as Report", exact: true })
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "British Pound Sterling" })
