@@ -1,6 +1,7 @@
 import logging
 
 from dispatcherd.publish import task
+from dispatcherd.worker.exceptions import DispatcherCancel
 from django.db import transaction
 
 from backend.apps.clusters.connector import ApiConnector
@@ -40,6 +41,10 @@ class BaseTask(object):
     def run_task(self):
         pass
 
+    def after_cancel_task(self):
+        logger.info(f'Job {self.instance.pk} was canceled.')
+        self.update_model(self.instance.pk, status=JobStatusChoices.CANCELED, explanation="Canceled")
+
     def run(self, pk, **kwargs):
         if self.instance is None:
             if not self.transition_status(pk):
@@ -72,6 +77,9 @@ class AAPSyncTask(BaseTask):
         ### Check AAP version an if theserver is alive
         try:
             is_valid_aap_version = connector.check_aap_version()
+        except DispatcherCancel:
+            self.after_cancel_task()
+            return
         except Exception:
             msg = f'Error connecting to AAP API: {self.cluster.base_url}'
             logger.exception("Failed to check AAP version")
@@ -86,6 +94,9 @@ class AAPSyncTask(BaseTask):
         ### Sync AAP organizations
         try:
             connector.sync_common('organization')
+        except DispatcherCancel:
+            self.after_cancel_task()
+            return
         except Exception:
             msg = 'Failed to sync AAP Organizations.'
             logger.exception(msg)
@@ -95,6 +106,9 @@ class AAPSyncTask(BaseTask):
         ### Sync AAP job templates
         try:
             connector.sync_common('job_template')
+        except DispatcherCancel:
+            self.after_cancel_task()
+            return
         except Exception:
             msg = 'Failed to sync AAP Job templates.'
             logger.exception(msg)
@@ -104,6 +118,9 @@ class AAPSyncTask(BaseTask):
 
         try:
             connector.sync_jobs()
+        except DispatcherCancel:
+            self.after_cancel_task()
+            return
         except Exception:
             msg = 'Failed to sync AAP Jobs.'
             logger.exception(msg)
@@ -128,6 +145,9 @@ class AAPParseDataTask(BaseTask):
         data_parser = DataParser(sync_data.id)
         try:
             data_parser.parse()
+        except DispatcherCancel:
+            self.after_cancel_task()
+            return
         except Exception:
             msg = f'Failed to parse AAP sync data: {sync_data.id}'
             logger.exception(msg)

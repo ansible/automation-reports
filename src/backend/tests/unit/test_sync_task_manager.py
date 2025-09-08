@@ -1,10 +1,16 @@
+import threading
+from time import sleep
 from unittest.mock import patch, MagicMock
 
 import pytest
+from dispatcherd.config import setup as dispatcher_setup
+from dispatcherd.worker.exceptions import DispatcherCancel
 
-from backend.apps.scheduler.models import JobStatusChoices, JobTypeChoices
+from backend.apps.dispatch.config import get_dispatcherd_config
+from backend.apps.scheduler.models import JobStatusChoices, JobTypeChoices, SyncSchedule, SyncJob
 from backend.apps.scheduler.task_manager import SyncTaskManager
-
+from backend.apps.tasks.jobs import BaseTask, AAPSyncTask, AAPParseDataTask
+from django.core.management import call_command
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestSyncTaskManager:
@@ -84,3 +90,135 @@ class TestSyncTaskManager:
         tb.all_tasks = []
         tb._schedule()
         mock_process_tasks.assert_not_called()
+
+    def test_sync_schedule_job_lifecycle(self, cluster):
+        # 1. Create SyncSchedule
+        schedule = SyncSchedule.objects.create(
+            name="Test Schedule",
+            enabled=True,
+            rrule="DTSTART;TZID=UTC:20240101T000000 RRULE:FREQ=MINUTELY;INTERVAL=1;COUNT=1",
+            cluster=cluster,
+        )
+        schedule.update_computed_fields()
+
+        # 2. Simulate the scheduler enqueuing a SyncJob (normally done by a periodic task)
+        # For test, manually create a job in NEW status
+        job = SyncJob.objects.create(
+            name="Test Job",
+            status=JobStatusChoices.NEW,
+            type="Sync jobs",
+            cluster=cluster,
+            sync_schedule=schedule,
+        )
+
+        # 3. Signal start (should set status to PENDING)
+        job.signal_start()
+        job.refresh_from_db()
+        assert job.status == JobStatusChoices.PENDING
+
+        config = get_dispatcherd_config(for_service=True, mock_publish=True)
+        dispatcher_setup(config=config)
+
+        # 4. Run SyncTaskManager to process PENDING jobs (sets WAITING, triggers celery task)
+        manager = SyncTaskManager()
+        manager.get_tasks({'status': JobStatusChoices.PENDING})
+        manager.process_tasks()
+        job.refresh_from_db()
+        assert job.status == JobStatusChoices.WAITING
+
+        # 5. Simulate celery worker running the job (AAPSyncTask)
+        from backend.apps.tasks.jobs import AAPSyncTask
+        task = AAPSyncTask()
+        task.run(job.pk)
+        job.refresh_from_db()
+        assert job.status in [JobStatusChoices.SUCCESSFUL, JobStatusChoices.FAILED]
+        assert job.started is not None
+        assert job.finished is not None
+        assert job.elapsed > 0
+
+    def test_transition_status_concurrency(self, cluster):
+        job = SyncJob.objects.create(
+            name="Concurrent Job",
+            status=JobStatusChoices.WAITING,
+            type="Sync jobs",
+            cluster=cluster,
+        )
+
+        results = []
+
+        def worker():
+            task = BaseTask()
+            result = task.transition_status(job.pk)
+            results.append(result)
+
+        threads = [threading.Thread(target=worker) for _ in range(2)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        # Only one should succeed, the other should return False
+        assert results.count(True) == 1
+        assert results.count(False) == 1
+
+        job.refresh_from_db()
+        assert job.status == JobStatusChoices.RUNNING
+
+    def test_aapsynctask_malformed_job_args(self, cluster):
+        job = SyncJob.objects.create(
+            name="Malformed Args Job",
+            status=JobStatusChoices.WAITING,
+            type=JobTypeChoices.SYNC_JOBS,
+            cluster=cluster,
+            job_args="{not: valid json",  # Malformed JSON
+        )
+        task = AAPSyncTask()
+        task.run(job.pk)
+        job.refresh_from_db()
+        assert job.status == JobStatusChoices.FAILED
+        assert "No job args provided" in job.explanation
+
+    @patch("backend.apps.clusters.connector.ApiConnector.check_aap_version", side_effect=Exception("API error"))
+    def test_aapsynctask_api_failure(self, mock_check, cluster):
+        job = SyncJob.objects.create(
+            name="API Failure Job",
+            status=JobStatusChoices.WAITING,
+            type=JobTypeChoices.SYNC_JOBS,
+            cluster=cluster,
+            job_args='{}',
+        )
+        task = AAPSyncTask()
+        task.run(job.pk)
+        job.refresh_from_db()
+        assert job.status == JobStatusChoices.FAILED
+        assert "Error connecting to AAP API" in job.explanation
+
+    def test_aapparsedatatask_parser_failure(self, cluster, cluster_sync_data):
+        job = SyncJob.objects.create(
+            name="Parser Failure Job",
+            status=JobStatusChoices.WAITING,
+            type=JobTypeChoices.PARSE_JOB_DATA,
+            cluster=cluster,
+            cluster_sync_data=cluster_sync_data,
+        )
+        with patch("backend.apps.clusters.parser.DataParser.parse", side_effect=Exception("Parse error")):
+            task = AAPParseDataTask()
+            task.run(job.pk)
+        job.refresh_from_db()
+        assert job.status == JobStatusChoices.FAILED
+        assert "Failed to parse AAP sync data" in job.explanation
+
+    @patch("backend.apps.clusters.connector.ApiConnector.check_aap_version", side_effect=DispatcherCancel)
+    def test_aapsynctask_cancel_updates_job_state(self, mock_check, cluster):
+        job = SyncJob.objects.create(
+            name="API Cenceling Job",
+            status=JobStatusChoices.WAITING,
+            type=JobTypeChoices.SYNC_JOBS,
+            cluster=cluster,
+            job_args='{}',
+        )
+        task = AAPSyncTask()
+        task.run(job.pk)
+        job.refresh_from_db()
+        assert job.status == JobStatusChoices.CANCELED
+        assert "Canceled" in job.explanation

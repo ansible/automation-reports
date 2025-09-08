@@ -2,7 +2,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from backend.apps.scheduler.models import JobStatusChoices
+from backend.apps.scheduler.models import JobStatusChoices, JobTypeChoices, SyncJob
 from backend.apps.tasks.jobs import AAPSyncTask, AAPParseDataTask
 
 
@@ -107,3 +107,17 @@ class TestJobs:
         parser_instance.parse.return_value = None
         task.run_task()
         mock_update_model.assert_called_with(instance.pk, status=JobStatusChoices.SUCCESSFUL)
+
+    def test_job_already_running(self, cluster):
+        job = SyncJob.objects.create(
+            name="Already Running Job",
+            status=JobStatusChoices.RUNNING,
+            type=JobTypeChoices.SYNC_JOBS,
+            cluster=cluster,
+        )
+        task = AAPSyncTask()
+        task.run(job.pk)
+        job.refresh_from_db()
+        assert job.status == JobStatusChoices.RUNNING
+        assert job.started is not None
+        assert job.finished is None
