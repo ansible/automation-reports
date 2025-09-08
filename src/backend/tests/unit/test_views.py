@@ -161,9 +161,6 @@ test_report_details_expected_data = {
     'related_links': {
         'successful_jobs': 'https://localhost:8000/#/jobs?job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00&job.status__exact=successful',
         'failed_jobs': 'https://localhost:8000/#/jobs?job.status__exact=failed&job.finished__gte=2025-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2025-03-21T23%3A59%3A59.999999%2B00%3A00'},
-    'excluded_templates': [
-        {'id': 3, 'name': 'Job Template C'}
-    ]
 }
 
 test_report_disabled_time_taken_to_create_automation_save_expected_data = {

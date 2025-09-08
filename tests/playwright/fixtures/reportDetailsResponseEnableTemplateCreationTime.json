@@ -1,197 +1,196 @@
 {
-    "users": [
-        {
-            "user_id": 17,
-            "user_name": "User 7",
-            "count": 399
-        },
-        {
-            "user_id": 12,
-            "user_name": "User 2",
-            "count": 393
-        },
-        {
-            "user_id": 15,
-            "user_name": "User 5",
-            "count": 371
-        },
-        {
-            "user_id": 13,
-            "user_name": "User 3",
-            "count": 370
-        },
-        {
-            "user_id": 11,
-            "user_name": "User 1",
-            "count": 368
-        }
+  "users": [
+    {
+      "user_id": 17,
+      "user_name": "User 7",
+      "count": 399
+    },
+    {
+      "user_id": 12,
+      "user_name": "User 2",
+      "count": 393
+    },
+    {
+      "user_id": 15,
+      "user_name": "User 5",
+      "count": 371
+    },
+    {
+      "user_id": 13,
+      "user_name": "User 3",
+      "count": 370
+    },
+    {
+      "user_id": 11,
+      "user_name": "User 1",
+      "count": 368
+    }
+  ],
+  "projects": [
+    {
+      "project_id": 10,
+      "project_name": "Project 10",
+      "count": 388
+    },
+    {
+      "project_id": 2,
+      "project_name": "Project 2",
+      "count": 387
+    },
+    {
+      "project_id": 7,
+      "project_name": "Project 7",
+      "count": 378
+    },
+    {
+      "project_id": 3,
+      "project_name": "Project 3",
+      "count": 376
+    },
+    {
+      "project_id": 8,
+      "project_name": "Project 8",
+      "count": 373
+    }
+  ],
+  "total_number_of_unique_hosts": {
+    "value": 10
+  },
+  "total_number_of_successful_jobs": {
+    "value": 3660
+  },
+  "total_number_of_failed_jobs": {
+    "value": 0
+  },
+  "total_number_of_job_runs": {
+    "value": 3660
+  },
+  "total_number_of_host_job_runs": {
+    "value": 17948
+  },
+  "total_hours_of_automation": {
+    "value": 508.76
+  },
+  "cost_of_automated_execution": {
+    "value": 1831540.15
+  },
+  "cost_of_manual_automation": {
+    "value": 48321900.0
+  },
+  "total_saving": {
+    "value": 46490359.85
+  },
+  "total_time_saving": {
+    "value": 17388.24
+  },
+  "host_chart": {
+    "items": [
+      {
+        "x": "2024-01-01T00:00:00Z",
+        "y": 1533
+      },
+      {
+        "x": "2024-02-01T00:00:00Z",
+        "y": 1441
+      },
+      {
+        "x": "2024-03-01T00:00:00Z",
+        "y": 1536
+      },
+      {
+        "x": "2024-04-01T00:00:00Z",
+        "y": 1469
+      },
+      {
+        "x": "2024-05-01T00:00:00Z",
+        "y": 1494
+      },
+      {
+        "x": "2024-06-01T00:00:00Z",
+        "y": 1501
+      },
+      {
+        "x": "2024-07-01T00:00:00Z",
+        "y": 1491
+      },
+      {
+        "x": "2024-08-01T00:00:00Z",
+        "y": 1508
+      },
+      {
+        "x": "2024-09-01T00:00:00Z",
+        "y": 1465
+      },
+      {
+        "x": "2024-10-01T00:00:00Z",
+        "y": 1520
+      },
+      {
+        "x": "2024-11-01T00:00:00Z",
+        "y": 1458
+      },
+      {
+        "x": "2024-12-01T00:00:00Z",
+        "y": 1532
+      }
     ],
-    "projects": [
-        {
-            "project_id": 10,
-            "project_name": "Project 10",
-            "count": 388
-        },
-        {
-            "project_id": 2,
-            "project_name": "Project 2",
-            "count": 387
-        },
-        {
-            "project_id": 7,
-            "project_name": "Project 7",
-            "count": 378
-        },
-        {
-            "project_id": 3,
-            "project_name": "Project 3",
-            "count": 376
-        },
-        {
-            "project_id": 8,
-            "project_name": "Project 8",
-            "count": 373
-        }
+    "range": "month"
+  },
+  "job_chart": {
+    "items": [
+      {
+        "x": "2024-01-01T00:00:00Z",
+        "y": 310
+      },
+      {
+        "x": "2024-02-01T00:00:00Z",
+        "y": 290
+      },
+      {
+        "x": "2024-03-01T00:00:00Z",
+        "y": 310
+      },
+      {
+        "x": "2024-04-01T00:00:00Z",
+        "y": 300
+      },
+      {
+        "x": "2024-05-01T00:00:00Z",
+        "y": 310
+      },
+      {
+        "x": "2024-06-01T00:00:00Z",
+        "y": 300
+      },
+      {
+        "x": "2024-07-01T00:00:00Z",
+        "y": 310
+      },
+      {
+        "x": "2024-08-01T00:00:00Z",
+        "y": 310
+      },
+      {
+        "x": "2024-09-01T00:00:00Z",
+        "y": 300
+      },
+      {
+        "x": "2024-10-01T00:00:00Z",
+        "y": 310
+      },
+      {
+        "x": "2024-11-01T00:00:00Z",
+        "y": 300
+      },
+      {
+        "x": "2024-12-01T00:00:00Z",
+        "y": 310
+      }
     ],
-    "total_number_of_unique_hosts": {
-        "value": 10
-    },
-    "total_number_of_successful_jobs": {
-        "value": 3660
-    },
-    "total_number_of_failed_jobs": {
-        "value": 0
-    },
-    "total_number_of_job_runs": {
-        "value": 3660
-    },
-    "total_number_of_host_job_runs": {
-        "value": 17948
-    },
-    "total_hours_of_automation": {
-        "value": 508.76
-    },
-    "cost_of_automated_execution": {
-        "value": 1831540.15
-    },
-    "cost_of_manual_automation": {
-        "value": 48321900.0
-    },
-    "total_saving": {
-        "value": 46490359.85
-    },
-    "total_time_saving": {
-        "value": 17388.24
-    },
-    "host_chart": {
-        "items": [
-            {
-                "x": "2024-01-01T00:00:00Z",
-                "y": 1533
-            },
-            {
-                "x": "2024-02-01T00:00:00Z",
-                "y": 1441
-            },
-            {
-                "x": "2024-03-01T00:00:00Z",
-                "y": 1536
-            },
-            {
-                "x": "2024-04-01T00:00:00Z",
-                "y": 1469
-            },
-            {
-                "x": "2024-05-01T00:00:00Z",
-                "y": 1494
-            },
-            {
-                "x": "2024-06-01T00:00:00Z",
-                "y": 1501
-            },
-            {
-                "x": "2024-07-01T00:00:00Z",
-                "y": 1491
-            },
-            {
-                "x": "2024-08-01T00:00:00Z",
-                "y": 1508
-            },
-            {
-                "x": "2024-09-01T00:00:00Z",
-                "y": 1465
-            },
-            {
-                "x": "2024-10-01T00:00:00Z",
-                "y": 1520
-            },
-            {
-                "x": "2024-11-01T00:00:00Z",
-                "y": 1458
-            },
-            {
-                "x": "2024-12-01T00:00:00Z",
-                "y": 1532
-            }
-        ],
-        "range": "month"
-    },
-    "job_chart": {
-        "items": [
-            {
-                "x": "2024-01-01T00:00:00Z",
-                "y": 310
-            },
-            {
-                "x": "2024-02-01T00:00:00Z",
-                "y": 290
-            },
-            {
-                "x": "2024-03-01T00:00:00Z",
-                "y": 310
-            },
-            {
-                "x": "2024-04-01T00:00:00Z",
-                "y": 300
-            },
-            {
-                "x": "2024-05-01T00:00:00Z",
-                "y": 310
-            },
-            {
-                "x": "2024-06-01T00:00:00Z",
-                "y": 300
-            },
-            {
-                "x": "2024-07-01T00:00:00Z",
-                "y": 310
-            },
-            {
-                "x": "2024-08-01T00:00:00Z",
-                "y": 310
-            },
-            {
-                "x": "2024-09-01T00:00:00Z",
-                "y": 300
-            },
-            {
-                "x": "2024-10-01T00:00:00Z",
-                "y": 310
-            },
-            {
-                "x": "2024-11-01T00:00:00Z",
-                "y": 300
-            },
-            {
-                "x": "2024-12-01T00:00:00Z",
-                "y": 310
-            }
-        ],
-        "range": "month"
-    },
-    "related_links": {
-        "successful_jobs": "http://localhost:8080/#/jobs?job.finished__gte=2024-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2024-12-31T23%3A59%3A59.999999%2B00%3A00&job.status__exact=successful",
-        "failed_jobs": "http://localhost:8080/#/jobs?job.status__exact=failed&job.finished__gte=2024-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2024-12-31T23%3A59%3A59.999999%2B00%3A00"
-    },
-    "excluded_templates": []
+    "range": "month"
+  },
+  "related_links": {
+    "successful_jobs": "http://localhost:8080/#/jobs?job.finished__gte=2024-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2024-12-31T23%3A59%3A59.999999%2B00%3A00&job.status__exact=successful",
+    "failed_jobs": "http://localhost:8080/#/jobs?job.status__exact=failed&job.finished__gte=2024-01-01T00%3A00%3A00%2B00%3A00&job.finished__lte=2024-12-31T23%3A59%3A59.999999%2B00%3A00"
+  }
 }

@@ -26,7 +26,6 @@ import {
   DashboardTotalCards,
 } from '@app/Dashboard';
 import { CurrencySelector } from '@app/Components';
-import { IdNameItem } from '@app/Types/ReportDetailsType';
 
 import useFilterStore from '@app/Store/filterStore';
 import useCommonStore  from '@app/Store/commonStore';
@@ -423,7 +422,6 @@ const Dashboard: React.FunctionComponent = () => {
               onInputFocus={onInputFocus}
               onExportCsv={exportToCsv}
               onEnableTemplateCreationTimeChange={onEnableTemplateCreationTimeChange}
-              excludedTemplates={detailData?.excluded_templates ?? ([] as IdNameItem[])}
             ></DashboardTable>
           </div>
         </div>

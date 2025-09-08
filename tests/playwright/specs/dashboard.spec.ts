@@ -152,24 +152,8 @@ test.describe("Dashboard", () => {
       "£511,131.56",
       "192.82h"
     );
+
     await checkCardContent(page, costAndSavingsValues);
-
-    const templatesGroup = page.locator(".excluded-templates-group");
-    await expect(templatesGroup.getByText("Templates not used")).toBeVisible();
-    const labelItems = templatesGroup.locator('.pf-v6-c-label__text:not(:has-text("more"))');
-    const expectedTemplates = [
-      "Job template 1",
-      "Job template 10",
-      "Job template 100",
-      "Job template 12",
-      "Job template 14",
-    ];
-
-    for (let i = 0; i < expectedTemplates.length; i++) {
-      const label = labelItems.nth(i);
-      await expect(label).toBeVisible();
-      await expect(label).toHaveText(expectedTemplates[i]);
-    }
 
     const headers = page.locator(".base-table thead.pf-v6-c-table__thead .pf-v6-c-table__tr th");
     const expectedHeaders = [
