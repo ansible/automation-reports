@@ -52,26 +52,27 @@ python manage.py createsuperuser
 
 #### Set up instances
 
+We need to create OAuth2 application and access token for integration with AAP.
+Follow [setup/README.md](setup/README.md#sso-authentication), section "SSO authentication".
+
+File `clusters.yaml` needs to contain the access token.
+
 ```bash
 cp -i clusters.example.yaml clusters.yaml
 nano clusters.yaml
 python manage.py setclusters <path to yaml file>
 ```
 
-File `clusters.yaml` needs to contain an AAP OAuth2 application and token.
-Create OAuth2 application at https://AAP_CONTROLLER_FQDN:8443/#/applications:
+#### Setup SSO login with AAP
 
-- Authorization grant type: Resource owner password-based
-- Organization: Default
-- Redirect URIs: empty
-- Client type: Confidential
+Edit file `local_settings.py`.
+It needs to contain OAuth2 application `client_id` and `client_secret`.
 
-Create token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
-
-- Scope: read
-
-Store access token and refresh token value.
-The access token is used in clusters.yaml.
+```bash
+cd /src/backend/django_config/
+cp -i local_settings.example.py local_settings.py
+nano local_settings.py
+```
 
 ### Run
 
@@ -124,13 +125,7 @@ python manage.py run_dispatcher --cancel <task_uuid>
 # set -o allexport; source .env; set +o allexport;
 
 cd src/backend
-cat <<EOF >django_config/local_settings.py
-DB_NAME = "aapdashboard"
-DB_USER = "root"
-DB_PASSWORD = "TODO"
-DB_HOST = "localhost"
-DB_PORT = 5432
-EOF
+cat django_config/local_settings.py  # review content
 docker exec -it aapdashboard-db-1 psql -c 'ALTER USER root CREATEDB;'
 
 export PYTHONPATH=$PWD/.. # pip install -e .
