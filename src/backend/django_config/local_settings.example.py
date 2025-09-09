@@ -33,6 +33,7 @@ AAP_AUTH_PROVIDER = {
 
 # Hide TLS warnings
 # SHOW_URLLIB3_INSECURE_REQUEST_WARNING = False
-# Enable Django
-# DEBUG = True
 
+# Enable Django debug
+# Note - DEBUG=True also enables runserver to serve static files (usefull for admin site).
+DEBUG = True
