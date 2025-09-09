@@ -73,6 +73,16 @@ Create token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
 Store access token and refresh token value.
 The access token is used in clusters.yaml.
 
+#### Setup SSO login with AAP
+
+Edit file `local_settings.py`:
+
+```bash
+cd /src/backend/django_config/
+cp -i local_settings.example.py local_settings.py
+nano local_settings.py
+```
+
 ### Run
 
 ```bash
@@ -124,13 +134,7 @@ python manage.py run_dispatcher --cancel <task_uuid>
 # set -o allexport; source .env; set +o allexport;
 
 cd src/backend
-cat <<EOF >django_config/local_settings.py
-DB_NAME = "aapdashboard"
-DB_USER = "root"
-DB_PASSWORD = "TODO"
-DB_HOST = "localhost"
-DB_PORT = 5432
-EOF
+cat django_config/local_settings.py  # review content
 docker exec -it aapdashboard-db-1 psql -c 'ALTER USER root CREATEDB;'
 
 export PYTHONPATH=$PWD/.. # pip install -e .
