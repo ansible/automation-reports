@@ -52,30 +52,21 @@ python manage.py createsuperuser
 
 #### Set up instances
 
+We need to create OAuth2 application and access token for integration with AAP.
+Follow [setup/README.md](setup/README.md#sso-authentication), section "SSO authentication".
+
+File `clusters.yaml` needs to contain the access token.
+
 ```bash
 cp -i clusters.example.yaml clusters.yaml
 nano clusters.yaml
 python manage.py setclusters <path to yaml file>
 ```
 
-File `clusters.yaml` needs to contain an AAP OAuth2 application and token.
-Create OAuth2 application at https://AAP_CONTROLLER_FQDN:8443/#/applications:
-
-- Authorization grant type: Resource owner password-based
-- Organization: Default
-- Redirect URIs: empty
-- Client type: Confidential
-
-Create token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
-
-- Scope: read
-
-Store access token and refresh token value.
-The access token is used in clusters.yaml.
-
 #### Setup SSO login with AAP
 
-Edit file `local_settings.py`:
+Edit file `local_settings.py`.
+It needs to contain OAuth2 application `client_id` and `client_secret`.
 
 ```bash
 cd /src/backend/django_config/
