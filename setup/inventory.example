@@ -35,10 +35,19 @@ initial_sync_days=1
 
 # Force clean install-like
 # dashboard_update_secret=true
+
 # HTTP/HTTPS settings
 # nginx_disable_https=true
+# Change nginx_http_port or nginx_https_port if you want to access dashboard on a different TCP port.
 # nginx_http_port=8083
 # nginx_https_port=8447
+# TLS certificate configuration
+# The dashboard_tls_cert needs:
+#   - contain server certificate, intermediate CA certificates and root CA certificate.
+#   - the server certificate must be the first one in the file.
+# dashboard_tls_cert=/path/to/tls/dashboard.crt
+# dashboard_tls_key=/path/to/tls/dashboard.key
+
 # Enable Django DEBUG.
 # django_debug=True
 
@@ -62,15 +71,4 @@ dashboard_pg_database=aapdashboard
 #
 bundle_install=true
 # <full path to the bundle directory>
-bundle_dir=/home/ec2-user/ansible-automation-dashboard-containerized-setup/bundle
-#
-# AAP Dashboard - extra variables needed when installing next to non-containerized AAP
-# --------------------------
-# postgresql_admin_username={{ pg_username }}
-# postgresql_admin_password={{ pg_password }}
-# controller_admin_password=dummy
-# controller_pg_host=dummy
-# controller_pg_password=dummy
-# hub_admin_password=dummy
-# hub_pg_host=dummy
-# hub_pg_password=dummy
+bundle_dir='{{ lookup("ansible.builtin.env", "PWD") }}/bundle'
