@@ -93,7 +93,7 @@ Next create a token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
 - OAuth application: automation-dashboard-sso
 - Scope: read
 
-Store access token and refresh token value.
+Store access token value.
 The access token is used in `clusters.yaml`.
 
 #### Run installer
