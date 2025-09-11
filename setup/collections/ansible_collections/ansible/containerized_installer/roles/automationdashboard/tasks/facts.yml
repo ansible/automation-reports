@@ -107,6 +107,20 @@
       - automation-dashboard-task.service
       - automation-dashboard-web.service
 
+- name: Set AAP version dependent facts
+  ansible.builtin.set_fact:
+    __aap_auth_provider_url: "{{ map_to_aap_url[aap_auth_provider_aap_version] }}"
+    __aap_auth_provider_user_data_endpoint: "{{ map_to_aap_user_data_endpoint[aap_auth_provider_aap_version] }}"
+  vars:
+    map_to_aap_url:
+      2.4: "{{ aap_auth_provider_host }}/api"
+      2.5: "{{ aap_auth_provider_host }}"
+      2.6: "{{ aap_auth_provider_host }}"
+    map_to_aap_user_data_endpoint:
+      2.4: "/v2/me/"
+      2.5: "/api/gateway/v1/me/"
+      2.6: "/api/gateway/v1/me/"
+
 # - name: Add rsyslog to systemd services list
 #   ansible.builtin.set_fact:
 #     __services: '{{ __services | union(["automation-dashboard-rsyslog.service"]) }}'
