@@ -16,7 +16,7 @@ DATABASES = {
 }
 
 AAP_AUTH_PROVIDER = {
-    "name": "AnsibleAutomationPlatform",
+    "name": "Ansible Automation Platform",
     "protocol": "https",
     #
     # For AAP v2.4
