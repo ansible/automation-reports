@@ -83,7 +83,7 @@ jobs:
         run: |
           cat <<EOF >setup/inventory
           [automationdashboard]
-          aap24_dashboard.novalocal ansible_connection=local
+          host.example.com ansible_connection=local
           [automationdashboardeporter:vars]
           [all:vars]
           registry_username=${{ vars.REGISTRY_REDHAT_IO_USERNAME }}

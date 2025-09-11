@@ -1,5 +1,5 @@
 [automationdashboard]
-aap24_dashboard.novalocal ansible_connection=local
+host.example.com ansible_connection=local
 
 [automationdashboard:vars]
 # Configure AAP OAuth2 authentication.
@@ -52,7 +52,7 @@ initial_sync_days=1
 # django_debug=True
 
 [database]
-aap24_dashboard.novalocal ansible_connection=local
+host.example.com ansible_connection=local
 
 [all:vars]
 postgresql_admin_username=postgres
@@ -64,7 +64,7 @@ postgresql_admin_password=TODO
 # --------------------------
 dashboard_pg_containerized=True
 dashboard_admin_password=TODO
-dashboard_pg_host=aap24_dashboard.novalocal
+dashboard_pg_host=host.example.com
 dashboard_pg_username=aapdashboard
 dashboard_pg_password=TODO
 dashboard_pg_database=aapdashboard
