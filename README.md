@@ -55,13 +55,21 @@ python manage.py createsuperuser
 We need to create OAuth2 application and access token for integration with AAP.
 Follow [setup/README.md](setup/README.md#sso-authentication), section "SSO authentication".
 
-File `clusters.yaml` needs to contain the access token.
+File `clusters.yaml` needs to contain the access token, refresh token, client id and client secret.
 
 ```bash
 cp -i clusters.example.yaml clusters.yaml
 nano clusters.yaml
 python manage.py setclusters <path to yaml file>
 ```
+
+Note that when access token expires, the refresh token is used to obtain new access token.
+At the same time the AAP returns also new refresh token.
+The Automation Dashboard internally updates both values.
+Implications:
+
+- after token refresh happens, if you need to run `manage.py setclusters` again, you need to create a new token.
+- The same access and refresh tokens can be used only by one Automation Dashboard installation
 
 #### Setup SSO login with AAP
 
