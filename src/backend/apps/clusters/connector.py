@@ -6,6 +6,7 @@ import pytz
 from django.conf import settings
 import requests
 from django.db import transaction
+import urllib3
 
 from backend.apps.clusters.encryption import decrypt_value
 from backend.apps.clusters.models import (
@@ -28,6 +29,10 @@ class ApiConnector:
                  since: datetime.datetime | None = None,
                  until: datetime.datetime | None = None,
                  managed: bool = False):
+
+        # Optionally suppress urllib3 SSL warnings
+        if not settings.SHOW_URLLIB3_INSECURE_REQUEST_WARNING:
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         self.cluster = cluster
         self.timeout = timeout
