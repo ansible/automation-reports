@@ -60,7 +60,10 @@ postgresql_admin_password=TODO
 # --------------------------
 dashboard_pg_containerized=True
 dashboard_admin_password=TODO
-dashboard_pg_host=host.example.com
+# The value of dashboard_pg_host needs to resolve to an IP address of the database.
+# It cannot be localhost or 127.0.0.1.
+# It can be IP address of the server.
+dashboard_pg_host=TODO
 dashboard_pg_username=aapdashboard
 dashboard_pg_password=TODO
 dashboard_pg_database=aapdashboard
