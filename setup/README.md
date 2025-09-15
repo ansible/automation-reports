@@ -60,13 +60,13 @@ This will also build needed container image.
 # one time setup
 sudo dnf install git podman ansible-core
 cp -i setup/inventory.example setup/inventory
-# setup bundle_dir, registry_username, registry_password
+# setup bundle_install, bundle_dir, registry_username, registry_password
 nano setup/inventory
 (cd setup; ansible-galaxy collection install -r requirements.yml)
 
-./setup/build_bundle.sh
+./setup/build_installer.sh
 # ...
-# Bundled installer is at bundle/automation-dashboard-bundled-installer.tar.gz
+# Bundled installer is at setup/bundle/automation-dashboard-bundled-installer.tar.gz
 ```
 
 ### Install using bundled installer
