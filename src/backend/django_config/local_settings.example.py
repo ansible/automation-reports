@@ -1,8 +1,9 @@
-DB_NAME = "aapdashboard"
-DB_USER = "root"
-DB_PASSWORD = "TODO"
-DB_HOST = "localhost"
-DB_PORT = 5432
+import os
+DB_NAME = os.environ.get("DB_NAME", "aapdashboard")
+DB_USER = os.environ.get("DB_USER", "root")
+DB_PASSWORD = os.environ["DB_PASSWORD"]
+DB_HOST = os.environ.get("DB_HOST", "localhost")
+DB_PORT = int(os.environ.get("", "5432"))
 
 DATABASES = {
     'default': {
