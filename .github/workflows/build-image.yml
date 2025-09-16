@@ -91,11 +91,28 @@ jobs:
           bundle_install=true
           bundle_dir=$PWD/setup/bundle
           EOF
-      - name: Build bundle
-        run: USE_QUAY_IO_IMAGE=1 QUAY_IO_IMAGE_TAG=${{ github.ref_name }} setup/build_bundle.sh
+      - name: Build bundled installer
+        run: AAP_DASHBOARD_BUNDLED_INSTALLER=1 USE_QUAY_IO_IMAGE=1 QUAY_IO_IMAGE_TAG=${{ github.ref_name }} setup/build_installer.sh
       - name: Upload bundle artifact
         uses: actions/upload-artifact@v4
         with:
           name: ansible-automation-dashboard-containerized-setup-bundle.tar.gz
           path: setup/bundle/ansible-automation-dashboard-containerized-setup-bundle.tar.gz
+          retention-days: 31
+
+  online-installer:
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build online installer
+        run: AAP_DASHBOARD_BUNDLED_INSTALLER=0 USE_QUAY_IO_IMAGE=1 QUAY_IO_IMAGE_TAG=${{ github.ref_name }} setup/build_installer.sh
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ansible-automation-dashboard-containerized-setup.tar.gz
+          path: setup/bundle/ansible-automation-dashboard-containerized-setup.tar.gz
           retention-days: 31

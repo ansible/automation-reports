@@ -67,7 +67,13 @@ dashboard_pg_host=TODO
 dashboard_pg_username=aapdashboard
 dashboard_pg_password=TODO
 dashboard_pg_database=aapdashboard
+
+bundle_install=false
 #
-bundle_install=true
+# Relevant if bundle_install=false
+# Set container_image_update to True to fetch most recent container images from registry.
+# container_image_update=True
+#
+# Relevant if bundle_install=true
 # <full path to the bundle directory>
 bundle_dir='{{ lookup("ansible.builtin.env", "PWD") }}/bundle'
