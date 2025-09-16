@@ -20,7 +20,13 @@ The application uses `dispatcherd` (replacing the previous `dramatiq` implementa
 
 ### Running locally
 
-## Backend
+The instruction assume commands will be executed on developers laptop.
+The python backend will be accessible on http://localhost:8000.
+The website frontend will be accessible on http://localhost:9000.
+
+If python backend or website frontend run on diffrent URL, instructions need to be adjusted.
+
+#### Backend
 
 ```bash
 python3.12 -m venv .venv
@@ -34,6 +40,14 @@ You might need to install required development libraries
 ```bash
 # Fedora
 sudo dnf install python3.12-devel libpq-devel
+```
+
+Create `local_settings.py` file.
+Review file, if needed adjust the content.
+
+```bash
+cp -i src/backend/django_config/local_settings.example.py src/backend/django_config/local_settings.py
+nano src/backend/django_config/local_settings.py
 ```
 
 #### Migrations and superuser
@@ -54,6 +68,11 @@ python manage.py createsuperuser
 
 We need to create OAuth2 application and access token for integration with AAP.
 Follow [setup/README.md](setup/README.md#sso-authentication), section "SSO authentication".
+The AAP OAuth2 application requires a redirect URL.
+
+The redirect URL for AAP OAuth2 application needs to point to URL where you Automation Dashboard frontend is deployed.
+In this development setup we run frontend on port 9000.
+The redirect URL is then http://localhost:9000/auth-callback.
 
 File `clusters.yaml` needs to contain the access token.
 
@@ -95,13 +114,6 @@ python manage.py syncdata
 ### Run the Task Dispatcher
 
 The dispatcher processes all background tasks including data syncs and parsing:
-
-Automation Dashboard admininstrator is required to setup a scheduled task.
-Open https://HOST:8447/admin/scheduler/syncschedule/ and click "Add syck schedule":
-- name: `5 minutes`
-- enabled: true
-- rrule: `DTSTART;TZID=Europe/Ljubljana:20250630T070000 FREQ=MINUTELY;INTERVAL=5`
-- cluster: select your cluster
 
 ```bash
 # Start the dispatcher service
@@ -145,6 +157,10 @@ npm run start:dev
 npx playwright install chromium
 npx playwright test --headed
 ```
+
+If only blank page is visible at URL http://localhost:9000/, check browser console for errors.
+Error `Error: Missing API url` means VITE_API_URL is not set.
+Fix this by loading `.env` file content - `set -o allexport; source .env; set +o allexport`).
 
 ## Task ManagerPerformance Tuning
 
