@@ -65,7 +65,7 @@ nano src/backend/django_config/local_settings.py
 
 ```bash
 cp -i .env.example .env
-set -o allexport; source .env; set +o allexport;
+source .env
 (cd compose; docker compose --project-directory .. -f compose.yml up --build db)
 
 cd src/backend
@@ -126,7 +126,7 @@ python manage.py run_dispatcher --cancel <task_uuid>
 ### Tests
 
 ```bash
-# set -o allexport; source .env; set +o allexport;
+# source .env
 
 cd src/backend
 cat django_config/local_settings.py  # review content
