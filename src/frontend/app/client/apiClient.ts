@@ -3,7 +3,7 @@ import axios from 'axios';
 let apiUrl = import.meta.env.VITE_API_URL;
 
 if (!apiUrl) {
-  throw new Error('Missing API url');
+  throw new Error('Missing API url. Please set the VITE_API_URL environment variable.');
 }
 
 apiUrl = apiUrl.replace(/\/$|$/, '/');
