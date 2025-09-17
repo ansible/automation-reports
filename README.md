@@ -20,11 +20,21 @@ The application uses `dispatcherd` (replacing the previous `dramatiq` implementa
 
 ### Running locally
 
-The instruction assume commands will be executed on developers laptop.
+The instructions assume commands will be executed on developers laptop.
 The python backend will be accessible on http://localhost:8000.
 The website frontend will be accessible on http://localhost:9000.
 
-If python backend or website frontend run on diffrent URL, instructions need to be adjusted.
+If python backend or website frontend runs on a different URL, instructions need to be adjusted.
+
+#### Prerequisites - AAP OAuth2 application and token
+
+We need to create OAuth2 application and access token for integration with AAP.
+Follow [setup/README.md](setup/README.md#sso-authentication), section "SSO authentication".
+The AAP OAuth2 application requires a redirect URL.
+
+The redirect URL for the AAP OAuth2 application needs to point to URL where you Automation Dashboard frontend is accessible.
+In this development setup we run frontend on localhost, on port 9000.
+Thus the redirect URL is http://localhost:9000/auth-callback.
 
 #### Backend
 
@@ -43,7 +53,8 @@ sudo dnf install python3.12-devel libpq-devel
 ```
 
 Create `local_settings.py` file.
-Review file, if needed adjust the content.
+Review file. The content needs to be adjusted.
+In particular, the `AAP_AUTH_PROVIDER` variable needs to be populated.
 
 ```bash
 cp -i src/backend/django_config/local_settings.example.py src/backend/django_config/local_settings.py
@@ -66,31 +77,12 @@ python manage.py createsuperuser
 
 #### Set up instances
 
-We need to create OAuth2 application and access token for integration with AAP.
-Follow [setup/README.md](setup/README.md#sso-authentication), section "SSO authentication".
-The AAP OAuth2 application requires a redirect URL.
-
-The redirect URL for AAP OAuth2 application needs to point to URL where you Automation Dashboard frontend is deployed.
-In this development setup we run frontend on port 9000.
-The redirect URL is then http://localhost:9000/auth-callback.
-
-File `clusters.yaml` needs to contain the access token.
+File `clusters.yaml` needs to contain the AAP access token.
 
 ```bash
 cp -i clusters.example.yaml clusters.yaml
 nano clusters.yaml
 python manage.py setclusters <path to yaml file>
-```
-
-#### Setup SSO login with AAP
-
-Edit file `local_settings.py`.
-It needs to contain OAuth2 application `client_id` and `client_secret`.
-
-```bash
-cd /src/backend/django_config/
-cp -i local_settings.example.py local_settings.py
-nano local_settings.py
 ```
 
 ### Run
