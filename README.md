@@ -20,7 +20,23 @@ The application uses `dispatcherd` (replacing the previous `dramatiq` implementa
 
 ### Running locally
 
-## Backend
+The instructions assume commands will be executed on developers laptop.
+The python backend will be accessible on http://localhost:8000.
+The website frontend will be accessible on http://localhost:9000.
+
+If python backend or website frontend runs on a different URL, instructions need to be adjusted.
+
+#### Prerequisites - AAP OAuth2 application and token
+
+We need to create OAuth2 application and access token for integration with AAP.
+Follow [setup/README.md](setup/README.md#sso-authentication), section "SSO authentication".
+The AAP OAuth2 application requires a redirect URL.
+
+The redirect URL for the AAP OAuth2 application needs to point to URL where you Automation Dashboard frontend is accessible.
+In this development setup we run frontend on localhost, on port 9000.
+Thus the redirect URL is http://localhost:9000/auth-callback.
+
+#### Backend
 
 ```bash
 python3.12 -m venv .venv
@@ -36,11 +52,20 @@ You might need to install required development libraries
 sudo dnf install python3.12-devel libpq-devel
 ```
 
+Create `local_settings.py` file.
+Review file. The content needs to be adjusted.
+In particular, the `AAP_AUTH_PROVIDER` variable needs to be populated.
+
+```bash
+cp -i src/backend/django_config/local_settings.example.py src/backend/django_config/local_settings.py
+nano src/backend/django_config/local_settings.py
+```
+
 #### Migrations and superuser
 
 ```bash
 cp -i .env.example .env
-set -o allexport; source .env; set +o allexport;
+source .env
 (cd compose; docker compose --project-directory .. -f compose.yml up --build db)
 
 cd src/backend
@@ -52,26 +77,12 @@ python manage.py createsuperuser
 
 #### Set up instances
 
-We need to create OAuth2 application and access token for integration with AAP.
-Follow [setup/README.md](setup/README.md#sso-authentication), section "SSO authentication".
-
-File `clusters.yaml` needs to contain the access token.
+File `clusters.yaml` needs to contain the AAP access token.
 
 ```bash
 cp -i clusters.example.yaml clusters.yaml
 nano clusters.yaml
 python manage.py setclusters <path to yaml file>
-```
-
-#### Setup SSO login with AAP
-
-Edit file `local_settings.py`.
-It needs to contain OAuth2 application `client_id` and `client_secret`.
-
-```bash
-cd /src/backend/django_config/
-cp -i local_settings.example.py local_settings.py
-nano local_settings.py
 ```
 
 ### Run
@@ -96,13 +107,6 @@ python manage.py syncdata
 
 The dispatcher processes all background tasks including data syncs and parsing:
 
-Automation Dashboard admininstrator is required to setup a scheduled task.
-Open https://HOST:8447/admin/scheduler/syncschedule/ and click "Add syck schedule":
-- name: `5 minutes`
-- enabled: true
-- rrule: `DTSTART;TZID=Europe/Ljubljana:20250630T070000 FREQ=MINUTELY;INTERVAL=5`
-- cluster: select your cluster
-
 ```bash
 # Start the dispatcher service
 python manage.py run_dispatcher
@@ -122,7 +126,7 @@ python manage.py run_dispatcher --cancel <task_uuid>
 ### Tests
 
 ```bash
-# set -o allexport; source .env; set +o allexport;
+# source .env
 
 cd src/backend
 cat django_config/local_settings.py  # review content
@@ -145,6 +149,10 @@ npm run start:dev
 npx playwright install chromium
 npx playwright test --headed
 ```
+
+If only blank page is visible at URL http://localhost:9000/, check browser console for errors.
+Error `Error: Missing API url` means VITE_API_URL is not set.
+Fix this by loading `.env` file content - `set -o allexport; source .env; set +o allexport`).
 
 ## Task ManagerPerformance Tuning
 
