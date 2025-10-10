@@ -186,9 +186,9 @@ AAP_AUTH_PROVIDER = {
     # For AAP v2.4
     "url": "aap24.example.com:8443/api",
     "user_data_endpoint": "/v2/me/",
-    # For AAP v2.5
-    # "url": "aap25.example.com",  # Change to your AAP VM IP for AAP v2.5
-    # "user_data_endpoint": "/api/v2/me/",  # Change to /api/gateway/v1/me/ for AAP v2.5
+    # For AAP v2.5, v2.6
+    # "url": "aap25.example.com",
+    # "user_data_endpoint": "/api/gateway/v1/me/",
     #
     "check_ssl": False,
     "client_id": "TODO",  # Your OAuth client ID
