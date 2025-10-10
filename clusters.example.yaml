@@ -2,7 +2,7 @@
 clusters:
   - protocol: https
     address: 10.44.17.179
-    port: 8443
+    port: 443
     access_token: sampleToken
     verify_ssl: false
     sync_schedules:
@@ -12,7 +12,7 @@ clusters:
 
   - protocol: https
     address: 10.48.17.178
-    port: 8443
+    port: 443
     access_token: sampleToken1
     verify_ssl: false
     sync_schedules:
