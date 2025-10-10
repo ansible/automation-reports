@@ -123,7 +123,7 @@ nano clusters.yaml
 **Edit the following variables in `clusters.yaml`:**
 
 - `address`: Change to your AAP VM IP address (e.g., `10.44.17.179`)
-- `port`: Change from `8443` to `443` if needed for your AAP setup
+- `port`: Change value if your AAP API is accessible on a different TCP port.
 - `access_token`: Replace `sampleToken` with your actual AAP access token
 - Remove any unused cluster instances from the file
 
