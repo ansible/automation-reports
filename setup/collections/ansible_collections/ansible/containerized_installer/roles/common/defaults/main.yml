@@ -6,7 +6,7 @@ registry_auth: true
 registry_url: registry.redhat.io
 registry_tls_verify: true
 registry_ns_aap: ansible-automation-platform-24
-registry_ns_aap_automation_dashboard: ansible-automation-platform-tech-preview
+registry_ns_aap_automation_dashboard: ansible-automation-platform
 registry_ns_rhel: rhel8
 
 ### database
