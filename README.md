@@ -268,6 +268,25 @@ docker exec -it aapdashboard-db-1 psql -c 'ALTER USER root CREATEDB;'
 pytest --cov=backend
 ```
 
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality and automatically sync requirements files:
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run hooks on all files
+pre-commit run --all-files
+
+# Run hooks manually
+pre-commit run
+```
+
+The pre-commit configuration automatically:
+- Syncs requirements files when `requirements.txt` changes
+- Ensures requirements files are always up-to-date before commits
+
 ## Frontend
 
 **Prerequisites**: Ensure the Django backend is running before starting the frontend (see backend setup above).

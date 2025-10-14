@@ -1,0 +1,9 @@
+repos:
+  # Sync requirements files when requirements.txt changes
+  - repo: local
+    hooks:
+      - id: sync-requirements
+        name: Sync requirements files
+        entry: bash -c './sync-requirements.sh && git add requirements-pinned.txt requirements-build.txt'
+        language: system
+        files: ^requirements\.txt$
