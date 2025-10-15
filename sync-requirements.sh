@@ -9,6 +9,6 @@ echo "Syncing requirements files from requirements-pinned.txt..."
 
 # Generate build requirements from pinned requirements
 echo "Generating requirements-build.txt..."
-PIP_COMPILE_PYTHON=python3.12 pip-compile --generate-hashes --output-file=requirements-build.txt requirements-pinned.txt
+pip-compile --no-header --generate-hashes --output-file=requirements-build.txt requirements-pinned.txt
 
 echo "Requirements files synced successfully!"
