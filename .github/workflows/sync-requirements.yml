@@ -4,10 +4,10 @@ on:
     push:
         branches: [main]
         paths:
-            - "requirements.txt"
+            - "requirements-pinned.txt"
     pull_request:
         paths:
-            - "requirements.txt"
+            - "requirements-pinned.txt"
 
 permissions:
   contents: write
@@ -41,12 +41,12 @@ jobs:
             - name: "Check for changes"
               id: changes
               run: |
-                  if ! git diff --quiet requirements-pinned.txt requirements-build.txt; then
+                  if ! git diff --quiet requirements-build.txt; then
                     echo "changed=true" >> $GITHUB_OUTPUT
-                    echo "Requirements files have been updated"
+                    echo "Requirements-build.txt has been updated"
                   else
                     echo "changed=false" >> $GITHUB_OUTPUT
-                    echo "Requirements files are up to date"
+                    echo "Requirements-build.txt is up to date"
                   fi
 
             - name: "Commit and push changes"
@@ -54,8 +54,8 @@ jobs:
               run: |
                   git config --local user.email "action@github.com"
                   git config --local user.name "GitHub Action"
-                  git add requirements-pinned.txt requirements-build.txt
-                  git commit -m "Auto-sync requirements files from requirements.txt"
+                  git add requirements-build.txt
+                  git commit -m "Auto-sync requirements-build.txt from requirements-pinned.txt"
                   git push
 
             - name: "Add PR comment for changes"
@@ -67,12 +67,12 @@ jobs:
                         issue_number: context.issue.number,
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        body: '**Requirements files need to be updated**\n\nThe `requirements.txt` file has changed but the requirements files are not in sync. Please run `./sync-requirements.sh` locally and commit the updated requirements files.'
+                        body: '**Requirements-build.txt needs to be updated**\n\nThe `requirements-pinned.txt` file has changed but `requirements-build.txt` is not in sync. Please run `./sync-requirements.sh` locally and commit the updated requirements-build.txt file.'
                       })
 
             - name: "Fail if requirements out of sync in PR"
               if: steps.changes.outputs.changed == 'true' && github.event_name == 'pull_request'
               run: |
-                  echo "Requirements files are out of sync. Please run ./sync-requirements.sh locally and commit the changes."
-                  git diff requirements-pinned.txt requirements-build.txt
+                  echo "Requirements-build.txt is out of sync. Please run ./sync-requirements.sh locally and commit the changes."
+                  git diff requirements-build.txt
                   exit 1

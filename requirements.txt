@@ -42,4 +42,3 @@ channels_redis~=4.2.1
 
 redis~=6.2.0
 channels~=4.2.2
-cryptography~=45.0.4

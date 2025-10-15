@@ -4,36 +4,19 @@ This project uses `pip` and `pip-tools` for dependency management with automated
 
 ## Working with Dependencies
 
-### Adding/Updating Dependencies
-
-To add or update dependencies, edit the `requirements.txt` file directly:
-
-```bash
-# Edit requirements.txt to add/update dependencies
-vim requirements.txt
-
-# Sync the pinned requirements files
-./sync-requirements.sh
-# or
-make sync-requirements
-```
-
 ### Installing Dependencies
 
 ```bash
-# Install production dependencies
-pip install -r requirements-pinned.txt
+# Install from source (for development)
+pip install -r requirements.txt
 
 # Install build dependencies
 pip install -r requirements-build.txt
-
-# Install from source (for development)
-pip install -r requirements.txt
 ```
 
 ## Syncing Requirements Files
 
-The `requirements-pinned.txt` and `requirements-build.txt` files are automatically generated from `requirements.txt`. To update them:
+The `requirements-build.txt` file is automatically generated from `requirements-pinned.txt`. To update it:
 
 ### Manual Sync
 
@@ -55,21 +38,15 @@ make requirements-check
 
 The requirements files are automatically synced via:
 
-- **Pre-commit hooks**: Automatically sync when `requirements.txt` changes
+- **Pre-commit hooks**: Automatically sync when `requirements-pinned.txt` changes
 - **GitHub Actions**: 
-  - On push to `main`: Files are automatically updated and committed
-  - On pull requests: The workflow checks if files are in sync and fails if they're not
+  - On push to `main`: `requirements-build.txt` is automatically updated and committed
+  - On pull requests: The workflow checks if `requirements-build.txt` is in sync and fails if it's not
 
-If you see a PR check failure, run `./sync-requirements.sh` locally and commit the updated files.
+If you see a PR check failure, run `./sync-requirements.sh` locally and commit the updated `requirements-build.txt` file.
 
 ## File Contents
 
-- `requirements.txt`: Contains the dependencies
-- `requirements-pinned.txt`: Contains exact version pins and security hashes for all dependencies
-- `requirements-build.txt`: Contains build dependencies compiled from requirements-pinned.txt
-
-All generated files include:
-- Exact version pins
-- Security hashes for verification
-- Comments showing dependency relationships
-- Auto-generated headers indicating their source
+- `requirements.txt`: Contains the base dependencies (for reference)
+- `requirements-pinned.txt`: Contains exact version pins
+- `requirements-build.txt`: Contains build dependencies compiled from requirements-pinned.txt (auto-generated)

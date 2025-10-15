@@ -6,20 +6,20 @@ docker-compose:
 
 # Requirements management
 sync-requirements:
-	@echo "Syncing requirements files from requirements.txt..."
+	@echo "Syncing requirements-build.txt from requirements-pinned.txt..."
 	./sync-requirements.sh
 
 requirements: sync-requirements
 
 requirements-check:
-	@echo "Checking if requirements files are in sync..."
+	@echo "Checking if requirements-build.txt is in sync..."
 	@./sync-requirements.sh
-	@if ! git diff --quiet requirements-pinned.txt requirements-build.txt; then \
-		echo "Requirements files are out of sync. Run 'make sync-requirements' to update them."; \
-		git diff requirements-pinned.txt requirements-build.txt; \
+	@if ! git diff --quiet requirements-build.txt; then \
+		echo "Requirements-build.txt is out of sync. Run 'make sync-requirements' to update it."; \
+		git diff requirements-build.txt; \
 		exit 1; \
 	else \
-		echo "Requirements files are in sync."; \
+		echo "Requirements-build.txt is in sync."; \
 	fi
 
 .PHONY: sync-requirements requirements requirements-check

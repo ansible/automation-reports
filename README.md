@@ -284,7 +284,7 @@ pre-commit run
 ```
 
 The pre-commit configuration automatically:
-- Syncs requirements files when `requirements.txt` changes
+- Syncs requirements files when `requirements-pinned.txt` changes
 - Ensures requirements files are always up-to-date before commits
 
 ## Frontend
