@@ -49,4 +49,4 @@ If you see a PR check failure, run `./sync-requirements.sh` locally and commit t
 
 - `requirements.txt`: Contains the base dependencies (for reference)
 - `requirements-pinned.txt`: Contains exact version pins
-- `requirements-build.txt`: Contains build dependencies compiled from requirements-pinned.txt (auto-generated)
+- `requirements-build.txt`: Contains build dependencies for downstream hermetic builds, compiled from requirements-pinned.txt (auto-generated)
