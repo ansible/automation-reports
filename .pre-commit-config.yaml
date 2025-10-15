@@ -7,6 +7,6 @@ repos:
     hooks:
       - id: sync-requirements
         name: Sync requirements files
-        entry: bash -c './sync-requirements.sh && git add requirements-build.txt'
+        entry: bash -c 'make sync-requirements && git add requirements-build.txt'
         language: system
         files: ^requirements-pinned\.txt$
