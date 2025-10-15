@@ -268,6 +268,19 @@ docker exec -it aapdashboard-db-1 psql -c 'ALTER USER root CREATEDB;'
 pytest --cov=backend
 ```
 
+### Requirements Management
+
+This project uses automated requirements management. See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed information.
+
+**Quick commands:**
+```bash
+# Sync requirements files (creates venv if needed)
+make sync-requirements
+
+# Check if requirements are in sync
+make requirements-check
+```
+
 ### Pre-commit Hooks
 
 This project uses pre-commit hooks to ensure code quality and automatically sync requirements files:

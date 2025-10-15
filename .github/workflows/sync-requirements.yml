@@ -67,12 +67,12 @@ jobs:
                         issue_number: context.issue.number,
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        body: '**Requirements-build.txt needs to be updated**\n\nThe `requirements-pinned.txt` file has changed but `requirements-build.txt` is not in sync. Please run `./sync-requirements.sh` locally and commit the updated requirements-build.txt file.'
+                        body: '**Requirements-build.txt needs to be updated**\n\nThe `requirements-pinned.txt` file has changed but `requirements-build.txt` is not in sync. Please run `make sync-requirements` locally and commit the updated requirements-build.txt file.'
                       })
 
             - name: "Fail if requirements out of sync in PR"
               if: steps.changes.outputs.changed == 'true' && github.event_name == 'pull_request'
               run: |
-                  echo "Requirements-build.txt is out of sync. Please run ./sync-requirements.sh locally and commit the changes."
+                  echo "Requirements-build.txt is out of sync. Please run 'make sync-requirements' locally and commit the changes."
                   git diff requirements-build.txt
                   exit 1
