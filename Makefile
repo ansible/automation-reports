@@ -7,6 +7,12 @@ docker-compose:
 # Requirements management
 sync-requirements:
 	@echo "Syncing requirements-build.txt from requirements-pinned.txt..."
+	@if ! command -v python3.12 >/dev/null 2>&1; then \
+		echo "Error: Python 3.12 is not installed or not in PATH"; \
+		echo "Please install Python 3.12 or ensure it's available in your PATH"; \
+		echo "You can check available Python versions with: python3 --version"; \
+		exit 1; \
+	fi
 	@if [ ! -f .venv/bin/activate ]; then \
 		echo "Virtual environment not found. Creating one with Python 3.12..."; \
 		python3.12 -m venv .venv; \
