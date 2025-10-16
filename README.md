@@ -268,6 +268,38 @@ docker exec -it aapdashboard-db-1 psql -c 'ALTER USER root CREATEDB;'
 pytest --cov=backend
 ```
 
+### Requirements Management
+
+This project uses automated requirements management. See [REQUIREMENTS.md](REQUIREMENTS.md) for detailed information.
+
+**Quick commands:**
+```bash
+# Sync requirements files (creates venv if needed)
+make sync-requirements
+
+# Check if requirements are in sync
+make requirements-check
+```
+
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality and automatically sync requirements files:
+
+```bash
+# Install pre-commit hooks
+pre-commit install
+
+# Run hooks on all files
+pre-commit run --all-files
+
+# Run hooks manually
+pre-commit run
+```
+
+The pre-commit configuration automatically:
+- Syncs requirements files when `requirements-pinned.txt` changes
+- Ensures requirements files are always up-to-date before commits
+
 ## Frontend
 
 **Prerequisites**: Ensure the Django backend is running before starting the frontend (see backend setup above).

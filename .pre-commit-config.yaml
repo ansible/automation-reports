@@ -1,0 +1,12 @@
+default_language_version:
+  python: python3.12
+
+repos:
+  # Sync requirements files when requirements-pinned.txt changes
+  - repo: local
+    hooks:
+      - id: sync-requirements
+        name: Sync requirements files
+        entry: bash -c 'make sync-requirements && git add requirements-build.txt'
+        language: system
+        files: ^requirements-pinned\.txt$
