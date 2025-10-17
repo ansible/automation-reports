@@ -31,6 +31,16 @@ function save_container_image() {
   /bin/rm -f bundle/images/*.tar  # keep only .tar.gz files
 }
 
+function adjust_inventory_example() {
+  # The inventory.example for bundled installer should have "bundle_install=false" by default.
+  if [ "$AAP_DASHBOARD_BUNDLED_INSTALLER" == "1" ]
+  then
+    sed -i 's/^bundle_install=.*/bundle_install=true/' inventory.example
+  else
+    sed -i 's/^bundle_install=.*/bundle_install=false/' inventory.example
+  fi
+}
+
 # ===================================================================
 # main
 cat <<EOF
@@ -53,6 +63,7 @@ else
   FILES_ADDITIONAL=""
   /bin/rm -f bundle/images/*
 fi
+adjust_inventory_example
 
 cat <<EOF >BUILD_INFO.txt
 build date: $(date --iso-8601=seconds)
@@ -72,6 +83,7 @@ FILES+=" clusters.example.yaml "
 FILES+=" BUILD_INFO.txt "
 FILES+="$FILES_ADDITIONAL"
 tar -czf "$BUNDLE_FILE" --transform 's,^,ansible-automation-dashboard-containerized-setup/,'  $FILES
+git checkout inventory.example  # revert changes
 
 echo "Finished building AAP automation-dashboard installer"
 echo "Installer is at setup/$BUNDLE_FILE"
