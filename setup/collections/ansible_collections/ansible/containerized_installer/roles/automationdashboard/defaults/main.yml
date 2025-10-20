@@ -41,6 +41,7 @@ nginx_http_port: 8083
 nginx_https_port: 8447
 nginx_client_max_body_size: 5m
 nginx_user_headers: []
+nginx_dashboard_admin_exposed: false
 
 ### receptor
 # receptor_conf_dir: "{{ aap_volumes_dir }}/receptor/etc"
