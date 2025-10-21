@@ -129,7 +129,7 @@ class ExternalJobSchema(FrozenModel):
     launched_by: LaunchedBy
     summary_fields: SummaryFields
     host_summaries: List[HostSummarySchema]
-    started: datetime
+    started: datetime | None = None
     finished: datetime | None = None
     elapsed: decimal.Decimal | None = None
     failed: bool
