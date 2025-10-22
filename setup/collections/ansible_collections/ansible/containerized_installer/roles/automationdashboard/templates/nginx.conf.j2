@@ -95,7 +95,7 @@ http {
         # Protect against MIME content sniffing https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
         add_header X-Content-Type-Options nosniff;
 
-        location /favicon.ico { alias /opt/app-root/src/images/favicon.ico; }
+        location /favicon.ico { alias /opt/app-root/src/favicon.ico; }
 
         # location /websocket {
         #     # Pass request to the upstream alias
