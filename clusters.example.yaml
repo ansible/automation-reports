@@ -4,6 +4,9 @@ clusters:
     address: 10.44.17.179
     port: 443
     access_token: sampleToken
+    refresh_token: sampleRefreshToken
+    client_id: sampleClientId
+    client_secret: sampleClientSecret
     verify_ssl: false
     sync_schedules:
       - name: Every 5 minutes sync
@@ -14,6 +17,9 @@ clusters:
     address: 10.48.17.178
     port: 443
     access_token: sampleToken1
+    refresh_token: sampleRefreshToken1
+    client_id: sampleClientId1
+    client_secret: sampleClientSecret1
     verify_ssl: false
     sync_schedules:
       - name: Every 3 hours sync

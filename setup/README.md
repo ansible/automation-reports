@@ -86,15 +86,15 @@ First create OAuth2 application at https://AAP_CONTROLLER_FQDN:8443/#/applicatio
 - Client type: Confidential
 
 Store the `client_id` and `client_secret`.
-The values are input into `inventory` file.
+The values are input into `inventory` and `clusters.yaml` files.
 
 Next create a token at https://AAP_CONTROLLER_FQDN:8443/#/users/<id>/tokens:
 
 - OAuth application: automation-dashboard-sso
 - Scope: read
 
-Store access token value.
-The access token is used in `clusters.yaml`.
+Store access token and refresh token values.
+They are used in `clusters.yaml`.
 
 #### Run installer
 
