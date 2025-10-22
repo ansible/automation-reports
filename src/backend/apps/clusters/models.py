@@ -11,13 +11,12 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Min
 
 from backend.apps.clusters.schemas import DateRangeSchema, RelatedLinks
 
 manual_time = settings.DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES
 automation_time = settings.DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES
-
 
 logger = logging.getLogger('automation_dashboard.models')
 
@@ -319,8 +318,9 @@ class BaseModel(CreatUpdateModel):
 
     class Meta:
         abstract = True
-        index_together = (
+        unique_together = (
             ('cluster', 'external_id'),
+            ('cluster', 'name'),
         )
 
     @classmethod
@@ -336,40 +336,37 @@ class BaseModel(CreatUpdateModel):
 
         logger.info(f'Creating or updating {cls.__name__} for cluster {cluster} with external id: {external_id}')
 
-        model = None
-        name = kwargs.get('name', None)
-
-        # Try to find an existing model by cluster and external_id
+        name = kwargs.pop('name', None)
+        created = False
         if external_id > 0:
-            model = cls.objects.filter(cluster=cluster, external_id=external_id).first()
-
-        # If not found, try to find by cluster and name
-        if model is None and name is not None:
-            model = cls.objects.filter(cluster=cluster, name=name).first()
-
-        if model is None:
-            # If still not found, create a new instance
-            logger.info(f'Creating {cls.__name__} for cluster {cluster} with external id: {external_id}')
-            model = cls.objects.create(cluster=cluster, external_id=external_id, **kwargs)
+            try:
+                model = cls.objects.get(cluster=cluster, external_id=external_id)
+                for key, value in kwargs.items():
+                    setattr(model, key, value)
+                model.name = name
+                model.save()
+            except cls.DoesNotExist:
+                model, created = cls.objects.update_or_create(
+                    name = name,
+                    cluster = cluster,
+                    defaults={**kwargs, 'external_id': external_id},
+                )
         else:
-            # If found, update the instance if necessary
-            update_fields = []
-            for attr, new_value in kwargs.items():
-                value = getattr(model, attr)
-                if value != new_value:
-                    setattr(model, attr, new_value)
-                    update_fields.append(attr)
-            if 0 < external_id != model.external_id:
-                model.external_id = external_id
-                update_fields.append("external_id")
-            if len(update_fields) > 0:
-                logger.info(f'Updating {cls.__name__} for cluster {cluster} with external id: {external_id}')
-                if getattr(model, 'internal_modified', None) is not None:
-                    update_fields.append("internal_modified")
-                model.save(update_fields=update_fields)
-            else:
-                logger.info(f'No need to update {cls.__name__} for cluster {cluster} with external id: {external_id}')
-        # Return the created or updated instance
+            _min = cls.objects.all().aggregate(Min('external_id'))
+            _external_id = _min['external_id__min']
+            _external_id = _external_id - 1 if _external_id is not None and _external_id <= 0 else -1
+
+            model, created = cls.objects.get_or_create(
+                name=name,
+                cluster=cluster,
+                defaults={**kwargs, 'external_id': _external_id},
+            )
+
+        if created:
+            logger.info(f'Created {cls.__name__} for cluster {cluster} with external id: {external_id}')
+        else:
+            logger.info(f'Updated {cls.__name__} for cluster {cluster} with external id: {external_id}')
+
         return model
 
 
@@ -379,14 +376,17 @@ class NameDescriptionModel(BaseModel):
 
     class Meta:
         abstract = True
+        unique_together = (
+            ('cluster', 'external_id'),
+            ('cluster', 'name'),
+        )
 
     def __str__(self):
         return self.name
 
 
 class Organization(NameDescriptionModel):
-    class Meta:
-        abstract = False
+    pass
 
 
 class JobTemplate(NameDescriptionModel):
@@ -396,24 +396,53 @@ class JobTemplate(NameDescriptionModel):
 
     class Meta:
         abstract = False
+        unique_together = (
+            ('cluster', 'external_id', 'organization'),
+            ('cluster', 'name', 'organization'),
+        )
+
+    def __str__(self):
+        return f"{self.organization}:{self.name}"
 
 
 class AAPUser(BaseModel):
     name = models.CharField(max_length=255)
     type = models.CharField(max_length=20)
 
+    class Meta:
+        abstract = False
+        unique_together = (
+            ('cluster', 'external_id', 'type'),
+            ('cluster', 'name', 'type'),
+        )
+
     def __str__(self):
         return f"{self.type}:{self.name}"
 
+    @classmethod
+    def create_or_update(cls, cluster: Cluster, external_id: int, **kwargs):
+        user_type = kwargs.pop('type', None)
+        model, created = AAPUser.objects.update_or_create(
+            type=user_type,
+            cluster=cluster,
+            external_id=external_id,
+            defaults={**kwargs, 'external_id': external_id},
+        )
+
+        if created:
+            logger.info(f'Created {cls.__name__} for cluster {cluster} with external id: {external_id}')
+        else:
+            logger.info(f'Updated {cls.__name__} for cluster {cluster} with external id: {external_id}')
+
+        return model
+
 
 class Inventory(NameDescriptionModel):
-    class Meta:
-        abstract = False
+   pass
 
 
 class ExecutionEnvironment(NameDescriptionModel):
-    class Meta:
-        abstract = False
+    pass
 
 
 class InstanceGroup(BaseModel):
@@ -432,15 +461,11 @@ class Label(BaseModel):
 
 
 class Host(NameDescriptionModel):
-    class Meta:
-        abstract = False
+    pass
 
 
 class Project(NameDescriptionModel):
     scm_type = models.CharField(max_length=50, null=True, blank=True)
-
-    class Meta:
-        abstract = False
 
 
 class JobFilterMethods(object):
@@ -512,7 +537,7 @@ class Job(BaseModel):
     job_template = models.ForeignKey(JobTemplate, on_delete=models.CASCADE, null=True, related_name='jobs')
     launched_by = models.ForeignKey(AAPUser, on_delete=models.CASCADE, null=True, related_name='jobs')
     status = models.CharField(choices=JobStatusChoices.choices, default=JobStatusChoices.SUCCESSFUL, max_length=25)
-    started = models.DateTimeField()
+    started = models.DateTimeField(null=True, blank=True)
     finished = models.DateTimeField(null=True, blank=True)
     elapsed = models.DecimalField(max_digits=15, decimal_places=3, default=decimal.Decimal(0))
     failed = models.BooleanField(default=False)
