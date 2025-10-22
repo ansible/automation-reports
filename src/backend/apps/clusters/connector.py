@@ -111,7 +111,7 @@ class ApiConnector:
             logger.error(f'Token refresh POST request failed with exception {e}')
             return False
         if not response.ok:
-            logger.error(f'Token refresh POST request failed with status {response.status_code} text={response.json()}')
+            logger.error(f'Token refresh POST request failed with status {response.status_code} url={url}, text={json.dumps(response.text)}')
             return False
         logger.info(f'Token refresh POST request succedded with status {response.status_code}')
         resp = response.json()
