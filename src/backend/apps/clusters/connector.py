@@ -7,6 +7,7 @@ from django.conf import settings
 import requests
 from django.db import transaction
 import urllib3
+import json
 
 from backend.apps.clusters.encryption import decrypt_value, encrypt_value
 from backend.apps.clusters.models import (
@@ -85,7 +86,7 @@ class ApiConnector:
         }
 
     def _reauth(self, timeout=None):
-        url = f'{self.cluster.base_url}/api/o/token/'  # TODO AAP version
+        url = f'{self.cluster.base_url}{self.cluster.oauth_token_url}'
         refresh_token = decrypt_value(self.cluster.refresh_token)
         client_id = self.cluster.client_id
         client_secret = decrypt_value(self.cluster.client_secret)
@@ -270,38 +271,47 @@ class ApiConnector:
     def ping(self, ping_url):
         logger.info(f'Pinging api {self.cluster.base_url}{ping_url}')
         url = f'{self.cluster.base_url}{ping_url}'
-        return self.execute_get_one(url=url, timeout=5)
+        # Do same as execute_get_one(), but without authentication.
+        # ping is used to check version before token refresh, so we might not have a valid access token yet.
+        # ping endpoint does not required authentication, but (AAP 2.6 at least):
+        #   - request is rejected if invalid HTTP basic auth is provided.
+        #   - request is accepted if invalid 'Authorization: Bearer ...' is provided.
+        timeout = 5
+        response = requests.get(
+            url=url,
+            verify=self.cluster.verify_ssl,
+            timeout=timeout,
+            headers=self.headers)
+        if response is None or not response.ok:
+            return None
+        response = response.json()
+        return response
 
-    @property
-    def is_aap25_instance(self):
-        logger.info(f'Checking if is AAP 2.5 at {self.cluster.base_url}')
-        response = self.ping("/api/gateway/v1/ping/")
-        return True if response is not None else False
+    def detect_aap_version(self):
+        logger.info(f'Checking if is AAP 2.5 ... 2.6 at {self.cluster.base_url}')
+        response25 = self.ping("/api/gateway/v1/ping/")
+        if response25:
+            if response25["version"] == "2.6":
+                return ClusterVersionChoices.AAP26
+            elif response25["version"] == "2.5":
+                return ClusterVersionChoices.AAP25
+            else:
+                raise Exception(f'Not valid version {response25["version"]} for cluster {self.cluster.base_url}.')
 
-    @property
-    def is_aap24_instance(self):
         logger.info(f'Checking if is AAP 2.4 at {self.cluster.base_url}')
-        response = self.ping("/api/v2/ping/")
-        return True if response is not None else False
+        response24 = self.ping("/api/v2/ping/")
+        if response24:
+            return ClusterVersionChoices.AAP24
+
+        raise Exception(f'Not valid version for cluster {self.cluster.base_url}.')
 
     def check_aap_version(self):
-        logger.info(f'Checking AAP version at {self.cluster.base_url}')
-        is_aap25_instance = self.is_aap25_instance
-        if is_aap25_instance:
-            if self.cluster.aap_version != ClusterVersionChoices.AAP25:
-                self.cluster.aap_version = ClusterVersionChoices.AAP25
-                self.cluster.save()
-            logger.info(f'Detected AAP version 2.5 at {self.cluster.base_url}')
-            return True
-
-        is_aap24_instance = self.is_aap24_instance
-        if is_aap24_instance:
-            if self.cluster.aap_version != ClusterVersionChoices.AAP24:
-                self.cluster.aap_version = ClusterVersionChoices.AAP24
-                self.cluster.save()
-            logger.info(f'Detected AAP version 2.4 at {self.cluster.base_url}')
-            return True
-        raise Exception(f'Not valid version for cluster {self.cluster.base_url}.')
+        aap_version = self.detect_aap_version()
+        if self.cluster.aap_version != aap_version:
+            self.cluster.aap_version = aap_version
+            self.cluster.save()
+        logger.info(f'Detected AAP version {aap_version} at {self.cluster.base_url}')
+        return True
 
     def sync_jobs(self):
         for job in self.jobs:
