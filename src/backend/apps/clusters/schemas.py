@@ -20,12 +20,15 @@ class ClusterSettings(FrozenModel):
     address: str
     port: int
     access_token: bytes
+    refresh_token: bytes
+    client_id: str
+    client_secret: bytes
     verify_ssl: bool = True
     sync_schedules: List[SyncSchedule] | None = []
 
 
 class ClusterSchema(ClusterSettings):
-    aap_version: Literal["AAP 2.5", "AAP 2.4"] | None = None
+    aap_version: Literal["AAP 2.6", "AAP 2.5", "AAP 2.4"] | None = None
     api_url: str
     base_url: str
 
