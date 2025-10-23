@@ -28,7 +28,7 @@ class ClusterSettings(FrozenModel):
 
 
 class ClusterSchema(ClusterSettings):
-    aap_version: Literal["AAP 2.5", "AAP 2.4"] | None = None
+    aap_version: Literal["AAP 2.6", "AAP 2.5", "AAP 2.4"] | None = None
     api_url: str
     base_url: str
 
