@@ -1,0 +1,57 @@
+{
+    "count": 100,
+    "next": "http://localhost:8000/api/v1/templates/?page=2&page_size=10",
+    "previous": null,
+    "results": [
+        {
+            "key": 101,
+            "value": "Job template 1",
+            "cluster_id": 2
+        },
+        {
+            "key": 110,
+            "value": "Job template 10",
+            "cluster_id": 2
+        },
+        {
+            "key": 200,
+            "value": "Job template 100",
+            "cluster_id": 2
+        },
+        {
+            "key": 111,
+            "value": "Job template 11",
+            "cluster_id": 2
+        },
+        {
+            "key": 112,
+            "value": "Job template 12",
+            "cluster_id": 2
+        },
+        {
+            "key": 113,
+            "value": "Job template 13",
+            "cluster_id": 2
+        },
+        {
+            "key": 114,
+            "value": "Job template 14",
+            "cluster_id": 2
+        },
+        {
+            "key": 115,
+            "value": "Job template 15",
+            "cluster_id": 2
+        },
+        {
+            "key": 116,
+            "value": "Job template 16",
+            "cluster_id": 2
+        },
+        {
+            "key": 117,
+            "value": "Job template 17",
+            "cluster_id": 2
+        }
+    ]
+}

@@ -9,12 +9,20 @@ import reportDateRangePast6Months from "../fixtures/reportDateRangePast6Months.j
 import reportDetailsDateRangePast6Months from "../fixtures/reportDetailsDateRangePast6Months.json" assert { type: "json"};
 import reportDetails from "../fixtures/reportDetails.json" assert { type: "json"};
 import templateOptions from "../fixtures/templateOptions.json" assert { type: "json"};
+import templates from "../fixtures/templates.json" assert { type: "json"};
+import organizations from "../fixtures/organizations.json" assert { type: "json"};
+import projects from "../fixtures/projects.json" assert { type: "json"};
+import labels from "../fixtures/labels.json" assert { type: "json"};
 
 test.describe("Dashboard", () => {
   test.beforeEach(async ({ page }) => {
     await loginUser(
       page,
       templateOptions,
+      templates,
+      organizations,
+      projects,
+      labels,
       {"count":0,"next":null,"previous":null,"results":[]},
       reportDetails
     );
