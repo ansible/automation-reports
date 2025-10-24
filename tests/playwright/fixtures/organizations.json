@@ -1,0 +1,57 @@
+{
+    "count": 10,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "key": 11,
+            "value": "Organization 1",
+            "cluster_id": 2
+        },
+        {
+            "key": 20,
+            "value": "Organization 10",
+            "cluster_id": 2
+        },
+        {
+            "key": 12,
+            "value": "Organization 2",
+            "cluster_id": 2
+        },
+        {
+            "key": 13,
+            "value": "Organization 3",
+            "cluster_id": 2
+        },
+        {
+            "key": 14,
+            "value": "Organization 4",
+            "cluster_id": 2
+        },
+        {
+            "key": 15,
+            "value": "Organization 5",
+            "cluster_id": 2
+        },
+        {
+            "key": 16,
+            "value": "Organization 6",
+            "cluster_id": 2
+        },
+        {
+            "key": 17,
+            "value": "Organization 7",
+            "cluster_id": 2
+        },
+        {
+            "key": 18,
+            "value": "Organization 8",
+            "cluster_id": 2
+        },
+        {
+            "key": 19,
+            "value": "Organization 9",
+            "cluster_id": 2
+        }
+    ]
+}

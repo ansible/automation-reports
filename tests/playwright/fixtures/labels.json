@@ -1,0 +1,57 @@
+{
+    "count": 10,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "key": 11,
+            "value": "Label 1",
+            "cluster_id": 2
+        },
+        {
+            "key": 20,
+            "value": "Label 10",
+            "cluster_id": 2
+        },
+        {
+            "key": 12,
+            "value": "Label 2",
+            "cluster_id": 2
+        },
+        {
+            "key": 13,
+            "value": "Label 3",
+            "cluster_id": 2
+        },
+        {
+            "key": 14,
+            "value": "Label 4",
+            "cluster_id": 2
+        },
+        {
+            "key": 15,
+            "value": "Label 5",
+            "cluster_id": 2
+        },
+        {
+            "key": 16,
+            "value": "Label 6",
+            "cluster_id": 2
+        },
+        {
+            "key": 17,
+            "value": "Label 7",
+            "cluster_id": 2
+        },
+        {
+            "key": 18,
+            "value": "Label 8",
+            "cluster_id": 2
+        },
+        {
+            "key": 19,
+            "value": "Label 9",
+            "cluster_id": 2
+        }
+    ]
+}
