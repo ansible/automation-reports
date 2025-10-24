@@ -150,3 +150,10 @@ input {
     --pf-v6-l-grid__item--GridColumnEnd: span 10;
   }
 }
+
+.dropdown-loader {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  margin: 16px 0;
+}

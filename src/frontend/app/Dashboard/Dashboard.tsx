@@ -220,6 +220,7 @@ const Dashboard: React.FunctionComponent = () => {
   };
 
   const filtersChange = (requestFilter: RequestFilter) => {
+    setPaginationParams({page:1, page_size: paginationParams.page_size});
     setRequestParams(requestFilter);
   };
 
@@ -228,6 +229,7 @@ const Dashboard: React.FunctionComponent = () => {
   };
 
   const onSortChange = (ordering: string) => {
+    setPaginationParams({page:1, page_size: paginationParams.page_size});
     setOrdering(ordering);
   };
 

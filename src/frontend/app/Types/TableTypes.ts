@@ -4,6 +4,8 @@ import React from 'react';
 export type PaginationProps = {
   onPageChange: (newPage: number) => void;
   onPerPageChange: (page: number, newPage: number) => void;
+  currentPage: number;
+  perPage: number;
   totalItems: number;
 };
 
