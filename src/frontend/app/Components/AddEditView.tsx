@@ -19,7 +19,7 @@ import {
   Spinner,
   TextInput,
 } from '@patternfly/react-core';
-import { AddEditViewProps, FilterProps } from '@app/Types';
+import { AddEditViewProps, FilterOptionWithId, FilterProps } from '@app/Types';
 import { deepClone, formatDateTimeToDate } from '@app/Utils';
 import { FilterSet } from '@app/Types';
 import useCommonStore from '@app/Store/commonStore';
@@ -92,7 +92,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       }
       ['organization', 'job_template', 'label', 'project'].forEach((key) => {
         if (filters[key] && filters[key].length) {
-          viewData.filters[key] = filters[key];
+          viewData.filters[key] = filters[key].map((a: FilterOptionWithId) => a.key);
         }
       });
       if (filters.date_range === 'custom') {
@@ -138,7 +138,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
   const onFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (modalVariant === 'create' || modalVariant === 'edit') {
-      saveFilter();
+      saveFilter().then();
     }
   };
 
