@@ -1,21 +1,22 @@
 ---
 clusters:
-  - protocol: https
-    address: 10.44.17.179
-    port: 443
-    access_token: sampleToken
-    verify_ssl: false
+  - protocol: https  # Normally https
+    address: my-aap.example.com  # Can use IP or FQDN without http(s)://
+    port: 443  # Normally 443
+    access_token: sampleToken  # Your preconfigured Ansible Automation Platform read access token
+    verify_ssl: false  # Value false can be used when using self signed certs
     sync_schedules:
       - name: Every 5 minutes sync
         rrule: DTSTART;TZID=Europe/Ljubljana:20250630T070000 FREQ=MINUTELY;INTERVAL=5
         enabled: true
-
+  # If there is one Ansible Automation Platform instance, then remove the second entry below.
+  # Alternately. If there is more than one AAP instance to connect, copy additional entries.
   - protocol: https
-    address: 10.48.17.178
+    address: aap2.example.com
     port: 443
     access_token: sampleToken1
-    verify_ssl: false
+    verify_ssl: true
     sync_schedules:
-      - name: Every 3 hours sync
-        rrule: DTSTART;TZID=Europe/Ljubljana:20250630T070000 FREQ=HOURLY;INTERVAL=3
+      - name: Every 5 minutes sync
+        rrule: DTSTART;TZID=Europe/Ljubljana:20250630T070000 FREQ=MINUTELY;INTERVAL=5
         enabled: true
