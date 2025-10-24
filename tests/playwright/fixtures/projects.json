@@ -1,0 +1,57 @@
+{
+    "count": 10,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "key": 1,
+            "value": "Project 1",
+            "cluster_id": 2
+        },
+        {
+            "key": 10,
+            "value": "Project 10",
+            "cluster_id": 2
+        },
+        {
+            "key": 2,
+            "value": "Project 2",
+            "cluster_id": 2
+        },
+        {
+            "key": 3,
+            "value": "Project 3",
+            "cluster_id": 2
+        },
+        {
+            "key": 4,
+            "value": "Project 4",
+            "cluster_id": 2
+        },
+        {
+            "key": 5,
+            "value": "Project 5",
+            "cluster_id": 2
+        },
+        {
+            "key": 6,
+            "value": "Project 6",
+            "cluster_id": 2
+        },
+        {
+            "key": 7,
+            "value": "Project 7",
+            "cluster_id": 2
+        },
+        {
+            "key": 8,
+            "value": "Project 8",
+            "cluster_id": 2
+        },
+        {
+            "key": 9,
+            "value": "Project 9",
+            "cluster_id": 2
+        }
+    ]
+}

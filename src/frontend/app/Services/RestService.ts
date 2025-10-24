@@ -1,6 +1,7 @@
 import api from '../client/apiClient';
 import {
-  FilterSet,
+  FilterOptionWithId,
+  FilterSet, OptionsResponse,
   OrderingParams,
   ReportDetail,
   RequestFilter,
@@ -139,6 +140,18 @@ const deleteView = async (viewId: number) => {
   return api.delete(`api/v1/common/filter_set/${viewId}/`);
 };
 
+const fetchFilterOptions: (endPoint: string, params: object) => Promise<OptionsResponse> = async (endPoint: string, params: object): Promise<OptionsResponse> => {
+  const queryString = buildQueryString(params);
+  return api
+    .get(`${endPoint}${queryString}`, {})
+    .then((response) => response.data);
+};
+const fetchFilterOption: (endPoint: string, id: number) => Promise<FilterOptionWithId> = async (endPoint: string, id: number): Promise<FilterOptionWithId> => {
+  return api
+    .get(`${endPoint}${id}/`, {})
+    .then((response) => response.data);
+};
+
 export const RestService = {
   fetchAapSettings: fetchAapSettings,
   authorizeUser: authorizeUser,
@@ -156,5 +169,7 @@ export const RestService = {
   exportToCSV: exportToCSV,
   exportToPDF: exportToPDF,
   saveEnableTemplateCreationTime: saveEnableTemplateCreationTime,
-  logoutUser: logoutUser
+  logoutUser: logoutUser,
+  fetchFilterOptions: fetchFilterOptions,
+  fetchFilterOption: fetchFilterOption,
 };

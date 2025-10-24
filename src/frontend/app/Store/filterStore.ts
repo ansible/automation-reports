@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { RestService } from '@app/Services';
 import {
   FilterOptionResponse,
-  FilterState,
+  FilterState
 } from '@app/Types';
 
 import useCommonStore from './commonStore';
@@ -23,17 +23,12 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
     { key: 'label', value: 'Label' },
     { key: 'organization', value: 'Organization' },
     { key: 'project', value: 'Project' },
-    { key: 'job_template', value: 'Template' },
+    { key: 'job_template', value: 'Template' }
   ],
   automatedProcessCost: 0,
   clusters: [],
   dateRangeOptions: [],
-  templateOptions: [],
-  labelOptions: [],
   manualCostAutomation: 0,
-  organizationOptions: [],
-  instanceOptions: [],
-  projectOptions: [],
   loading: 'idle',
   error: false,
 
@@ -42,7 +37,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
       setCurrencies,
       setDefaultCurrency,
       setFilterViews,
-      setEnableTemplateCreationTime,
+      setEnableTemplateCreationTime
     } = useCommonStore.getState();
 
     set({ loading: 'pending', error: false });
@@ -63,14 +58,9 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
 
       set({
         loading: 'succeeded',
-        instanceOptions: data.instances,
-        labelOptions: data.labels,
-        templateOptions: data.job_templates,
-        organizationOptions: data.organizations,
         dateRangeOptions: data.date_ranges,
         manualCostAutomation: data.manual_cost_automation,
-        automatedProcessCost: data.automated_process_cost,
-        projectOptions: data.projects,
+        automatedProcessCost: data.automated_process_cost
       });
     } catch {
       set({ loading: 'failed', error: true });
@@ -78,7 +68,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
   },
 
   setAutomatedProcessCost: (cost: number) => set({ automatedProcessCost: cost }),
-  setManualProcessCost: (cost: number) => set({ manualCostAutomation: cost }),
+  setManualProcessCost: (cost: number) => set({ manualCostAutomation: cost })
 }));
 
 export default useFilterStore;
