@@ -13,19 +13,11 @@ from backend.api.v1.ping.views import PingView
 from backend.apps.clusters.models import Project, JobTemplate, Costs, CostsChoices
 from backend.apps.common.models import FilterSet, Currency, Settings, SettingsChoices
 
-test_template_expected_data = {
+test_template_option_expected_data = {
     'clusters': [{'id': 1, 'address': 'localhost'}],
     'currencies': [
         {'id': 2, 'name': 'EUR', 'iso_code': 'EUR', 'symbol': '€'},
         {'id': 1, 'name': 'United States Dollar', 'iso_code': 'USD', 'symbol': '$'}
-    ],
-    'organizations': [
-        {'key': 2, 'value': 'Organization A', 'cluster_id': 1}
-    ],
-    'labels': [
-        {'cluster_id': 1, 'key': 1, 'value': 'Label A'},
-        {'cluster_id': 1, 'key': 2, 'value': 'Label B'},
-        {'cluster_id': 1, 'key': 3, 'value': 'Label C'}
     ],
     'date_ranges': [
         {'key': 'last_year', 'value': 'Past year'},
@@ -39,13 +31,6 @@ test_template_expected_data = {
         {'key': 'last_2_years', 'value': 'Past 2 years'},
         {'key': 'custom', 'value': 'Custom'}
     ],
-    'job_templates': [
-        {'key': 1, 'value': 'Job Template A', 'cluster_id': 1},
-        {'key': 2, 'value': 'Job Template B', 'cluster_id': 1}
-    ],
-    'projects': [
-        {'key': 1, 'value': 'Project A', 'cluster_id': 1},
-        {'key': 2, 'value': 'Project B', 'cluster_id': 1}],
     'manual_cost_automation': 50.0,
     'automated_process_cost': 20.0,
     'currency': 1,
@@ -189,6 +174,48 @@ test_report_disabled_time_taken_to_create_automation_save_expected_data = {
     ]
 }
 
+test_template_expected_data =  {
+    'count': 3,
+    'next': None,
+    'previous': None,
+    'results': [
+        {'key': 1, 'value': 'Job Template A', 'cluster_id': 1},
+        {'key': 2, 'value': 'Job Template B', 'cluster_id': 1},
+        {'key': 3, 'value': 'Job Template C', 'cluster_id': 1}
+    ]
+}
+
+test_labels_expected_data = {
+    'count': 3,
+    'next': None,
+    'previous': None,
+    'results': [
+        {'key': 1, 'value': 'Label A', 'cluster_id': 1},
+        {'key': 2, 'value': 'Label B', 'cluster_id': 1},
+        {'key': 3, 'value': 'Label C', 'cluster_id': 1}
+    ]
+}
+
+test_organizations_expected_data = {
+    'count': 2,
+    'next': None,
+    'previous': None,
+    'results': [
+        {'key': 2, 'value': 'Organization A', 'cluster_id': 1},
+        {'key': 1, 'value': 'Organization B', 'cluster_id': 1}
+    ]
+}
+
+test_projects_expected_data = {
+    'count': 2,
+    'next': None,
+    'previous': None,
+    'results': [
+        {'key': 1, 'value': 'Project A', 'cluster_id': 1},
+        {'key': 2, 'value': 'Project B', 'cluster_id': 1}
+    ]
+}
+
 ENDPOINTS = {
     "get": [
         "/api/v1/common/currencies/",
@@ -196,7 +223,11 @@ ENDPOINTS = {
         "/api/v1/template_options/",
         "/api/v1/report/?page=1&page_size=10&date_range=month_to_date",
         "/api/v1/report/details/?page=1&page_size=10&date_range=year_to_date",
-        "/api/v1/report/csv/?date_range=last_month"
+        "/api/v1/report/csv/?date_range=last_month",
+        "/api/v1/templates/?page=1&page_size=10",
+        "/api/v1/labels/?page=1&page_size=10",
+        "/api/v1/projects/?page=1&page_size=10",
+        "/api/v1/organizations/?page=1&page_size=10",
     ],
     "post": [
         "/api/v1/costs/",
@@ -258,7 +289,7 @@ class TestViews:
         assert len(data) == 2
         assert data == expected
 
-    @pytest.mark.parametrize('expected', [test_template_expected_data])
+    @pytest.mark.parametrize('expected', [test_template_option_expected_data])
     def test_template_options(self, mock_auth, currencies, projects, jobs, filter_sets, labels, expected):
         client = APIClient()
         response = client.get("/api/v1/template_options/")
@@ -447,6 +478,38 @@ class TestViews:
         client = APIClient()
         response = client.post("/api/v1/report/pdf/?date_range=last_month")
         assert response.status_code == 200
+
+    @pytest.mark.parametrize('expected', [test_template_expected_data])
+    def test_templates(self, mock_auth, job_templates, expected):
+        client = APIClient()
+        response = client.get(f"/api/v1/templates/?page=1&page_size=10")
+        assert response.status_code == 200
+        data = response.json()
+        assert data == expected
+
+    @pytest.mark.parametrize('expected', [test_labels_expected_data])
+    def test_labels(self, mock_auth, labels, expected):
+        client = APIClient()
+        response = client.get(f"/api/v1/labels/?page=1&page_size=10")
+        assert response.status_code == 200
+        data = response.json()
+        assert data == expected
+
+    @pytest.mark.parametrize('expected', [test_organizations_expected_data])
+    def test_organizations(self, mock_auth, organizations, expected):
+        client = APIClient()
+        response = client.get(f"/api/v1/organizations/?page=1&page_size=10")
+        assert response.status_code == 200
+        data = response.json()
+        assert data == expected
+
+    @pytest.mark.parametrize('expected', [test_projects_expected_data])
+    def test_projects(self, mock_auth, projects, expected):
+        client = APIClient()
+        response = client.get(f"/api/v1/projects/?page=1&page_size=10")
+        assert response.status_code == 200
+        data = response.json()
+        assert data == expected
 
     def test_not_authenticated(self, filter_sets, job_templates):
         client = APIClient()
