@@ -193,7 +193,7 @@ test_report_disabled_time_taken_to_create_automation_save_expected_data = {
     ]
 }
 
-test_template_expected_data =  {
+test_template_expected_data = {
     'count': 3,
     'next': None,
     'previous': None,
@@ -271,6 +271,7 @@ def mock_auth(superuser):
     with mock.patch("backend.apps.aap_auth.authentication.AAPAuthentication.authenticate") as mock_authenticate:
         mock_authenticate.return_value = superuser, None
         yield mock_authenticate
+
 
 @pytest.fixture(scope="function")
 def mock_auth_user(regularuser):
@@ -498,26 +499,19 @@ class TestViews:
         response = client.post("/api/v1/report/pdf/?date_range=last_month")
         assert response.status_code == 200
 
-    @pytest.mark.parametrize('expected', [test_template_expected_data])
-    def test_templates(self, mock_auth, job_templates, expected):
+    @pytest.mark.parametrize(
+        "endpoint, fixture_name, expected",
+        [
+            ("/api/v1/templates/?page=1&page_size=10", "job_templates", test_template_expected_data),
+            ("/api/v1/labels/?page=1&page_size=10", "labels", test_labels_expected_data),
+            ("/api/v1/organizations/?page=1&page_size=10", "organizations", test_organizations_expected_data),
+            ("/api/v1/projects/?page=1&page_size=10", "projects", test_projects_expected_data),
+        ]
+    )
+    def test_filters_list_endpoints(self, request, mock_auth, endpoint, fixture_name, expected):
+        request.getfixturevalue(fixture_name)
         client = APIClient()
-        response = client.get(f"/api/v1/templates/?page=1&page_size=10")
-        assert response.status_code == 200
-        data = response.json()
-        assert data == expected
-
-    @pytest.mark.parametrize('expected', [test_labels_expected_data])
-    def test_labels(self, mock_auth, labels, expected):
-        client = APIClient()
-        response = client.get(f"/api/v1/labels/?page=1&page_size=10")
-        assert response.status_code == 200
-        data = response.json()
-        assert data == expected
-
-    @pytest.mark.parametrize('expected', [test_organizations_expected_data])
-    def test_organizations(self, mock_auth, organizations, expected):
-        client = APIClient()
-        response = client.get(f"/api/v1/organizations/?page=1&page_size=10")
+        response = client.get(endpoint)
         assert response.status_code == 200
         data = response.json()
         assert data == expected
