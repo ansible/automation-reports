@@ -4,7 +4,7 @@ from backend.api.v1.template_options.serializers import FilterKeyValueSerializer
 from backend.apps.clusters.models import JobTemplate
 
 
-class TemplateSerializer(serializers.ModelSerializer[JobTemplate]):
+class TemplatesSerializer(serializers.ModelSerializer[JobTemplate]):
     name = serializers.CharField(read_only=True)
     description = serializers.CharField(read_only=True)
 

@@ -4,7 +4,7 @@ from rest_framework import mixins, filters, serializers
 from rest_framework.viewsets import GenericViewSet
 
 from backend.api.v1.mixins import AdminOnlyViewSet
-from backend.api.v1.template.serializers import TemplateSerializer, JobTemplateSerializer
+from backend.api.v1.template.serializers import TemplatesSerializer, JobTemplateSerializer
 from backend.apps.clusters.models import JobTemplate
 
 
@@ -15,7 +15,7 @@ class TemplateView(
     mixins.UpdateModelMixin,
     GenericViewSet
 ):
-    serializer_class = TemplateSerializer
+    serializer_class = TemplatesSerializer
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
@@ -25,7 +25,7 @@ class TemplateView(
     def get_serializer_class(self) -> type[serializers.ModelSerializer[JobTemplate]]:
         if self.action == "list" or self.action == "retrieve":
             return JobTemplateSerializer
-        return TemplateSerializer
+        return TemplatesSerializer
 
     def get_queryset(self) -> QuerySet[JobTemplate]:
         return JobTemplate.objects.all()
