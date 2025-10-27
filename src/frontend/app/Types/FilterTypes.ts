@@ -46,12 +46,7 @@ export interface FilterState {
   automatedProcessCost: number | string;
   clusters: ClusterOption[];
   dateRangeOptions: FilterOption[];
-  //templateOptions: FilterOptionWithId[];
-  //labelOptions: FilterOptionWithId[];
-  //instanceOptions: FilterOptionWithId[];
-  //projectOptions: FilterOptionWithId[];
   manualCostAutomation: number | string;
-  //organizationOptions: FilterOption[];
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
   error: boolean;
 }
@@ -59,6 +54,8 @@ export interface FilterState {
 
 export interface FilterOptionsState {
   endPoint: string;
+  errorMessage: string;
+  errorRetrieveOneMessage: string;
   options: FilterOption[];
   currentPage: number,
   pageSize: number,

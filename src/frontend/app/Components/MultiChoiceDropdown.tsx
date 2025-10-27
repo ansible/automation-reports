@@ -100,9 +100,9 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
       icon={props?.icon && props.icon}
       style={props?.style}
       isExpanded={isMenuOpen}
-      {...(props.selections.length > 0 && {
+      {...(props.selections.length > 0 ? {
         badge: <Badge isRead>{props.selections.length}</Badge>
-      })}
+      } : null)}
     >
       {props.label ? <span>{props.label}</span> : ''}
     </MenuToggle>

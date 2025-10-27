@@ -12,6 +12,8 @@ type FilterOptionActions = {
 
 const createActions: StateCreator<FilterOptionsState & FilterOptionActions> = (set, get) => ({
   endPoint: '',
+  errorMessage: '',
+  errorRetrieveOneMessage: '',
   options: [],
   currentPage: 1,
   pageSize: 10,
@@ -46,16 +48,22 @@ const createActions: StateCreator<FilterOptionsState & FilterOptionActions> = (s
           ...response.results
         ]
       });
-    } catch {
+    } catch(error) {
       set({ loading: 'failed', error: true });
+      console.error(state.errorMessage, error);
+      throw new Error(state.errorMessage);
     }
   },
   fetchOne: async (id: number): Promise<FilterOptionWithId | null> => {
     const state = get();
+    set({ error: false });
     try {
       return await RestService.fetchFilterOption(state.endPoint, id);
-    } catch {
-      return null;
+    } catch(error) {
+      set({ error: true });
+      const errorMessage = state.errorRetrieveOneMessage.replace('${id}', String(id));
+      console.error(errorMessage);
+      throw new Error(errorMessage);
     }
   },
   fetchNextPage: async () => {
@@ -75,22 +83,30 @@ const createActions: StateCreator<FilterOptionsState & FilterOptionActions> = (s
 
 const useJobTemplateStore = create<FilterOptionsState & FilterOptionActions>()((a, b, state) => ({
   ...createActions(a, b, state),
-  endPoint: 'api/v1/templates/'
+  endPoint: 'api/v1/templates/',
+  errorMessage: 'Error retrieving job templates data.',
+  errorRetrieveOneMessage: 'Error retrieving job template data with id ${id}.',
 }));
 
 const useLabelStore = create<FilterOptionsState & FilterOptionActions>()((a, b, state) => ({
   ...createActions(a, b, state),
-  endPoint: 'api/v1/labels/'
+  endPoint: 'api/v1/labels/',
+  errorMessage: 'Error retrieving labels data.',
+  errorRetrieveOneMessage: 'Error retrieving label data with id ${id}.',
 }));
 
 const useOrganizationStore = create<FilterOptionsState & FilterOptionActions>()((a, b, state) => ({
   ...createActions(a, b, state),
-  endPoint: 'api/v1/organizations/'
+  endPoint: 'api/v1/organizations/',
+  errorMessage: 'Error retrieving organizations data.',
+  errorRetrieveOneMessage: 'Error retrieving organization data with id ${id}.',
 }));
 
 const useProjectStore = create<FilterOptionsState & FilterOptionActions>()((a, b, state) => ({
   ...createActions(a, b, state),
-  endPoint: 'api/v1/projects/'
+  endPoint: 'api/v1/projects/',
+  errorMessage: 'Error retrieving projects data.',
+  errorRetrieveOneMessage: 'Error retrieving project data with id ${id}.',
 }));
 
 export { useJobTemplateStore, useLabelStore, useOrganizationStore, useProjectStore };
