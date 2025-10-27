@@ -135,10 +135,10 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const onFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onFormSubmit =  async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (modalVariant === 'create' || modalVariant === 'edit') {
-      saveFilter().then();
+      await saveFilter();
     }
   };
 
