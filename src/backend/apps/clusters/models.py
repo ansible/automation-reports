@@ -10,6 +10,7 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.cache import cache
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import QuerySet, Min
 
@@ -17,6 +18,10 @@ from backend.apps.clusters.schemas import DateRangeSchema, RelatedLinks
 
 manual_time = settings.DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES
 automation_time = settings.DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES
+
+max_minutes_input = 1000000
+min_minutes_input = 1
+
 
 logger = logging.getLogger('automation_dashboard.models')
 
@@ -390,8 +395,13 @@ class Organization(NameDescriptionModel):
 
 
 class JobTemplate(NameDescriptionModel):
-    time_taken_manually_execute_minutes = models.IntegerField(default=manual_time)
-    time_taken_create_automation_minutes = models.IntegerField(default=automation_time)
+    #Calculations can result in large values, so bigint field
+    time_taken_manually_execute_minutes = models.BigIntegerField(
+        default=manual_time,
+        validators=[MinValueValidator(min_minutes_input), MaxValueValidator(max_minutes_input)])
+    time_taken_create_automation_minutes = models.BigIntegerField(
+        default=automation_time,
+        validators=[MinValueValidator(min_minutes_input), MaxValueValidator(max_minutes_input)])
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, related_name='job_templates')
 
     class Meta:
@@ -609,7 +619,9 @@ class Costs(CreatUpdateModel):
     It inherits timestamp fields from `CreatUpdateModel` and ensures each cost type is unique.
     """
 
-    value = models.DecimalField(max_digits=15, decimal_places=2, default=decimal.Decimal(0))
+    value = models.DecimalField(
+        max_digits=15, decimal_places=2, default=decimal.Decimal(0),
+        validators=[MinValueValidator(decimal.Decimal(0)), MaxValueValidator(decimal.Decimal(1000))])
     type = models.CharField(choices=CostsChoices.choices, unique=True, max_length=20)
 
     def __str__(self) -> str:

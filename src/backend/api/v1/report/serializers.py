@@ -30,10 +30,10 @@ class JobSerializer(serializers.ModelSerializer[Job]):
     time_taken_create_automation_minutes = serializers.IntegerField(read_only=True)
     successful_runs = serializers.IntegerField(read_only=True)
     failed_runs = serializers.IntegerField(read_only=True)
-    automated_costs = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
-    manual_costs = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
-    savings = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
-    time_savings = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
+    automated_costs = serializers.DecimalField(max_digits=20, decimal_places=2, read_only=True)
+    manual_costs = serializers.DecimalField(max_digits=20, decimal_places=2, read_only=True)
+    savings = serializers.DecimalField(max_digits=20, decimal_places=2, read_only=True)
+    time_savings = serializers.DecimalField(max_digits=20, decimal_places=2, read_only=True)
     time_savings_str = serializers.SerializerMethodField()
 
     class Meta:

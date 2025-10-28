@@ -1,4 +1,10 @@
+import decimal
+
+from django.conf import settings
+from django.db import transaction
+from django.db.models import Avg
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -20,7 +26,7 @@ from backend.apps.clusters.models import (
     CostsChoices,
     Project,
     Job,
-    Costs)
+    Costs, max_minutes_input, min_minutes_input)
 from backend.apps.common.models import Currency, Settings, FilterSet
 
 
@@ -64,3 +70,33 @@ class TemplateOptionsView(AdminOnlyViewSet):
         return Response(
             status=status.HTTP_200_OK,
             data=result)
+
+    @action(methods=["post"], detail=False)
+    def restore_user_inputs(self, request: Request) -> Response:
+        job_templates = JobTemplate.objects.annotate(
+            avg_elapsed=Avg("jobs__elapsed")
+        )
+        with transaction.atomic():
+            for template in list(job_templates):
+                if template.avg_elapsed is None:
+                    manually_execute_minutes = settings.DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES
+                else:
+                    manually_execute_minutes = template.avg_elapsed / 60 * 2
+                if manually_execute_minutes > max_minutes_input:
+                    manually_execute_minutes = max_minutes_input
+                elif manually_execute_minutes < min_minutes_input:
+                    manually_execute_minutes = min_minutes_input
+                template.time_taken_manually_execute_minutes = manually_execute_minutes
+                template.time_taken_create_automation_minutes = settings.DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES
+                template.save()
+
+            costs = Costs.objects.all()
+            for cost in costs:
+                if cost.type == CostsChoices.MANUAL:
+                    cost.value = decimal.Decimal(settings.DEFAULT_MANUAL_COST_AUTOMATION)
+                elif cost.type == CostsChoices.AUTOMATED:
+                    cost.value = decimal.Decimal(settings.DEFAULT_AUTOMATED_PROCESS_COST)
+                else:
+                    pass
+                cost.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
