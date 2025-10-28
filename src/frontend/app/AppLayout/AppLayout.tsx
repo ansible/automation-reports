@@ -1,20 +1,42 @@
 import * as React from 'react';
-import { Dropdown, DropdownItem, DropdownList, Masthead, MastheadBrand, MastheadContent, MastheadLogo, MastheadMain, MenuToggle, MenuToggleElement, Page, ToolbarItem } from '@patternfly/react-core';
+import { Button, Dropdown, DropdownItem, DropdownList, HelperText, HelperTextItem, Icon, Masthead, MastheadBrand, MastheadContent, MastheadLogo, MastheadMain, MenuToggle, MenuToggleElement, Modal, ModalBody, ModalFooter, ModalHeader, Page, Spinner, ToolbarItem } from '@patternfly/react-core';
 import { useAuthStore } from '@app/Store/authStore';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RestService } from '@app/Services';
+import useFilterStore from '@app/Store/filterStore';
+import { CogsIcon, ExchangeAltIcon, PlusCircleIcon } from '@patternfly/react-icons';
 
 interface IAppLayout {
   children: React.ReactNode;
 }
 
+type resetDataModalState = {
+  isOpen: boolean,
+  title: string,
+  loading: boolean,
+  error: boolean,
+  success: boolean,
+}
+
 const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
   const myUserData = useAuthStore((state) => state.myUserData);
-  const logout  = useAuthStore((state) => state.logout);
+  const logout = useAuthStore((state) => state.logout);
   const getMyUserData = useAuthStore((state) => state.getMyUserData);
+  const setReloadData = useFilterStore((state) => state.setReloadData);
   const navigate = useNavigate();
   const initialized = useRef(false);
+
+  const [resetModalState, setResetModalState] = React.useState<resetDataModalState>(
+    {
+      isOpen: false,
+      title: 'Restore all user inputs to defaults',
+      loading: false,
+      error: false,
+      success: false
+    }
+  );
 
   const mastheadStyle: React.CSSProperties = {
     backgroundColor: 'var(--pf-v6-global--BackgroundColor--dark-100)',
@@ -28,6 +50,8 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
   };
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false);
+
   const onDropdownToggle = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -35,9 +59,14 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  const onSettingsDropdownSelect = () => {
+    setIsSettingsDropdownOpen(!isSettingsDropdownOpen);
+  };
+
+
   const handleLogout = () => {
-    logout().then(()=> {
-      navigate("/login")
+    logout().then(() => {
+      navigate('/login');
     });
 
   };
@@ -46,13 +75,47 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
     if (!initialized.current) {
       getMyUserData().then((e) => {
       }).catch((e) => {
-        if (e.status == 401){
-          navigate("/login");
+        if (e.status == 401) {
+          navigate('/login');
         }
-      })
-      initialized.current  =true
+      });
+      initialized.current = true;
     }
   }, []);
+
+  const showResetDataModal = () => {
+    const modalState = { ...resetModalState };
+    modalState.isOpen = true;
+    setResetModalState(modalState);
+  };
+
+  const closeResetDataModal = () => {
+    const modalState = { ...resetModalState };
+    modalState.isOpen = false;
+    modalState.loading = false;
+    modalState.error = false;
+    modalState.success = false;
+    setResetModalState(modalState);
+  };
+
+  const resetData = () => {
+    const modalState = { ...resetModalState };
+    modalState.loading = true;
+    setResetModalState(modalState);
+    RestService.resetUserInputsToDefaults().then(() => {
+      const modalState = { ...resetModalState };
+      modalState.success = true;
+      modalState.loading = false;
+      setResetModalState(modalState);
+      setReloadData(true);
+    }).catch((e) => {
+      console.error('Could not reset user inputs to defaults.', e);
+      const modalState = { ...resetModalState };
+      modalState.error = true;
+      modalState.loading = false;
+      setResetModalState(modalState);
+    });
+  };
 
   const masthead = (isAuthenticated ? (
       <Masthead style={mastheadStyle}>
@@ -91,6 +154,31 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
         </MastheadMain>
         <MastheadContent>
           <ToolbarItem className="pf-v6-u-ml-auto">
+            {((myUserData?.is_platform_auditor || myUserData?.is_superuser) &&
+              <Dropdown
+                isOpen={isSettingsDropdownOpen}
+                onSelect={onSettingsDropdownSelect}
+                onOpenChange={(isOpen: boolean) => setIsSettingsDropdownOpen(isOpen)}
+                popperProps={{ position: 'right' }}
+                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    style={{ marginRight: '16px' }}
+                    ref={toggleRef}
+                    onClick={onSettingsDropdownSelect}
+                    isExpanded={isSettingsDropdownOpen}
+                  >
+                    <Icon>
+                      <CogsIcon />
+                    </Icon>
+                  </MenuToggle>
+                )}
+              >
+                <DropdownList>
+                  {((myUserData?.is_platform_auditor || myUserData?.is_superuser) &&
+                    <DropdownItem onClick={() => showResetDataModal()}>{resetModalState.title}</DropdownItem>)}
+                </DropdownList>
+              </Dropdown>
+            )}
             <Dropdown
               isOpen={isDropdownOpen}
               onSelect={onDropdownSelect}
@@ -124,9 +212,65 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
 
   const pageId = 'primary-app-container';
 
+  const resetDataModal = (
+    <Modal
+      isOpen={resetModalState.isOpen}
+      ouiaId="ResetDataModal"
+      aria-labelledby="reset-modal-title"
+      aria-describedby="modal-box-body-reset-data"
+      variant={'small'}
+    >
+      <ModalHeader title={resetModalState.title} labelId="reset-modal-title" />
+      <ModalBody id="modal-box-body-reset-data">
+        {(!resetModalState.loading && !resetModalState.success && !resetModalState.error &&
+          <HelperText>
+            <HelperTextItem variant="warning">This action will reset all user inputs to default values.</HelperTextItem>
+            <HelperTextItem>Are you sure you want to continue?</HelperTextItem>
+          </HelperText>
+        )}
+        {(!resetModalState.loading && resetModalState.error &&
+          <HelperText>
+            <HelperTextItem variant="error">An error occurred while resetting data. Please try again later.</HelperTextItem>
+          </HelperText>
+        )}
+        {(!resetModalState.loading && resetModalState.success &&
+          <HelperText>
+            <HelperTextItem variant="success">Data reset was successful.</HelperTextItem>
+          </HelperText>
+        )}
+        {(resetModalState.loading &&
+          <div style={{ textAlign: 'center', height: '40px' }}>
+            <Spinner className={'spinner'} diameter="33px" aria-label="Loader" />
+          </div>
+        )}
+      </ModalBody>
+      <ModalFooter>
+        {(!resetModalState.success && !resetModalState.error &&
+          <Button
+            isDisabled={resetModalState.loading}
+            key="confirm"
+            variant="primary"
+            onClick={() => resetData()
+            }>
+            Yes
+          </Button>)}
+        <Button
+          isDisabled={resetModalState.loading}
+          key="cancel"
+          variant="link"
+          onClick={() => closeResetDataModal()
+          }>
+          {(!resetModalState.success && !resetModalState.error && ('Cancel'))}
+          {((resetModalState.success || resetModalState.error) && ('Close'))}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  );
+
   return (
     <Page mainContainerId={pageId} masthead={masthead} sidebar={null} mainComponent={'main'} className={isAuthenticated ? '' : 'dark-background'}>
       {children}
+      {resetDataModal}
     </Page>
   );
 };

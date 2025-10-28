@@ -10,7 +10,7 @@ apiUrl = apiUrl.replace(/\/$|$/, '/');
 
 const client = axios.create({
   baseURL: apiUrl,
-  timeout: 40000,
+  timeout: 400000,
   withCredentials: true,
   withXSRFToken: true,
   xsrfCookieName: 'csrftoken',

@@ -66,7 +66,8 @@ const Dashboard: React.FunctionComponent = () => {
   const saveEnableTemplateCreationTime = useCommonStore((state) => state.saveEnableTemplateCreationTime);
   const setAutomatedProcessCost = useFilterStore((state) => state.setAutomatedProcessCost);
   const setManualProcessCost = useFilterStore((state) => state.setManualProcessCost);
-
+  const reloadData = useFilterStore((state)=>state.reloadData);
+  const setReloadData = useFilterStore((state) => state.setReloadData);
   const handelError = (error: unknown) => {
     if (error?.['name'] !== 'CanceledError') {
       setLoadDataError(true);
@@ -166,6 +167,14 @@ const Dashboard: React.FunctionComponent = () => {
       detailController.current?.abort();
     };
   }, [requestParams, paginationParams, ordering]);
+
+  React.useEffect(()=>{
+    if (reloadData){
+      clearTimeout();
+      fetchServerTableData(true);
+      setReloadData(false);
+    }
+  }, [reloadData]);
 
   const costChanged = (type: string, value: number) => {
     const oldValue = type === 'manual' ? hourly_manual_costs : hourly_automated_process_costs;

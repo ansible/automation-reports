@@ -75,6 +75,13 @@ export const BaseTable: React.FunctionComponent<{
         message: 'Value must be greater then 0!',
       });
       return;
+    } else if (value > 1000000){
+      setEditingError({
+        rowNum: rowNum,
+        columnName: columnName,
+        message: 'Value must be less than or equal to 1000000!',
+      });
+      return;
     }
     if (value !== Math.round(value)) {
       setEditingError({

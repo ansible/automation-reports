@@ -60,6 +60,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
 
   const hasFetched = useRef(false);
   const getMyUserData = useAuthStore((state) => state.getMyUserData);
+  const reloadData = useFilterStore((state)=>state.reloadData);
 
   const setInterval = () => {
     interval.current = window.setTimeout(
@@ -96,6 +97,15 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       hasFetched.current = true;
   }
   }, []);
+
+  React.useEffect(() => {
+    const execute = async () => {
+      await fetchFilters();
+    };
+    if (reloadData){
+      execute().then();
+    }
+  }, [reloadData]);
 
   React.useEffect(() => {
     if (!filterSelection.date_range) {
