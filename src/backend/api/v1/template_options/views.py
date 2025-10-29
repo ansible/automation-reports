@@ -28,6 +28,7 @@ from backend.apps.clusters.models import (
     Job,
     Costs, max_minutes_input, min_minutes_input)
 from backend.apps.common.models import Currency, Settings, FilterSet
+from backend.django_config import settings
 
 
 class TemplateOptionsView(AdminOnlyViewSet):
@@ -65,6 +66,7 @@ class TemplateOptionsView(AdminOnlyViewSet):
             "currency": Settings.currency(),
             "enable_template_creation_time": Settings.enable_template_creation_time(),
             "filter_sets": FilterSetSerializer(filter_sets, many=True).data,
+            "max_pdf_job_templates": settings.MAX_PDF_JOB_TEMPLATES,
         }
 
         return Response(

@@ -348,6 +348,10 @@ INITIAL_SYNC_DAYS = 1
 # Initial sync date (overrides INITIAL_SYNC_DAYS)
 INITIAL_SYNC_SINCE = '2025-08-08'
 
+
+# PDF Download (Do not exceed the number 4000)
+MAX_PDF_JOB_TEMPLATES = 4000
+
 ### Local settings
 local_config_file = os.path.join(BASE_DIR, "django_config", "local_settings.py")
 try:

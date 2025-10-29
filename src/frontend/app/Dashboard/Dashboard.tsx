@@ -4,7 +4,7 @@ import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Text/text.css';
 import '@patternfly/react-styles/css/utilities/Flex/flex.css';
-import { Alert, Flex, FlexItem, Grid, GridItem, Spinner, Toolbar, ToolbarItem } from '@patternfly/react-core';
+import { Alert, Button, Flex, FlexItem, Grid, GridItem, HelperText, HelperTextItem, Modal, ModalBody, ModalFooter, ModalHeader, Spinner, Toolbar, ToolbarItem } from '@patternfly/react-core';
 import { RestService } from '@app/Services';
 import { deepClone, svgToPng } from '@app/Utils';
 import {
@@ -15,7 +15,7 @@ import {
   RequestFilter,
   TableResponse,
   TableResult,
-  UrlParams,
+  UrlParams
 } from '@app/Types';
 import ErrorState from '@patternfly/react-component-groups/dist/dynamic/ErrorState';
 import {
@@ -23,12 +23,12 @@ import {
   DashboardLineChart,
   DashboardTable,
   DashboardTopTable,
-  DashboardTotalCards,
+  DashboardTotalCards
 } from '@app/Dashboard';
 import { CurrencySelector } from '@app/Components';
 
 import useFilterStore from '@app/Store/filterStore';
-import useCommonStore  from '@app/Store/commonStore';
+import useCommonStore from '@app/Store/commonStore';
 import {
   useAutomatedProcessCost,
   useFilterRetrieveError,
@@ -51,7 +51,7 @@ const Dashboard: React.FunctionComponent = () => {
   const [requestParams, setRequestParams] = React.useState<RequestFilter>();
   const [paginationParams, setPaginationParams] = React.useState<PaginationParams>({
     page: 1,
-    page_size: 10,
+    page_size: 10
   } as PaginationParams);
   const [ordering, setOrdering] = React.useState<string>('name');
   const hourly_manual_costs = useManualCostAutomation();
@@ -66,6 +66,7 @@ const Dashboard: React.FunctionComponent = () => {
   const saveEnableTemplateCreationTime = useCommonStore((state) => state.saveEnableTemplateCreationTime);
   const setAutomatedProcessCost = useFilterStore((state) => state.setAutomatedProcessCost);
   const setManualProcessCost = useFilterStore((state) => state.setManualProcessCost);
+  const maxPDFJobTemplates = useFilterStore((state) => state.max_pdf_job_templates);
   const reloadData = useFilterStore((state)=>state.reloadData);
   const setReloadData = useFilterStore((state) => state.setReloadData);
   const handelError = (error: unknown) => {
@@ -75,6 +76,7 @@ const Dashboard: React.FunctionComponent = () => {
       setTableLoading(false);
     }
   };
+  const [isPDFWarningModalOpen, setPDFWarningModalOpen] = React.useState<boolean>(false);
 
   const fetchServerReportDetails = (signal: AbortSignal) => {
     if (!requestParams) {
@@ -112,7 +114,7 @@ const Dashboard: React.FunctionComponent = () => {
     RestService.fetchReports(controller.current.signal, {
       ...requestParams,
       ...paginationParams,
-      ...{ ordering: ordering },
+      ...{ ordering: ordering }
     } as UrlParams)
       .then((tableResponse) => {
         setTableData(tableResponse);
@@ -137,7 +139,7 @@ const Dashboard: React.FunctionComponent = () => {
       () => {
         fetchServerTableData(true, false);
       },
-      parseInt(refreshInterval) * 1000,
+      parseInt(refreshInterval) * 1000
     );
   };
 
@@ -244,28 +246,28 @@ const Dashboard: React.FunctionComponent = () => {
     {
       name: 'project_name',
       title: 'Project name',
-      isVisible: true,
+      isVisible: true
     },
     {
       name: 'count',
       title: 'Total no. of jobs',
       type: 'number',
-      isVisible: true,
-    },
+      isVisible: true
+    }
   ];
 
   const topUsersColumns: ColumnProps[] = [
     {
       name: 'user_name',
       title: 'User name',
-      isVisible: true,
+      isVisible: true
     },
     {
       name: 'count',
       title: 'Total no. of jobs',
       type: 'number',
-      isVisible: true,
-    },
+      isVisible: true
+    }
   ];
 
   const onInputFocus = () => {
@@ -293,7 +295,7 @@ const Dashboard: React.FunctionComponent = () => {
     RestService.exportToPDF(
       { ...requestParams, ...{ ordering: ordering } } as RequestFilter & OrderingParams,
       jobsChartPng,
-      hostChartPng,
+      hostChartPng
     )
       .then(() => {
         setPdfLoading(false);
@@ -304,8 +306,12 @@ const Dashboard: React.FunctionComponent = () => {
   };
 
   const onPdfBtnClick = () => {
-    setPdfLoading(true);
-    setTimeout(pdfDownload, 150);
+    if (tableData.count > maxPDFJobTemplates) {
+      setPDFWarningModalOpen(true);
+    } else {
+      setPdfLoading(true);
+      setTimeout(pdfDownload, 150);
+    }
   };
 
   const onEnableTemplateCreationTimeChange = async (checked: boolean) => {
@@ -324,10 +330,40 @@ const Dashboard: React.FunctionComponent = () => {
     <div>
       <div>This section lists the top five users of Ansible Automation Platform, with a breakdown of the total number of jobs run by each user.</div>
       <ul>
-        <br/>
-        <li><strong>○ NOTE:</strong> Scheduled jobs can affect these results, because they do not represent a real, logged-in user. </li>
+        <br />
+        <li><strong>○ NOTE:</strong> Scheduled jobs can affect these results, because they do not represent a real, logged-in user.</li>
       </ul>
     </div>
+  );
+
+  const pdfModalTitle = (
+    <HelperText>
+      <HelperTextItem variant="error" style={{fontSize: '20px'}} >PDF Download Failed: Data Volume Exceeded</HelperTextItem>
+    </HelperText>
+  );
+
+  const pdfWarningModal = (
+    <Modal
+      isOpen={isPDFWarningModalOpen}
+      ouiaId="DFWarningModal"
+      aria-labelledby="pdf-warning-modal-title"
+      aria-describedby="pdf-warning-modal-body"
+      variant={'small'}
+    >
+      <ModalHeader title={pdfModalTitle} labelId="pdf-warning-modal-title" />
+      <ModalBody id="pdf-warning-modal-body">
+        <HelperText style={{fontSize: '14px'}}>
+          <HelperTextItem variant={'default'}>We were unable to generate your PDF because the selected report exceeds the maximum record limit.</HelperTextItem>
+          <HelperTextItem variant={'default'}>Please apply additional filters to narrow your data and retry.</HelperTextItem>
+        </HelperText>
+      </ModalBody>
+      <ModalFooter>
+        <Button
+          key="close"
+          variant="link"
+          onClick={() => {setPDFWarningModalOpen(false)}}>Close</Button>
+      </ModalFooter>
+    </Modal>
   );
 
   // @ts-ignore
@@ -354,13 +390,14 @@ const Dashboard: React.FunctionComponent = () => {
           />
         </div>
       )}
-      {logErrorMessage && 
-      <div className={'main-layout'}>
-        <Alert variant="danger" isInline title={logErrorMessage} />
-      </div>
+      {logErrorMessage &&
+        <div className={'main-layout'}>
+          <Alert variant="danger" isInline title={logErrorMessage} />
+        </div>
       }
       {!loadDataError && !filterError && !logErrorMessage && (
         <div className={'main-layout'}>
+          {pdfWarningModal}
           {(loading || pdfLoading) && (
             <div className={'loader'}>
               <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />

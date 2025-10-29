@@ -336,7 +336,7 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
 
     @action(methods=["post"], detail=False)
     def pdf(self, request: Request) -> WeasyTemplateResponse:
-        table_qs = self.filter_queryset(self.get_base_queryset())
+        table_qs = self.filter_queryset(self.get_base_queryset())[:settings.MAX_PDF_JOB_TEMPLATES]
 
         currency_value = Settings.currency()
         currency_sign = "$"
