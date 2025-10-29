@@ -8,7 +8,7 @@ import requests
 from django.db import transaction
 import urllib3
 
-from backend.apps.clusters.encryption import decrypt_value
+from backend.apps.clusters.encryption import decrypt_value, encrypt_value
 from backend.apps.clusters.models import (
     ClusterSyncData,
     ClusterSyncStatus,
@@ -84,8 +84,47 @@ class ApiConnector:
             'Accept': 'application/json',
         }
 
-    def execute_get_one(self, url, timeout=None):
-        logger.info(f'Executing GET request to {url}')
+    def _reauth(self, timeout=None):
+        url = f'{self.cluster.base_url}/api/o/token/'  # TODO AAP version
+        refresh_token = decrypt_value(self.cluster.refresh_token)
+        client_id = self.cluster.client_id
+        client_secret = decrypt_value(self.cluster.client_secret)
+
+        data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': refresh_token,
+        }
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+        }
+        auth = requests.auth.HTTPBasicAuth(client_id, client_secret)
+        try:
+            response = requests.post(
+                url=url,
+                data=data,
+                auth=auth,
+                verify=self.cluster.verify_ssl,
+                timeout=timeout if timeout is not None else self.timeout,
+                headers=headers)
+        except requests.exceptions.RequestException as e:
+            logger.error(f'Token refresh POST request failed with exception {e}')
+            return False
+        if not response.ok:
+            logger.error(f'Token refresh POST request failed with status {response.status_code} text={response.json()}')
+            return False
+        logger.info(f'Token refresh POST request succedded with status {response.status_code}')
+        resp = response.json()
+
+        self.cluster.access_token = encrypt_value(resp['access_token'])
+        self.cluster.refresh_token = encrypt_value(resp["refresh_token"])
+        self.access_token = resp['access_token']
+        self.cluster.save()
+
+        return True
+
+    def _get_with_reauth(self, url, timeout=None):
+        # try 1st time
         try:
             response = requests.get(
                 url=url,
@@ -95,8 +134,32 @@ class ApiConnector:
         except requests.exceptions.RequestException as e:
             logger.error(f'GET request failed with exception {e}')
             return None
-        if not response.ok:
-            logger.error(f'GET request failed with status {response.status_code}')
+        if response.ok:
+            return response
+
+        # Try to re-auth only after 401 error
+        logger.error(f'GET request failed with status {response.status_code}')
+        if response.status_code != 401:
+            return response
+        self._reauth()
+
+        # try 2nd time
+        try:
+            response = requests.get(
+                url=url,
+                verify=self.cluster.verify_ssl,
+                timeout=timeout if timeout is not None else self.timeout,
+                headers=self.headers)
+        except requests.exceptions.RequestException as e:
+            logger.error( f'GET request failed with exception {e}')
+            return None
+        logger.error(f'GET after reauth response.status_code={response.status_code}')
+        return  response
+
+    def execute_get_one(self, url, timeout=None):
+        logger.info(f'Executing GET request to {url}')
+        response = self._get_with_reauth(url, timeout=timeout)
+        if response is None or not response.ok:
             return None
         product_name = response.headers.get("X-Api-Product-Name", None)
         if product_name is None or product_name == "AWX":
@@ -228,6 +291,7 @@ class ApiConnector:
             if self.cluster.aap_version != ClusterVersionChoices.AAP25:
                 self.cluster.aap_version = ClusterVersionChoices.AAP25
                 self.cluster.save()
+            logger.info(f'Detected AAP version 2.5 at {self.cluster.base_url}')
             return True
 
         is_aap24_instance = self.is_aap24_instance
@@ -235,6 +299,7 @@ class ApiConnector:
             if self.cluster.aap_version != ClusterVersionChoices.AAP24:
                 self.cluster.aap_version = ClusterVersionChoices.AAP24
                 self.cluster.save()
+            logger.info(f'Detected AAP version 2.4 at {self.cluster.base_url}')
             return True
         raise Exception(f'Not valid version for cluster {self.cluster.base_url}.')
 
