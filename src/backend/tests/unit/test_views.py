@@ -14,7 +14,9 @@ from backend.apps.clusters.models import Project, JobTemplate, Costs, CostsChoic
 from backend.apps.common.models import FilterSet, Currency, Settings, SettingsChoices
 
 test_template_expected_data = {
-    'clusters': [{'id': 1, 'address': 'localhost'}],
+    'clusters': [
+        {'id': 1, 'address': 'localhost'}
+    ],
     'currencies': [
         {'id': 2, 'name': 'EUR', 'iso_code': 'EUR', 'symbol': '€'},
         {'id': 1, 'name': 'United States Dollar', 'iso_code': 'USD', 'symbol': '$'}
@@ -23,9 +25,9 @@ test_template_expected_data = {
         {'key': 2, 'value': 'Organization A', 'cluster_id': 1}
     ],
     'labels': [
-        {'cluster_id': 1, 'key': 1, 'value': 'Label A'},
-        {'cluster_id': 1, 'key': 2, 'value': 'Label B'},
-        {'cluster_id': 1, 'key': 3, 'value': 'Label C'}
+        {'key': 1, 'value': 'Label A', 'cluster_id': 1},
+        {'key': 2, 'value': 'Label B', 'cluster_id': 1},
+        {'key': 3, 'value': 'Label C', 'cluster_id': 1}
     ],
     'date_ranges': [
         {'key': 'last_year', 'value': 'Past year'},
@@ -45,14 +47,32 @@ test_template_expected_data = {
     ],
     'projects': [
         {'key': 1, 'value': 'Project A', 'cluster_id': 1},
-        {'key': 2, 'value': 'Project B', 'cluster_id': 1}],
+        {'key': 2, 'value': 'Project B', 'cluster_id': 1}
+    ],
     'manual_cost_automation': 50.0,
     'automated_process_cost': 20.0,
     'currency': 1,
     'enable_template_creation_time': True,
     'filter_sets': [
-        {'id': 1, 'name': 'Report 1', 'filters': {'date_range': 'last_month', 'organization': [1, 2]}},
-        {'id': 2, 'name': 'Report 2', 'filters': {'date_range': 'last_year', 'template': [1, 2]}}]}
+        {
+            'id': 1,
+            'name': 'Report 1',
+            'filters': {
+                'date_range': 'last_month',
+                'organization': [1, 2]
+            }
+        },
+        {
+            'id': 2,
+            'name': 'Report 2',
+            'filters': {
+                'template': [1, 2],
+                'date_range': 'last_year'
+            }
+        }
+    ],
+    'max_pdf_job_templates': 4000
+}
 
 test_report_expected_data = {
     'count': 1,
@@ -222,6 +242,7 @@ def mock_auth(superuser):
         mock_authenticate.return_value = superuser, None
         yield mock_authenticate
 
+
 @pytest.fixture(scope="function")
 def mock_auth_user(regularuser):
     with mock.patch("backend.apps.aap_auth.authentication.AAPAuthentication.authenticate") as mock_authenticate:
@@ -264,6 +285,7 @@ class TestViews:
         response = client.get("/api/v1/template_options/")
         assert response.status_code == 200
         data = response.json()
+        print(data)
         assert data == expected
 
     @pytest.mark.parametrize('expected', [test_report_expected_data])

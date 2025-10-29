@@ -39,6 +39,8 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
   loading: 'idle',
   error: false,
   reloadData: false,
+  max_pdf_job_templates: 0,
+
   fetchTemplateOptions: async () => {
     const {
       setCurrencies,
@@ -73,6 +75,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
         manualCostAutomation: data.manual_cost_automation,
         automatedProcessCost: data.automated_process_cost,
         projectOptions: data.projects,
+        max_pdf_job_templates: data.max_pdf_job_templates
       });
     } catch {
       set({ loading: 'failed', error: true });

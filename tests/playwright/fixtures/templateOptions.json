@@ -756,5 +756,6 @@
                 "date_range": "last_6_month"
             }
         }
-    ]
+    ],
+    "max_pdf_job_templates": 4000
 }
