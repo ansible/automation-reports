@@ -39,5 +39,9 @@ def encrypt_value(value: str) -> bytes:
 def decrypt_value(value: bytes) -> str:
     key = get_encryption_key()
     f = Fernet256(key)
-    decrypted = f.decrypt(value)
+    if value == b'':
+        # In DB is stored b'' only for old objects, where DB migration populated the field value.
+        decrypted = b''
+    else:
+        decrypted = f.decrypt(value)
     return smart_str(decrypted)

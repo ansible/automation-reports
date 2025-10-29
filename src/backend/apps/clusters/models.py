@@ -20,7 +20,7 @@ manual_time = settings.DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES
 automation_time = settings.DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES
 
 # output of encrypt_value('')
-ENCRYPTED_EMPTY_STRING = b"gAAAAABowrlA3VGeQTqam2njNmOG4-J9vo1m0tSE3ClWGz49VADhsjHwHIAObp3xTOexkp5KyY5r6XyxWG8x3JooZ063Cw12BA=="
+# ENCRYPTED_EMPTY_STRING = b"gAAAAABowrlA3VGeQTqam2njNmOG4-J9vo1m0tSE3ClWGz49VADhsjHwHIAObp3xTOexkp5KyY5r6XyxWG8x3JooZ063Cw12BA=="
 
 logger = logging.getLogger('automation_dashboard.models')
 
@@ -46,9 +46,9 @@ class Cluster(CreatUpdateModel):
     address = models.CharField(max_length=255)
     port = models.IntegerField()
     access_token = models.BinaryField()
-    refresh_token = models.BinaryField(default=ENCRYPTED_EMPTY_STRING)
+    refresh_token = models.BinaryField(default=b'')
     client_id = models.CharField(max_length=255, default='')
-    client_secret = models.BinaryField(default=ENCRYPTED_EMPTY_STRING)
+    client_secret = models.BinaryField(default=b'')
     verify_ssl = models.BooleanField(default=True)
     aap_version = models.CharField(max_length=15, choices=ClusterVersionChoices.choices, default=ClusterVersionChoices.AAP24)
 
