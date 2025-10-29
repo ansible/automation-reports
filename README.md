@@ -124,7 +124,10 @@ nano clusters.yaml
 
 - `address`: Change to your AAP VM IP address (e.g., `10.44.17.179`)
 - `port`: Change value if your AAP API is accessible on a different TCP port.
+- `client_id`: Replace `sampleClientId` with your actual AAP OAuth2 Application client ID
+- `client_secret`: Replace `sampleClientSecret` with your actual AAP OAuth2 Application client secret
 - `access_token`: Replace `sampleToken` with your actual AAP access token
+- `refresh_token`: Replace `sampleRefreshToken` with your actual AAP refresh token
 - Remove any unused cluster instances from the file
 
 **About sync schedules:** The `sync_schedules` section in `clusters.yaml` automatically creates background sync tasks when loaded. Each schedule defines:
@@ -141,7 +144,10 @@ clusters:
   - protocol: https
     address: 10.44.17.179  # Your AAP VM IP
     port: 8443             # change to 443
+    client_id: sampleClientId # Actual client id
+    client_secret: sampleClientSecret # Actual client secret
     access_token: sampleToken # Actual access token
+    refresh_token: sampleRefreshToken # Actual refresh token
     verify_ssl: false
     sync_schedules:
       - name: Every 5 minutes sync
@@ -158,6 +164,14 @@ Then load the cluster configuration (prepare your terminal first):
 ```bash
 python manage.py setclusters clusters.yaml
 ```
+
+Note that when access token expires, the refresh token is used to obtain new access token.
+At the same time the AAP returns also new refresh token.
+The Automation Dashboard internally updates both values.
+Implications:
+
+- after token refresh happens, if you need to run `manage.py setclusters` again, you need to create a new token.
+- The same access and refresh tokens can be used only by one Automation Dashboard installation
 
 ### Setup SSO login with AAP
 
