@@ -1,8 +1,10 @@
+import functools
 import logging
 
 import requests
 import urllib3
 from django.conf import settings
+from requests import Response
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 
 from backend.apps.aap_auth.jwt_token import JWTToken
@@ -13,6 +15,21 @@ from backend.apps.users.schemas import UserResponseSchema
 
 logger = logging.getLogger("automation-dashboard")
 
+
+def memoize(func):
+    cache = func.cache = {}
+
+    # Inner function to store and retrieve data from the cache
+    @functools.wraps(func)
+    def inner_cached(*args):
+        if 'o_endpoints' in cache:
+            return cache['o_endpoints']
+        else:
+            result = func(*args)
+            cache['o_endpoints'] = result
+            return result
+
+    return inner_cached
 
 class AAPAuth:
     # Handles AAP authentication and user management
@@ -33,15 +50,62 @@ class AAPAuth:
         self.user_data_uri = user_data_uri
         self.check_ssl = auth_settings.check_ssl
 
+        o_endpoints = self.get_o_endpoints()
+
+        self.authorize_uri = o_endpoints["authorize_uri"]
+        self.token_uri = o_endpoints["token_uri"]
+        self.revoke_token_uri = o_endpoints["revoke_token_uri"]
+
         # Optionally suppress urllib3 SSL warnings
         if not settings.SHOW_URLLIB3_INSECURE_REQUEST_WARNING:
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
+    def ping(self, url: str) -> Response:
+        logger.info(f"Try to obtain OAUth endpoint {url}")
+        try:
+            response = requests.get(
+                url=url,
+                verify=self.check_ssl,
+                allow_redirects=False,
+                timeout=3)
+        except requests.exceptions.HTTPError as e:
+            logger.error(f'GET request {url} failed with exception {e}')
+            raise AuthenticationFailed(f"Failed request to {url}")
+        if response.ok:
+            logger.info(f"Successfully obtained OAUth endpoint {url}")
+        return response
+
+    # Cache the OAuth endpoints to avoid pinging the server on every call
+    @memoize
+    def get_o_endpoints(self):
+        url = f"{self.url}/o/"
+        response = self.ping(url)
+        if response.ok:
+            result = {
+                'authorize_uri': '/o/authorize/',
+                'token_uri': '/o/token/',
+                'revoke_token_uri': '/o/revoke_token/'
+            }
+            return result
+
+        url = f"{self.url}/api/o/"
+        response = self.ping(url)
+        if response.ok:
+            result = {
+                'authorize_uri': '/api/o/authorize/',
+                'token_uri': '/api/o/token/',
+                'revoke_token_uri': '/api/o/revoke_token/'
+            }
+            return result
+        logger.error("Failed to obtain OAuth endpoints after multiple attempts.")
+        raise AuthenticationFailed("Authorization failed: Unable to find a valid OAuth endpoint.")
 
     def ui_data(self) -> dict[str, str]:
         # Returns data needed for UI authorization flow
         return {
             'name': self.name,
-            'url': f'{self.url}/o/authorize',
+            'url': f'{self.url}{self.authorize_uri}',
             'client_id': self.client_id,
             'scope': self.scope,
             'approval_prompt': self.approval_prompt,
@@ -51,13 +115,14 @@ class AAPAuth:
     def _aap_authorize(self, params: dict[str, str]) -> AAPToken:
         # Requests an AAP token using provided parameters
         response = requests.post(
-            url=f"{self.url}/o/token/",
+            url=f"{self.url}{self.token_uri}",
             data=params,
             verify=self.check_ssl,
             allow_redirects=False,
             timeout=30,
         )
         if not response.ok:
+            print(response.status_code)
             logger.error("An error occurred obtaining AAP token. %s", response.content)
             raise AuthenticationFailed("Obtaining of AAP token failed. An error occurred connecting to AAP authorization server.")
 
@@ -67,7 +132,6 @@ class AAPAuth:
 
         if access_token is None or refresh_token is None:
             raise AuthenticationFailed("Obtaining of AAP token failed. Invalid response from AAP.")
-
         return AAPToken(**token_result)
 
     def authorize(self, code: str, redirect_uri: str) -> dict[str, JwtUserToken | JwtUserRefreshToken]:
@@ -152,7 +216,7 @@ class AAPAuth:
         }
 
         response = requests.post(
-            url=f'{self.url}/o/revoke_token/',
+            url=f'{self.url}{self.revoke_token_uri}',
             data=token_params,
             verify=self.check_ssl,
             allow_redirects=False,

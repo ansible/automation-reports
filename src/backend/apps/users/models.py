@@ -24,7 +24,7 @@ class User(AbstractUser):
         user.email = user_data.email
         user.first_name = user_data.first_name
         user.last_name = user_data.last_name
-        user.is_platform_auditor = user_data.is_platform_auditor
+        user.is_platform_auditor = bool(user_data.is_platform_auditor or user_data.is_system_auditor)
         user.is_superuser = user_data.is_superuser
         user.save(update_fields=[
             "email",
