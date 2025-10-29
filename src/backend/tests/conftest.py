@@ -533,6 +533,20 @@ def cluster_sync_data(cluster, api_jobs, api_host_summaries):
 
 
 @pytest.fixture
+def cluster_sync_data_elapsed(cluster, api_jobs, api_host_summaries):
+    data = api_jobs[1]
+    data["elapsed"] = 8965.58
+    data["host_summaries"] = [
+        api_host_summaries[1],
+        api_host_summaries[2],
+    ]
+
+    return ClusterSyncData.objects.create(
+        cluster=cluster,
+        data=data,
+    )
+
+@pytest.fixture
 def superuser():
     return User.objects.create(
         username="test",
