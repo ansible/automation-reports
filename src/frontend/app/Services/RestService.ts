@@ -102,7 +102,15 @@ const exportToPDF = async (
 ): Promise<void> => {
   const queryString = buildQueryString(params);
   return api
-    .post(`api/v1/report/pdf/${queryString}`, { job_chart: jobChart, host_chart: hostChart }, { responseType: 'blob' })
+    .post(`api/v1/report/pdf/${queryString}`,
+      {
+        job_chart: jobChart,
+        host_chart: hostChart
+      },
+      {
+        responseType: 'blob',
+        timeout: 0
+      })
     .then((response) => {
       downloadAttachment(response.data as never, 'AAP_Automation_Dashboard_Report.pdf');
       Promise.resolve();
