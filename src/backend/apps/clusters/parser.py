@@ -1,5 +1,7 @@
+import decimal
 import logging
 
+from django.conf import settings
 from django.db import transaction
 
 from backend.apps.clusters.models import (
@@ -60,12 +62,26 @@ class DataParser:
     @property
     def job_template(self) -> JobTemplate:
         external_job_template = self.data.summary_fields.job_template
-        return JobTemplate.create_or_update(
+        job_template = JobTemplate.create_or_update(
             cluster=self.cluster,
             external_id=external_job_template.id if external_job_template else -1,
             name=external_job_template.name if external_job_template else self.data.name,
             description=external_job_template.description if external_job_template else self.data.description,
         )
+        job_count = Job.objects.filter(job_template=job_template).count()
+        # If no jobs exist for this template, it's safe to calculate the manual execution time
+        if job_count == 0:
+            logger.info("No jobs exist for this template. Calculating manual execution time.")
+            elapsed = self.data.elapsed
+            if elapsed is not None:
+                manual_execution_time = int(decimal.Decimal(elapsed / 60 * 2).quantize(decimal.Decimal(1), rounding=decimal.ROUND_UP))
+                if manual_execution_time < settings.DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES:
+                    manual_execution_time = settings.DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES
+                if manual_execution_time > 1000000:
+                    manual_execution_time = 1000000
+                job_template.time_taken_manually_execute_minutes = manual_execution_time
+                job_template.save(update_fields=['time_taken_manually_execute_minutes'])
+        return job_template
 
     @property
     def launched_by(self) -> AAPUser | None:
