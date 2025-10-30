@@ -56,10 +56,70 @@ export async function mockMeRoute(
 
 export async function mockTemplateOptionsRoute(
   page: import("playwright").Page,
-  body: any, 
+  body: any,
   status: number = 200
 ): Promise<void> {
   await page.route("**/api/v1/template_options/", async (route) => {
+    await route.fulfill({
+      status: status,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    });
+  });
+}
+
+export async function mockTemplatesRoute(
+  page: import("playwright").Page,
+  body: any,
+  urlParams = "?page_size=10&page=1",
+  status: number = 200
+): Promise<void> {
+  await page.route(`**/api/v1/templates/${urlParams}`, async (route) => {
+    await route.fulfill({
+      status: status,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    });
+  });
+}
+
+export async function mockOrganizationsRoute(
+  page: import("playwright").Page,
+  body: any,
+  urlParams = "?page_size=10&page=1",
+  status: number = 200
+): Promise<void> {
+  await page.route(`**/api/v1/organizations/${urlParams}`, async (route) => {
+    await route.fulfill({
+      status: status,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    });
+  });
+}
+
+export async function mockProjectsRoute(
+  page: import("playwright").Page,
+  body: any,
+  urlParams = "?page_size=10&page=1",
+  status: number = 200
+): Promise<void> {
+  await page.route(`**/api/v1/projects/${urlParams}`, async (route) => {
+    await route.fulfill({
+      status: status,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    });
+  });
+}
+
+export async function mockLabelsRoute(
+  page: import("playwright").Page,
+  body: any,
+  urlParams = "?page_size=10&page=1",
+  status: number = 200
+): Promise<void> {
+  await page.route(`**/api/v1/labels/${urlParams}`, async (route) => {
     await route.fulfill({
       status: status,
       contentType: 'application/json',
