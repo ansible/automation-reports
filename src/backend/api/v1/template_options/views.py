@@ -86,7 +86,7 @@ class TemplateOptionsView(AdminOnlyViewSet):
                     manually_execute_minutes = max_minutes_input
                 elif manually_execute_minutes < min_minutes_input:
                     manually_execute_minutes = min_minutes_input
-                template.time_taken_manually_execute_minutes = manually_execute_minutes
+                template.time_taken_manually_execute_minutes = int(round(manually_execute_minutes))
                 template.time_taken_create_automation_minutes = settings.DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES
                 template.save()
 
