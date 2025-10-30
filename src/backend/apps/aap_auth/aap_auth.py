@@ -62,7 +62,7 @@ class AAPAuth:
 
 
     def ping(self, url: str) -> Response:
-        logger.info(f"Try to obtain OAUth endpoint {url}")
+        logger.info(f"Try to obtain OAuth endpoint {url}")
         try:
             response = requests.get(
                 url=url,
