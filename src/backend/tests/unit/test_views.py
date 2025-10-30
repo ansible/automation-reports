@@ -204,6 +204,7 @@ ENDPOINTS = {
         "/api/v1/common/settings/",
         "/api/v1/common/settings/",
         "/api/v1/report/pdf/?date_range=last_month",
+        "/api/v1/template_options/restore_user_inputs/"
     ],
     "put": [
         "/api/v1/templates/1/",
@@ -482,3 +483,15 @@ class TestViews:
         for url in ENDPOINTS["delete"]:
             response = client.delete(url)
             assert response.status_code == 403
+
+    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    def test_restore_user_inputs(self, mock_auth, host_summaries, projects):
+        client = APIClient()
+        response = client.get("/api/v1/report/?page=1&page_size=10&date_range=last_month")
+        response_data = response.json()
+        assert response_data["results"][0]["time_taken_manually_execute_minutes"] == 60
+        post_response = client.post("/api/v1/template_options/restore_user_inputs/")
+        assert post_response.status_code == 204
+        response = client.get("/api/v1/report/?page=1&page_size=10&date_range=last_month")
+        response_data = response.json()
+        assert response_data["results"][0]["time_taken_manually_execute_minutes"] == 1

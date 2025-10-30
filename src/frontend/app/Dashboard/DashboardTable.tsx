@@ -12,7 +12,7 @@ import {
   Icon,
   Spinner,
   Switch,
-  Tooltip,
+  Tooltip
 } from '@patternfly/react-core';
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 import { BaseTable, CustomInput } from '@app/Components';
@@ -22,7 +22,7 @@ import { formatCurrency, formatNumber } from '@app/Utils';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
 import {
   useCurrencySign,
-  useEnableTemplateCreationTime,
+  useEnableTemplateCreationTime
 } from '@app/Store/commonSelectors';
 import {
   useAutomatedProcessCost,
@@ -55,6 +55,8 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
     if (value || value === 0) {
       if (value <= 0) {
         setHourlyManualCostsChangedError('Value must be greater then 0!');
+      } else if (value > 1000) {
+        setHourlyManualCostsChangedError('Value must be less than or equal to 1000!');
       } else {
         setHourlyManualCostsChangedError(null);
         props.onCostChanged('manual', value);
@@ -66,6 +68,8 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
     if (value || value === 0) {
       if (value <= 0) {
         setHourlyAutomatedProcessCostsChangedError('Value must be greater then 0!');
+      } else if (value > 1000) {
+        setHourlyAutomatedProcessCostsChangedError('Value must be less than or equal to 1000!');
       } else {
         setHourlyAutomatedProcessCostsChangedError(null);
         props.onCostChanged('automated', value);
@@ -100,19 +104,19 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
       title: 'Time taken to manually execute (min)',
       info: { tooltip: 'Please enter an average time that an engineer would spend to run the job' },
       isEditable: true,
-      isVisible: true,
+      isVisible: true
     },
     {
       name: 'time_taken_create_automation_minutes',
       title: 'Time taken to create automation (min)',
       info: { tooltip: 'Please enter the time an engineer would spend to automate this job' },
       isEditable: true,
-      isVisible: switchEnableTemplateCreationTimeIsChecked,
+      isVisible: switchEnableTemplateCreationTimeIsChecked
     },
     { name: 'elapsed', title: 'Running time', valueKey: 'elapsed_str', type: 'time-string', isVisible: true },
     { name: 'automated_costs', title: 'Automated cost', type: 'currency', isVisible: true },
     { name: 'manual_costs', title: 'Manual cost', type: 'currency', isVisible: true },
-    { name: 'savings', title: 'Savings', type: 'currency', isVisible: true },
+    { name: 'savings', title: 'Savings', type: 'currency', isVisible: true }
   ];
   return (
     <>
@@ -243,7 +247,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             pagination={{
               onPageChange: handlePageChange,
               onPerPageChange: handlePerPageChange,
-              totalItems: props.data.count,
+              totalItems: props.data.count
             }}
             data={props.data.results}
             sort={{ onSortChange: handleSort }}

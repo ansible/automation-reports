@@ -139,6 +139,10 @@ const deleteView = async (viewId: number) => {
   return api.delete(`api/v1/common/filter_set/${viewId}/`);
 };
 
+const resetUserInputsToDefaults = async ()=>{
+  return api.post('api/v1/template_options/restore_user_inputs/', {})
+}
+
 export const RestService = {
   fetchAapSettings: fetchAapSettings,
   authorizeUser: authorizeUser,
@@ -156,5 +160,6 @@ export const RestService = {
   exportToCSV: exportToCSV,
   exportToPDF: exportToPDF,
   saveEnableTemplateCreationTime: saveEnableTemplateCreationTime,
-  logoutUser: logoutUser
+  logoutUser: logoutUser,
+  resetUserInputsToDefaults: resetUserInputsToDefaults,
 };

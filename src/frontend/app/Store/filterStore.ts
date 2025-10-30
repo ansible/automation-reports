@@ -10,12 +10,14 @@ import useCommonStore from './commonStore';
 type FilterStoreState = FilterState & {
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
   error: boolean;
+  reloadData: boolean;
 };
 
 type FilterStoreActions = {
   fetchTemplateOptions: () => Promise<void>;
   setAutomatedProcessCost: (cost: number) => void;
   setManualProcessCost: (cost: number) => void;
+  setReloadData: (value: boolean) => void;
 };
 
 const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
@@ -36,7 +38,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
   projectOptions: [],
   loading: 'idle',
   error: false,
-
+  reloadData: false,
   fetchTemplateOptions: async () => {
     const {
       setCurrencies,
@@ -79,6 +81,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
 
   setAutomatedProcessCost: (cost: number) => set({ automatedProcessCost: cost }),
   setManualProcessCost: (cost: number) => set({ manualCostAutomation: cost }),
+  setReloadData: (value: boolean)=> set({reloadData: value}),
 }));
 
 export default useFilterStore;
