@@ -73,7 +73,7 @@ class AAPAuth:
             logger.error(f'GET request {url} failed with exception {e}')
             raise AuthenticationFailed(f"Failed request to {url}")
         if response.ok:
-            logger.info(f"Successfully obtained OAUth endpoint {url}")
+            logger.info(f"Successfully obtained OAuth endpoint {url}")
         return response
 
     # Cache the OAuth endpoints to avoid pinging the server on every call
