@@ -77,3 +77,8 @@ bundle_install=false
 # Relevant if bundle_install=true
 # <full path to the bundle directory>
 bundle_dir='{{ lookup("ansible.builtin.env", "PWD") }}/bundle'
+
+# AAP Dashboard - optional
+# --------------------------
+# Set to True to expose Django admin page.
+# nginx_dashboard_admin_exposed=False

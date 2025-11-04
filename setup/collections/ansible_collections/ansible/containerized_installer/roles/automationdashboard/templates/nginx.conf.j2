@@ -122,7 +122,12 @@ http {
         #     proxy_set_header X-Real-IP $remote_addr;
         # }
 
-        location ~ ^/(api|admin)/ {
+        {% if nginx_dashboard_admin_exposed %}
+        {% set exposed_django_urls = "api|admin" %}
+        {% else %}
+        {% set exposed_django_urls = "api" %}
+        {% endif %}
+        location ~ ^/({{ exposed_django_urls }})/ {
             # proxy_pass http://127.0.0.1:8000;
 
             # Redirect if there is no forward-slash
