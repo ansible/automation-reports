@@ -83,7 +83,7 @@ class Cluster(CreatUpdateModel):
                 status__in=[JobStatusChoices.PENDING, JobStatusChoices.WAITING, JobStatusChoices.RUNNING],
                 type=SyncJobTypeChoices.SYNC_JOBS
         ).count() > 0:
-            logger.error(
+            logger.warning(
                 "Sync Job template %s could not be started because there are more than %s other jobs from that template waiting to run"
                 % (self, 1)
             )
@@ -287,7 +287,7 @@ class ClusterSyncData(CreatUpdateModel):
                 cluster=self.cluster,
                 status__in=[JobStatusChoices.PENDING, JobStatusChoices.WAITING, JobStatusChoices.RUNNING],
                 type=SyncJobTypeChoices.PARSE_JOB_DATA).count() >= limit:
-            logger.error(
+            logger.warning(
                 "Parse job data %s could not be started because there are more than %s other jobs from that template waiting to run"
                 % (self, limit)
             )

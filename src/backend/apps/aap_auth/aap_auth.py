@@ -122,7 +122,6 @@ class AAPAuth:
             timeout=30,
         )
         if not response.ok:
-            print(response.status_code)
             logger.error("An error occurred obtaining AAP token. %s", response.content)
             raise AuthenticationFailed("Obtaining of AAP token failed. An error occurred connecting to AAP authorization server.")
 
