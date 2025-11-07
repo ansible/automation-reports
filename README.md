@@ -171,7 +171,7 @@ nano local_settings.py
 
 **Edit the following variables in `local_settings.py`:**
 
-- `url`: Change from `aap24.example.com` to your AAP VM IP
+- `url`: Change from `aap.example.com` to your AAP VM IP
 - `user_data_endpoint`: Change from `/api/v2/me/` to `/api/gateway/v1/me/` for AAP v2.5
 - `client_id`: Replace `"TODO"` with your OAuth application client ID
 - `client_secret`: Replace `"TODO"` with your OAuth application client secret
@@ -182,12 +182,11 @@ Example configuration:
 AAP_AUTH_PROVIDER = {
     "name": "AnsibleAutomationPlatform",
     "protocol": "https",
+    "url": "aap.example.com",
     #
     # For AAP v2.4
-    "url": "aap24.example.com:8443/api",
     "user_data_endpoint": "/v2/me/",
     # For AAP v2.5, v2.6
-    # "url": "aap25.example.com",
     # "user_data_endpoint": "/api/gateway/v1/me/",
     #
     "check_ssl": False,
