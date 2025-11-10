@@ -253,6 +253,12 @@ class TestParser:
         for key, value in expected.items():
             assert getattr(job_template, key) == value
 
+    def test_job_template_calculate_manual_execution_time(self, cluster, cluster_sync_data_elapsed):
+        parser = DataParser(cluster_sync_data_elapsed.id)
+        job_template = parser.job_template
+        assert JobTemplate.objects.count() == 1
+        assert job_template.time_taken_manually_execute_minutes == 299
+
     @pytest.mark.parametrize('expected', [
         aap_user_expected_data,
     ])
