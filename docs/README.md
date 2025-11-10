@@ -16,7 +16,7 @@ This directory contains comprehensive architectural documentation for the Automa
 ## Quick Reference
 
 ### Key Technologies
-- **Backend**: Django 4.2 + REST Framework + PostgreSQL
+- **Backend**: Django 5.2 + REST Framework + PostgreSQL
 - **Frontend**: React 18 + TypeScript + PatternFly + Redux Toolkit
 - **Background Workers**: dramatiq dispatcher system
 - **Deployment**: Docker containers with Ansible installer

@@ -8,7 +8,7 @@ from backend.apps.clusters.schemas import DateRangeSchema, QueryParams
 
 def get_filter_options(request: Request) -> QueryParams:
     options = QueryParams()
-    fields = options.model_fields
+    fields = type(options).model_fields
     date_range_fields = ["start_date", "end_date", "date_range"]
 
     for field in fields:

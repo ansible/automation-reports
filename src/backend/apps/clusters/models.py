@@ -9,7 +9,6 @@ import dateutil.parser
 import pytz
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from django.core.cache import cache
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import QuerySet, Min
@@ -569,8 +568,8 @@ class Job(BaseModel):
         abstract = False
         indexes = [
             models.Index(fields=['status', 'finished']),
+            models.Index(fields=['cluster', 'job_template'])
         ]
-        index_together = ('cluster', 'job_template'),
 
     objects = JobManager()
 

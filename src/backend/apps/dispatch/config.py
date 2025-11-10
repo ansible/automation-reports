@@ -84,5 +84,5 @@ def get_dispatcherd_config(for_service: bool = False, mock_publish: bool = False
             "OnStartProducer": {"task_list": {"backend.apps.dispatch.tasks.dispatch_startup": {}}},
             "ControlProducer": {}
         }
-    print(config["brokers"]["socket"])
+
     return config
