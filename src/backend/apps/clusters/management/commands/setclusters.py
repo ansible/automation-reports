@@ -95,6 +95,8 @@ class Command(BaseCommand):
         with transaction.atomic():
             for cluster in yaml_clusters:
                 cluster["access_token"] = encrypt_value(cluster["access_token"])
+                cluster["refresh_token"] = encrypt_value(cluster["refresh_token"])
+                cluster["client_secret"] = encrypt_value(cluster["client_secret"])
                 self.stdout.write(self.style.NOTICE('Adding cluster: address={}'.format(cluster.get("address"))))
                 try:
                     new_cluster = ClusterSettings(**cluster)

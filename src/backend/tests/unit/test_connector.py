@@ -137,7 +137,19 @@ class TestConnector:
         response = connector.ping(url)
         assert response == {'version': '4.4.2'}
 
-    def test_is_aap25_instance(self, mocker, cluster):
+    def test_detect_aap_version_25(self, mocker, cluster):
+        def mocked_requests_get(*args, **kwargs):
+            headers = {
+                'Content-Type': 'application/json',
+                'X-Api-Product-Name': 'Red Hat Ansible Automation Platform',
+            }
+            return get_response(**{'headers': headers, 'data': dict(version="2.5")})
+
+        connector = ApiConnector(cluster)
+        mocker.patch('requests.get', new=mocked_requests_get)
+        assert connector.detect_aap_version() == ClusterVersionChoices.AAP25
+
+    def test_detect_aap_version_24(self, mocker, cluster):
         def mocked_requests_get(*args, **kwargs):
             headers = {
                 'Content-Type': 'application/json',
@@ -146,38 +158,23 @@ class TestConnector:
             return get_response(**{'headers': headers})
 
         connector = ApiConnector(cluster)
-        mocker.patch('requests.get', new=mocked_requests_get)
-        assert connector.is_aap25_instance is True
-
-    def test_is_aap24_instance(self, mocker, cluster):
-        def mocked_requests_get(*args, **kwargs):
-            headers = {
-                'Content-Type': 'application/json',
-                'X-Api-Product-Name': 'Red Hat Ansible Automation Platform',
-            }
-            return get_response(**{'headers': headers})
-
-        connector = ApiConnector(cluster)
-        mocker.patch('requests.get', new=mocked_requests_get)
-        assert connector.is_aap24_instance is True
+        mocker.patch('requests.get', side_effect=[None, mocked_requests_get()])
+        assert connector.detect_aap_version() == ClusterVersionChoices.AAP24
 
     def test_check_aap_version_24(self, mocker, cluster):
-        mocker.patch('backend.apps.clusters.connector.ApiConnector.is_aap25_instance', return_value=False, new_callable=mocker.PropertyMock)
-        mocker.patch('backend.apps.clusters.connector.ApiConnector.is_aap24_instance', return_value=True, new_callable=mocker.PropertyMock)
+        mocker.patch('backend.apps.clusters.connector.ApiConnector.detect_aap_version', return_value="AAP 2.4")
         connector = ApiConnector(cluster)
         connector.check_aap_version()
         assert Cluster.objects.first().aap_version == ClusterVersionChoices.AAP24
 
     def test_check_aap_version_25(self, mocker, cluster):
-        mocker.patch('backend.apps.clusters.connector.ApiConnector.is_aap25_instance', return_value=True, new_callable=mocker.PropertyMock)
-        mocker.patch('backend.apps.clusters.connector.ApiConnector.is_aap24_instance', return_value=False, new_callable=mocker.PropertyMock)
+        mocker.patch('backend.apps.clusters.connector.ApiConnector.detect_aap_version', return_value="AAP 2.5")
         connector = ApiConnector(cluster)
         connector.check_aap_version()
         assert Cluster.objects.first().aap_version == ClusterVersionChoices.AAP25
 
     def test_check_aap_version_fail(self, mocker, cluster):
-        mocker.patch('backend.apps.clusters.connector.ApiConnector.is_aap25_instance', return_value=False, new_callable=mocker.PropertyMock)
-        mocker.patch('backend.apps.clusters.connector.ApiConnector.is_aap24_instance', return_value=False, new_callable=mocker.PropertyMock)
+        mocker.patch('backend.apps.clusters.connector.ApiConnector.detect_aap_version', side_effect=Exception('Not valid version for cluster https://localhost:8000.'), new_callable=mocker.PropertyMock)
         connector = ApiConnector(cluster)
         with pytest.raises(Exception) as e:
             connector.check_aap_version()

@@ -37,6 +37,7 @@ class CreatUpdateModel(models.Model):
 
 
 class ClusterVersionChoices(models.TextChoices):
+    AAP26 = "AAP 2.6", "AAP 2.6"
     AAP25 = "AAP 2.5", "AAP 2.5"
     AAP24 = "AAP 2.4", "AAP 2.4"
 
@@ -46,6 +47,9 @@ class Cluster(CreatUpdateModel):
     address = models.CharField(max_length=255)
     port = models.IntegerField()
     access_token = models.BinaryField()
+    refresh_token = models.BinaryField(default=b'')
+    client_id = models.CharField(max_length=255, default='')
+    client_secret = models.BinaryField(default=b'')
     verify_ssl = models.BooleanField(default=True)
     aap_version = models.CharField(max_length=15, choices=ClusterVersionChoices.choices, default=ClusterVersionChoices.AAP24)
 
@@ -58,7 +62,7 @@ class Cluster(CreatUpdateModel):
 
     @property
     def api_url(self):
-        if self.aap_version == ClusterVersionChoices.AAP25:
+        if self.aap_version in [ClusterVersionChoices.AAP25, ClusterVersionChoices.AAP26]:
             return f'/api/controller/v2'
         elif self.aap_version == ClusterVersionChoices.AAP24:
             return f'/api/v2'
@@ -67,10 +71,19 @@ class Cluster(CreatUpdateModel):
 
     @property
     def gui_base_url(self):
-        if self.aap_version == ClusterVersionChoices.AAP25:
+        if self.aap_version in [ClusterVersionChoices.AAP25, ClusterVersionChoices.AAP26]:
             return f'{self.base_url}/execution/'
         elif self.aap_version == ClusterVersionChoices.AAP24:
             return f'{self.base_url}/#/'
+        else:
+            raise NotImplementedError
+
+    @property
+    def oauth_token_url(self):
+        if self.aap_version == ClusterVersionChoices.AAP26:
+            return '/o/token/'
+        elif self.aap_version in [ClusterVersionChoices.AAP24, ClusterVersionChoices.AAP25]:
+            return '/api/o/token/'
         else:
             raise NotImplementedError
 
