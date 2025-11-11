@@ -12,7 +12,7 @@ django-solo==2.4.0
 django-weasyprint==2.4.0
 djangorestframework==3.16.1
 prometheus_client==0.23.1
-psycopg-binary==3.2.12
+psycopg==3.2.12
 pydantic==2.12.4
 pytest-django==4.11.1
 pytest-mock==3.15.1
