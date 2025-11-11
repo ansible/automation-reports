@@ -37,6 +37,10 @@ class User(AbstractUser):
 
     @classmethod
     def create_aap_user(cls, user_data: UserSchema):
+        user_dict = user_data.model_dump()
+        is_platform_auditor = user_dict.pop("is_platform_auditor", False)
+        is_system_auditor = user_dict.pop("is_system_auditor", False)
         return User.objects.create(
-            **user_data.model_dump()
+            is_platform_auditor=bool(is_platform_auditor or is_system_auditor),
+            **user_dict
         )
