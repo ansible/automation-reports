@@ -34,7 +34,12 @@ class Command(BaseCommand):
         _until = options.get('until') or None
 
         if _since is None or _until is None:
-            confirm = input('Interval not specified. Syncing data may take a long time. Continue Y/N:')
+            try:
+                confirm = input('Interval not specified. Syncing data may take a long time. Continue Y/N:')
+            except EOFError:
+                # We get EOFError if "podman run ..." is used without "-it"
+                self.stdout.write(self.style.ERROR('\nERROR: Non-iteractive mode, both "since" and "until" options are mandatory.'))
+                sys.exit(1)
             if confirm != 'Y':
                 sys.exit(1)
 
