@@ -48,7 +48,7 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
   React.useEffect(() => {
     const allOptions = props?.options?.length ? (deepClone(props.options) as FilterOptionWithId[]) : [];
     setOptions(allOptions);
-  }, [searchValue, props.options]);
+  }, [props.options]);
 
   const onToggleClick = (ev: React.MouseEvent) => {
     ev.stopPropagation();
@@ -66,11 +66,11 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
   };
 
   const onSearch = (value: string) => {
+    setSearchValue(value);
     if (timeoutValue) {
       clearTimeout(timeoutValue);
       setTimeoutValue(undefined);
     }
-
     const timeout: number = window.setTimeout(() => {
       if (props.onSearch) {
         props.onSearch(value?.length ? value : null);

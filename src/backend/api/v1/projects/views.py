@@ -5,7 +5,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from backend.api.v1.mixins import AdminOnlyViewSet
 from backend.api.v1.projects.serializers import ProjectSerializer
-from backend.apps.clusters.models import Label, Project
+from backend.apps.clusters.models import Project
 
 
 class ProjectView(
@@ -20,5 +20,5 @@ class ProjectView(
     search_fields = ["name"]
     ordering = ["name"]
 
-    def get_queryset(self) -> QuerySet[Label]:
+    def get_queryset(self) -> QuerySet[Project]:
         return Project.objects.all()
