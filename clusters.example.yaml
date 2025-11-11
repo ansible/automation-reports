@@ -4,6 +4,9 @@ clusters:
     address: my-aap.example.com  # Can use IP or FQDN without http(s)://
     port: 443  # Normally 443
     access_token: sampleToken  # Your preconfigured Ansible Automation Platform read access token
+    refresh_token: sampleRefreshToken  # Your preconfigured Ansible Automation Platform read refresh token
+    client_id: sampleClientId  # Ansible Automation Platform OAuth2 application client ID
+    client_secret: sampleClientSecret  # Ansible Automation Platform OAuth2 application client secret
     verify_ssl: false  # Value false can be used when using self signed certs
     sync_schedules:
       - name: Every 5 minutes sync
@@ -15,6 +18,9 @@ clusters:
     address: aap2.example.com
     port: 443
     access_token: sampleToken1
+    refresh_token: sampleRefreshToken1
+    client_id: sampleClientId1
+    client_secret: sampleClientSecret1
     verify_ssl: true
     sync_schedules:
       - name: Every 5 minutes sync

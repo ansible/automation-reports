@@ -20,6 +20,9 @@ class ClusterSettings(FrozenModel):
     address: str
     port: int
     access_token: bytes
+    refresh_token: bytes
+    client_id: str
+    client_secret: bytes
     verify_ssl: bool = True
     sync_schedules: List[SyncSchedule] | None = []
 
