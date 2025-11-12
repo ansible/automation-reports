@@ -285,7 +285,6 @@ class TestViews:
         response = client.get("/api/v1/template_options/")
         assert response.status_code == 200
         data = response.json()
-        print(data)
         assert data == expected
 
     @pytest.mark.parametrize('expected', [test_report_expected_data])

@@ -64,6 +64,7 @@ pip install -r requirements.txt
 You might need to install required development libraries
 
 ```bash
+pip install -r requirements_dev.txt
 # Fedora
 sudo dnf install python3.12-devel libpq-devel
 ```
