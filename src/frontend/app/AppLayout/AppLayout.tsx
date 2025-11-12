@@ -166,6 +166,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
                     ref={toggleRef}
                     onClick={onSettingsDropdownSelect}
                     isExpanded={isSettingsDropdownOpen}
+                    aria-label={'settings-dropdown'}
                   >
                     <Icon>
                       <CogsIcon />

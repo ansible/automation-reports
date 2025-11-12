@@ -1,6 +1,7 @@
 import api from '../client/apiClient';
 import {
-  FilterSet,
+  FilterOptionWithId,
+  FilterSet, OptionsResponse,
   OrderingParams,
   ReportDetail,
   RequestFilter,
@@ -151,6 +152,18 @@ const resetUserInputsToDefaults = async ()=>{
   return api.post('api/v1/template_options/restore_user_inputs/', {})
 }
 
+const fetchFilterOptions: (endPoint: string, params: object) => Promise<OptionsResponse> = async (endPoint: string, params: object): Promise<OptionsResponse> => {
+  const queryString = buildQueryString(params);
+  return api
+    .get(`${endPoint}${queryString}`, {})
+    .then((response) => response.data);
+};
+const fetchFilterOption: (endPoint: string, id: number) => Promise<FilterOptionWithId> = async (endPoint: string, id: number): Promise<FilterOptionWithId> => {
+  return api
+    .get(`${endPoint}${id}/`, {})
+    .then((response) => response.data);
+};
+
 export const RestService = {
   fetchAapSettings: fetchAapSettings,
   authorizeUser: authorizeUser,
@@ -169,5 +182,7 @@ export const RestService = {
   exportToPDF: exportToPDF,
   saveEnableTemplateCreationTime: saveEnableTemplateCreationTime,
   logoutUser: logoutUser,
+  fetchFilterOptions: fetchFilterOptions,
+  fetchFilterOption: fetchFilterOption,
   resetUserInputsToDefaults: resetUserInputsToDefaults,
 };

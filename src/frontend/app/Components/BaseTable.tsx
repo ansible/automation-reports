@@ -25,8 +25,6 @@ export const BaseTable: React.FunctionComponent<{
 }> = (props) => {
   const [activeSortIndex, setActiveSortIndex] = React.useState<number | undefined>(0);
   const [activeSortDirection, setActiveSortDirection] = React.useState<'asc' | 'desc' | undefined>('asc');
-  const [page, setPage] = React.useState(1);
-  const [perPage, setPerPage] = React.useState(10);
   const [editingError, setEditingError] = React.useState<ColumnError | undefined>(undefined);
   const selectedCurrencySign = useCurrencySign();
 
@@ -39,20 +37,16 @@ export const BaseTable: React.FunctionComponent<{
       setActiveSortIndex(index);
       setActiveSortDirection(direction as 'desc' | 'asc');
       const orderBy = direction === 'asc' ? props.columns[index]['name'] : `-${props.columns[index]['name']}`;
-      setPage(1);
       props.sort.onSortChange(orderBy);
     },
     columnIndex,
   });
 
   const onSetPage = (_event: React.MouseEvent | React.KeyboardEvent | MouseEvent, newPage: number) => {
-    setPage(newPage);
     props.pagination.onPageChange(newPage);
   };
 
   const onPerPageSelect = (_event: React.MouseEvent | React.KeyboardEvent | MouseEvent, newPerPage: number) => {
-    setPerPage(newPerPage);
-    setPage(1);
     props.pagination.onPerPageChange(1, newPerPage);
   };
 
@@ -60,8 +54,8 @@ export const BaseTable: React.FunctionComponent<{
     <Pagination
       titles={{ paginationAriaLabel: 'Table pagination' }}
       itemCount={props.pagination.totalItems}
-      perPage={perPage}
-      page={page}
+      perPage={props.pagination.perPage}
+      page={props.pagination.currentPage}
       onSetPage={onSetPage}
       onPerPageSelect={onPerPageSelect}
     />

@@ -9,4 +9,7 @@ urlpatterns = [
     path("common/", include("backend.api.v1.common.urls")),
     path("aap_auth/", include("backend.api.v1.aap_auth.urls")),
     path("users/", include("backend.api.v1.users.urls")),
+    path("labels/", include("backend.api.v1.labels.urls")),
+    path("projects/", include("backend.api.v1.projects.urls")),
+    path("organizations/", include("backend.api.v1.organizations.urls")),
 ]
