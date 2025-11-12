@@ -14,15 +14,11 @@ djangorestframework==3.16.1
 prometheus_client==0.23.1
 psycopg==3.2.12
 pydantic==2.12.4
-pytest-django==4.11.1
-pytest-mock==3.15.1
-pytest==9.0.0
-pytest-cov==7.0.0
 python-dateutil==2.9.0.post0
 pytz==2025.2
 redis==7.0.1
 requests==2.32.5
 split-settings==1.0.0
-time-machine==2.19.0
 urllib3==2.5.0
 uvicorn==0.38.0
+setuptools==80.9.0
