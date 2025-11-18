@@ -4,6 +4,10 @@ import {
   mockTokenRoute,
   mockMeRoute,
   mockTemplateOptionsRoute,
+  mockTemplatesRoute,
+  mockOrganizationsRoute,
+  mockProjectsRoute,
+  mockLabelsRoute,
   mockReportRoute,
   mockReportDetailsRoute
 } from "../support/interceptors.ts";
@@ -55,6 +59,10 @@ export async function generateCostAndSavingsValues(
 export async function loginUser(
   page: Page,
   templateOptionsResponse: Record<string, any>,
+  templatesResponse: Record<string, any>,
+  organizationsResponse: Record<string, any>,
+  projectsResponse: Record<string, any>,
+  labelsResponse: Record<string, any>,
   reportRouteResponse: Record<string, any>,
   reportDetailsResponse: Record<string, any>
 ) {
@@ -62,6 +70,10 @@ export async function loginUser(
   await mockTokenRoute(page);
   await mockMeRoute(page);
   await mockTemplateOptionsRoute(page, templateOptionsResponse);
+  await mockTemplatesRoute(page, templatesResponse);
+  await mockOrganizationsRoute(page, organizationsResponse);
+  await mockProjectsRoute(page, projectsResponse);
+  await mockLabelsRoute(page, labelsResponse);
   await mockReportRoute(page, reportRouteResponse);
   await mockReportDetailsRoute(page, reportDetailsResponse);
 }

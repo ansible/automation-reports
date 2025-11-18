@@ -1,4 +1,5 @@
 import React from 'react';
+import { FilterOptionWithId } from '@app/Types/FilterTypes';
 
 export type BaseDropdownProps = {
   id: string;
@@ -21,10 +22,13 @@ export const baseDropDownDefaultProps = {
 };
 
 export type MultiChoiceDropdownProps = {
-  selections: (number | string)[];
+  selections: FilterOptionWithId[];
   options: object[];
   label?: string;
   icon?: React.ReactNode;
   onSelect: (ev: React.MouseEvent | undefined, itemId?: string | number) => void;
+  onSearch?: (searchString: string | null) => void;
+  onReachBottom?: ()=> void;
+  loading?: boolean,
   style?: React.CSSProperties;
 } & DefaultBaseDropdownProps;

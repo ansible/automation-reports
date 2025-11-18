@@ -30,6 +30,10 @@ import reportResponseChangeTimeTakenToManuallyExecute from "../fixtures/reportRe
 import reportDetailsResponseChangeTimeTakenToManuallyExecute from "../fixtures/reportDetailsResponseChangeTimeTakenToManuallyExecute.json" assert { type: "json"};
 import reportResponseUpdateTimeToCreateAutomation from "../fixtures/reportResponseUpdateTimeToCreateAutomation.json" assert { type: "json"};
 import reportDetailsResponseUpdateTimeToCreateAutomation from "../fixtures/reportDetailsResponseUpdateTimeToCreateAutomation.json" assert { type: "json"};
+import templates from "../fixtures/templates.json" assert { type: "json"};
+import organizations from "../fixtures/organizations.json" assert { type: "json"};
+import projects from "../fixtures/projects.json" assert { type: "json"};
+import labels from "../fixtures/labels.json" assert { type: "json"};
 
 async function applyFilter(
   page: Page,
@@ -66,6 +70,10 @@ test.describe("Set filters", () => {
     await loginUser(
       page,
       templateOptions,
+      templates,
+      organizations,
+      projects,
+      labels,
       reportDateRange,
       reportDetailsWithData
     );

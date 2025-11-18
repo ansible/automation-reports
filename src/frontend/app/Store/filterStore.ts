@@ -30,12 +30,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
   automatedProcessCost: 0,
   clusters: [],
   dateRangeOptions: [],
-  templateOptions: [],
-  labelOptions: [],
   manualCostAutomation: 0,
-  organizationOptions: [],
-  instanceOptions: [],
-  projectOptions: [],
   loading: 'idle',
   error: false,
   reloadData: false,
@@ -46,7 +41,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
       setCurrencies,
       setDefaultCurrency,
       setFilterViews,
-      setEnableTemplateCreationTime,
+      setEnableTemplateCreationTime
     } = useCommonStore.getState();
 
     set({ loading: 'pending', error: false });
@@ -67,14 +62,9 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
 
       set({
         loading: 'succeeded',
-        instanceOptions: data.instances,
-        labelOptions: data.labels,
-        templateOptions: data.job_templates,
-        organizationOptions: data.organizations,
         dateRangeOptions: data.date_ranges,
         manualCostAutomation: data.manual_cost_automation,
         automatedProcessCost: data.automated_process_cost,
-        projectOptions: data.projects,
         max_pdf_job_templates: data.max_pdf_job_templates
       });
     } catch {

@@ -25,7 +25,6 @@ export interface FilterOptionResponse {
   automated_process_cost: number | string;
   clusters: ClusterOption[];
   date_ranges: FilterOption[];
-  job_templates: FilterOptionWithId[];
   labels: FilterOptionWithId[];
   manual_cost_automation: number | string;
   organizations: FilterOption[];
@@ -48,16 +47,28 @@ export interface FilterState {
   automatedProcessCost: number | string;
   clusters: ClusterOption[];
   dateRangeOptions: FilterOption[];
-  templateOptions: FilterOptionWithId[];
-  labelOptions: FilterOptionWithId[];
-  instanceOptions: FilterOptionWithId[];
-  projectOptions: FilterOptionWithId[];
   manualCostAutomation: number | string;
-  organizationOptions: FilterOption[];
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
   error: boolean;
   max_pdf_job_templates: number,
 }
+
+
+export interface FilterOptionsState {
+  endPoint: string;
+  errorMessage: string;
+  errorRetrieveOneMessage: string;
+  options: FilterOption[];
+  currentPage: number,
+  pageSize: number,
+  count: number,
+  nextPage: string | null,
+  prevPage: string | null,
+  searchString: string | null,
+  loading: 'idle' | 'pending' | 'succeeded' | 'failed';
+  error: boolean;
+}
+
 
 export interface RequestFilter {
   organization?: (string | number)[];
@@ -88,11 +99,10 @@ export interface CommonState {
 }
 
 export interface FilterProps {
-  organization: (string | number)[];
-  job_template: (string | number)[];
-  instances: (string | number)[];
-  label: (string | number)[];
-  project: (string | number)[];
+  organization: FilterOptionWithId[];
+  job_template: FilterOptionWithId[];
+  label: FilterOptionWithId[];
+  project: FilterOptionWithId[];
   date_range: string | null;
   start_date: Date | undefined;
   end_date: Date | undefined;
@@ -117,3 +127,10 @@ export type OrderingParams = {
 };
 
 export type UrlParams = RequestFilter & PaginationParams & OrderingParams;
+
+export type OptionsResponse = {
+  count: number,
+  next: string | null,
+  previous: string | null,
+  results: FilterOptionWithId[]
+}

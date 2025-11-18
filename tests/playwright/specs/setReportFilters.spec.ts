@@ -8,6 +8,10 @@ import { loginUser } from "../support/helpers.ts";
 import reportDetails from "../fixtures/reportDetails.json" assert { type: "json"};
 import templateOptions from "../fixtures/templateOptions.json" assert { type: "json"};
 import templateOptionsAddReport from "../fixtures/templateOptionsAddReport.json" assert { type: "json"};
+import templates from "../fixtures/templates.json" assert { type: "json"};
+import organizations from "../fixtures/organizations.json" assert { type: "json"};
+import projects from "../fixtures/projects.json" assert { type: "json"};
+import labels from "../fixtures/labels.json" assert { type: "json"};
 
 async function saveReport(page: Page, buttonName: string) {
   await page.getByRole("button", { name: buttonName }).click();
@@ -99,6 +103,10 @@ test.describe("Set report filters", () => {
     await loginUser(
       page,
       templateOptions,
+      templates,
+      organizations,
+      projects,
+      labels,
       {"count":0,"next":null,"previous":null,"results":[]},
       reportDetails
     );

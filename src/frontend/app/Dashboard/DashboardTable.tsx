@@ -247,7 +247,9 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             pagination={{
               onPageChange: handlePageChange,
               onPerPageChange: handlePerPageChange,
-              totalItems: props.data.count
+              totalItems: props.data.count,
+              currentPage: props.pagination.page,
+              perPage: props.pagination.page_size,
             }}
             data={props.data.results}
             sort={{ onSortChange: handleSort }}
