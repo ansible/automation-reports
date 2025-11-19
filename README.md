@@ -319,7 +319,7 @@ The pre-commit configuration automatically:
 **Prerequisites**: Ensure the Django backend is running before starting the frontend (see backend setup above).
 
 ```bash
-nvm use v22
+nvm use v22.21.1
 npm --version
 cd src/frontend
 npm install
