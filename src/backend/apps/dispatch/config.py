@@ -70,6 +70,7 @@ def get_dispatcherd_config(for_service: bool = False, mock_publish: bool = False
             "channels": [
                 settings.DISPATCHER_SYNC_CHANNEL,
                 settings.DISPATCHER_PARSE_CHANNEL,
+                settings.DISPATCHER_METRICS_CHANNEL
             ],
             "default_publish_channel": settings.CLUSTER_HOST_ID,
             "max_connection_idle_seconds": 5,

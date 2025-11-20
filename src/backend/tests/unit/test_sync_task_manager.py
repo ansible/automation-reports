@@ -1,5 +1,4 @@
 import threading
-from time import sleep
 from unittest.mock import patch, MagicMock
 
 import pytest
@@ -10,14 +9,14 @@ from backend.apps.dispatch.config import get_dispatcherd_config
 from backend.apps.scheduler.models import JobStatusChoices, JobTypeChoices, SyncSchedule, SyncJob
 from backend.apps.scheduler.task_manager import SyncTaskManager
 from backend.apps.tasks.jobs import BaseTask, AAPSyncTask, AAPParseDataTask
-from django.core.management import call_command
+
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestSyncTaskManager:
 
     def test_init_sets_prefix(self):
         tb = SyncTaskManager()
-        assert tb.prefix == "sync_task_manager"
+        assert tb.prefix == "automation_dashboard_task_manager"
         assert tb.start_task_limit == 5
         assert tb.task_manager_timeout == 3
 
