@@ -1,0 +1,14 @@
+{
+  "url": "https://aap26.example.com:443/api/gateway/v1/ping/",
+  "status": 200,
+  "headers": {
+    "X-Api-Product-Name": "AAP gateway"
+  },
+  "json_body": {
+    "status": "good",
+    "version": "2.6",
+    "pong": "2025-11-27 13:57:44.039151",
+    "db_connected": true,
+    "proxy_connected": true
+  }
+}
