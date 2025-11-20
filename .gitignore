@@ -39,6 +39,7 @@ storybook-static
 .env
 .venv
 clusters.yaml
+.coverage
 
 # Local settings
 local_settings.py

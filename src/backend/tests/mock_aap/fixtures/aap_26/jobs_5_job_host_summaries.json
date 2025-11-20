@@ -1,0 +1,56 @@
+{
+  "url": "https://aap26.example.com:443/api/controller/v2/jobs/5/job_host_summaries?page_size=100&page=1&order_by=modified",
+  "status": 200,
+  "headers": {
+    "X-Api-Product-Name": "Red Hat Ansible Automation Platform"
+  },
+  "json_body": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": 3,
+        "type": "job_host_summary",
+        "url": "/api/controller/v2/job_host_summaries/3/",
+        "related": {
+          "job": "/api/controller/v2/jobs/5/",
+          "host": "/api/controller/v2/hosts/1/"
+        },
+        "summary_fields": {
+          "host": {
+            "id": 1,
+            "name": "localhost",
+            "description": ""
+          },
+          "job": {
+            "id": 5,
+            "name": "jobtemplate2-org1",
+            "description": "jobtemplate2-org1",
+            "status": "successful",
+            "failed": false,
+            "elapsed": 6.328,
+            "type": "job",
+            "job_template_id": 11,
+            "job_template_name": "jobtemplate2-org1"
+          }
+        },
+        "created": "2025-11-27T13:47:25.362580Z",
+        "modified": "2025-11-27T13:47:25.362593Z",
+        "job": 5,
+        "host": 1,
+        "constructed_host": null,
+        "host_name": "localhost",
+        "changed": 0,
+        "dark": 0,
+        "failures": 0,
+        "ok": 2,
+        "processed": 1,
+        "skipped": 0,
+        "failed": false,
+        "ignored": 0,
+        "rescued": 0
+      }
+    ]
+  }
+}
