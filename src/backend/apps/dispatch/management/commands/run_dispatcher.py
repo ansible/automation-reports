@@ -1,6 +1,6 @@
 import logging
 import os
-
+import redis
 import yaml
 from dispatcherd import run_service
 from dispatcherd.config import setup as dispatcher_setup
@@ -8,6 +8,7 @@ from dispatcherd.factories import get_control_from_settings
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
 
+from backend.analytics.subsystem_metrics import DispatcherMetricsServer
 from backend.apps.dispatch.config import get_dispatcherd_config
 
 logger = logging.getLogger('automation_dashboard.dispatch')
@@ -74,5 +75,9 @@ class Command(BaseCommand):
                 results.append(result)
             logger.debug('Tasks: %s', results)
             return
+        try:
+            DispatcherMetricsServer().start()
+        except redis.exceptions.ConnectionError as exc:
+            raise CommandError(f'Dispatcher could not connect to redis, error: {exc}')
 
         run_service()

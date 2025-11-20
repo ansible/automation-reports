@@ -12,4 +12,5 @@ urlpatterns = [
     path("labels/", include("backend.api.v1.labels.urls")),
     path("projects/", include("backend.api.v1.projects.urls")),
     path("organizations/", include("backend.api.v1.organizations.urls")),
+    path("metrics/", include("backend.api.v1.metrics.urls")),
 ]
