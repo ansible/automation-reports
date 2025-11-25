@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'backend.apps.tasks',
     'backend.apps.users',
     'backend.apps.aap_auth',
+    'backend.analytics',
     'solo',
 ]
 
@@ -177,7 +178,8 @@ LOGGING = {
         'automation_dashboard.tasks.utils': {'handlers': ['console']},
         'automation_dashboard.scheduler': {'handlers': ['console']},
         'automation_dashboard.utils': {'handlers': ['console']},
-        'automation_dashboard.tasks.system': {'handlers': ['console']}
+        'automation_dashboard.tasks.system': {'handlers': ['console']},
+        'automation_dashboard.analytics': {'handlers': ['console']}
     }
 }
 
@@ -290,6 +292,7 @@ DISPATCHER_SCHEDULE = {}
 
 DISPATCHER_SYNC_CHANNEL = 'automation_dashboard_sync_channel'
 DISPATCHER_PARSE_CHANNEL = 'automation_dashboard_parse_channel'
+DISPATCHER_METRICS_CHANNEL = 'automation_dashboard_metrics_channel'
 
 SCHEDULE_MAX_DATA_PARSE_JOBS = 30
 START_TASK_LIMIT = 50
@@ -315,6 +318,11 @@ CELERYBEAT_SCHEDULE = {
             'schedule': timedelta(seconds=5),
             'options': {'expires': 5}
         },
+    'send_subsystem_metrics': {
+        'task': 'backend.analytics.analytics_tasks.send_subsystem_metrics',
+        'schedule': timedelta(seconds=20),
+        'options': {'expires': 20}
+    },
 }
 
 for options in CELERYBEAT_SCHEDULE.values():
@@ -351,6 +359,32 @@ INITIAL_SYNC_SINCE = '2025-08-08'
 
 # PDF Download (Do not exceed the number 4000)
 MAX_PDF_JOB_TEMPLATES = 4000
+
+# Metrics
+SUBSYSTEM_METRICS_REDIS_KEY_PREFIX = "automation_dashboard_metrics"
+METRICS_SERVICE_DISPATCHER = 'dispatcherd'
+METRICS_SUBSYSTEM_CONFIG = {
+    'server': {
+        METRICS_SERVICE_DISPATCHER: {
+            'host': 'localhost',
+            'port': 8060,
+        },
+    }
+}
+# Interval in seconds for sending local metrics to other nodes
+SUBSYSTEM_METRICS_INTERVAL_SEND_METRICS = 3
+
+# Interval in seconds for saving local metrics to redis
+SUBSYSTEM_METRICS_INTERVAL_SAVE_TO_REDIS = 2
+
+# Record task manager metrics at the following interval in seconds
+# If using Prometheus, it is recommended to be => the Prometheus scrape interval
+SUBSYSTEM_METRICS_TASK_MANAGER_RECORD_INTERVAL = 15
+
+ALLOW_METRICS_FOR_ANONYMOUS_USERS = False
+
+BROKER_URL = 'unix:///var/run/redis/redis.sock'
+CLUSTER_HOST_ID = socket.gethostname()
 
 ### Local settings
 local_config_file = os.path.join(BASE_DIR, "django_config", "local_settings.py")

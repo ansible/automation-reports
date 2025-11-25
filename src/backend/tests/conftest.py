@@ -5,8 +5,13 @@ import pytz
 from django.core.cache import cache
 
 from backend.apps.clusters.encryption import encrypt_value
-from backend.apps.clusters.models import Cluster, Organization, Label, JobTemplate, Project, Job, JobTypeChoices, JobLaunchTypeChoices, InstanceGroup, ExecutionEnvironment, Inventory, AAPUser, JobStatusChoices, Host, JobHostSummary, ClusterSyncData
+from backend.apps.clusters.models import Cluster, Organization, Label, JobTemplate, Project, Job, JobTypeChoices, \
+    JobLaunchTypeChoices, InstanceGroup, ExecutionEnvironment, Inventory, AAPUser, Host, \
+    JobHostSummary, ClusterSyncData
+from backend.apps.clusters.models import JobStatusChoices
 from backend.apps.common.models import Currency, FilterSet
+from backend.apps.scheduler.models import JobTypeChoices as SyncJobTypeChoices
+from backend.apps.scheduler.models import SyncJob
 from backend.apps.users.models import User
 
 
@@ -92,7 +97,8 @@ def projects(cluster):
 
 @pytest.fixture
 def instance_group(cluster):
-    return InstanceGroup.objects.create(name="Instance Group A", cluster=cluster, external_id=1, is_container_group=False)
+    return InstanceGroup.objects.create(name="Instance Group A", cluster=cluster, external_id=1,
+                                        is_container_group=False)
 
 
 @pytest.fixture
@@ -135,8 +141,10 @@ def jobs(
             job_template=JobTemplate.objects.get(name="Job Template A"),
             launched_by=AAPUser.objects.get(name="AAP User"),
             status=JobStatusChoices.SUCCESSFUL,
-            started=datetime.datetime.strptime('2025-03-01T10:00:00Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC')),
-            finished=datetime.datetime.strptime('2025-03-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC')),
+            started=datetime.datetime.strptime('2025-03-01T10:00:00Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(
+                pytz.timezone('UTC')),
+            finished=datetime.datetime.strptime('2025-03-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(
+                pytz.timezone('UTC')),
             elapsed=25,
             failed=False,
             num_hosts=2,
@@ -156,8 +164,10 @@ def jobs(
             job_template=JobTemplate.objects.get(name="Job Template B"),
             launched_by=AAPUser.objects.get(name="AAP User"),
             status=JobStatusChoices.SUCCESSFUL,
-            started=datetime.datetime.strptime('2025-02-01T10:00:00Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC')),
-            finished=datetime.datetime.strptime('2025-02-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC')),
+            started=datetime.datetime.strptime('2025-02-01T10:00:00Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(
+                pytz.timezone('UTC')),
+            finished=datetime.datetime.strptime('2025-02-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(
+                pytz.timezone('UTC')),
             elapsed=25,
             failed=False,
             num_hosts=2,
@@ -546,6 +556,7 @@ def cluster_sync_data_elapsed(cluster, api_jobs, api_host_summaries):
         data=data,
     )
 
+
 @pytest.fixture
 def superuser():
     return User.objects.create(
@@ -558,6 +569,7 @@ def superuser():
         is_platform_auditor=False
     )
 
+
 @pytest.fixture
 def regularuser():
     return User.objects.create(
@@ -569,3 +581,47 @@ def regularuser():
         is_superuser=False,
         is_platform_auditor=False
     )
+
+
+@pytest.fixture
+def sync_jobs(cluster):
+    jobs = [
+        SyncJob(
+            name='Sync Job 1',
+            cluster=cluster,
+            status=JobStatusChoices.PENDING,
+            launch_type='auto', type=SyncJobTypeChoices.SYNC_JOBS,
+        ),
+        SyncJob(
+            name='Sync Job 2',
+            cluster=cluster,
+            status=JobStatusChoices.PENDING,
+            launch_type='auto', type=SyncJobTypeChoices.SYNC_JOBS,
+        ),
+        SyncJob(
+            name='Sync Job 3',
+            cluster=cluster,
+            status=JobStatusChoices.RUNNING,
+            launch_type='auto', type=SyncJobTypeChoices.SYNC_JOBS,
+        ),
+        SyncJob(
+            name='Sync Job 4',
+            cluster=cluster,
+            status=JobStatusChoices.RUNNING,
+            launch_type='auto', type=SyncJobTypeChoices.PARSE_JOB_DATA,
+        ),
+        SyncJob(
+            name='Sync Job 5',
+            cluster=cluster,
+            status=JobStatusChoices.FAILED,
+            launch_type='auto', type=SyncJobTypeChoices.PARSE_JOB_DATA,
+        ),
+        SyncJob(
+            name='Sync Job 6',
+            cluster=cluster,
+            status=JobStatusChoices.SUCCESSFUL,
+            launch_type='auto', type=SyncJobTypeChoices.PARSE_JOB_DATA,
+        )
+    ]
+
+    return SyncJob.objects.bulk_create(jobs)

@@ -247,6 +247,7 @@ ENDPOINTS = {
         "/api/v1/labels/?page=1&page_size=10",
         "/api/v1/projects/?page=1&page_size=10",
         "/api/v1/organizations/?page=1&page_size=10",
+        "/api/v1/metrics/",
     ],
     "post": [
         "/api/v1/costs/",

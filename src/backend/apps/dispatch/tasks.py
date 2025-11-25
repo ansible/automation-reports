@@ -1,5 +1,6 @@
 import logging
 
+from backend.analytics.subsystem_metrics import DispatcherMetrics
 from backend.apps.clusters.models import JobStatusChoices
 from backend.apps.scheduler.models import SyncSchedule, SyncJob
 
@@ -34,3 +35,5 @@ def redo_unfinished_tasks():
 def dispatch_startup():
     _run_dispatch_startup_common()
     redo_unfinished_tasks()
+    m = DispatcherMetrics()
+    m.reset_values()
