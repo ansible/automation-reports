@@ -5,6 +5,7 @@ import os
 
 from backend.apps.clusters.models import Cluster
 from backend.apps.clusters.encryption import encrypt_value
+from .aap_common import aap_api_responses_versioned
 
 
 dict_cluster_26 = dict(
@@ -33,40 +34,7 @@ def cluster_26():
         verify_ssl=True,
     )
 
-# curl -k https://10.44.17.65:443/api/controller/v2/job_templates/ -H "Authorization: Bearer $TOKEN" -v
-# 
-
-out_dir="tests/mock_aap/fixtures/aap_26"
-
-
-def load_file(filename: str):
-    filename = os.path.join(out_dir, filename)
-    with open(filename, "r") as fin:
-        data = json.load(fin)
-    resp = responses.Response(
-        method=responses.GET,
-        url=data["url"],
-        json=data["json_body"],
-        content_type='application/json',
-        headers=data["headers"],
-    )
-    return resp
-
 
 @pytest.fixture
 def aap_api_responses_26():
-    # responses.add(
-    #     responses.GET,
-    #     "https://aap26.example.com:443/api/gateway/v1/ping/",
-    #     json={"status":"good","version":"2.6","pong":"2025-11-19 08:19:48.890695","db_connected":True,"proxy_connected":True},
-    #     # json=load_file("ping.json")["json_body"],
-    #     status=200,
-    #     content_type='application/json',
-    # )
-
-    for filename in os.listdir(out_dir):
-        if filename in ['.', '..']:
-            continue
-        resp = load_file(filename)
-        responses.add(resp)
-
+    return aap_api_responses_versioned("26")

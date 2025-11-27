@@ -9,7 +9,7 @@
 #   export AAP_USERNAME=admin
 #   export AAP_PASSWORD=...
 # Run:
-#   ./get_mock_data.py
+#   ./setup_aap.py
 
 import logging
 from collections import namedtuple
@@ -42,6 +42,7 @@ class AAP:
         self.password = password
         self.session = None
         self.access_token = ""
+        self.version = ""
 
     @classmethod
     def get_instance(cls):
@@ -50,9 +51,33 @@ class AAP:
             username=os.environ["AAP_USERNAME"],
             password=os.environ["AAP_PASSWORD"],
         )
+        # print(os.environ["AAP_URL"])
         return aap
 
+    def detect_version(self):
+        resp = requests.get(self.base_url + "/api/gateway/v1/ping/", verify=False)
+        if resp.status_code == 200:
+            # AAP v2.5+
+            data = resp.json()
+            version = data["version"]  # version is "2.5" or "2.6"
+            assert version in ["2.5", "2.6"]
+            self.version = version.replace(".", "")
+        else:
+            # AAP v2.4
+            resp = requests.get(self.base_url + "/api/v2/ping/", verify=False)
+            data = resp.json()
+            version = data["version"]  # version is "4.5.x" - the AWX version
+            assert version.startswith("4.5.")
+            self.version = "24"
+
     def login(self):
+        self.detect_version()
+    #     if self.version == "24":
+    #         self.login_v24()
+    #     else:
+    #         self.login_v25()
+
+    # def login_v25(self):
         session = requests.Session()
         session.auth = requests.auth.HTTPBasicAuth(self.username, self.password)
         session.verify = False
@@ -62,7 +87,7 @@ class AAP:
         assert url.startswith("/")
         api_url = f"{self.base_url}{url}"
         response = self.session.get(api_url)
-        assert response.status_code in valid_status_codes
+        assert response.status_code in valid_status_codes, f"status={response.status_code} not one of {valid_status_codes}, url={api_url} text={response.text}"
         return response
 
     def post(self, url, spec, valid_status_codes=[201]):
@@ -100,15 +125,25 @@ class AAP:
 
 
 default_org_id = 1
-default_execution_environment_id = 4
 demo_credential_id = 1
 demo_inventory_id = 1
 #
-org2_id_gw = 2  # id in AAP gateway api
-org2_id_cnt = 8  # id in AAP controller api
-project2_id = 8 # Demo Project is 6
-jobtemplate2_id = 11 # Demo Job Template is 7
-jobrun_id = 3 + 1 # first 3 git-sync jobs, then real jobs
+if 0:
+    # AAP 2.6
+    default_execution_environment_id = 4
+    org2_id_gw = 2  # id in AAP gateway api
+    org2_id_cnt = 8  # id in AAP controller api
+    project2_id = 8 # Demo Project is 6
+    jobtemplate2_id = 11 # Demo Job Template is 7
+    jobrun_id = 3 + 1 # first 3 git-sync jobs, then real jobs
+if 1:
+    # AAP 2.4
+    default_execution_environment_id = 2
+    org2_id_gw = 2
+    org2_id_cnt = 2  # id in AAP controller api
+    project2_id = 8 # Demo Project is 6
+    jobtemplate2_id = 11 # Demo Job Template is 7
+    jobrun_id = 3 + 1 # first 3 git-sync jobs, then real jobs
 
 # if 0:
 #     # TEMP
@@ -279,26 +314,41 @@ def main():
     aap = AAP.get_instance()
     aap.login()
     # aap.create_access_token("bla", "write")
-    me = aap.get("/api/controller/v2/me/")
-    me = aap.get("/api/gateway/v1/me/")
-    
+
+    # AAP 2.6
+    # me = aap.get("/api/controller/v2/me/")
+    # me = aap.get("/api/gateway/v1/me/")
+    # AAP 2.4
+    me = aap.get("/api/v2/me/")
+
+    if aap.version == "24":
+        api_url_prefix = "/api/v2"
+    else:
+        api_url_prefix = "/api/controller/v2"
+
     print("Creating organizations...")
-    [aap.post("/api/gateway/v1/organizations/", data, [201]) for data in organizations]
+    if aap.version == "24":
+        # for data in organizations:
+        #     data.expected["id"] = org2_id_cnt
+        #     aap.post("/api/v2/organizations/", data, [201])
+        [aap.post("/api/v2/organizations/", data, [201]) for data in organizations]
+    else:
+        [aap.post("/api/gateway/v1/organizations/", data, [201]) for data in organizations]
     time.sleep(5)  # gw needs to propagate organizations?
     print("Creating labels...")
-    [aap.post("/api/controller/v2/labels/", spec) for spec in labels]
+    [aap.post(api_url_prefix + "/labels/", spec) for spec in labels]
     print("Creating projects...")
-    [aap.post("/api/controller/v2/projects/", spec) for spec in projects]
-    ## [aap.post(f"/api/controller/v2/projects/{spec.expected["id"]}/update/", None, [202]) for spec in projects]
+    [aap.post(api_url_prefix + "/projects/", spec) for spec in projects]
+    ## [aap.post(api_url_prefix + f"/projects/{spec.expected["id"]}/update/", None, [202]) for spec in projects]
     time.sleep(10)  # wait on project update, otherwise job_template cannot find playbook file
     print("Creating job_templates...")
-    [aap.post("/api/controller/v2/job_templates/", spec) for spec in job_templates]
+    [aap.post(api_url_prefix + "/job_templates/", spec) for spec in job_templates]
     print("Assign labels to job_templates...")
     for spec in label_to_template:
-        aap.post(f"/api/controller/v2/job_templates/{spec.extra["job_template_id"]}/labels/", spec, [201, 204])
+        aap.post(api_url_prefix + f"/job_templates/{spec.extra["job_template_id"]}/labels/", spec, [201, 204])
     print("Creating jobs (launch job_templates)...")
     for spec in jobs:
-        aap.post(f"/api/controller/v2/job_templates/{spec.extra["job_template_id"]}/launch/", spec)
+        aap.post(api_url_prefix + f"/job_templates/{spec.extra["job_template_id"]}/launch/", spec)
         time.sleep(1)
     # TODO wait on all jobs to complete
 

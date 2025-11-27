@@ -60,17 +60,18 @@ export export AAP_URL="https://aap.example.com" AAP_USERNAME=admin AAP_PASSWORD=
 
 reset-db cheat:
 ```
-systemctl --user status  | grep automation| grep service | cut -c16- > all-services
+systemctl --user status  | grep service | grep -v -e dbus-broker -e r.slice | cut -c16- > all-services
 
-systemctl --user stop $(cat all-services) postgresql.service receptor.service redis-tcp.service redis-unix.service
+# clean/empty deploy
+systemctl --user stop $(cat all-services)
 podman volume export -o postgresql postgresql.aap26.tar;
-systemctl --user start $(cat all-services) postgresql.service receptor.service redis-tcp.service redis-unix.service
+systemctl --user start $(cat all-services)
 
 cat <<EOF >reset-db.sh
 #!/bin/bash
-systemctl --user stop $(cat all-services | tr '\n' ' ') postgresql.service receptor.service redis-tcp.service redis-unix.service
+systemctl --user stop $(cat all-services | tr '\n' ' ')
 podman volume import postgresql postgresql.aap26.tar;
-systemctl --user start $(cat all-services| tr '\n' ' ') postgresql.service receptor.service redis-tcp.service redis-unix.service
+systemctl --user start $(cat all-services| tr '\n' ' ')
 EOF
 
 bash reset-db.sh
