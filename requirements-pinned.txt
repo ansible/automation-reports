@@ -8,6 +8,7 @@ django-ansible-base==2025.10.20
 django-cors-headers==4.9.0
 django-filter==25.2
 django-generate-series==0.5.0
+django-guid==3.5.2
 django-solo==2.4.0
 django-weasyprint==2.4.0
 djangorestframework==3.16.1
