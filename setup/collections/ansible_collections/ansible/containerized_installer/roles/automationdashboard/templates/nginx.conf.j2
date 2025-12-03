@@ -73,6 +73,7 @@ http {
         ssl_session_cache shared:SSL:50m;
         ssl_session_timeout 1d;
         ssl_session_tickets off;
+        ssl_ecdh_curve secp384r1;
 
         # RHEL system crypto policy
         ssl_ciphers PROFILE=SYSTEM;
