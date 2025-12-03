@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'django_generate_series',
+    'django_guid',
     'corsheaders',
     'rest_framework',
     'django_filters',
@@ -70,6 +71,7 @@ AUTH_USER_MODEL = "users.User"
 
 
 MIDDLEWARE = [
+    'django_guid.middleware.guid_middleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -98,6 +100,8 @@ REST_FRAMEWORK = {
 }
 
 ROOT_URLCONF = 'django_config.urls'
+
+DJANGO_GUID = {'GUID_HEADER_NAME': 'X-API-Request-Id'}
 
 TEMPLATES = [
     {
@@ -141,47 +145,88 @@ DATABASES = {
         'PORT': DB_PORT,
     }
 }
+LOG_AGGREGATOR_LEVEL = 'INFO'
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "dynamic_level_filter": {
+            "()": "backend.utils.filters.DynamicLevelFilter",
+        },
+        "guid": {
+            "()": "backend.utils.filters.DefaultCorrelationId",
+        },
+        "require_debug_true_or_test": {
+            "()": "backend.utils.filters.RequireDebugTrueOrTest"
+        },
+    },
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
         'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
+            'format': '%(asctime)s %(levelname)-8s [%(guid)s] %(name)s %(message)s'
         },
-        'dispatcher': {'format': '%(asctime)s %(levelname)-8s [%(guid)s] %(name)s PID:%(process)d %(message)s'},
+        'dispatcher': {
+            'format': '%(asctime)s %(levelname)-8s [%(guid)s] %(name)s PID:%(process)d %(message)s'
+        },
     },
     "handlers": {
         "console": {
-            "class": "logging.StreamHandler",
-            "stream": sys.stdout,
-            "formatter": "verbose",
+            '()': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'filters': ['dynamic_level_filter', 'guid'],
+            'formatter': 'simple',
         },
-    },
-    "root": {
-        "handlers": ["console"],
-        "formatter": "verbose",
-        "level": LOG_LEVEL,
+        'file': {'class': 'logging.NullHandler', 'formatter': 'simple'},
     },
     "loggers": {
         'django': {'handlers': ['console']},
-        'automation_dashboard.models': {'handlers': ['console']},
-        'automation_dashboard.consumers': {'handlers': ['console']},
-        'automation_dashboard.dispatch': {'handlers': ['console']},
-        'automation_dashboard.tasks': {'handlers': ['console']},
-        'automation_dashboard.tasks.jobs': {'handlers': ['console']},
-        'automation_dashboard.tasks.utils': {'handlers': ['console']},
-        'automation_dashboard.scheduler': {'handlers': ['console']},
-        'automation_dashboard.utils': {'handlers': ['console']},
-        'automation_dashboard.tasks.system': {'handlers': ['console']},
-        'automation_dashboard.analytics': {'handlers': ['console']}
+        'django.request': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'WARNING'},
+        'ansible_base': {'handlers': ['console', 'file', 'automation_dashboard_warnings']},
+        'rest_framework.request': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'WARNING', 'propagate': False},
+        'dispatcherd': {'handlers': ['dispatcher', 'console'], 'level': 'INFO'},
+        'automation_dashboard': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation-dashboard.auth': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation-dashboard.jwt': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation-reports.clusters.connector': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation-dashboard.clusters.encryption': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation-dashboard.clusters.parser': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation_dashboard.aap_auth': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation_dashboard.models': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'DEBUG'},
+        'automation_dashboard.consumers': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation_dashboard.dispatch': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation_dashboard.tasks': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation_dashboard.tasks.jobs': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation_dashboard.tasks.utils': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'DEBUG'},
+        'automation_dashboard.scheduler': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'DEBUG'},
+        'automation_dashboard.utils': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'DEBUG'},
+        'automation_dashboard.tasks.system': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
+        'automation_dashboard.analytics': {'handlers': ['console', 'file', 'automation_dashboard_warnings'], 'level': 'INFO'},
     }
 }
+
+handler_config = {
+    'automation_dashboard_warnings': {'filename': 'automation_dashboard.log'},
+    'dispatcher': {'filename': 'dispatcher.log', 'formatter': 'dispatcher'},
+}
+LOG_ROOT = "/var/log/automation_dashboard"
+LOGGING_MODE = "stdout" # "stdout" or "file"
+
+for name, config in handler_config.items():
+    LOGGING['handlers'][name] = {
+        "filters": ["dynamic_level_filter", "guid"],
+        "formatter": config.get('formatter', 'simple')
+    }
+    if LOGGING_MODE == 'file':
+        LOGGING['handlers'][name]['class'] = 'logging.handlers.WatchedFileHandler'
+        LOGGING['handlers'][name]['filename'] = os.path.join(LOG_ROOT, config['filename'])
+
+    if LOGGING_MODE == 'stdout':
+        LOGGING['handlers'][name]['class'] = 'logging.NullHandler'
+
+
+# Prevents logging to stdout on traditional VM installs
+if LOGGING_MODE == 'file':
+    LOGGING['handlers']['console']['filters'].insert(0, 'require_debug_true_or_test')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
