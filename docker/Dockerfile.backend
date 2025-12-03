@@ -53,7 +53,7 @@ ENV LC_ALL=en_US.UTF-8
 #RUN microdnf -y module enable 'nginx:1.22' 'postgresql:15' 'redis:6' \
 # weasyprint might need also openjpeg2-devel - https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#fedora-39
 # But openjpeg2-devel is not available for ubi8 image
-RUN microdnf -y module enable 'nginx:1.22' \
+RUN microdnf -y module enable 'nginx:1.26' \
   && microdnf update --setopt=install_weak_deps=0 --nodocs -y \
   && microdnf install --setopt=install_weak_deps=0 --nodocs -y findutils glibc-langpack-en nginx \
   && microdnf install --setopt=install_weak_deps=0 --nodocs -y python3.12 python3.12-devel libpq-devel gcc \
