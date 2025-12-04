@@ -1,0 +1,8 @@
+{
+  "url": "https://aap24.example.com:8443/api/gateway/v1/ping/",
+  "status": 404,
+  "headers": {},
+  "json_body": {
+    "detail": "The requested resource could not be found."
+  }
+}

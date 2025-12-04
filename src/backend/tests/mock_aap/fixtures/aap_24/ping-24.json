@@ -1,0 +1,39 @@
+{
+  "url": "https://aap24.example.com:8443/api/v2/ping/",
+  "status": 200,
+  "headers": {
+    "X-Api-Product-Name": "Red Hat Ansible Automation Platform"
+  },
+  "json_body": {
+    "ha": false,
+    "version": "4.5.15",
+    "active_node": "rh-savings-aap24.novalocal",
+    "install_uuid": "eeb97332-0ca1-4c90-97c4-ea64e47955c8",
+    "instances": [
+      {
+        "node": "rh-savings-aap24.novalocal",
+        "node_type": "hybrid",
+        "uuid": "eba627ff-78dd-4aaa-8b46-6e539880b808",
+        "heartbeat": "2025-11-27T17:43:55.673540Z",
+        "capacity": 136,
+        "version": "4.5.15"
+      }
+    ],
+    "instance_groups": [
+      {
+        "name": "controlplane",
+        "capacity": 136,
+        "instances": [
+          "rh-savings-aap24.novalocal"
+        ]
+      },
+      {
+        "name": "default",
+        "capacity": 136,
+        "instances": [
+          "rh-savings-aap24.novalocal"
+        ]
+      }
+    ]
+  }
+}

@@ -22,6 +22,8 @@ class BaseTask(object):
     prefix = ""
 
     def __init__(self):
+        # The .instance is instance of SyncJob class. yes or no?
+        # But: why .run() needs pk param, if pk is pk of the (same?) SyncJob instance?
         self.instance = None
         self.cluster = None
         self.update_attempts = int(

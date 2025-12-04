@@ -1,0 +1,276 @@
+{
+  "url": "https://aap24.example.com:8443/api/v2/organizations/?page_size=100&page=1",
+  "status": 200,
+  "headers": {
+    "X-Api-Product-Name": "Red Hat Ansible Automation Platform"
+  },
+  "json_body": {
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": 1,
+        "type": "organization",
+        "url": "/api/v2/organizations/1/",
+        "related": {
+          "created_by": "/api/v2/users/1/",
+          "modified_by": "/api/v2/users/1/",
+          "execution_environments": "/api/v2/organizations/1/execution_environments/",
+          "projects": "/api/v2/organizations/1/projects/",
+          "inventories": "/api/v2/organizations/1/inventories/",
+          "job_templates": "/api/v2/organizations/1/job_templates/",
+          "workflow_job_templates": "/api/v2/organizations/1/workflow_job_templates/",
+          "users": "/api/v2/organizations/1/users/",
+          "admins": "/api/v2/organizations/1/admins/",
+          "teams": "/api/v2/organizations/1/teams/",
+          "credentials": "/api/v2/organizations/1/credentials/",
+          "applications": "/api/v2/organizations/1/applications/",
+          "activity_stream": "/api/v2/organizations/1/activity_stream/",
+          "notification_templates": "/api/v2/organizations/1/notification_templates/",
+          "notification_templates_started": "/api/v2/organizations/1/notification_templates_started/",
+          "notification_templates_success": "/api/v2/organizations/1/notification_templates_success/",
+          "notification_templates_error": "/api/v2/organizations/1/notification_templates_error/",
+          "notification_templates_approvals": "/api/v2/organizations/1/notification_templates_approvals/",
+          "object_roles": "/api/v2/organizations/1/object_roles/",
+          "access_list": "/api/v2/organizations/1/access_list/",
+          "instance_groups": "/api/v2/organizations/1/instance_groups/",
+          "galaxy_credentials": "/api/v2/organizations/1/galaxy_credentials/"
+        },
+        "summary_fields": {
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "modified_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "object_roles": {
+            "admin_role": {
+              "description": "Can manage all aspects of the organization",
+              "name": "Admin",
+              "id": 9,
+              "user_only": true
+            },
+            "execute_role": {
+              "description": "May run any executable resources in the organization",
+              "name": "Execute",
+              "id": 10
+            },
+            "project_admin_role": {
+              "description": "Can manage all projects of the organization",
+              "name": "Project Admin",
+              "id": 11
+            },
+            "inventory_admin_role": {
+              "description": "Can manage all inventories of the organization",
+              "name": "Inventory Admin",
+              "id": 12
+            },
+            "credential_admin_role": {
+              "description": "Can manage all credentials of the organization",
+              "name": "Credential Admin",
+              "id": 13
+            },
+            "workflow_admin_role": {
+              "description": "Can manage all workflows of the organization",
+              "name": "Workflow Admin",
+              "id": 14
+            },
+            "notification_admin_role": {
+              "description": "Can manage all notifications of the organization",
+              "name": "Notification Admin",
+              "id": 15
+            },
+            "job_template_admin_role": {
+              "description": "Can manage all job templates of the organization",
+              "name": "Job Template Admin",
+              "id": 16
+            },
+            "execution_environment_admin_role": {
+              "description": "Can manage all execution environments of the organization",
+              "name": "Execution Environment Admin",
+              "id": 17
+            },
+            "auditor_role": {
+              "description": "Can view all aspects of the organization",
+              "name": "Auditor",
+              "id": 18
+            },
+            "member_role": {
+              "description": "User is a member of the organization",
+              "name": "Member",
+              "id": 19,
+              "user_only": true
+            },
+            "read_role": {
+              "description": "May view settings for the organization",
+              "name": "Read",
+              "id": 20
+            },
+            "approval_role": {
+              "description": "Can approve or deny a workflow approval node",
+              "name": "Approve",
+              "id": 21
+            }
+          },
+          "user_capabilities": {
+            "edit": true,
+            "delete": true
+          },
+          "related_field_counts": {
+            "inventories": 1,
+            "teams": 0,
+            "users": 0,
+            "job_templates": 3,
+            "admins": 0,
+            "projects": 3
+          }
+        },
+        "created": "2025-11-27T15:39:28.607814Z",
+        "modified": "2025-11-27T15:39:28.607840Z",
+        "name": "Default",
+        "description": "",
+        "max_hosts": 0,
+        "custom_virtualenv": null,
+        "default_environment": null
+      },
+      {
+        "id": 2,
+        "type": "organization",
+        "url": "/api/v2/organizations/2/",
+        "related": {
+          "created_by": "/api/v2/users/1/",
+          "modified_by": "/api/v2/users/1/",
+          "execution_environments": "/api/v2/organizations/2/execution_environments/",
+          "projects": "/api/v2/organizations/2/projects/",
+          "inventories": "/api/v2/organizations/2/inventories/",
+          "job_templates": "/api/v2/organizations/2/job_templates/",
+          "workflow_job_templates": "/api/v2/organizations/2/workflow_job_templates/",
+          "users": "/api/v2/organizations/2/users/",
+          "admins": "/api/v2/organizations/2/admins/",
+          "teams": "/api/v2/organizations/2/teams/",
+          "credentials": "/api/v2/organizations/2/credentials/",
+          "applications": "/api/v2/organizations/2/applications/",
+          "activity_stream": "/api/v2/organizations/2/activity_stream/",
+          "notification_templates": "/api/v2/organizations/2/notification_templates/",
+          "notification_templates_started": "/api/v2/organizations/2/notification_templates_started/",
+          "notification_templates_success": "/api/v2/organizations/2/notification_templates_success/",
+          "notification_templates_error": "/api/v2/organizations/2/notification_templates_error/",
+          "notification_templates_approvals": "/api/v2/organizations/2/notification_templates_approvals/",
+          "object_roles": "/api/v2/organizations/2/object_roles/",
+          "access_list": "/api/v2/organizations/2/access_list/",
+          "instance_groups": "/api/v2/organizations/2/instance_groups/",
+          "galaxy_credentials": "/api/v2/organizations/2/galaxy_credentials/"
+        },
+        "summary_fields": {
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "modified_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "object_roles": {
+            "admin_role": {
+              "description": "Can manage all aspects of the organization",
+              "name": "Admin",
+              "id": 40,
+              "user_only": true
+            },
+            "execute_role": {
+              "description": "May run any executable resources in the organization",
+              "name": "Execute",
+              "id": 41
+            },
+            "project_admin_role": {
+              "description": "Can manage all projects of the organization",
+              "name": "Project Admin",
+              "id": 42
+            },
+            "inventory_admin_role": {
+              "description": "Can manage all inventories of the organization",
+              "name": "Inventory Admin",
+              "id": 43
+            },
+            "credential_admin_role": {
+              "description": "Can manage all credentials of the organization",
+              "name": "Credential Admin",
+              "id": 44
+            },
+            "workflow_admin_role": {
+              "description": "Can manage all workflows of the organization",
+              "name": "Workflow Admin",
+              "id": 45
+            },
+            "notification_admin_role": {
+              "description": "Can manage all notifications of the organization",
+              "name": "Notification Admin",
+              "id": 46
+            },
+            "job_template_admin_role": {
+              "description": "Can manage all job templates of the organization",
+              "name": "Job Template Admin",
+              "id": 47
+            },
+            "execution_environment_admin_role": {
+              "description": "Can manage all execution environments of the organization",
+              "name": "Execution Environment Admin",
+              "id": 48
+            },
+            "auditor_role": {
+              "description": "Can view all aspects of the organization",
+              "name": "Auditor",
+              "id": 49
+            },
+            "member_role": {
+              "description": "User is a member of the organization",
+              "name": "Member",
+              "id": 50,
+              "user_only": true
+            },
+            "read_role": {
+              "description": "May view settings for the organization",
+              "name": "Read",
+              "id": 51
+            },
+            "approval_role": {
+              "description": "Can approve or deny a workflow approval node",
+              "name": "Approve",
+              "id": 52
+            }
+          },
+          "user_capabilities": {
+            "edit": true,
+            "delete": true
+          },
+          "related_field_counts": {
+            "inventories": 0,
+            "teams": 0,
+            "users": 0,
+            "job_templates": 0,
+            "admins": 0,
+            "projects": 1
+          }
+        },
+        "created": "2025-11-27T17:20:51.117824Z",
+        "modified": "2025-11-27T17:20:51.117871Z",
+        "name": "org2",
+        "description": "org2-desc",
+        "max_hosts": 0,
+        "custom_virtualenv": null,
+        "default_environment": null
+      }
+    ]
+  }
+}
