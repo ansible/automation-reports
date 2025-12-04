@@ -1,4 +1,4 @@
-name: Test
+name: Unit Tests
 
 on:
   push:
@@ -28,17 +28,20 @@ jobs:
         run: |
           until pg_isready -h localhost -p 5432 -U rootuser; do sleep 1; echo "Waiting on DB..."; done
           PGPASSWORD=rootpass psql -h localhost -U rootuser -d postgres -c "CREATE USER testuser WITH PASSWORD 'testpass' CREATEDB;"
-        
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+
       - name: Show python version
         run: |
           python3 --version
           pip --version
+
       - name: Install dependencies
         run: pip install -r requirements.txt -r requirements_dev.txt
+
       - name: Setup .env file
         run: |
           cd src/backend
@@ -49,14 +52,31 @@ jobs:
           DB_HOST = "localhost"
           DB_PORT = 5432
           EOF
+
       - name: Run tests
         run: |
           cd src/backend
           export PYTHONPATH=$PWD/..
-          pytest --cov=backend --cov-report=term-missing:skip-covered --cov-report=xml:coverage.xml
+          pytest --cov=backend --cov-report=term-missing:skip-covered --cov-report=xml:coverage-backend.xml
+
       - name: Get Cover
         uses: orgoro/coverage@v3.2
         with:
-            coverageFile: src/backend/coverage.xml
+            coverageFile: src/backend/coverage-backend.xml
             token: ${{ secrets.GITHUB_TOKEN }}
             sourceDir: src/backend
+
+      - name: Upload Code Coverage Report from Unit Tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: src/backend/coverage-backend.xml
+
+      - name: Save off PR Number
+        run: echo "PR ${{ github.event.number }}" > pr_number.txt
+
+      - name: Upload PR Number
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr_number
+          path: pr_number.txt
