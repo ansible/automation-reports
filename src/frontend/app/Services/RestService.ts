@@ -9,6 +9,7 @@ import {
   TableResult,
   UrlParams
 } from '@app/Types';
+import { getErrorMessage } from '@app/Utils';
 
 const downloadAttachment = (data: never, name: string) => {
   const url = window.URL.createObjectURL(new Blob([data]));
@@ -93,7 +94,7 @@ const exportToCSV = async (params: RequestFilter & OrderingParams): Promise<void
     .then((response) => {
       downloadAttachment(response.data as never, 'AAP_Automation_Dashboard_Report.csv');
       Promise.resolve();
-    });
+    })
 };
 
 const exportToPDF = async (
@@ -115,7 +116,7 @@ const exportToPDF = async (
     .then((response) => {
       downloadAttachment(response.data as never, 'AAP_Automation_Dashboard_Report.pdf');
       Promise.resolve();
-    });
+    })
 };
 
 const updateCosts = async (payload) => {

@@ -1,12 +1,28 @@
 import * as React from 'react';
-import { Filters, Header } from '@app/Components';
+import { Filters, Header, useToaster } from '@app/Components';
 import '@patternfly/react-styles/css/utilities/Spacing/spacing.css';
 import '@patternfly/react-styles/css/utilities/Sizing/sizing.css';
 import '@patternfly/react-styles/css/utilities/Text/text.css';
 import '@patternfly/react-styles/css/utilities/Flex/flex.css';
-import { Alert, Button, Flex, FlexItem, Grid, GridItem, HelperText, HelperTextItem, Modal, ModalBody, ModalFooter, ModalHeader, Spinner, Toolbar, ToolbarItem } from '@patternfly/react-core';
+import {
+  Alert,
+  Button,
+  Flex,
+  FlexItem,
+  Grid,
+  GridItem,
+  HelperText,
+  HelperTextItem,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  Spinner,
+  Toolbar,
+  ToolbarItem,
+} from '@patternfly/react-core';
 import { RestService } from '@app/Services';
-import { deepClone, svgToPng } from '@app/Utils';
+import { deepClone, getErrorMessage, svgToPng } from '@app/Utils';
 import {
   ColumnProps,
   OrderingParams,
@@ -15,7 +31,7 @@ import {
   RequestFilter,
   TableResponse,
   TableResult,
-  UrlParams
+  UrlParams,
 } from '@app/Types';
 import ErrorState from '@patternfly/react-component-groups/dist/dynamic/ErrorState';
 import {
@@ -23,18 +39,15 @@ import {
   DashboardLineChart,
   DashboardTable,
   DashboardTopTable,
-  DashboardTotalCards
+  DashboardTotalCards,
 } from '@app/Dashboard';
 import { CurrencySelector } from '@app/Components';
 
 import useFilterStore from '@app/Store/filterStore';
 import useCommonStore from '@app/Store/commonStore';
-import {
-  useAutomatedProcessCost,
-  useFilterRetrieveError,
-  useManualCostAutomation
-} from '@app/Store/filterSelectors';
+import { useAutomatedProcessCost, useFilterRetrieveError, useManualCostAutomation } from '@app/Store/filterSelectors';
 import { useAuthStore } from '@app/Store/authStore';
+import { toasterFromError, ToasterProvider, toasterSuccessMsg } from '@app/Components/Toaster';
 
 const refreshInterval: string = import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
   ? import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
@@ -51,7 +64,7 @@ const Dashboard: React.FunctionComponent = () => {
   const [requestParams, setRequestParams] = React.useState<RequestFilter>();
   const [paginationParams, setPaginationParams] = React.useState<PaginationParams>({
     page: 1,
-    page_size: 10
+    page_size: 10,
   } as PaginationParams);
   const [ordering, setOrdering] = React.useState<string>('name');
   const hourly_manual_costs = useManualCostAutomation();
@@ -62,18 +75,18 @@ const Dashboard: React.FunctionComponent = () => {
   const detailController = React.useRef<AbortController | undefined>(undefined);
   const containerLineRefChart = React.useRef<HTMLDivElement>(null);
   const logErrorMessage = useAuthStore((state) => state.logErrorMessage);
-
   const saveEnableTemplateCreationTime = useCommonStore((state) => state.saveEnableTemplateCreationTime);
   const setAutomatedProcessCost = useFilterStore((state) => state.setAutomatedProcessCost);
   const setManualProcessCost = useFilterStore((state) => state.setManualProcessCost);
   const maxPDFJobTemplates = useFilterStore((state) => state.max_pdf_job_templates);
-  const reloadData = useFilterStore((state)=>state.reloadData);
+  const reloadData = useFilterStore((state) => state.reloadData);
   const setReloadData = useFilterStore((state) => state.setReloadData);
+  const toaster = useToaster();
   const handelError = (error: unknown) => {
     if (error?.['name'] !== 'CanceledError') {
-      setLoadDataError(true);
       setLoading(false);
       setTableLoading(false);
+      toaster.add(toasterFromError(error));
     }
   };
   const [isPDFWarningModalOpen, setPDFWarningModalOpen] = React.useState<boolean>(false);
@@ -89,7 +102,8 @@ const Dashboard: React.FunctionComponent = () => {
         setLoading(false);
       })
       .catch((e) => {
-        handelError(e);
+        const msg = 'Something went wrong while retrieving report details. ' + getErrorMessage(e);
+        handelError({name: e.name, message: msg});
       });
   };
 
@@ -114,7 +128,7 @@ const Dashboard: React.FunctionComponent = () => {
     RestService.fetchReports(controller.current.signal, {
       ...requestParams,
       ...paginationParams,
-      ...{ ordering: ordering }
+      ...{ ordering: ordering },
     } as UrlParams)
       .then((tableResponse) => {
         setTableData(tableResponse);
@@ -130,7 +144,8 @@ const Dashboard: React.FunctionComponent = () => {
         }
       })
       .catch((e) => {
-        handelError(e);
+        const msg = 'Something went wrong while retrieving report data. ' + getErrorMessage(e);
+        handelError({name: e.name, message: msg});
       });
   };
 
@@ -139,7 +154,7 @@ const Dashboard: React.FunctionComponent = () => {
       () => {
         fetchServerTableData(true, false);
       },
-      parseInt(refreshInterval) * 1000
+      parseInt(refreshInterval) * 1000,
     );
   };
 
@@ -170,8 +185,8 @@ const Dashboard: React.FunctionComponent = () => {
     };
   }, [requestParams, paginationParams, ordering]);
 
-  React.useEffect(()=>{
-    if (reloadData){
+  React.useEffect(() => {
+    if (reloadData) {
       clearTimeout();
       fetchServerTableData(true);
       setReloadData(false);
@@ -184,8 +199,14 @@ const Dashboard: React.FunctionComponent = () => {
       clearTimeout();
       setLoading(true);
       value = Number(value.toFixed(2));
+      let msg =
+        type === 'manual'
+          ? 'Average cost of per minute to manually run the job'
+          : 'Average cost per minute of running on AAP';
       RestService.updateCosts({ type: type, value: value })
         .then(() => {
+          msg += ' updated successfully.';
+          toaster.add(toasterSuccessMsg(msg));
           fetchServerTableData(true, false);
           if (type === 'manual') {
             setManualProcessCost(value);
@@ -194,7 +215,8 @@ const Dashboard: React.FunctionComponent = () => {
           }
         })
         .catch((e) => {
-          handelError(e);
+          const errorMsg = 'Failed to update ' + msg + '. ' + getErrorMessage(e);
+          handelError({name: e?.name, message: errorMsg});
         });
     } else {
       afterDataRetrieve();
@@ -221,17 +243,20 @@ const Dashboard: React.FunctionComponent = () => {
     const newItem = deepClone(newValue) as TableResult;
     newItem.time_taken_manually_execute_minutes = Math.round(manually_minutes);
     newItem.time_taken_create_automation_minutes = Math.round(automation_minutes);
+    const msg = 'Template ' + newItem.name;
     RestService.updateTemplate(newItem)
       .then(() => {
         fetchServerTableData(true, false);
+        toaster.add(toasterSuccessMsg(msg + ' updated successfully.'));
       })
       .catch((e) => {
-        handelError(e);
+        const errorMsg = 'Failed to update ' + msg + '. ' + getErrorMessage(e);
+        handelError({name: e?.name, message: errorMsg});
       });
   };
 
   const filtersChange = (requestFilter: RequestFilter) => {
-    setPaginationParams({page:1, page_size: paginationParams.page_size});
+    setPaginationParams({ page: 1, page_size: paginationParams.page_size });
     setRequestParams(requestFilter);
   };
 
@@ -240,7 +265,7 @@ const Dashboard: React.FunctionComponent = () => {
   };
 
   const onSortChange = (ordering: string) => {
-    setPaginationParams({page:1, page_size: paginationParams.page_size});
+    setPaginationParams({ page: 1, page_size: paginationParams.page_size });
     setOrdering(ordering);
   };
 
@@ -248,28 +273,28 @@ const Dashboard: React.FunctionComponent = () => {
     {
       name: 'project_name',
       title: 'Project name',
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'count',
       title: 'Total no. of jobs',
       type: 'number',
-      isVisible: true
-    }
+      isVisible: true,
+    },
   ];
 
   const topUsersColumns: ColumnProps[] = [
     {
       name: 'user_name',
       title: 'User name',
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'count',
       title: 'Total no. of jobs',
       type: 'number',
-      isVisible: true
-    }
+      isVisible: true,
+    },
   ];
 
   const onInputFocus = () => {
@@ -283,7 +308,8 @@ const Dashboard: React.FunctionComponent = () => {
         setTableLoading(false);
       })
       .catch((e) => {
-        handelError(e);
+        const errorMsg = 'Something went wrong while exporting CSV. Please try again later.';
+        handelError({name: e?.name, message: errorMsg});
       });
   };
 
@@ -297,13 +323,14 @@ const Dashboard: React.FunctionComponent = () => {
     RestService.exportToPDF(
       { ...requestParams, ...{ ordering: ordering } } as RequestFilter & OrderingParams,
       jobsChartPng,
-      hostChartPng
+      hostChartPng,
     )
-      .then(() => {
-        setPdfLoading(false);
-      })
       .catch((e) => {
-        handelError(e);
+        const errorMsg = 'Something went wrong while exporting PDF. Please try again later.';
+        handelError({name: e?.name, message: errorMsg});
+      })
+      .finally(() => {
+        setPdfLoading(false);
       });
   };
 
@@ -319,28 +346,39 @@ const Dashboard: React.FunctionComponent = () => {
   const onEnableTemplateCreationTimeChange = async (checked: boolean) => {
     clearTimeout();
     setLoading(true);
-    saveEnableTemplateCreationTime(checked).then((response) => {
-      if (!response?.['error']) {
+    saveEnableTemplateCreationTime(checked)
+      .then(() => {
+        toaster.add(
+          toasterSuccessMsg('Include time taken to create automation into calculation updated successfully.'),
+        );
         fetchServerTableData(true, true);
-      } else {
-        handelError(response.error);
-      }
-    });
+      })
+      .catch((e) => {
+        handelError(e);
+      });
   };
 
   const topUsersToolTip = (
     <div>
-      <div>This section lists the top five users of Ansible Automation Platform, with a breakdown of the total number of jobs run by each user.</div>
+      <div>
+        This section lists the top five users of Ansible Automation Platform, with a breakdown of the total number of
+        jobs run by each user.
+      </div>
       <ul>
         <br />
-        <li><strong>○ NOTE:</strong> Scheduled jobs can affect these results, because they do not represent a real, logged-in user.</li>
+        <li>
+          <strong>○ NOTE:</strong> Scheduled jobs can affect these results, because they do not represent a real,
+          logged-in user.
+        </li>
       </ul>
     </div>
   );
 
   const pdfModalTitle = (
     <HelperText>
-      <HelperTextItem variant="error" style={{fontSize: '20px'}} >PDF Download Failed: Data Volume Exceeded</HelperTextItem>
+      <HelperTextItem variant="error" style={{ fontSize: '20px' }}>
+        PDF Download Failed: Data Volume Exceeded
+      </HelperTextItem>
     </HelperText>
   );
 
@@ -354,16 +392,25 @@ const Dashboard: React.FunctionComponent = () => {
     >
       <ModalHeader title={pdfModalTitle} labelId="pdf-warning-modal-title" />
       <ModalBody id="pdf-warning-modal-body">
-        <HelperText style={{fontSize: '14px'}}>
-          <HelperTextItem variant={'default'}>We were unable to generate your PDF because the selected report exceeds the maximum record limit.</HelperTextItem>
-          <HelperTextItem variant={'default'}>Please apply additional filters to narrow your data and retry.</HelperTextItem>
+        <HelperText style={{ fontSize: '14px' }}>
+          <HelperTextItem variant={'default'}>
+            We were unable to generate your PDF because the selected report exceeds the maximum record limit.
+          </HelperTextItem>
+          <HelperTextItem variant={'default'}>
+            Please apply additional filters to narrow your data and retry.
+          </HelperTextItem>
         </HelperText>
       </ModalBody>
       <ModalFooter>
         <Button
           key="close"
           variant="link"
-          onClick={() => {setPDFWarningModalOpen(false)}}>Close</Button>
+          onClick={() => {
+            setPDFWarningModalOpen(false);
+          }}
+        >
+          Close
+        </Button>
       </ModalFooter>
     </Modal>
   );
@@ -377,11 +424,13 @@ const Dashboard: React.FunctionComponent = () => {
           'Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.'
         }
         pdfBtnText={
-          !loadDataError && !filterError && !logErrorMessage && !loading && !pdfLoading && tableData?.count > 0 ? 'Save as PDF' : undefined
+          !loadDataError && !filterError && !logErrorMessage && !loading && !pdfLoading && tableData?.count > 0
+            ? 'Save as PDF'
+            : undefined
         }
         onPdfBtnClick={onPdfBtnClick}
       ></Header>
-      {((loadDataError || filterError) && !logErrorMessage) && (
+      {(loadDataError || filterError) && !logErrorMessage && (
         <div className={'error'}>
           <ErrorState
             titleText="Something went wrong"
@@ -392,11 +441,12 @@ const Dashboard: React.FunctionComponent = () => {
           />
         </div>
       )}
-      {logErrorMessage &&
+
+      {logErrorMessage && (
         <div className={'main-layout'}>
           <Alert variant="danger" isInline title={logErrorMessage} />
         </div>
-      }
+      )}
       {!loadDataError && !filterError && !logErrorMessage && (
         <div className={'main-layout'}>
           {pdfWarningModal}
@@ -405,6 +455,7 @@ const Dashboard: React.FunctionComponent = () => {
               <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />
             </div>
           )}
+
           <Flex className="pf-m-gap-none">
             <FlexItem>
               <Filters onChange={filtersChange}></Filters>
@@ -417,6 +468,7 @@ const Dashboard: React.FunctionComponent = () => {
               </Toolbar>
             </FlexItem>
           </Flex>
+
           <div>
             <Grid hasGutter>
               <GridItem className="pf-m-12-col pf-m-8-col-on-2xl pf-m-9-col-on-3xl pf-m-10-col-on-4xl pf-v6-l-grid pf-m-gutter">
@@ -447,7 +499,9 @@ const Dashboard: React.FunctionComponent = () => {
                     <div style={{ height: '100%' }}>
                       <DashboardTopTable
                         title={'Top 5 projects'}
-                        tooltip={'This section lists the top five automation projects based on the number of jobs executed.'}
+                        tooltip={
+                          'This section lists the top five automation projects based on the number of jobs executed.'
+                        }
                         infoIcon={true}
                         columns={topProjectColumns}
                         data={detailData?.projects ? detailData.projects : []}

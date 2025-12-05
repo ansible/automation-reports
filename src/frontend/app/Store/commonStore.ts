@@ -1,26 +1,7 @@
 import { create } from 'zustand';
 import { RestService } from '@app/Services';
 import { Currency, FilterSet, Settings } from '@app/Types';
-
-export const getErrorMessage = (e: any): string => {
-    let errorMessage = '';
-    if (e?.response?.data) {
-      try {
-        Object.keys(e.response.data).forEach((key) => {
-          const errors = e.response.data[key];
-          if (Array.isArray(errors)) {
-            errors.forEach((error: string) => {
-              errorMessage += ` ${error}`;
-            });
-          }
-        });
-      } catch {
-        errorMessage = 'Something went wrong.';
-      }
-      return errorMessage.trim();
-    }
-    return 'Unknown error occurred.';
-};
+import { getErrorMessage } from '@app/Utils';
 
 type CommonState = {
   currencyOptions: Currency[];
@@ -37,7 +18,7 @@ type CommonState = {
   setCurrency: (currencyID: number) => Promise<void>;
   setFilterViews: (views: FilterSet[]) => void;
   setView: (viewID: number | null) => void;
-  saveView: (view: FilterSet) => Promise<{ error?: any }>;
+  saveView: (view: FilterSet) => Promise<void>;
   deleteView: (viewID: number) => Promise<{ error?: any }>;
   setEnableTemplateCreationTime: (val: boolean) => void;
   saveEnableTemplateCreationTime: (val: boolean) => Promise<{ error?: any }>;
@@ -83,36 +64,27 @@ export const useCommonStore = create<CommonState>((set, get) => ({
 
   saveView: async (viewData) => {
     set({ viewSavingProcess: true, viewSaveError: null });
-
     try {
       const response = await RestService.saveView(viewData);
       const savedView = response as FilterSet;
       const existingViews = get().filterSetOptions;
       const index = existingViews.findIndex((v) => v.id === savedView.id);
-
       let updatedViews: FilterSet[];
-
       if (index !== -1) {
         updatedViews = [...existingViews];
         updatedViews[index] = savedView;
       } else {
         updatedViews = [...existingViews, savedView];
       }
-
       set({
         filterSetOptions: updatedViews,
         selectedView: savedView.id,
-        viewSavingProcess: false,
       });
-      
-      return {};
     } catch (e: any) {
-      const errorMessage = 'Error saving view. ' + getErrorMessage(e);
-      set({
-        viewSaveError: errorMessage,
-        viewSavingProcess: false,
-      });
-      return { error: errorMessage };
+      const msg = 'Error saving report. ' + getErrorMessage(e);
+      throw new Error(msg);
+    } finally {
+      set({ viewSavingProcess: false });
     }
   },
 
@@ -123,14 +95,16 @@ export const useCommonStore = create<CommonState>((set, get) => ({
       const remaining = get().filterSetOptions.filter((view) => view.id !== viewID);
       set({
         filterSetOptions: remaining,
-        viewSavingProcess: false,
         selectedView: null,
       });
       return {};
     } catch (e: any) {
-      const message = 'Error deleting view. ' + getErrorMessage(e);
-      set({ viewSaveError: message, viewSavingProcess: false });
-      return { error: message };
+      const message = 'Error deleting report. ' + getErrorMessage(e);
+      throw new Error(message);
+    } finally {
+      set({
+        viewSavingProcess: false,
+      });
     }
   },
 
@@ -145,8 +119,9 @@ export const useCommonStore = create<CommonState>((set, get) => ({
       set({ enableTemplateCreationTime: val, loading: 'succeeded' });
       return {};
     } catch (err: any) {
-      set({ loading: 'failed', error: true });
-      return { error: err };
+      const message = 'Error saving settings. ' + getErrorMessage(err);
+      set({ loading: 'failed' });
+      throw new Error(message);
     }
   },
 }));
