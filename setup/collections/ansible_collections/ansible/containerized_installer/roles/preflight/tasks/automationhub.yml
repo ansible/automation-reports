@@ -26,7 +26,7 @@
     fail_msg: |
       "Automation Hub is configured to enable LDAP as an authentication backend. "
       "Some mandatory parameters are not configured. "
-      "List of mandatory paramters are: hub_ldap_server_uri, hub_ldap_bind_dn, hub_ldap_bind_password, "
+      "List of mandatory parameters are: hub_ldap_server_uri, hub_ldap_bind_dn, hub_ldap_bind_password, "
       "hub_ldap_user_search_base_dn, hub_ldap_group_search_base_dn"
   when: hub_authentication_backend | default('') | lower == 'ldap'
 

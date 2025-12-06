@@ -11,7 +11,7 @@ Installation instructions for end user - see [Install using bundled installer](#
 
 Build container images and deploy, both on same VM.
 
-The container base image (registry.redhat.io/ubi8/ubi-minimal) needs to be accesible.
+The container base image (registry.redhat.io/ubi8/ubi-minimal) needs to be accessible.
 Generate credentials - follow https://access.redhat.com/RegistryAuthentication.
 Login to image registry:
 

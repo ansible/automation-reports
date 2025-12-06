@@ -58,7 +58,7 @@ class ApiConnector:
                 self.since = self.cluster_sync_data.last_job_finished_date
             else:
                 '''
-                Due to the possibility of a lot of data, 
+                Due to the possibility of a lot of data,
                 we enable sync for the initial sync configured in settings.
                 '''
                 initial_sync_days = getattr(settings, "INITIAL_SYNC_DAYS", 1)
@@ -114,7 +114,7 @@ class ApiConnector:
         if not response.ok:
             logger.error(f'Token refresh POST request failed with status {response.status_code} url={url}, text={json.dumps(response.text)}')
             return False
-        logger.info(f'Token refresh POST request succedded with status {response.status_code}')
+        logger.info(f'Token refresh POST request succeeded with status {response.status_code}')
         resp = response.json()
 
         self.cluster.access_token = encrypt_value(resp['access_token'])

@@ -33,6 +33,7 @@ coverage
 storybook-static
 .DS_Store
 .idea
+*~
 .env
 .history
 
