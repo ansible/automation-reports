@@ -486,6 +486,7 @@ django==5.2.8 \
     #   django-crum
     #   django-filter
     #   django-generate-series
+    #   django-guid
     #   django-solo
     #   django-weasyprint
     #   djangorestframework
@@ -508,6 +509,10 @@ django-filter==25.2 \
 django-generate-series==0.5.0 \
     --hash=sha256:54e33e5aba69be75f591bda970421dee9f1c5feeb84c20d8cee634bcc0e249bc \
     --hash=sha256:8cced6473ba75aed5e1e2ecd6f5426d11d33926e86d2630dabe9c424b7a6da8a
+    # via -r requirements-pinned.txt
+django-guid==3.5.2 \
+    --hash=sha256:0f812a837579031c7db8524b07e498f65b5fcf191857c1f7fb5414a0ceb584fa \
+    --hash=sha256:cadbc929bfa2b19c6f9e847da3e095ebebe1124adef92f0af317f963ee51a6cb
     # via -r requirements-pinned.txt
 django-solo==2.4.0 \
     --hash=sha256:62e9c7d929620a61848515839833750ca142840051595cf5c8e617dcefc9e5cf \
@@ -676,6 +681,7 @@ packaging==25.0 \
     --hash=sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f
     # via
     #   ansible-runner
+    #   django-guid
     #   pytest
 pexpect==4.9.0 \
     --hash=sha256:7236d1e080e4936be2dc3e326cec0af72acf9212a7e1d060210e70a47e253523 \
