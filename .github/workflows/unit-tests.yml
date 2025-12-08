@@ -66,6 +66,16 @@ jobs:
             token: ${{ secrets.GITHUB_TOKEN }}
             sourceDir: src/backend
 
+      - name: Inject PR number into coverage.xml
+        if: >-
+          !cancelled()
+          && github.event_name == 'pull_request'
+        run: |
+          if [ -f "reports/coverage-backend.xml" ]; then
+            sed -i '2i<!-- PR ${{ github.event.pull_request.number }} -->' reports/coverage-backend.xml
+            echo "Injected PR number ${{ github.event.pull_request.number }} into coverage-backend.xml"
+          fi
+
       - name: Upload Code Coverage Report from Unit Tests
         uses: actions/upload-artifact@v4
         with:
