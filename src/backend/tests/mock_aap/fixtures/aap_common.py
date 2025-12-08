@@ -2,6 +2,9 @@ import responses
 import json
 import os
 
+from backend.apps.clusters.encryption import encrypt_value
+from backend.apps.clusters.models import Cluster
+
 all_aap_versions = [
     "2.6",
     "2.5",
@@ -24,16 +27,31 @@ dict_sync_schedule_1min = dict(
 )
 
 
-def load_file(filepath: str):
+def cluster_from_dict_cluster(dict_cluster):
+    """Creates temporary data."""
+    Cluster.objects.create(
+        protocol=dict_cluster["protocol"],
+        address=dict_cluster["address"],
+        port=dict_cluster["port"],
+        access_token=encrypt_value(dict_cluster["access_token"].encode("utf-8")),
+        refresh_token=encrypt_value(dict_cluster["refresh_token"].encode("utf-8")),
+        client_id=dict_cluster["client_id"],
+        client_secret=encrypt_value(dict_cluster["client_secret"].encode("utf-8")),
+        verify_ssl=dict_cluster["verify_ssl"],
+    )
+
+
+def load_file(filepath: str, match=[]):
     with open(filepath, "r") as fin:
         data = json.load(fin)
     resp = responses.Response(
-        method=responses.GET,
+        method=data.get("method", responses.GET),
         url=data["url"],
         status=data["status"],
         json=data["json_body"],
         content_type='application/json',
         headers=data["headers"],
+        match=match,
     )
     return resp
 

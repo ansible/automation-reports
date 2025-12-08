@@ -132,6 +132,16 @@ class ApiConnector:
                 verify=self.cluster.verify_ssl,
                 timeout=timeout if timeout is not None else self.timeout,
                 headers=self.headers)
+        except requests.exceptions.ConnectionError as e:
+            # begin mock testing block ------------------------
+            # "return None" makes code behave like all is OK, and AAP returned empty json ("{}").
+            # The responses library tries to tell mock for an URL is missing via ConnectionError,
+            # but this hides the exception, and tests might pass when they should fail.
+            # Reraise responses generated ConnectionError.
+            e_inner = e.args[0]
+            if isinstance(e_inner, str) and e_inner.startswith("Connection refused by Responses - "):
+                raise
+            # end mock testing block ------------------------
         except requests.exceptions.RequestException as e:
             logger.error(f'GET request failed with exception {e}')
             return None

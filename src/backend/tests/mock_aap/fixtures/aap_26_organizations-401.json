@@ -1,0 +1,10 @@
+{
+  "url": "https://aap26.example.com:443/api/controller/v2/organizations/?page_size=100&page=1",
+  "status": 401,
+  "headers": {
+    "X-Api-Product-Name": "Red Hat Ansible Automation Platform"
+  },
+  "json_body": {
+    "detail":"Authentication credentials were not provided. To establish a login session, visit /api/login/."
+  }
+}
