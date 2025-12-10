@@ -66,12 +66,6 @@ req_specs_25 = req_specs_25_only + req_specs_any_version
 req_specs_24 = req_specs_24_only + req_specs_any_version
 
 
-# def _get(aap: AAP, url: str):
-#     headers = {"Authorization": f"Bearer {aap.access_token}"}
-#     resp = requests.get(url, headers=headers, verify=False)
-#     return resp
-    
-
 def get_req(aap: AAP, req_spec: RequestSpec):
     def copy_header_if_present(header_name):
         if header_name in resp.headers:

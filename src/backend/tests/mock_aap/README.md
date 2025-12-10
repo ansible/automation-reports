@@ -1,23 +1,23 @@
 # mock_aap tests
 
-A pre-recoreded json responses from real AAP are used for testing the Automation Dashboard.
+A pre-recorded json responses from real AAP are used for testing the Automation Dashboard.
 
 Before collecting json responses the AAP needs to be in well-defined state.
 AAP needs to contain correct objects.
 There must be correct number of each object class.
 Individual object need to have correct attributes.
 
-To achieve this, we need to prepara AAP and record mock responses:
+To achieve this, we need to prepare AAP and record mock responses:
 - start with empty AAP (or reset its database to initialempty state)
 - initialize AAP with test data
 - record responses from AAP into json files for mock testing.
 
 Those steps are ideally needed only once.
 However if Automation Dashboard starts using a new AAP API endpoint, or modifies parameters for existing endpoint,
-then we need to prepara AAP and record mock responses again.
+then we need to prepare AAP and record mock responses again.
 
 The last step is running mock tests.
-This is the repetive part.
+This is the repetitive part.
 
 ## Run mock tests
 
@@ -34,7 +34,7 @@ pytest 'tests/mock_aap/test_minimal.py::TestApiConnector::test_detect_aap_versio
 
 ## Record mock responses
 
-Initializa AAP with test data.
+Initialize AAP with test data.
 This needs to be done for all relevant AAP versions.
 
 NOTE - this involves destroying all existing content in the AAP.

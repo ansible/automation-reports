@@ -145,13 +145,6 @@ if 1:
     jobtemplate2_id = 11 # Demo Job Template is 7
     jobrun_id = 3 + 1 # first 3 git-sync jobs, then real jobs
 
-# if 0:
-#     # TEMP
-#     org2_id = 8
-#     # project2_id = 16
-#     # jobtemplate2_id = 20
-#     # jobrun_id = 12
-
 project3_id = project2_id + 1
 project4_id = project2_id + 2
 jobtemplate3_id = jobtemplate2_id + 1

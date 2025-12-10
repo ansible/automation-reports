@@ -1,8 +1,6 @@
-import time
 import pytest
 import responses
 import yaml
-import sys
 import logging
 
 from backend.apps.aap_auth.models import BaseJWTUserToken
