@@ -32,7 +32,7 @@ pytest tests/mock_aap
 pytest 'tests/mock_aap/test_minimal.py::TestApiConnector::test_detect_aap_version[2.6]'
 ```
 
-## Record mock reponses
+## Record mock responses
 
 Initializa AAP with test data.
 This needs to be done for all relevant AAP versions.
