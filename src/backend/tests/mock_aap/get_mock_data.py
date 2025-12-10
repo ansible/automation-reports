@@ -39,6 +39,10 @@ class RequestSpec:
 job_ids = [spec.expected["id"] for spec in jobs]
 
 req_specs_26_only = [
+    RequestSpec("ping-26.json", "/api/gateway/v1/ping/", ),
+    RequestSpec("ping-24.json", "/api/v2/ping/", [404]),
+]
+req_specs_25_only = [
     RequestSpec("ping-25.json", "/api/gateway/v1/ping/", ),
     RequestSpec("ping-24.json", "/api/v2/ping/", [404]),
 ]
@@ -58,6 +62,7 @@ req_specs_any_version = [
 ]
 
 req_specs_26 = req_specs_26_only + req_specs_any_version
+req_specs_25 = req_specs_25_only + req_specs_any_version
 req_specs_24 = req_specs_24_only + req_specs_any_version
 
 
@@ -68,6 +73,10 @@ req_specs_24 = req_specs_24_only + req_specs_any_version
     
 
 def get_req(aap: AAP, req_spec: RequestSpec):
+    def copy_header_if_present(header_name):
+        if header_name in resp.headers:
+            headers.update({header_name: resp.headers[header_name]})
+
     OUT_DIR = f"fixtures/aap_{aap.version}"
     mock_port = "8443" if aap.version == "24" else "443"
     MOCK_AAP_URL = f"https://aap{aap.version}.example.com:{mock_port}"
@@ -83,13 +92,21 @@ def get_req(aap: AAP, req_spec: RequestSpec):
     resp = aap.get(eff_api_url, req_spec.valid_status_codes)
     logger.info(f"Status: {resp.status_code} Url: {url}")
     headers={}
-    if "X-Api-Product-Name" in resp.headers:
-        headers.update({"X-Api-Product-Name": resp.headers["X-Api-Product-Name"]})
+    copy_header_if_present("X-Api-Product-Name")
+    copy_header_if_present("content-type")
+    # if "X-Api-Product-Name" in resp.headers:
+    #     headers.update({"X-Api-Product-Name": resp.headers["X-Api-Product-Name"]})
+    if resp.headers.get('content-type') == 'application/json':
+        body_kwargs = dict(json_body=resp.json())
+    else:
+        body_kwargs = dict(body=resp.text)
     data = dict(
         url=mock_url,
         status=resp.status_code,
         headers=headers,
-        json_body=resp.json(),
+        # json_body=resp.json(),
+        # body=resp.text,
+        **body_kwargs,
     )
     filename = os.path.join(OUT_DIR, req_spec.filename)
     with open(filename, "w") as fout:

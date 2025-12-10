@@ -53,7 +53,7 @@ podman volume rm postgres
 Login into AAP, setup subscription, accept EULA.
 
 ```bash
-export export AAP_URL="https://aap.example.com" AAP_USERNAME=admin AAP_PASSWORD=CHANGEME
+export AAP_URL="https://aap.example.com" AAP_USERNAME=admin AAP_PASSWORD=CHANGEME
 ./setup_aap.py
 ./get_mock_data.py
 ```
@@ -64,7 +64,7 @@ systemctl --user status  | grep service | grep -v -e dbus-broker -e r.slice | cu
 
 # clean/empty deploy
 systemctl --user stop $(cat all-services)
-podman volume export -o postgresql postgresql.aap26.tar;
+podman volume export postgresql -o postgresql.aap26.tar;
 systemctl --user start $(cat all-services)
 
 cat <<EOF >reset-db.sh

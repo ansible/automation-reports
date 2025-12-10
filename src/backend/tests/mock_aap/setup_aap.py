@@ -36,7 +36,7 @@ class AAP:
     def __init__(self, base_url, username, password):
         # TODO Referer "https://10.44.17.65" is correct, "https://10.44.17.65:443" is not.
         assert not base_url.endswith("/")
-        assert not base_url.endswith(":443")
+        # assert not base_url.endswith(":443")
         self.base_url = base_url
         self.username = username
         self.password = password
@@ -315,11 +315,12 @@ def main():
     aap.login()
     # aap.create_access_token("bla", "write")
 
-    # AAP 2.6
-    # me = aap.get("/api/controller/v2/me/")
-    # me = aap.get("/api/gateway/v1/me/")
-    # AAP 2.4
-    me = aap.get("/api/v2/me/")
+    if aap.version in ["25", "26"]:
+        me = aap.get("/api/controller/v2/me/")
+        me = aap.get("/api/gateway/v1/me/")
+    elif aap.version in ["24"]:
+        # AAP 2.4
+        me = aap.get("/api/v2/me/")
 
     if aap.version == "24":
         api_url_prefix = "/api/v2"

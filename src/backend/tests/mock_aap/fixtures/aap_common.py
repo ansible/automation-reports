@@ -44,12 +44,19 @@ def cluster_from_dict_cluster(dict_cluster):
 def load_file(filepath: str, match=[]):
     with open(filepath, "r") as fin:
         data = json.load(fin)
+    if "json_body" in data:
+        body_kwargs = dict(json=data["json_body"])
+    else:
+        body_kwargs = dict(body=data["body"])
+
     resp = responses.Response(
         method=data.get("method", responses.GET),
         url=data["url"],
         status=data["status"],
-        json=data["json_body"],
-        content_type='application/json',
+        # json=data["json_body"], TODO
+        # body=data["body"], TODO
+        # content_type='application/json',
+        **body_kwargs,
         headers=data["headers"],
         match=match,
     )
