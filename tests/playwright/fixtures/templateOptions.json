@@ -79,8 +79,8 @@
             "value": "Custom"
         }
     ],
-    "manual_cost_automation": 45.0,
-    "automated_process_cost": 63.0,
+    "manual_cost_automation_per_hour": 45.0,
+    "automated_process_cost_per_minute": 63.0,
     "currency": 3,
     "enable_template_creation_time": true,
     "filter_sets": [
