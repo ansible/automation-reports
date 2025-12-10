@@ -5,6 +5,7 @@
 # Next use this script, to visit all relevant URLs, and store responeses into json files for mock testing.
 
 # Required input, as environ variables:
+#   export AAP_VERSION=25
 #   export AAP_URL="https://10.44.17.65:443"
 #   export AAP_USERNAME=admin
 #   export AAP_PASSWORD=...
@@ -72,12 +73,6 @@ class AAP:
 
     def login(self):
         self.detect_version()
-    #     if self.version == "24":
-    #         self.login_v24()
-    #     else:
-    #         self.login_v25()
-
-    # def login_v25(self):
         session = requests.Session()
         session.auth = requests.auth.HTTPBasicAuth(self.username, self.password)
         session.verify = False
@@ -123,31 +118,26 @@ class AAP:
         # "/api/gateway/v1/tokens/" has no refresh_token, and no OAuth2 app is associated.
         print(f"access_token={self.access_token}")
 
-
+aap_version = os.environ["AAP_VERSION"]
 default_org_id = 1
 demo_credential_id = 1
 demo_inventory_id = 1
-#
-if 0:
+if aap_version in ["26"]:
     # AAP 2.6
     default_execution_environment_id = 4
     org2_id_gw = 2  # id in AAP gateway api
     org2_id_cnt = 8  # id in AAP controller api
-    project2_id = 8 # Demo Project is 6
-    jobtemplate2_id = 11 # Demo Job Template is 7
-    jobrun_id = 3 + 1 # first 3 git-sync jobs, then real jobs
-if 1:
-    # AAP 2.4
+elif aap_version in ["25", "24"]:
+    # AAP 2.4, 2.5
     default_execution_environment_id = 2
     org2_id_gw = 2
     org2_id_cnt = 2  # id in AAP controller api
-    project2_id = 8 # Demo Project is 6
-    jobtemplate2_id = 11 # Demo Job Template is 7
-    jobrun_id = 3 + 1 # first 3 git-sync jobs, then real jobs
-
+project2_id = 8 # Demo Project is 6, next project is 8
 project3_id = project2_id + 1
 project4_id = project2_id + 2
+jobtemplate2_id = 11 # Demo Job Template is 7, next job_template is 11
 jobtemplate3_id = jobtemplate2_id + 1
+jobrun_id = 3 + 1 # first 3 are git-sync jobs, then we have real jobs (4, ...)
 
 organizations = [
     ObjectSpec({
@@ -308,6 +298,7 @@ def main():
     aap.login()
     # aap.create_access_token("bla", "write")
 
+    assert aap_version == aap.version
     if aap.version in ["25", "26"]:
         me = aap.get("/api/controller/v2/me/")
         me = aap.get("/api/gateway/v1/me/")
@@ -322,9 +313,6 @@ def main():
 
     print("Creating organizations...")
     if aap.version == "24":
-        # for data in organizations:
-        #     data.expected["id"] = org2_id_cnt
-        #     aap.post("/api/v2/organizations/", data, [201])
         [aap.post("/api/v2/organizations/", data, [201]) for data in organizations]
     else:
         [aap.post("/api/gateway/v1/organizations/", data, [201]) for data in organizations]

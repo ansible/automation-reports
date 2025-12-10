@@ -104,7 +104,7 @@ def get_req(aap: AAP, req_spec: RequestSpec):
     )
     filename = os.path.join(OUT_DIR, req_spec.filename)
     with open(filename, "w") as fout:
-        json.dump(data, fout, indent=2)
+        json.dump(data + "\n", fout, indent=2)
 
 
 def main():

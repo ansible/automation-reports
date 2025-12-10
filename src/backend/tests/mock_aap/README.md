@@ -53,7 +53,7 @@ podman volume rm postgres
 Login into AAP, setup subscription, accept EULA.
 
 ```bash
-export AAP_URL="https://aap.example.com" AAP_USERNAME=admin AAP_PASSWORD=CHANGEME
+export AAP_VERSION=25 AAP_URL="https://aap.example.com" AAP_USERNAME=admin AAP_PASSWORD=CHANGEME
 ./setup_aap.py
 ./get_mock_data.py
 ```

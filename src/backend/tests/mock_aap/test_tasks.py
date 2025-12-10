@@ -210,7 +210,6 @@ class TestDispatcherTask:
             ]
             assert 2 == len(sync_datas)  # we run the jobtemplate2-org1 twice
             sync_data = sync_datas[0]
-            # sync_data = ClusterSyncData.objects.all()[3]
 
             sync_job = SyncJob.objects.get(cluster_sync_data=sync_data)
 
@@ -219,13 +218,9 @@ class TestDispatcherTask:
             sync_job.status = JobStatusChoices.RUNNING
             sync_job.save()
             task.instance = sync_job
-            # task.instance = task.update_model(pk=sync_job.pk)
-            # task.instance.status = JobStatusChoices.RUNNING
-            # task.instance.status = JobStatusChoices.WAITING
-            # task.instance.status = JobStatusChoices.NEW
-            logger.warning(f"\n\n\nTTRT 11a ----------------------------------------------------------")
+            # logger.warning(f"\n\n\nTTRT 11a ----------------------------------------------------------")
             task.run(pk=sync_job.pk)
-            logger.warning(f"\n\n\nTTRT 22a task.instance.pk={task.instance.pk} sync_job.id={sync_job.id} ----------------------------------------------------------")
+            # logger.warning(f"\n\n\nTTRT 22a task.instance.pk={task.instance.pk} sync_job.id={sync_job.id} ----------------------------------------------------------")
 
         # state after test - a single job was parsed
         assert 0 == Currency.objects.count()
@@ -255,7 +250,7 @@ class TestDispatcherTask:
 
         if 1:
             for sync_data in ClusterSyncData.objects.all():
-                logger.warning(f"\n\n\nTTRT 11b ----------------------------------------------------------")
+                # logger.warning(f"\n\n\nTTRT 11b ----------------------------------------------------------")
                 sync_job = SyncJob.objects.get(cluster_sync_data=sync_data)
                 task = AAPParseDataTask()
                 sync_job.status = JobStatusChoices.WAITING
@@ -264,7 +259,7 @@ class TestDispatcherTask:
                 # # state before test
                 # the tested function
                 task.run(pk=sync_job.pk)
-                logger.warning(f"\n\n\nTTRT 22b ----------------------------------------------------------")
+                # logger.warning(f"\n\n\nTTRT 22b ----------------------------------------------------------")
 
         # state after test - all jobs ware parsed
         assert 0 == Currency.objects.count()
@@ -292,29 +287,3 @@ class TestDispatcherTask:
         assert 4 == JobHostSummary.objects.count() #
         assert 0 == Costs.objects.count()
         # Here we see, which objects are missing in AAP, so that part of code is not tested.
-
-# https://aap26.example.com:443/api/controller/v2/jobs/?page_size=100&page=1&order_by=finished&finished__gt=2025-10-23T13:01:09.768681Z
-# https://aap26.example.com:443/api/controller/v2/jobs/?page_size=100&page=1&order_by=finished&finished__gt=2025-10-23T13:01:09.768681Z
-
-# @task (queue=settings.DISPATCHER_PARSE_CHANNEL)
-# class AAPParseDataTask(BaseTask):
-# @task (queue=settings.DISPATCHER_SYNC_CHANNEL)
-# class AAPSyncTask(BaseTask):
-#
-# @task (queue=settings.DISPATCHER_SYNC_CHANNEL)
-# def sync_task_manager():
-
-
-        # time.sleep(10)
-
-
-# getclusters
-# syncdata
-        # job = SyncJob.objects.create(
-        #     name=name,
-        #     type=JobTypeChoices.SYNC_JOBS,
-        #     launch_type=JobLaunchTypeChoices.MANUAL,
-        #     cluster=cluster,
-        #     job_args=job_args
-        # )
-        # job.signal_start()
