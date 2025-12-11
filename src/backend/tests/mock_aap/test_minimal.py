@@ -122,7 +122,6 @@ def aap_fixtures(request):
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestApiConnector:
     def test_detect_aap_version(self, aap_fixtures):
-        # aap_version_str, cluster, api_reponses = aap_fixtures
         aap_version_str = aap_fixtures[0]
         expected_aap_version = "AAP " + aap_version_str
         address = "aap" + aap_version_str.replace(".", "") + ".example.com"

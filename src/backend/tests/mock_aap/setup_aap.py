@@ -13,7 +13,6 @@
 #   ./setup_aap.py
 
 import logging
-from collections import namedtuple
 import time
 from typing import NamedTuple
 import requests
@@ -23,16 +22,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 requests.packages.urllib3.disable_warnings(category=requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
+
 # Fields
 # - data is POSTed to AAP.
 # - expected are values expected in the AAP response.
-# ObjectSpec = namedtuple("ObjectSpec", ["data", "expected", "extra"], defaults=(1, 2))
 class ObjectSpec(NamedTuple):
     data: dict
     expected: dict = dict()
     extra: dict = dict()
 
-# RequestSpec = namedtuple('RequestSpec', ['filename', 'url'])
+
 class AAP:
     def __init__(self, base_url, username, password):
         # TODO Referer "https://10.44.17.65" is correct, "https://10.44.17.65:443" is not.
