@@ -106,7 +106,6 @@ def get_req(aap: AAP, req_spec: RequestSpec):
     with open(filename, "w") as fout:
         json.dump(data, fout, indent=2)
         fout.write("\n")
-        json.dump(data + "\n", fout, indent=2)
 
 
 def main():
