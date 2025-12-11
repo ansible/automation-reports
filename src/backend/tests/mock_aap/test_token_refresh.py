@@ -10,7 +10,7 @@ from .fixtures import all_aap_versions
 from .fixtures import cluster_26, dict_cluster_26, aap_api_responses_26
 from .fixtures import cluster_25, dict_cluster_25, aap_api_responses_25
 from .fixtures import cluster_24, dict_cluster_24, aap_api_responses_24
-from .fixtures.aap_common import cluster_from_dict_cluster, load_file
+from .fixtures.aap_common import cluster_from_dict_cluster, load_file, dict_cluster_versioned
 from responses import matchers
 
 
@@ -23,7 +23,7 @@ class TestAAPTokenrefresh:
     @pytest.mark.parametrize("aap_version", all_aap_versions)
     def test_get(self, aap_version):
         aap_version_slug = aap_version.replace(".", "")
-        dict_cluster = eval("dict_cluster_" + aap_version_slug)
+        dict_cluster = dict_cluster_versioned(aap_version_slug)
         cluster_from_dict_cluster(dict_cluster)
 
         key = get_encryption_key()

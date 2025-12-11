@@ -64,7 +64,7 @@ def load_file(filepath: str, match=[]):
 
 
 def aap_api_responses_versioned(version: str):
-    assert version in ["24", "25", "26"]
+    assert version in all_aap_versions_slug
     out_dir = out_dir_template.format(version=version)
 
     for filename in os.listdir(out_dir):
@@ -73,3 +73,16 @@ def aap_api_responses_versioned(version: str):
         filepath = os.path.join(out_dir, filename)
         resp = load_file(filepath)
         responses.add(resp)
+
+
+def dict_cluster_versioned(version: str):
+    from .aap_api_24 import dict_cluster_24
+    from .aap_api_25 import dict_cluster_25
+    from .aap_api_26 import dict_cluster_26
+    assert version in all_aap_versions_slug
+    version_2_dict = {
+        "24": dict_cluster_24,
+        "25": dict_cluster_25,
+        "26": dict_cluster_26,
+    }
+    return version_2_dict[version]

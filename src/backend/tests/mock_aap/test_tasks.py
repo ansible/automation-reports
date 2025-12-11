@@ -12,9 +12,7 @@ from backend.apps.scheduler.tasks import run_manager
 from backend.apps.tasks.jobs import AAPParseDataTask, AAPSyncTask
 
 from .fixtures import all_aap_versions, dict_sync_schedule_1min
-from .fixtures import dict_cluster_26
-from .fixtures import dict_cluster_25
-from .fixtures import dict_cluster_24
+from .fixtures.aap_common import dict_cluster_versioned
 
 from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.models import AAPUser, ClusterSyncData, ClusterSyncStatus, ClusterVersionChoices, Cluster, Costs, ExecutionEnvironment, Host, InstanceGroup, Inventory, Job, JobHostSummary, JobLabel, JobStatusChoices, JobTemplate, Label, NameDescriptionModel, Organization, Project
@@ -30,7 +28,7 @@ logger = logging.getLogger(__name__)
 class TestDispatcherTask:
     def test_1(self, capsys, aap_version_str):
         aap_version_str_short = aap_version_str.replace(".", "")
-        dict_cluster = eval(f"dict_cluster_{aap_version_str_short}")
+        dict_cluster = dict_cluster_versioned(aap_version_str_short)
         clusters_yaml_filename = f"/tmp/clusters-aap{aap_version_str_short}.yaml"
 
         with open(clusters_yaml_filename, "w") as fout:
