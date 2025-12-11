@@ -77,6 +77,14 @@ export const BaseTable: React.FunctionComponent<{
       });
       return;
     }
+    if (isNaN(value)){
+      setEditingError({
+        rowNum: rowNum,
+        columnName: columnName,
+        message: 'Please enter a valid number!',
+      });
+      return;
+    }
     if (value !== Math.round(value)) {
       setEditingError({
         rowNum: rowNum,
