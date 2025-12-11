@@ -120,6 +120,7 @@ cp clusters.example.yaml clusters.yaml
 nano clusters.yaml
 podman cp clusters.yaml automation-dashboard-web:/
 podman exec automation-dashboard-web /venv/bin/python ./manage.py setclusters /clusters.yaml
+podman exec automation-dashboard-web /bin/rm /clusters.yaml
 podman exec -it automation-dashboard-web /venv/bin/python ./manage.py syncdata --since=2025-01-01 --until=2025-03-01
 # periodic sync executes every one hour - environ CRON_SYNC="0 */1 * * *"
 ```

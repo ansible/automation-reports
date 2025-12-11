@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt -r requirements_dev.txt
 
-      - name: Setup .env file
+      - name: Setup local_settings.py file
         run: |
           cd src/backend
           cat <<EOF >django_config/local_settings.py
@@ -51,6 +51,7 @@ jobs:
           DB_PASSWORD = "testpass"
           DB_HOST = "localhost"
           DB_PORT = 5432
+          SECRET_KEY = "$(uuidgen)"
           EOF
 
       - name: Run tests
