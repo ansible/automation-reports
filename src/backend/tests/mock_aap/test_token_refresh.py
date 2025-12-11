@@ -71,7 +71,7 @@ class TestAAPTokenrefresh:
             expected_org_ids = [1, 2]
             aap_port = 443
             endpoint = "/api/controller/v2/organizations/?page_size=100&page=1"
-            url_token = f"https://aap{aap_version_slug}.example.com:443/api/o/token/"  # a je to narobe ?
+            url_token = f"https://aap{aap_version_slug}.example.com:443/o/token/"
         elif aap_version_slug == "26":
             expected_org_ids = [1, 8]
             aap_port = 443

@@ -1,12 +1,15 @@
 {
-  "url": "https://aap25.example.com:443/api/o/token/",
+  "url": "https://aap25.example.com:443/o/token/",
   "method": "POST",
   "status": 201,
   "headers": {
-    "X-Api-Product-Name": "Red Hat Ansible Automation Platform"
+    "content-type": "application/json"
   },
   "json_body": {
     "access_token": "access-token-25-2",
+    "expires_in": 31536000,
+    "token_type": "Bearer",
+    "scope": "read",
     "refresh_token": "refresh-token-25-2"
   }
 }
