@@ -102,7 +102,7 @@ class TaskBase:
                     signal.signal(signal.SIGUSR1, original_sigusr1)
 
                 commit_start = time.time()
-                logger.debug(f"Commiting {self.prefix} Scheduler changes")
+                logger.debug(f"Committing {self.prefix} Scheduler changes")
                 if self.prefix == "automation_dashboard_task_manager":
                     self.subsystem_metrics.set(f"{self.prefix}_commit_seconds", time.time() - commit_start)
                 local_metrics = self.get_local_metrics()
