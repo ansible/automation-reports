@@ -3,6 +3,7 @@ import responses
 
 from backend.apps.clusters.models import Cluster
 from backend.apps.clusters.encryption import encrypt_value
+from .aap_common import aap_api_responses_versioned
 
 
 dict_cluster_25 = dict(
@@ -34,10 +35,4 @@ def cluster_25():
 
 @pytest.fixture
 def aap_api_responses_25():
-    responses.add(
-        responses.GET,
-        "https://aap25.example.com:443/api/gateway/v1/ping/",
-        json={"version":"2.5","pong":"2025-11-19 09:38:32.398165","status":"good","db_connected":True,"proxy_connected":True},
-        status=200,
-        content_type='application/json'
-    )
+    return aap_api_responses_versioned("25")

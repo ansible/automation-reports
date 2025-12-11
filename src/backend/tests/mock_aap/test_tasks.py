@@ -25,8 +25,7 @@ from django.core.management import call_command
 logger = logging.getLogger(__name__)
 
 @pytest.mark.usefixtures("aap_api_responses")
-# @pytest.mark.parametrize("aap_version_str", all_aap_versions)
-@pytest.mark.parametrize("aap_version_str", ["2.6", "2.4"])
+@pytest.mark.parametrize("aap_version_str", all_aap_versions)
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestDispatcherTask:
     def test_1(self, capsys, aap_version_str):
