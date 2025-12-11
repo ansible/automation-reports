@@ -78,14 +78,18 @@ class AAP:
         session.verify = False
         self.session = session
 
-    def get(self, url, valid_status_codes=[200]):
+    def get(self, url, valid_status_codes=None):
+        if valid_status_codes is None:
+            valid_status_codes = [200]
         assert url.startswith("/")
         api_url = f"{self.base_url}{url}"
         response = self.session.get(api_url)
         assert response.status_code in valid_status_codes, f"status={response.status_code} not one of {valid_status_codes}, url={api_url} text={response.text}"
         return response
 
-    def post(self, url, spec, valid_status_codes=[201]):
+    def post(self, url, spec, valid_status_codes=None):
+        if valid_status_codes is None:
+            valid_status_codes = [201]
         if spec:
             data = spec.data
             expected = spec.expected

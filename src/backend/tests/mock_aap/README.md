@@ -8,7 +8,7 @@ There must be correct number of each object class.
 Individual object need to have correct attributes.
 
 To achieve this, we need to prepare AAP and record mock responses:
-- start with empty AAP (or reset its database to initialempty state)
+- start with empty AAP (or reset its database to initial empty state)
 - initialize AAP with test data
 - record responses from AAP into json files for mock testing.
 

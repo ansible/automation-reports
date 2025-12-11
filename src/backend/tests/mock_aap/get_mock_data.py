@@ -30,10 +30,10 @@ requests.packages.urllib3.disable_warnings(category=requests.packages.urllib3.ex
 
 # RequestSpec = namedtuple('RequestSpec', ['filename', 'url'])
 class RequestSpec:
-    def __init__(self, filename: str, url: str, valid_status_codes=[200]):
+    def __init__(self, filename: str, url: str, valid_status_codes=None):
         self.filename = filename
         self.url = url
-        self.valid_status_codes = valid_status_codes
+        self.valid_status_codes = valid_status_codes if valid_status_codes is not None else [200]
 
 
 job_ids = [spec.expected["id"] for spec in jobs]
@@ -104,6 +104,8 @@ def get_req(aap: AAP, req_spec: RequestSpec):
     )
     filename = os.path.join(OUT_DIR, req_spec.filename)
     with open(filename, "w") as fout:
+        json.dump(data, fout, indent=2)
+        fout.write("\n")
         json.dump(data + "\n", fout, indent=2)
 
 
