@@ -10,32 +10,12 @@ from .fixtures import all_aap_versions
 from .fixtures import cluster_26, dict_cluster_26, aap_api_responses_26
 from .fixtures import cluster_25, dict_cluster_25, aap_api_responses_25
 from .fixtures import cluster_24, dict_cluster_24, aap_api_responses_24
+from .fixtures.aap_common import cluster_from_dict_cluster, load_file
 from responses import matchers
 
 
 # How to "combine" smaller fixtures - syntax suygar
 # https://smarie.github.io/python-pytest-cases/pytest_goodies/#unpack_fixture-unpack_into
-
-from .fixtures.aap_common import cluster_from_dict_cluster, load_file
-import json
-def token_request_callback(request):
-    # payload = json.loads(request.body)
-    # resp_body = {"value": sum(payload["numbers"])}
-    # headers = {"request-id": "728d329e-0e86-11e4-a748-0c84dc037c13"}
-    # return (200, headers, json.dumps(resp_body))
-
-    access_token = "aa"
-    refresh_token = "rr"
-    payload = json.loads(request.body)
-    print(f"TTRT token_request_callback payload={payload}")
-    if payload["refresh_token"]:
-        pass
-    11/0
-
-    token_refresh, data = load_file("tests/mock_aap/fixtures/aap_26/token-refresh.json")
-    resp_body = data["json_body"] # TODO
-    headers = {}
-    return (201, headers, json.dumps(resp_body))
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)

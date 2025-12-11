@@ -87,8 +87,6 @@ class TestDispatcherTask:
         print(f"sync_schedule next_run={schedule.next_run}")
 
         assert 0 == SyncJob.objects.count()
-        # SyncJob.signal_start
-        # kdo ustvari sync job ?
         sync_kwargs = schedule.get_job_kwargs()
         sync_job = schedule.cluster.create_sync_job(**sync_kwargs)
         assert 1 == SyncJob.objects.count()
@@ -167,6 +165,7 @@ class TestDispatcherTask:
         self.test_1(capsys, aap_version_str)
         call_command("dumpdata", "-o", "/tmp/test_1.yaml")
 
+        # state before test
         assert 0 == Currency.objects.count()
         assert 0 == Settings.objects.count()
         assert 0 == FilterSet.objects.count()
@@ -198,29 +197,21 @@ class TestDispatcherTask:
         # A SyncJob(type=PARSE_JOB_DATA) will parse one ClusterSyncData.
         # We now test SyncJob parsing the ClusterSyncData.
 
-        # state before test
-
+        sync_datas = [
+            sd
+            for sd in ClusterSyncData.objects.all()
+            # if sd.data["url"] == "/api/controller/v2/jobs/13/"
+            if sd.data["name"] == "jobtemplate2-org1"
+        ]
+        assert 2 == len(sync_datas)  # we run the jobtemplate2-org1 twice
+        sync_data = sync_datas[0]
+        sync_job = SyncJob.objects.get(cluster_sync_data=sync_data)
+        task = AAPParseDataTask()
+        sync_job.status = JobStatusChoices.RUNNING
+        sync_job.save()
+        task.instance = sync_job
         # the tested function
-        if 1:
-            sync_datas = [
-                sd
-                for sd in ClusterSyncData.objects.all()
-                # if sd.data["url"] == "/api/controller/v2/jobs/13/"
-                if sd.data["name"] == "jobtemplate2-org1"
-            ]
-            assert 2 == len(sync_datas)  # we run the jobtemplate2-org1 twice
-            sync_data = sync_datas[0]
-
-            sync_job = SyncJob.objects.get(cluster_sync_data=sync_data)
-
-            task = AAPParseDataTask()
-            # sync_job.status = JobStatusChoices.WAITING
-            sync_job.status = JobStatusChoices.RUNNING
-            sync_job.save()
-            task.instance = sync_job
-            # logger.warning(f"\n\n\nTTRT 11a ----------------------------------------------------------")
-            task.run(pk=sync_job.pk)
-            # logger.warning(f"\n\n\nTTRT 22a task.instance.pk={task.instance.pk} sync_job.id={sync_job.id} ----------------------------------------------------------")
+        task.run(pk=sync_job.pk)
 
         # state after test - a single job was parsed
         assert 0 == Currency.objects.count()
@@ -248,18 +239,13 @@ class TestDispatcherTask:
         assert 1 == JobHostSummary.objects.count() #
         assert 0 == Costs.objects.count()
 
-        if 1:
-            for sync_data in ClusterSyncData.objects.all():
-                # logger.warning(f"\n\n\nTTRT 11b ----------------------------------------------------------")
-                sync_job = SyncJob.objects.get(cluster_sync_data=sync_data)
-                task = AAPParseDataTask()
-                sync_job.status = JobStatusChoices.WAITING
-                sync_job.save()
-
-                # # state before test
-                # the tested function
-                task.run(pk=sync_job.pk)
-                # logger.warning(f"\n\n\nTTRT 22b ----------------------------------------------------------")
+        for sync_data in ClusterSyncData.objects.all():
+            sync_job = SyncJob.objects.get(cluster_sync_data=sync_data)
+            task = AAPParseDataTask()
+            sync_job.status = JobStatusChoices.WAITING
+            sync_job.save()
+            # the tested function
+            task.run(pk=sync_job.pk)
 
         # state after test - all jobs ware parsed
         assert 0 == Currency.objects.count()

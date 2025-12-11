@@ -57,22 +57,3 @@ export AAP_VERSION=25 AAP_URL="https://aap.example.com" AAP_USERNAME=admin AAP_P
 ./setup_aap.py
 ./get_mock_data.py
 ```
-
-reset-db cheat:
-```
-systemctl --user status  | grep service | grep -v -e dbus-broker -e r.slice | cut -c16- > all-services
-
-# clean/empty deploy
-systemctl --user stop $(cat all-services)
-podman volume export postgresql -o postgresql.aap26.tar;
-systemctl --user start $(cat all-services)
-
-cat <<EOF >reset-db.sh
-#!/bin/bash
-systemctl --user stop $(cat all-services | tr '\n' ' ')
-podman volume import postgresql postgresql.aap26.tar;
-systemctl --user start $(cat all-services| tr '\n' ' ')
-EOF
-
-bash reset-db.sh
-```
