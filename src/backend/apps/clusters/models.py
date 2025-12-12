@@ -79,9 +79,9 @@ class Cluster(CreatUpdateModel):
 
     @property
     def oauth_token_url(self):
-        if self.aap_version == ClusterVersionChoices.AAP26:
+        if self.aap_version in [ClusterVersionChoices.AAP25, ClusterVersionChoices.AAP26]:
             return '/o/token/'
-        elif self.aap_version in [ClusterVersionChoices.AAP24, ClusterVersionChoices.AAP25]:
+        elif self.aap_version in [ClusterVersionChoices.AAP24]:
             return '/api/o/token/'
         else:
             raise NotImplementedError

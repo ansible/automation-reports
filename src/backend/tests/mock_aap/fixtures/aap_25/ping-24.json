@@ -1,0 +1,8 @@
+{
+  "url": "https://aap25.example.com:443/api/v2/ping/",
+  "status": 404,
+  "headers": {
+    "content-type": "text/html; charset=utf-8"
+  },
+  "body": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Not Found</title>\n</head>\n<body>\n  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>\n</body>\n</html>\n"
+}

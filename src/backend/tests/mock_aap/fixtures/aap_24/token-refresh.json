@@ -1,0 +1,15 @@
+{
+  "url": "https://aap24.example.com:8443/api/o/token/",
+  "method": "POST",
+  "status": 201,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "json_body": {
+    "access_token": "access-token-24-2",
+    "expires_in": 31536000000,
+    "token_type": "Bearer",
+    "scope": "read",
+    "refresh_token": "refresh-token-24-2"
+  }
+}

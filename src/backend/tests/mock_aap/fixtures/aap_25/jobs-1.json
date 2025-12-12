@@ -1,0 +1,607 @@
+{
+  "url": "https://aap25.example.com:443/api/controller/v2/jobs/?page_size=100&page=1&order_by=finished&finished__gt=2025-08-08T00:00:00Z",
+  "status": 200,
+  "headers": {
+    "X-Api-Product-Name": "Red Hat Ansible Automation Platform",
+    "content-type": "application/json"
+  },
+  "json_body": {
+    "count": 4,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": 4,
+        "type": "job",
+        "url": "/api/controller/v2/jobs/4/",
+        "related": {
+          "created_by": "/api/controller/v2/users/1/",
+          "labels": "/api/controller/v2/jobs/4/labels/",
+          "inventory": "/api/controller/v2/inventories/1/",
+          "project": "/api/controller/v2/projects/8/",
+          "organization": "/api/controller/v2/organizations/1/",
+          "credentials": "/api/controller/v2/jobs/4/credentials/",
+          "unified_job_template": "/api/controller/v2/job_templates/11/",
+          "stdout": "/api/controller/v2/jobs/4/stdout/",
+          "execution_environment": "/api/controller/v2/execution_environments/2/",
+          "job_events": "/api/controller/v2/jobs/4/job_events/",
+          "job_host_summaries": "/api/controller/v2/jobs/4/job_host_summaries/",
+          "activity_stream": "/api/controller/v2/jobs/4/activity_stream/",
+          "notifications": "/api/controller/v2/jobs/4/notifications/",
+          "create_schedule": "/api/controller/v2/jobs/4/create_schedule/",
+          "job_template": "/api/controller/v2/job_templates/11/",
+          "cancel": "/api/controller/v2/jobs/4/cancel/",
+          "relaunch": "/api/controller/v2/jobs/4/relaunch/"
+        },
+        "summary_fields": {
+          "organization": {
+            "id": 1,
+            "name": "Default",
+            "description": "The default organization for Ansible Automation Platform"
+          },
+          "inventory": {
+            "id": 1,
+            "name": "Demo Inventory",
+            "description": "",
+            "has_active_failures": false,
+            "total_hosts": 1,
+            "hosts_with_active_failures": 0,
+            "total_groups": 0,
+            "has_inventory_sources": false,
+            "total_inventory_sources": 0,
+            "inventory_sources_with_failures": 0,
+            "organization_id": 1,
+            "kind": ""
+          },
+          "execution_environment": {
+            "id": 2,
+            "name": "Hub Default execution environment",
+            "description": "",
+            "image": "rhap-aap25.novalocal/ee-supported-rhel8:latest"
+          },
+          "project": {
+            "id": 8,
+            "name": "project2-org1",
+            "description": "project2-org1",
+            "status": "successful",
+            "scm_type": "git",
+            "allow_override": false
+          },
+          "job_template": {
+            "id": 11,
+            "name": "jobtemplate2-org1",
+            "description": "jobtemplate2-org1"
+          },
+          "unified_job_template": {
+            "id": 11,
+            "name": "jobtemplate2-org1",
+            "description": "jobtemplate2-org1",
+            "unified_job_type": "job"
+          },
+          "instance_group": {
+            "id": 1,
+            "name": "default",
+            "is_container_group": false
+          },
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "user_capabilities": {
+            "delete": true,
+            "start": true
+          },
+          "labels": {
+            "count": 1,
+            "results": [
+              {
+                "id": 1,
+                "name": "label1-org1"
+              }
+            ]
+          },
+          "credentials": []
+        },
+        "created": "2025-12-10T08:14:23.775535Z",
+        "modified": "2025-12-10T08:14:24.052299Z",
+        "name": "jobtemplate2-org1",
+        "description": "jobtemplate2-org1",
+        "unified_job_template": 11,
+        "launch_type": "manual",
+        "status": "successful",
+        "execution_environment": 2,
+        "failed": false,
+        "started": "2025-12-10T08:14:24.140737Z",
+        "finished": "2025-12-10T08:14:29.410070Z",
+        "canceled_on": null,
+        "elapsed": 5.269,
+        "job_explanation": "",
+        "execution_node": "rhap-aap25.novalocal",
+        "controller_node": "rhap-aap25.novalocal",
+        "launched_by": {
+          "id": 1,
+          "name": "admin",
+          "type": "user",
+          "url": "/api/controller/v2/users/1/"
+        },
+        "work_unit_id": "rhapaap25novalocalHttuCstK",
+        "job_type": "run",
+        "inventory": 1,
+        "project": 8,
+        "playbook": "hello_world.yml",
+        "scm_branch": "",
+        "forks": 0,
+        "limit": "",
+        "verbosity": 0,
+        "extra_vars": "{}",
+        "job_tags": "",
+        "force_handlers": false,
+        "skip_tags": "",
+        "start_at_task": "",
+        "timeout": 0,
+        "use_fact_cache": false,
+        "organization": 1,
+        "job_template": 11,
+        "passwords_needed_to_start": [],
+        "allow_simultaneous": false,
+        "artifacts": {},
+        "scm_revision": "347e44fea036c94d5f60e544de006453ee5c71ad",
+        "instance_group": 1,
+        "diff_mode": false,
+        "job_slice_number": 0,
+        "job_slice_count": 1,
+        "webhook_service": "",
+        "webhook_credential": null,
+        "webhook_guid": ""
+      },
+      {
+        "id": 6,
+        "type": "job",
+        "url": "/api/controller/v2/jobs/6/",
+        "related": {
+          "created_by": "/api/controller/v2/users/1/",
+          "labels": "/api/controller/v2/jobs/6/labels/",
+          "inventory": "/api/controller/v2/inventories/1/",
+          "project": "/api/controller/v2/projects/9/",
+          "organization": "/api/controller/v2/organizations/1/",
+          "credentials": "/api/controller/v2/jobs/6/credentials/",
+          "unified_job_template": "/api/controller/v2/job_templates/12/",
+          "stdout": "/api/controller/v2/jobs/6/stdout/",
+          "execution_environment": "/api/controller/v2/execution_environments/2/",
+          "job_events": "/api/controller/v2/jobs/6/job_events/",
+          "job_host_summaries": "/api/controller/v2/jobs/6/job_host_summaries/",
+          "activity_stream": "/api/controller/v2/jobs/6/activity_stream/",
+          "notifications": "/api/controller/v2/jobs/6/notifications/",
+          "create_schedule": "/api/controller/v2/jobs/6/create_schedule/",
+          "job_template": "/api/controller/v2/job_templates/12/",
+          "cancel": "/api/controller/v2/jobs/6/cancel/",
+          "relaunch": "/api/controller/v2/jobs/6/relaunch/"
+        },
+        "summary_fields": {
+          "organization": {
+            "id": 1,
+            "name": "Default",
+            "description": "The default organization for Ansible Automation Platform"
+          },
+          "inventory": {
+            "id": 1,
+            "name": "Demo Inventory",
+            "description": "",
+            "has_active_failures": false,
+            "total_hosts": 1,
+            "hosts_with_active_failures": 0,
+            "total_groups": 0,
+            "has_inventory_sources": false,
+            "total_inventory_sources": 0,
+            "inventory_sources_with_failures": 0,
+            "organization_id": 1,
+            "kind": ""
+          },
+          "execution_environment": {
+            "id": 2,
+            "name": "Hub Default execution environment",
+            "description": "",
+            "image": "rhap-aap25.novalocal/ee-supported-rhel8:latest"
+          },
+          "project": {
+            "id": 9,
+            "name": "project3-org1",
+            "description": "project3-org1",
+            "status": "successful",
+            "scm_type": "git",
+            "allow_override": false
+          },
+          "job_template": {
+            "id": 12,
+            "name": "jobtemplate3-org1",
+            "description": "jobtemplate3-org1"
+          },
+          "unified_job_template": {
+            "id": 12,
+            "name": "jobtemplate3-org1",
+            "description": "jobtemplate3-org1",
+            "unified_job_type": "job"
+          },
+          "instance_group": {
+            "id": 1,
+            "name": "default",
+            "is_container_group": false
+          },
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "user_capabilities": {
+            "delete": true,
+            "start": true
+          },
+          "labels": {
+            "count": 2,
+            "results": [
+              {
+                "id": 1,
+                "name": "label1-org1"
+              },
+              {
+                "id": 2,
+                "name": "label2-org1"
+              }
+            ]
+          },
+          "credentials": []
+        },
+        "created": "2025-12-10T08:14:27.030518Z",
+        "modified": "2025-12-10T08:14:27.311394Z",
+        "name": "jobtemplate3-org1",
+        "description": "jobtemplate3-org1",
+        "unified_job_template": 12,
+        "launch_type": "manual",
+        "status": "successful",
+        "execution_environment": 2,
+        "failed": false,
+        "started": "2025-12-10T08:14:27.400957Z",
+        "finished": "2025-12-10T08:14:32.374583Z",
+        "canceled_on": null,
+        "elapsed": 4.974,
+        "job_explanation": "",
+        "execution_node": "rhap-aap25.novalocal",
+        "controller_node": "rhap-aap25.novalocal",
+        "launched_by": {
+          "id": 1,
+          "name": "admin",
+          "type": "user",
+          "url": "/api/controller/v2/users/1/"
+        },
+        "work_unit_id": "rhapaap25novalocalvehieVaK",
+        "job_type": "run",
+        "inventory": 1,
+        "project": 9,
+        "playbook": "hello_world.yml",
+        "scm_branch": "",
+        "forks": 0,
+        "limit": "",
+        "verbosity": 0,
+        "extra_vars": "{}",
+        "job_tags": "",
+        "force_handlers": false,
+        "skip_tags": "",
+        "start_at_task": "",
+        "timeout": 0,
+        "use_fact_cache": false,
+        "organization": 1,
+        "job_template": 12,
+        "passwords_needed_to_start": [],
+        "allow_simultaneous": false,
+        "artifacts": {},
+        "scm_revision": "347e44fea036c94d5f60e544de006453ee5c71ad",
+        "instance_group": 1,
+        "diff_mode": false,
+        "job_slice_number": 0,
+        "job_slice_count": 1,
+        "webhook_service": "",
+        "webhook_credential": null,
+        "webhook_guid": ""
+      },
+      {
+        "id": 5,
+        "type": "job",
+        "url": "/api/controller/v2/jobs/5/",
+        "related": {
+          "created_by": "/api/controller/v2/users/1/",
+          "labels": "/api/controller/v2/jobs/5/labels/",
+          "inventory": "/api/controller/v2/inventories/1/",
+          "project": "/api/controller/v2/projects/8/",
+          "organization": "/api/controller/v2/organizations/1/",
+          "credentials": "/api/controller/v2/jobs/5/credentials/",
+          "unified_job_template": "/api/controller/v2/job_templates/11/",
+          "stdout": "/api/controller/v2/jobs/5/stdout/",
+          "execution_environment": "/api/controller/v2/execution_environments/2/",
+          "job_events": "/api/controller/v2/jobs/5/job_events/",
+          "job_host_summaries": "/api/controller/v2/jobs/5/job_host_summaries/",
+          "activity_stream": "/api/controller/v2/jobs/5/activity_stream/",
+          "notifications": "/api/controller/v2/jobs/5/notifications/",
+          "create_schedule": "/api/controller/v2/jobs/5/create_schedule/",
+          "job_template": "/api/controller/v2/job_templates/11/",
+          "cancel": "/api/controller/v2/jobs/5/cancel/",
+          "relaunch": "/api/controller/v2/jobs/5/relaunch/"
+        },
+        "summary_fields": {
+          "organization": {
+            "id": 1,
+            "name": "Default",
+            "description": "The default organization for Ansible Automation Platform"
+          },
+          "inventory": {
+            "id": 1,
+            "name": "Demo Inventory",
+            "description": "",
+            "has_active_failures": false,
+            "total_hosts": 1,
+            "hosts_with_active_failures": 0,
+            "total_groups": 0,
+            "has_inventory_sources": false,
+            "total_inventory_sources": 0,
+            "inventory_sources_with_failures": 0,
+            "organization_id": 1,
+            "kind": ""
+          },
+          "execution_environment": {
+            "id": 2,
+            "name": "Hub Default execution environment",
+            "description": "",
+            "image": "rhap-aap25.novalocal/ee-supported-rhel8:latest"
+          },
+          "project": {
+            "id": 8,
+            "name": "project2-org1",
+            "description": "project2-org1",
+            "status": "successful",
+            "scm_type": "git",
+            "allow_override": false
+          },
+          "job_template": {
+            "id": 11,
+            "name": "jobtemplate2-org1",
+            "description": "jobtemplate2-org1"
+          },
+          "unified_job_template": {
+            "id": 11,
+            "name": "jobtemplate2-org1",
+            "description": "jobtemplate2-org1",
+            "unified_job_type": "job"
+          },
+          "instance_group": {
+            "id": 1,
+            "name": "default",
+            "is_container_group": false
+          },
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "user_capabilities": {
+            "delete": true,
+            "start": true
+          },
+          "labels": {
+            "count": 1,
+            "results": [
+              {
+                "id": 1,
+                "name": "label1-org1"
+              }
+            ]
+          },
+          "credentials": []
+        },
+        "created": "2025-12-10T08:14:25.467182Z",
+        "modified": "2025-12-10T08:14:30.936797Z",
+        "name": "jobtemplate2-org1",
+        "description": "jobtemplate2-org1",
+        "unified_job_template": 11,
+        "launch_type": "manual",
+        "status": "successful",
+        "execution_environment": 2,
+        "failed": false,
+        "started": "2025-12-10T08:14:31.016820Z",
+        "finished": "2025-12-10T08:14:36.256446Z",
+        "canceled_on": null,
+        "elapsed": 5.24,
+        "job_explanation": "",
+        "execution_node": "rhap-aap25.novalocal",
+        "controller_node": "rhap-aap25.novalocal",
+        "launched_by": {
+          "id": 1,
+          "name": "admin",
+          "type": "user",
+          "url": "/api/controller/v2/users/1/"
+        },
+        "work_unit_id": "rhapaap25novalocalUFzRXdJc",
+        "job_type": "run",
+        "inventory": 1,
+        "project": 8,
+        "playbook": "hello_world.yml",
+        "scm_branch": "",
+        "forks": 0,
+        "limit": "",
+        "verbosity": 0,
+        "extra_vars": "{}",
+        "job_tags": "",
+        "force_handlers": false,
+        "skip_tags": "",
+        "start_at_task": "",
+        "timeout": 0,
+        "use_fact_cache": false,
+        "organization": 1,
+        "job_template": 11,
+        "passwords_needed_to_start": [],
+        "allow_simultaneous": false,
+        "artifacts": {},
+        "scm_revision": "347e44fea036c94d5f60e544de006453ee5c71ad",
+        "instance_group": 1,
+        "diff_mode": false,
+        "job_slice_number": 0,
+        "job_slice_count": 1,
+        "webhook_service": "",
+        "webhook_credential": null,
+        "webhook_guid": ""
+      },
+      {
+        "id": 7,
+        "type": "job",
+        "url": "/api/controller/v2/jobs/7/",
+        "related": {
+          "created_by": "/api/controller/v2/users/1/",
+          "labels": "/api/controller/v2/jobs/7/labels/",
+          "inventory": "/api/controller/v2/inventories/1/",
+          "project": "/api/controller/v2/projects/9/",
+          "organization": "/api/controller/v2/organizations/1/",
+          "credentials": "/api/controller/v2/jobs/7/credentials/",
+          "unified_job_template": "/api/controller/v2/job_templates/12/",
+          "stdout": "/api/controller/v2/jobs/7/stdout/",
+          "execution_environment": "/api/controller/v2/execution_environments/2/",
+          "job_events": "/api/controller/v2/jobs/7/job_events/",
+          "job_host_summaries": "/api/controller/v2/jobs/7/job_host_summaries/",
+          "activity_stream": "/api/controller/v2/jobs/7/activity_stream/",
+          "notifications": "/api/controller/v2/jobs/7/notifications/",
+          "create_schedule": "/api/controller/v2/jobs/7/create_schedule/",
+          "job_template": "/api/controller/v2/job_templates/12/",
+          "cancel": "/api/controller/v2/jobs/7/cancel/",
+          "relaunch": "/api/controller/v2/jobs/7/relaunch/"
+        },
+        "summary_fields": {
+          "organization": {
+            "id": 1,
+            "name": "Default",
+            "description": "The default organization for Ansible Automation Platform"
+          },
+          "inventory": {
+            "id": 1,
+            "name": "Demo Inventory",
+            "description": "",
+            "has_active_failures": false,
+            "total_hosts": 1,
+            "hosts_with_active_failures": 0,
+            "total_groups": 0,
+            "has_inventory_sources": false,
+            "total_inventory_sources": 0,
+            "inventory_sources_with_failures": 0,
+            "organization_id": 1,
+            "kind": ""
+          },
+          "execution_environment": {
+            "id": 2,
+            "name": "Hub Default execution environment",
+            "description": "",
+            "image": "rhap-aap25.novalocal/ee-supported-rhel8:latest"
+          },
+          "project": {
+            "id": 9,
+            "name": "project3-org1",
+            "description": "project3-org1",
+            "status": "successful",
+            "scm_type": "git",
+            "allow_override": false
+          },
+          "job_template": {
+            "id": 12,
+            "name": "jobtemplate3-org1",
+            "description": "jobtemplate3-org1"
+          },
+          "unified_job_template": {
+            "id": 12,
+            "name": "jobtemplate3-org1",
+            "description": "jobtemplate3-org1",
+            "unified_job_type": "job"
+          },
+          "instance_group": {
+            "id": 1,
+            "name": "default",
+            "is_container_group": false
+          },
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "user_capabilities": {
+            "delete": true,
+            "start": true
+          },
+          "labels": {
+            "count": 2,
+            "results": [
+              {
+                "id": 1,
+                "name": "label1-org1"
+              },
+              {
+                "id": 2,
+                "name": "label2-org1"
+              }
+            ]
+          },
+          "credentials": []
+        },
+        "created": "2025-12-10T08:14:28.727751Z",
+        "modified": "2025-12-10T08:14:50.959144Z",
+        "name": "jobtemplate3-org1",
+        "description": "jobtemplate3-org1",
+        "unified_job_template": 12,
+        "launch_type": "manual",
+        "status": "successful",
+        "execution_environment": 2,
+        "failed": false,
+        "started": "2025-12-10T08:14:51.047765Z",
+        "finished": "2025-12-10T08:14:56.286369Z",
+        "canceled_on": null,
+        "elapsed": 5.239,
+        "job_explanation": "",
+        "execution_node": "rhap-aap25.novalocal",
+        "controller_node": "rhap-aap25.novalocal",
+        "launched_by": {
+          "id": 1,
+          "name": "admin",
+          "type": "user",
+          "url": "/api/controller/v2/users/1/"
+        },
+        "work_unit_id": "rhapaap25novalocalSoPt7nhZ",
+        "job_type": "run",
+        "inventory": 1,
+        "project": 9,
+        "playbook": "hello_world.yml",
+        "scm_branch": "",
+        "forks": 0,
+        "limit": "",
+        "verbosity": 0,
+        "extra_vars": "{}",
+        "job_tags": "",
+        "force_handlers": false,
+        "skip_tags": "",
+        "start_at_task": "",
+        "timeout": 0,
+        "use_fact_cache": false,
+        "organization": 1,
+        "job_template": 12,
+        "passwords_needed_to_start": [],
+        "allow_simultaneous": false,
+        "artifacts": {},
+        "scm_revision": "347e44fea036c94d5f60e544de006453ee5c71ad",
+        "instance_group": 1,
+        "diff_mode": false,
+        "job_slice_number": 0,
+        "job_slice_count": 1,
+        "webhook_service": "",
+        "webhook_credential": null,
+        "webhook_guid": ""
+      }
+    ]
+  }
+}

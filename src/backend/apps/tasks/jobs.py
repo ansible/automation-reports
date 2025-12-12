@@ -22,6 +22,9 @@ class BaseTask(object):
     prefix = ""
 
     def __init__(self):
+        # The .instance attribute will hold the SyncJob instance after run() is called.
+        # The run() method requires the pk parameter to fetch the SyncJob from the database,
+        # since self.instance is not set until after the job is loaded.
         self.instance = None
         self.cluster = None
         self.update_attempts = int(

@@ -1,0 +1,287 @@
+{
+  "url": "https://aap25.example.com:443/api/controller/v2/organizations/?page_size=100&page=1",
+  "status": 200,
+  "headers": {
+    "X-Api-Product-Name": "Red Hat Ansible Automation Platform",
+    "content-type": "application/json"
+  },
+  "json_body": {
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": 1,
+        "type": "organization",
+        "url": "/api/controller/v2/organizations/1/",
+        "related": {
+          "created_by": "/api/controller/v2/users/1/",
+          "modified_by": "/api/controller/v2/users/1/",
+          "execution_environments": "/api/controller/v2/organizations/1/execution_environments/",
+          "projects": "/api/controller/v2/organizations/1/projects/",
+          "inventories": "/api/controller/v2/organizations/1/inventories/",
+          "job_templates": "/api/controller/v2/organizations/1/job_templates/",
+          "workflow_job_templates": "/api/controller/v2/organizations/1/workflow_job_templates/",
+          "users": "/api/controller/v2/organizations/1/users/",
+          "admins": "/api/controller/v2/organizations/1/admins/",
+          "teams": "/api/controller/v2/organizations/1/teams/",
+          "credentials": "/api/controller/v2/organizations/1/credentials/",
+          "applications": "/api/controller/v2/organizations/1/applications/",
+          "activity_stream": "/api/controller/v2/organizations/1/activity_stream/",
+          "notification_templates": "/api/controller/v2/organizations/1/notification_templates/",
+          "notification_templates_started": "/api/controller/v2/organizations/1/notification_templates_started/",
+          "notification_templates_success": "/api/controller/v2/organizations/1/notification_templates_success/",
+          "notification_templates_error": "/api/controller/v2/organizations/1/notification_templates_error/",
+          "notification_templates_approvals": "/api/controller/v2/organizations/1/notification_templates_approvals/",
+          "object_roles": "/api/controller/v2/organizations/1/object_roles/",
+          "access_list": "/api/controller/v2/organizations/1/access_list/",
+          "instance_groups": "/api/controller/v2/organizations/1/instance_groups/",
+          "galaxy_credentials": "/api/controller/v2/organizations/1/galaxy_credentials/"
+        },
+        "summary_fields": {
+          "resource": {
+            "ansible_id": "f7b5560f-525e-4214-9182-b6010b0cdee0",
+            "resource_type": "shared.organization"
+          },
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "modified_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "object_roles": {
+            "admin_role": {
+              "description": "Can manage all aspects of the organization",
+              "name": "Admin",
+              "id": 9,
+              "user_only": true
+            },
+            "execute_role": {
+              "description": "May run any executable resources in the organization",
+              "name": "Execute",
+              "id": 10
+            },
+            "project_admin_role": {
+              "description": "Can manage all projects of the organization",
+              "name": "Project Admin",
+              "id": 11
+            },
+            "inventory_admin_role": {
+              "description": "Can manage all inventories of the organization",
+              "name": "Inventory Admin",
+              "id": 12
+            },
+            "credential_admin_role": {
+              "description": "Can manage all credentials of the organization",
+              "name": "Credential Admin",
+              "id": 13
+            },
+            "workflow_admin_role": {
+              "description": "Can manage all workflows of the organization",
+              "name": "Workflow Admin",
+              "id": 14
+            },
+            "notification_admin_role": {
+              "description": "Can manage all notifications of the organization",
+              "name": "Notification Admin",
+              "id": 15
+            },
+            "job_template_admin_role": {
+              "description": "Can manage all job templates of the organization",
+              "name": "Job Template Admin",
+              "id": 16
+            },
+            "execution_environment_admin_role": {
+              "description": "Can manage all execution environments of the organization",
+              "name": "Execution Environment Admin",
+              "id": 17
+            },
+            "auditor_role": {
+              "description": "Can view all aspects of the organization",
+              "name": "Auditor",
+              "id": 18
+            },
+            "member_role": {
+              "description": "User is a member of the organization",
+              "name": "Member",
+              "id": 19,
+              "user_only": true
+            },
+            "read_role": {
+              "description": "May view settings for the organization",
+              "name": "Read",
+              "id": 20
+            },
+            "approval_role": {
+              "description": "Can approve or deny a workflow approval node",
+              "name": "Approve",
+              "id": 21
+            }
+          },
+          "user_capabilities": {
+            "edit": true,
+            "delete": true
+          },
+          "related_field_counts": {
+            "inventories": 1,
+            "teams": 0,
+            "users": 0,
+            "job_templates": 3,
+            "admins": 0,
+            "projects": 3
+          }
+        },
+        "created": "2025-12-10T06:45:37.091984Z",
+        "modified": "2025-12-10T07:52:46.224622Z",
+        "name": "Default",
+        "description": "The default organization for Ansible Automation Platform",
+        "max_hosts": 0,
+        "custom_virtualenv": null,
+        "default_environment": null,
+        "opa_query_path": null
+      },
+      {
+        "id": 2,
+        "type": "organization",
+        "url": "/api/controller/v2/organizations/2/",
+        "related": {
+          "created_by": "/api/controller/v2/users/1/",
+          "modified_by": "/api/controller/v2/users/1/",
+          "execution_environments": "/api/controller/v2/organizations/2/execution_environments/",
+          "projects": "/api/controller/v2/organizations/2/projects/",
+          "inventories": "/api/controller/v2/organizations/2/inventories/",
+          "job_templates": "/api/controller/v2/organizations/2/job_templates/",
+          "workflow_job_templates": "/api/controller/v2/organizations/2/workflow_job_templates/",
+          "users": "/api/controller/v2/organizations/2/users/",
+          "admins": "/api/controller/v2/organizations/2/admins/",
+          "teams": "/api/controller/v2/organizations/2/teams/",
+          "credentials": "/api/controller/v2/organizations/2/credentials/",
+          "applications": "/api/controller/v2/organizations/2/applications/",
+          "activity_stream": "/api/controller/v2/organizations/2/activity_stream/",
+          "notification_templates": "/api/controller/v2/organizations/2/notification_templates/",
+          "notification_templates_started": "/api/controller/v2/organizations/2/notification_templates_started/",
+          "notification_templates_success": "/api/controller/v2/organizations/2/notification_templates_success/",
+          "notification_templates_error": "/api/controller/v2/organizations/2/notification_templates_error/",
+          "notification_templates_approvals": "/api/controller/v2/organizations/2/notification_templates_approvals/",
+          "object_roles": "/api/controller/v2/organizations/2/object_roles/",
+          "access_list": "/api/controller/v2/organizations/2/access_list/",
+          "instance_groups": "/api/controller/v2/organizations/2/instance_groups/",
+          "galaxy_credentials": "/api/controller/v2/organizations/2/galaxy_credentials/"
+        },
+        "summary_fields": {
+          "resource": {
+            "ansible_id": "150dc79d-59b4-49d8-8052-a71e64c84a3c",
+            "resource_type": "shared.organization"
+          },
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "modified_by": {
+            "id": 1,
+            "username": "admin",
+            "first_name": "",
+            "last_name": ""
+          },
+          "object_roles": {
+            "admin_role": {
+              "description": "Can manage all aspects of the organization",
+              "name": "Admin",
+              "id": 40,
+              "user_only": true
+            },
+            "execute_role": {
+              "description": "May run any executable resources in the organization",
+              "name": "Execute",
+              "id": 41
+            },
+            "project_admin_role": {
+              "description": "Can manage all projects of the organization",
+              "name": "Project Admin",
+              "id": 42
+            },
+            "inventory_admin_role": {
+              "description": "Can manage all inventories of the organization",
+              "name": "Inventory Admin",
+              "id": 43
+            },
+            "credential_admin_role": {
+              "description": "Can manage all credentials of the organization",
+              "name": "Credential Admin",
+              "id": 44
+            },
+            "workflow_admin_role": {
+              "description": "Can manage all workflows of the organization",
+              "name": "Workflow Admin",
+              "id": 45
+            },
+            "notification_admin_role": {
+              "description": "Can manage all notifications of the organization",
+              "name": "Notification Admin",
+              "id": 46
+            },
+            "job_template_admin_role": {
+              "description": "Can manage all job templates of the organization",
+              "name": "Job Template Admin",
+              "id": 47
+            },
+            "execution_environment_admin_role": {
+              "description": "Can manage all execution environments of the organization",
+              "name": "Execution Environment Admin",
+              "id": 48
+            },
+            "auditor_role": {
+              "description": "Can view all aspects of the organization",
+              "name": "Auditor",
+              "id": 49
+            },
+            "member_role": {
+              "description": "User is a member of the organization",
+              "name": "Member",
+              "id": 50,
+              "user_only": true
+            },
+            "read_role": {
+              "description": "May view settings for the organization",
+              "name": "Read",
+              "id": 51
+            },
+            "approval_role": {
+              "description": "Can approve or deny a workflow approval node",
+              "name": "Approve",
+              "id": 52
+            }
+          },
+          "user_capabilities": {
+            "edit": true,
+            "delete": true
+          },
+          "related_field_counts": {
+            "inventories": 0,
+            "teams": 0,
+            "users": 0,
+            "job_templates": 0,
+            "admins": 0,
+            "projects": 1
+          }
+        },
+        "created": "2025-12-10T08:14:00.750530Z",
+        "modified": "2025-12-10T08:14:00.750547Z",
+        "name": "org2",
+        "description": "org2-desc",
+        "max_hosts": 0,
+        "custom_virtualenv": null,
+        "default_environment": null,
+        "opa_query_path": null
+      }
+    ]
+  }
+}
