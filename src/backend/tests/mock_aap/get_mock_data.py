@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # The script run HTTP GET requests to AAP, to predefined API endpoints.
-# The responeses are stored into json files for mock testing.
+# The responses are stored into json files for mock testing.
 # Before running this script the AAP needs to be:
 #  - reset to "empty" state
 #  - filled with predefined objects (projects, job templates, jobs, etc)

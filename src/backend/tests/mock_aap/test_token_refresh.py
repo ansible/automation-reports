@@ -14,12 +14,12 @@ from .fixtures.aap_common import cluster_from_dict_cluster, load_file, dict_clus
 from responses import matchers
 
 
-# How to "combine" smaller fixtures - syntax suygar
+# How to "combine" smaller fixtures - syntax sugar
 # https://smarie.github.io/python-pytest-cases/pytest_goodies/#unpack_fixture-unpack_into
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
-class TestAAPTokenrefresh:
+class TestAAPTokenRefresh:
     @pytest.mark.parametrize("aap_version", all_aap_versions)
     def test_get(self, aap_version):
         aap_version_slug = aap_version.replace(".", "")

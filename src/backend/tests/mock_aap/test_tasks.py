@@ -244,7 +244,7 @@ class TestDispatcherTask:
             # the tested function
             task.run(pk=sync_job.pk)
 
-        # state after test - all jobs ware parsed
+        # state after test - all jobs were parsed
         assert 0 == Currency.objects.count()
         assert 0 == Settings.objects.count()
         assert 0 == FilterSet.objects.count()

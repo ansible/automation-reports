@@ -91,7 +91,7 @@ def aap_api_responses_24():
     )
 
 
-# How to "combine" smaller fixtures - syntax suygar
+# How to "combine" smaller fixtures - syntax sugar
 # https://smarie.github.io/python-pytest-cases/pytest_goodies/#unpack_fixture-unpack_into
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)

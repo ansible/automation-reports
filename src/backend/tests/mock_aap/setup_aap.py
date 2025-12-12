@@ -2,7 +2,7 @@
 
 # First
 # Manually setup data in AAP.
-# Next use this script, to visit all relevant URLs, and store responeses into json files for mock testing.
+# Next use this script, to visit all relevant URLs, and store responses into json files for mock testing.
 
 # Required input, as environ variables:
 #   export AAP_VERSION=25
