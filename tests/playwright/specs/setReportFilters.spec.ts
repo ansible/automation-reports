@@ -53,7 +53,7 @@ async function deleteReportTest(
     await selectMenuItem(page, "Delete current report", "Delete report");
     await expect(page.getByText("Do you really want to delete the report: report_1")).toBeVisible();
     await saveReport(page, "Delete");
-  
+
     if (expectError) {
       await expect(
         page.getByRole("heading", { name: "Delete report" })
@@ -72,14 +72,18 @@ async function editReportTest(
     statusCode = 200,
     newReportName,
     expectedFinalSelector,
+    expectedLocator,
+    expectedLocatorText,
     expectedFinalText,
     isEdited = false,
   }: {
     mockResponse: object;
     statusCode?: number;
     newReportName: string;
-    expectedFinalSelector: Parameters<Page['getByRole']>[0];
-    expectedFinalText: string;
+    expectedFinalSelector?: Parameters<Page['getByRole']>[0];
+    expectedLocator?: string;
+    expectedLocatorText?: string;
+    expectedFinalText?: string;
     isEdited?: boolean;
   }
 ) {
@@ -93,9 +97,15 @@ async function editReportTest(
     if (isEdited) {
       await page.getByRole('button', { name: 'report_1' }).click();
     }
-    await expect(
-      page.getByRole(expectedFinalSelector, { name: expectedFinalText })
+    if (expectedFinalSelector){
+      await expect(page.getByRole(expectedFinalSelector, { name: expectedFinalText })).toBeVisible();
+    }
+    if (expectedLocator){
+      await expect(
+      page.locator(expectedLocator).filter({ hasText: expectedLocatorText })
     ).toBeVisible();
+    }
+
 }
 
 test.describe("Set report filters", () => {
@@ -173,9 +183,7 @@ test.describe("Set report filters", () => {
     await fillInput(page, "report_1");
     await saveReport(page, "Create");
     await expect(
-      page.getByRole("heading", { 
-        name: "Danger alert: Error saving view. Filter name already exists." 
-      })
+      page.locator('li div.pf-v6-c-alert').filter({ hasText: 'Danger alert:Error saving report. Filter name already exists.' })
     ).toBeVisible();
   })
 
@@ -186,7 +194,7 @@ test.describe("Set report filters", () => {
     await fillInput(page, "report_3");
     await saveReport(page, "Create");
     await expect(
-      page.getByRole('heading', { name: 'Danger alert: Error saving' })
+      page.locator('li div.pf-v6-c-alert').filter({ hasText: 'Danger alert:Error saving report.' })
     ).toBeVisible();
   })
 
@@ -206,8 +214,8 @@ test.describe("Set report filters", () => {
         mockResponse: { name: ["Filter name already exists."] },
         statusCode: 400,
         newReportName: "report_2",
-        expectedFinalSelector: "heading",
-        expectedFinalText: "Danger alert: Error saving view. Filter name already exists.",
+        expectedLocator: "li div.pf-v6-c-alert",
+        expectedLocatorText: "Danger alert:Error saving report. Filter name already exists.",
       });
   })
 
@@ -216,8 +224,8 @@ test.describe("Set report filters", () => {
         mockResponse: {},
         statusCode: 500,
         newReportName: "report_2",
-        expectedFinalSelector: "heading",
-        expectedFinalText: "Danger alert: Error saving view.",
+        expectedLocator: "li div.pf-v6-c-alert",
+        expectedLocatorText: "Danger alert:Error saving report.",
       });
   })
 

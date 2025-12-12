@@ -169,3 +169,25 @@ export const svgToPng = async (svgElement: SVGSVGElement | undefined | null): Pr
   img.remove();
   return retVal;
 };
+
+export const getErrorMessage = (e: any): string => {
+  let errorMessage = '';
+  if (e?.response?.data && typeof e.response.data === 'object') {
+    try {
+      Object.keys(e.response.data).forEach((key) => {
+        const errors = e.response.data[key];
+        if (Array.isArray(errors)) {
+          errors.forEach((error: string) => {
+            errorMessage += ` ${error}`;
+          });
+        } else if (typeof errors === 'string' && errors?.length > 1) {
+          errorMessage += ` ${errors}`;
+        }
+      });
+    } catch {
+      errorMessage = 'Something went wrong.';
+    }
+    return errorMessage.trim();
+  }
+  return 'Unknown error occurred.';
+};
