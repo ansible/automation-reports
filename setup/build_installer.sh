@@ -6,7 +6,7 @@ AAP_DASHBOARD_BUNDLED_INSTALLER="${AAP_DASHBOARD_BUNDLED_INSTALLER:-1}"
 
 # GHA pushes to quay.io/aap/automation-dashboard:latest,
 # but all other images are at registry.redhat.io.
-AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-registry.redhat.io/ansible-automation-platform-24/automation-dashboard:latest}"
+AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest}"
 # AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-quay.io/aap/automation-dashboard:latest}"
 
 # Building in GHA: we want to use the container image already built by GHA.
