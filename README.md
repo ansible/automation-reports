@@ -169,10 +169,19 @@ python manage.py setclusters clusters.yaml
 Note that when access token expires, the refresh token is used to obtain new access token.
 At the same time the AAP returns also new refresh token.
 The Automation Dashboard internally updates both values.
-Implications:
+Implication:
 
-- after token refresh happens, if you need to run `manage.py setclusters` again, you need to create a new token.
 - The same access and refresh tokens can be used only by one Automation Dashboard installation
+
+If you ever need to run `python manage.py setclusters` again,
+you need to ensure the access and refresh token are still valid, for each AAP cluster.
+Use command below to show what is currently configured.
+The output can be stored into file, and used as input for `python manage.py setclusters`.
+
+```bash
+python manage.py getclusters --decrypt`
+python manage.py getclusters --decrypt` > clusters-new.yaml
+```
 
 ### Setup SSO login with AAP
 
