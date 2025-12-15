@@ -92,7 +92,12 @@ jobs:
           bundle_dir=$PWD/setup/bundle
           EOF
       - name: Build bundled installer
-        run: AAP_DASHBOARD_BUNDLED_INSTALLER=1 USE_QUAY_IO_IMAGE=1 QUAY_IO_IMAGE_TAG=${{ github.ref_name }} setup/build_installer.sh
+        run: >
+          AAP_DASHBOARD_BUNDLED_INSTALLER=1
+          USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=0
+          USE_QUAY_IO_IMAGE=1
+          QUAY_IO_IMAGE_TAG=${{ github.ref_name }}
+          setup/build_installer.sh
       - name: Upload bundle artifact
         uses: actions/upload-artifact@v4
         with:
@@ -109,7 +114,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Build online installer
-        run: AAP_DASHBOARD_BUNDLED_INSTALLER=0 USE_QUAY_IO_IMAGE=1 QUAY_IO_IMAGE_TAG=${{ github.ref_name }} setup/build_installer.sh
+        run: >
+          AAP_DASHBOARD_BUNDLED_INSTALLER=0
+          USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=0
+          USE_QUAY_IO_IMAGE=1
+          QUAY_IO_IMAGE_TAG=${{ github.ref_name }}
+          setup/build_installer.sh
       - name: Upload bundle artifact
         uses: actions/upload-artifact@v4
         with:

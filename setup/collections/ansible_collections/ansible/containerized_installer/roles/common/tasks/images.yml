@@ -57,6 +57,16 @@
     _images: '{{ _images | default([]) | union([_dashboard_image_be]) }}'
   when: inventory_hostname in groups.get('automationdashboard', [])
 
+- name: Set which images should be pulled - if dashboard image is pulled from registry
+  ansible.builtin.set_fact:
+    _images_to_pull_into_bundle: '{{ _images | default([]) }}'
+  when: lookup('ansible.builtin.env', 'USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE', default='0') == '0'
+
+- name: Set which images should be pulled - if dashboard image is locally built
+  ansible.builtin.set_fact:
+    _images_to_pull_into_bundle: '{{ _images | default([]) | reject("eq", _dashboard_image_be) | list }}'
+  when: lookup('ansible.builtin.env', 'USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE', default='0') == '1'
+
 - name: Add DE images to the list
   ansible.builtin.set_fact:
     __de_images: '{{ __de_images | default([]) | union([_de_supported_image]) }}'
