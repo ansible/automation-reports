@@ -52,7 +52,7 @@
     force: '{{ container_image_update }}'
     validate_certs: '{{ registry_tls_verify }}'
     arch: '{{ container_image_arch | default(omit) }}'
-  loop: '{{ _images | union((__de_images | default([])) | union(__ee_images | default([]))) | unique }}'
+  loop: '{{ _images_to_pull_into_bundle | union((__de_images | default([])) | union(__ee_images | default([]))) | unique }}'
   environment:
     HTTP_PROXY: "{{ http_proxy | default('') }}"
     HTTPS_PROXY: "{{ https_proxy | default('') }}"

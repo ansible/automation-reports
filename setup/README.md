@@ -22,7 +22,7 @@ podman login registry.redhat.io -u USERNAME
 Build image:
 
 ```bash
-podman build -f docker/Dockerfile.backend -t registry.redhat.io/ansible-automation-platform-24/automation-dashboard:latest .
+podman build -f docker/Dockerfile.backend -t registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest .
 ```
 
 Run installer.

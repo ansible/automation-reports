@@ -6,22 +6,45 @@ AAP_DASHBOARD_BUNDLED_INSTALLER="${AAP_DASHBOARD_BUNDLED_INSTALLER:-1}"
 
 # GHA pushes to quay.io/aap/automation-dashboard:latest,
 # but all other images are at registry.redhat.io.
-AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-registry.redhat.io/ansible-automation-platform-24/automation-dashboard:latest}"
+AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest}"
 # AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-quay.io/aap/automation-dashboard:latest}"
 
-# Building in GHA: we want to use the container image already built by GHA.
+# Building in GHA:
+# USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=1 USE_QUAY_IO_IMAGE=1
+# We want to use the container image already built by GHA.
 # We just need to pull existing image from quay.io, and tag it with different name.
+# Note: this cannot produce online installer that would use quay.io image!
+#
+# Building locally:
+# USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=1
+# We build the container image locally.
+# We do not push to/pull from quay.io.
+
+USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE="${USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE:-0}"
 USE_QUAY_IO_IMAGE="${USE_QUAY_IO_IMAGE:-0}"
 QUAY_IO_IMAGE_TAG="${QUAY_IO_IMAGE_TAG:-main}"
 
 function build_or_pull_container_image() {
-  if [ "$USE_QUAY_IO_IMAGE" == "0" ]
+  if [ "$USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE" == "0" ]
   then
-    ansible-playbook -i inventory ansible.containerized_installer.util_podman_login
-    podman build -f ../docker/Dockerfile.backend -t $AAP_DASHBOARD_IMAGE .. # --no-cache
+    # Use real image from registry.redhat.io.
+    # Usable for online or bundled installer.
+    podman pull $AAP_DASHBOARD_IMAGE
   else
-    podman pull quay.io/aap/automation-dashboard:$QUAY_IO_IMAGE_TAG
-    podman tag quay.io/aap/automation-dashboard:$QUAY_IO_IMAGE_TAG $AAP_DASHBOARD_IMAGE
+    if [ "$USE_QUAY_IO_IMAGE" == "1" ]
+    then
+      # Pull image from quay.io,
+      # rename it to registry.redhat.io/...,
+      # include it into bundled installer.
+      echo "Pulling quay.io/aap/automation-dashboard:$QUAY_IO_IMAGE_TAG image"
+      podman pull quay.io/aap/automation-dashboard:$QUAY_IO_IMAGE_TAG
+      podman tag quay.io/aap/automation-dashboard:$QUAY_IO_IMAGE_TAG $AAP_DASHBOARD_IMAGE
+    else
+      # Build image, include it into bundled installer.
+      echo "Building $AAP_DASHBOARD_IMAGE image"
+      ansible-playbook -i inventory ansible.containerized_installer.util_podman_login
+      podman build -f ../docker/Dockerfile.backend -t $AAP_DASHBOARD_IMAGE .. # --no-cache
+    fi
   fi
 }
 
@@ -50,6 +73,7 @@ Build configuration:
   AAP_DASHBOARD_IMAGE=$AAP_DASHBOARD_IMAGE
   USE_QUAY_IO_IMAGE=$USE_QUAY_IO_IMAGE
   QUAY_IO_IMAGE_TAG=$QUAY_IO_IMAGE_TAG
+  USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=$USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE
 EOF
 cd setup/
 if [ "$AAP_DASHBOARD_BUNDLED_INSTALLER" == "1" ]
