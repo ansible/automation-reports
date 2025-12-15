@@ -54,7 +54,7 @@
       - '{{ dashboard_conf_dir }}/launch_dashboard_web.sh:/usr/bin/launch_dashboard_web.sh:ro,z'
       # - '{{ receptor_conf_dir }}/receptor.conf:/etc/receptor/receptor.conf:ro,z'
       # - 'receptor_run:/run/receptor:U'
-      # - 'redis_run:/run/redis:z'
+      - 'redis_run:/run/redis:z'
       # - '{{ rsyslog_run_dir }}:/run/awx-rsyslog:z'
       - '{{ supervisor_run_dir }}:/run/supervisor:z'
       - '{{ dispatcher_run_dir }}:/run/dispatcher:z'

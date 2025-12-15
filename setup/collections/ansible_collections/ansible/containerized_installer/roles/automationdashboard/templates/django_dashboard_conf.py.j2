@@ -35,6 +35,8 @@ INITIAL_SYNC_SINCE = "{{ initial_sync_since }}"
 
 DISPATCHERD_DEBUGGING_SOCKFILE = "/run/dispatcher/automation-dashboard-dispatcher.sock"
 
+BROKER_URL = 'unix:///run/redis/redis.sock'
+
 SHOW_URLLIB3_INSECURE_REQUEST_WARNING = {{ show_urllib3_insecure_request_warning | default(True) }}
 # django DEBUG=0
 DEBUG = {{ django_debug | default(False) }}

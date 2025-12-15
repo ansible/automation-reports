@@ -50,7 +50,12 @@ initial_sync_days=1
 [database]
 host.example.com ansible_connection=local
 
+[redis]
+host.example.com ansible_connection=local
+
 [all:vars]
+redis_mode=standalone
+
 postgresql_admin_username=postgres
 postgresql_admin_password=TODO
 # registry_username=

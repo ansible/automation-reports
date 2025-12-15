@@ -18,7 +18,7 @@
         name: preflight
 
 - name: Install common container components
-  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes:automationdashboard
+  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes:automationdashboard:redis
   any_errors_fatal: true
   gather_facts: false
   become: false
@@ -60,6 +60,45 @@
         name: postgresql
         tasks_from: conf.yml
       when: not dashboard_pg_containerized
+
+- name: Install redis cluster cache
+  hosts: redis
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install and configure redis cluster tcp socket
+      ansible.builtin.include_role:
+        name: redis
+      vars:
+        redis_unix_socket: false
+        redis_cluster: true
+      when: redis_mode | default('cluster') == 'cluster'
+
+- name: Install the redis cache
+  hosts: automationcontroller:automationeda:automationgateway:automationhub:automationdashboard
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install and configure redis unix socket
+      ansible.builtin.include_role:
+        name: redis
+      when: >
+        inventory_hostname in groups.get('automationcontroller', []) or
+        inventory_hostname in groups.get('automationhub', []) or
+        (inventory_hostname in groups.get('automationeda', []) and groups.get('automationeda', []) | length == 1) or
+        (inventory_hostname in groups.get('automationdashboard', []) and groups.get('automationdashboard', []) | length == 1)
+
+    # group automationgateway in not defined when installing only automationdashboard
+    # - name: Install and configure redis tcp socket
+    #   ansible.builtin.include_role:
+    #     name: redis
+    #   vars:
+    #     redis_unix_socket: false
+    #   when:
+    #     - redis_mode | default('cluster') == 'standalone'
+    #     - inventory_hostname == groups['automationgateway'] | first
 
 - name: Install the Automation Dashboard
   any_errors_fatal: true
