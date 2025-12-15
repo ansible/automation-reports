@@ -23,6 +23,9 @@ split-settings==1.0.0
 urllib3==2.5.0
 uvicorn==0.38.0
 
+# Deployment dependencies
+uwsgi==2.0.31
+
 # Development dependencies
 pytest-cov==7.0.0
 pytest-django==4.11.1
