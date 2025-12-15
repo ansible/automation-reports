@@ -1,0 +1,26 @@
+---
+- name: Manage redis firewalld port
+  ansible.posix.firewalld:
+    port: '{{ redis_port }}/tcp'
+    permanent: true
+    state: '{{ __firewalld_state }}'
+    immediate: true
+    zone: '{{ redis_firewall_zone }}'
+  become: true
+  when:
+    - ansible_facts.services.get('firewalld.service', {}) | length
+    - ansible_facts.services['firewalld.service']['status'] == 'enabled'
+
+- name: Manage redis firewalld cluster port
+  ansible.posix.firewalld:
+    port: '{{ redis_cluster_port }}/tcp'
+    permanent: true
+    state: '{{ __firewalld_state }}'
+    immediate: true
+    zone: '{{ redis_firewall_zone }}'
+  become: true
+  when:
+    - redis_cluster | bool
+    - ansible_facts.services.get('firewalld.service', {}) | length
+    - ansible_facts.services['firewalld.service']['status'] == 'enabled'
+...

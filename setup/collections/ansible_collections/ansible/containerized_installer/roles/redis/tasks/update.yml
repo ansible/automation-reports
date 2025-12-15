@@ -1,0 +1,24 @@
+---
+- name: Get redis container information
+  containers.podman.podman_container_info:
+    name: 'redis-{{ _redis_suffix }}'
+  register: _redis_container_info
+
+- name: Get redis image information
+  containers.podman.podman_image_info:
+    name: '{{ _redis_image }}'
+  register: _redis_image_info
+
+- name: Set redis update fact
+  ansible.builtin.set_fact:
+    _redis_image_update: '{{ _redis_before | difference(_redis_after) | length > 0 }}'
+  vars:
+    _redis_before: '{{ _redis_container_info.containers | map(attribute="Image") | unique }}'
+    _redis_after: '{{ _redis_image_info.images | map(attribute="Id") | unique }}'
+
+- name: Stop redis service on update
+  ansible.builtin.include_tasks: systemd.yml
+  vars:
+    __systemd_state: stopped
+  when: _redis_image_update | bool
+...

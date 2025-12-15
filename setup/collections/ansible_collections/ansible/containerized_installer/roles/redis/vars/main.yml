@@ -1,0 +1,7 @@
+---
+redis_uid: 1001
+redis_gid: 996
+
+archive_extension: "{{ use_archive_compression | bool | ternary(archive_compressed_extension, archive_decompressed_extension) }}"
+redis_archive_extension: "{{ redis_use_archive_compression | bool | ternary(archive_compressed_extension, archive_decompressed_extension) }}"
+...

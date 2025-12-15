@@ -1,0 +1,47 @@
+---
+- name: Set options fact for tcp socket
+  ansible.builtin.set_fact:
+    _options: '-h {{ __redis_host }} -p {{ __redis_port }}'
+  when: not redis_unix_socket | bool
+
+- name: Add tls options for tcp socket
+  ansible.builtin.set_fact:
+    _options: '{{ _options }} --tls --cert /var/lib/redis/redis.cert --key /var/lib/redis/redis.key'
+    _volumes:
+      - '{{ ansible_user_dir }}/aap/tls/extracted:/etc/pki/ca-trust/extracted:z'
+      - '{{ __redis_cert }}:/var/lib/redis/redis.cert:ro,z'
+      - '{{ __redis_key }}:/var/lib/redis/redis.key:ro,z'
+  when:
+    - not redis_unix_socket | bool
+    - not redis_disable_tls | bool
+
+- name: Set facts for unix socket
+  ansible.builtin.set_fact:
+    _volumes:
+      - 'redis_run:/run/redis:U'
+    _options: '-s /run/redis/redis.sock'
+  when: redis_unix_socket | bool
+
+- name: Flush the redis database
+  containers.podman.podman_container:
+    name: redis-flush
+    image: '{{ _redis_image }}'
+    command: 'redis-cli {{ _options }} -n {{ item }} FLUSHDB'
+    detach: false
+    rm: true
+    log_driver: '{{ container_log_driver }}'
+    network: host
+    volume: '{{ _volumes | default(omit) }}'
+    uidmap:
+      - '{{ redis_uid }}:0:1'
+      - '0:1:{{ redis_uid }}'
+      - '{{ redis_uid + 1 }}:{{ redis_uid + 1 }}:{{ 65536 - redis_uid }}'
+    gidmap:
+      - '{{ redis_gid }}:0:1'
+      - '0:1:{{ redis_gid }}'
+      - '{{ redis_gid + 1 }}:{{ redis_gid + 1 }}:{{ 65536 - redis_gid }}'
+  run_once: '{{ not redis_unix_socket | bool }}'
+  register: _redis_flush
+  changed_when: "'OK' in _redis_flush.stdout"
+  loop: '{{ __redis_databases | default([]) }}'
+...

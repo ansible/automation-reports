@@ -1,0 +1,9 @@
+---
+- name: Manage redis container via systemd
+  ansible.builtin.systemd:
+    name: 'redis-{{ _redis_suffix }}.service'
+    state: '{{ __systemd_state | default("started") }}'
+    enabled: '{{ __systemd_enabled | default(true) }}'
+    scope: user
+    daemon_reload: true
+...

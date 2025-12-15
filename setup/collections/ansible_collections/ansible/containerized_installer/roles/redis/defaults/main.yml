@@ -1,0 +1,20 @@
+---
+### container
+container_log_driver: journald
+
+### common
+archive_compressed_extension: "tar.gz"
+archive_decompressed_extension: "tar"
+
+### backup/restore
+redis_use_archive_compression: "{{ use_archive_compression | default(true) }}"
+
+redis_conf_dir: '{{ ansible_user_dir }}/aap/redis'
+redis_disable_tls: false
+redis_firewall_zone: public
+redis_port: 6379
+redis_unix_socket: true
+redis_cluster: false
+redis_cluster_replicas: 1
+redis_cluster_port: 16379
+...

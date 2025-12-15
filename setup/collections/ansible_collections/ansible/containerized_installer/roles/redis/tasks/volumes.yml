@@ -1,0 +1,12 @@
+---
+- name: Manage the redis data volume
+  containers.podman.podman_volume:
+    name: 'redis_data_{{ _redis_suffix }}'
+    state: '{{ __volume_state }}'
+
+- name: Manage the redis run volume
+  containers.podman.podman_volume:
+    name: redis_run
+    state: '{{ __volume_state }}'
+  when: redis_unix_socket | bool
+...

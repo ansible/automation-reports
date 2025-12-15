@@ -1,0 +1,4 @@
+user {{ gateway_redis_username | default('gateway') }} on #{{ hostvars["localhost"]["_gateway_redis_password"] | hash('sha256') }} ~gateway:* resetchannels +@all
+{% if groups.get('automationeda', []) | length > 1 %}
+user {{ eda_redis_username | default('eda') }} on #{{ hostvars["localhost"]["_eda_redis_password"] | hash('sha256') }} ~eda-rq:* resetchannels &eda-rq:pubsub:* +@all
+{% endif %}

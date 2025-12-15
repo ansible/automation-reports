@@ -1,0 +1,27 @@
+---
+- name: Create the redis container
+  containers.podman.podman_container:
+    name: 'redis-{{ _redis_suffix }}'
+    image: '{{ _redis_image }}'
+    generate_systemd:
+      container_prefix: ''
+      path: '{{ ansible_user_dir }}/.config/systemd/user'
+      separator: ''
+    log_driver: '{{ container_log_driver }}'
+    network: host
+    volume: '{{ _volumes }}'
+    env:
+      REDIS_CONF: /etc/redis.conf
+    uidmap:
+      - '{{ redis_uid }}:0:1'
+      - '0:1:{{ redis_uid }}'
+      - '{{ redis_uid + 1 }}:{{ redis_uid + 1 }}:{{ 65536 - redis_uid }}'
+    gidmap:
+      - '{{ redis_gid }}:0:1'
+      - '0:1:{{ redis_gid }}'
+      - '{{ redis_gid + 1 }}:{{ redis_gid + 1 }}:{{ 65536 - redis_gid }}'
+    label: '{{ _autoupdate_label }}'
+    state: created
+    recreate: '{{ __containers_recreate | default(false) }}'
+  notify: Restart redis
+...

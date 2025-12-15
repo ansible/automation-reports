@@ -1,0 +1,72 @@
+---
+- name: Set redis hostname
+  ansible.builtin.set_fact:
+    _redis_hostname: '{{ routable_hostname | default(ansible_host) }}'
+    _redis_suffix: '{{ redis_unix_socket | bool | ternary("unix", "tcp") }}'
+    _redis_cluster_ip: '{{ redis_cluster_ip | default(ansible_default_ipv4.address) | default(ansible_all_ipv4_addresses[0]) }}'
+
+- name: Set redis IPs
+  ansible.builtin.set_fact:
+    _redis_ips: '{{ _redis_ips | default([]) | union(["IP:" + item]) }}'
+  loop: '{{ ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }}'
+
+- name: Set redis cluster IPs
+  ansible.builtin.set_fact:
+    _redis_cluster_ips: '{{ _ipv4_addresses | product([redis_port | string]) | map("join", ":") | join(" ") }}'
+  vars:
+    _ipv4_addresses: '{{ groups["redis"] | map("extract", hostvars) | map(attribute="_redis_cluster_ip") }}'
+  run_once: true
+  when: redis_cluster | bool
+
+- name: Set redis volumes
+  ansible.builtin.set_fact:
+    _volumes:
+      - '{{ redis_conf_dir }}/redis-{{ _redis_suffix }}.conf:/etc/redis.conf:ro,z'
+      - 'redis_data_{{ _redis_suffix }}:/var/lib/redis/data:Z'
+
+- name: Add redis nodes file when cluster
+  ansible.builtin.set_fact:
+    _volumes: '{{ _volumes + _nodes_file }}'
+  vars:
+    _nodes_file:
+      - '{{ redis_conf_dir }}/redis_nodes.conf:/etc/redis_nodes.conf:z'
+  when: redis_cluster | bool
+
+- name: Add runtime directory volume
+  ansible.builtin.set_fact:
+    _volumes: '{{ _volumes + _run_volumes }}'
+  vars:
+    _run_volumes:
+      - 'redis_run:/run/redis:U'
+  when: redis_unix_socket | bool
+
+- name: Add redis ACL file to volumes
+  ansible.builtin.set_fact:
+    _volumes: '{{ _volumes + _acl_volumes }}'
+  vars:
+    _acl_volumes:
+      - '{{ redis_conf_dir }}/redis-users.acl:/etc/redis-users.acl:ro,z'
+  when: not redis_unix_socket | bool
+
+- name: Add tls to volumes
+  ansible.builtin.set_fact:
+    _volumes: '{{ _volumes + _tls_volumes }}'
+  vars:
+    _tls_volumes:
+      - '{{ _ca_tls_dir }}/extracted:/etc/pki/ca-trust/extracted:z'
+      - '{{ redis_conf_dir }}/server.crt:/var/lib/redis/server.crt:ro,z'
+      - '{{ redis_conf_dir }}/server.key:/var/lib/redis/server.key:ro,z'
+  when:
+    - not redis_disable_tls | bool
+    - not redis_unix_socket | bool
+
+- name: Set redis user password facts
+  ansible.builtin.set_fact:
+    _eda_redis_password: '{{ eda_redis_password | default(lookup("ansible.builtin.password", "/dev/null chars=ascii_letters,digits length=128")) }}'
+    _gateway_redis_password: '{{ gateway_redis_password | default(lookup("ansible.builtin.password", "/dev/null chars=ascii_letters,digits length=128")) }}'
+  delegate_facts: true
+  delegate_to: localhost
+  no_log: true
+  run_once: true
+  when: not redis_unix_socket | bool
+...

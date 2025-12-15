@@ -1,0 +1,39 @@
+---
+- name: Set redis suffix
+  ansible.builtin.set_fact:
+    _redis_suffix: '{{ redis_unix_socket | bool | ternary("unix", "tcp") }}'
+
+- name: Ensure systemd unit are disabled and stopped
+  ansible.builtin.systemd:
+    name: 'redis-{{ _redis_suffix }}.service'
+    state: stopped
+    enabled: false
+    scope: user
+  failed_when: false
+
+- name: Delete the container
+  containers.podman.podman_container:
+    name: 'redis-{{ _redis_suffix }}'
+    state: absent
+
+- name: Delete the systemd unit files
+  ansible.builtin.file:
+    path: '{{ ansible_user_dir }}/.config/systemd/user/redis-{{ _redis_suffix }}.service'
+    state: absent
+
+- name: Delete podman volumes
+  ansible.builtin.include_tasks: volumes.yml
+  vars:
+    __volume_state: absent
+
+- name: Delete the redis config directory
+  ansible.builtin.file:
+    path: '{{ redis_conf_dir }}'
+    state: absent
+
+- name: Delete firewalld rules
+  ansible.builtin.include_tasks: firewalld.yml
+  vars:
+    __firewalld_state: disabled
+  when: not redis_unix_socket | bool
+...

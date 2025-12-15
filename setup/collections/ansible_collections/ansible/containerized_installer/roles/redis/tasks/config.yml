@@ -1,0 +1,29 @@
+---
+- name: Create the redis config directory
+  ansible.builtin.file:
+    path: '{{ redis_conf_dir }}'
+    state: directory
+    mode: '0770'
+
+- name: Create the redis configuration file
+  ansible.builtin.template:
+    src: redis.conf.j2
+    dest: '{{ redis_conf_dir }}/redis-{{ _redis_suffix }}.conf'
+    mode: '0640'
+  notify: Restart redis
+
+- name: Create the redis user ACL file
+  ansible.builtin.template:
+    src: redis-users.acl.j2
+    dest: '{{ redis_conf_dir }}/redis-users.acl'
+    mode: '0640'
+  notify: Restart redis
+  when: not redis_unix_socket | bool
+
+- name: Create redis nodes file
+  ansible.builtin.file:
+    path: '{{ redis_conf_dir }}/redis_nodes.conf'
+    state: touch
+    mode: '0640'
+  when: redis_cluster | bool
+...
