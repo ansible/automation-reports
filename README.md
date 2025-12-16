@@ -137,6 +137,12 @@ nano clusters.yaml
 - `rrule`: A recurrence rule (RFC 5545 format) that defines when syncing occurs
 - `enabled`: Whether this sync schedule is active
 
+**An AAP with a self-signed TLS certificate** is selected with the option `verify_ssl: false`.
+The option can be changed to `verify_ssl: true` if your AAP uses a real, commercial certificate.
+Currently there is no option to connect to an AAP with a self-signed certificate and to verify this certificate
+(e.g. a self-signed certificate for AAP is issued by a custom CA authority,
+and automation dashboard verifies the certificate belongs to the custom CA authority).
+
 Example configuration:
 
 ```yaml
