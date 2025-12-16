@@ -1,0 +1,16 @@
+---
+- name: Archive the redis data
+  ansible.containerized_installer.archive:
+    path:
+      - '{{ ansible_user_dir }}/aap/redis'
+      - '{{ ansible_user_dir }}/aap/tls'
+    dest: '{{ ansible_user_dir }}/aap/backups/redis.{{ redis_archive_extension }}'
+    format: '{{ redis_use_archive_compression | bool | ternary(omit, archive_decompressed_extension) }}'
+    mode: '0640'
+
+- name: Download the redis tarball
+  ansible.builtin.fetch:
+    src: '{{ ansible_user_dir }}/aap/backups/redis.{{ redis_archive_extension }}'
+    dest: '{{ hostvars["localhost"]["_backup_dir"] }}/redis_{{ inventory_hostname }}.{{ redis_archive_extension }}'
+    flat: true
+...

@@ -1,3 +1,6 @@
+with open("/etc/dashboard/SECRET_KEY") as fin:
+    SECRET_KEY = fin.read()
+
 ALLOWED_HOSTS=["*"]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
@@ -34,6 +37,8 @@ INITIAL_SYNC_SINCE = "{{ initial_sync_since }}"
 {% endif %}
 
 DISPATCHERD_DEBUGGING_SOCKFILE = "/run/dispatcher/automation-dashboard-dispatcher.sock"
+
+BROKER_URL = 'unix:///run/redis/redis.sock'
 
 SHOW_URLLIB3_INSECURE_REQUEST_WARNING = {{ show_urllib3_insecure_request_warning | default(True) }}
 # django DEBUG=0

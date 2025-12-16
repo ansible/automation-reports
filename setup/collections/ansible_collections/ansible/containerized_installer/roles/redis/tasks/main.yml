@@ -1,0 +1,40 @@
+---
+- name: Set redis facts
+  ansible.builtin.include_tasks: facts.yml
+
+- name: Create podman volumes
+  ansible.builtin.include_tasks: volumes.yml
+  vars:
+    __volume_state: present
+
+- name: Configure redis
+  ansible.builtin.include_tasks: config.yml
+
+- name: Configure TLS
+  ansible.builtin.include_tasks: tls.yml
+  when:
+    - not redis_disable_tls | bool
+    - not redis_unix_socket | bool
+
+- name: Handle container image update
+  ansible.builtin.include_tasks: update.yml
+
+- name: Configure containers
+  ansible.builtin.include_tasks: containers.yml
+
+- name: Ensure redis container is enabled and started
+  ansible.builtin.include_tasks: systemd.yml
+  vars:
+    __systemd_enabled: true
+    __systemd_state: started
+
+- name: Add firewalld rules
+  ansible.builtin.include_tasks: firewalld.yml
+  vars:
+    __firewalld_state: enabled
+  when: not redis_unix_socket | bool
+
+- name: Initialize the redis cluster
+  ansible.builtin.include_tasks: cluster.yml
+  when: redis_cluster | bool
+...

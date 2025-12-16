@@ -1,0 +1,59 @@
+---
+- name: Set options fact for tcp socket
+  ansible.builtin.set_fact:
+    _options: '-h {{ _redis_hostname }} -p {{ redis_port }}'
+
+- name: Add tls options for tcp socket
+  ansible.builtin.set_fact:
+    _options: '{{ _options }} --tls --cert /var/lib/redis/server.crt --key /var/lib/redis/server.key'
+  when: not redis_disable_tls | bool
+
+- name: Check if the cluster is already initialized
+  ansible.builtin.stat:
+    path: '{{ redis_conf_dir }}/cluster.init'
+  register: _cluster_init
+
+- name: Configure the redis cluster
+  when: not _cluster_init.stat.exists | bool
+  block:
+    - name: Create the redis cluster
+      containers.podman.podman_container:
+        name: redis-cluster-init
+        image: '{{ _redis_image }}'
+        command: 'redis-cli {{ _options }} --cluster create {{ _redis_cluster_ips }} --cluster-replicas {{ redis_cluster_replicas }} --cluster-yes'
+        detach: false
+        rm: true
+        log_driver: '{{ container_log_driver }}'
+        network: host
+        volume: '{{ _volumes }}'
+        uidmap:
+          - '{{ redis_uid }}:0:1'
+          - '0:1:{{ redis_uid }}'
+          - '{{ redis_uid + 1 }}:{{ redis_uid + 1 }}:{{ 65536 - redis_uid }}'
+        gidmap:
+          - '{{ redis_gid }}:0:1'
+          - '0:1:{{ redis_gid }}'
+          - '{{ redis_gid + 1 }}:{{ redis_gid + 1 }}:{{ 65536 - redis_gid }}'
+        timeout: 120
+      run_once: true
+      register: _redis_cluster
+      changed_when: "'[OK] All 16384 slots covered' in _redis_cluster.stdout"
+
+  rescue:
+    - name: Cleanup redis_nodes.conf content
+      ansible.builtin.copy:
+        content: ''
+        dest: '{{ redis_conf_dir }}/redis_nodes.conf'
+        mode: '0640'
+
+    - name: Redis cluster created failed
+      ansible.builtin.fail:
+        msg: 'Please check the network and firewall configuration ({{ redis_port }}/{{ redis_cluster_port }})'
+      run_once: true
+
+- name: Create the initilized cluster file
+  ansible.builtin.file:
+    path: '{{ redis_conf_dir }}/cluster.init'
+    state: touch
+    mode: '0644'
+...

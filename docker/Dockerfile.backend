@@ -72,8 +72,8 @@ RUN useradd awx -u 1000 -g 0 --home-dir /var/lib/awx -s /bin/bash
 RUN python3.12 -m venv /venv
 RUN /venv/bin/pip install --upgrade pip wheel
 RUN mkdir /code /code/src
-COPY requirements.txt /code
-RUN /venv/bin/pip install -r /code/requirements.txt
+COPY requirements-build.txt /code
+RUN /venv/bin/pip install -r /code/requirements-build.txt
 
 # source .env
 COPY src/backend /code/src/backend

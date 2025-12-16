@@ -1,0 +1,35 @@
+dir /var/lib/redis/data
+{% if redis_unix_socket | bool %}
+unixsocket /run/redis/redis.sock
+unixsocketperm 777
+port 0
+bind 127.0.0.1
+{% else %}
+{% if ansible_all_ipv6_addresses | length == 0 %}
+bind 0.0.0.0
+{% endif %}
+protected-mode no
+aclfile /etc/redis-users.acl
+{% if redis_disable_tls | bool %}
+port {{ redis_port }}
+{% else %}
+port 0
+tls-port {{ redis_port }}
+tls-ca-cert-file /etc/pki/tls/certs/ca-bundle.crt
+tls-cert-file /var/lib/redis/server.crt
+tls-key-file /var/lib/redis/server.key
+tls-auth-clients yes
+{% if redis_cluster | bool %}
+tls-cluster yes
+tls-replication yes
+{% endif %}
+{% endif %}
+{% if redis_cluster | bool %}
+cluster-enabled yes
+cluster-require-full-coverage no
+cluster-node-timeout 15000
+cluster-config-file /etc/redis_nodes.conf
+cluster-migration-barrier 1
+appendonly yes
+{% endif %}
+{% endif %}

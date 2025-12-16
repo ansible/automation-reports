@@ -1,0 +1,75 @@
+---
+- name: Generate TLS certificate and key
+  when:
+    - redis_tls_cert is not defined
+    - redis_tls_key is not defined
+  block:
+    - name: Install python-cryptography
+      ansible.builtin.package:
+        name: python3-cryptography
+      become: true
+      when: not ostree | bool
+
+    - name: Check the current redis private key
+      ansible.builtin.stat:
+        path: '{{ redis_conf_dir }}/server.key'
+      register: _redis_tls_key
+
+    - name: Generate a private key
+      community.crypto.openssl_privatekey:
+        path: '{{ redis_conf_dir }}/server.key'
+        mode: '0400'
+      when: not _redis_tls_key.stat.exists | bool
+
+    - name: Check the current redis certificate
+      ansible.builtin.stat:
+        path: '{{ redis_conf_dir }}/server.crt'
+      register: _redis_tls_cert
+
+    - name: Create the redis TLS certificate
+      when: not _redis_tls_cert.stat.exists | bool
+      block:
+        - name: Generate a certificate signing request
+          community.crypto.openssl_csr_pipe:
+            common_name: '{{ _redis_hostname }}'
+            country_name: 'US'
+            locality_name: 'Raleigh'
+            organization_name: 'Red Hat'
+            organizational_unit_name: 'Ansible'
+            state_or_province_name: 'North Carolina'
+            subject_alt_name: '{{ [_redis_hostname | ansible.containerized_installer.subject_alt_name] | union(_redis_ips) }}'
+            privatekey_path: '{{ redis_conf_dir }}/server.key'
+          register: _redis_tls_csr
+
+        - name: Generate a self signed x509 certificate
+          community.crypto.x509_certificate:
+            path: '{{ redis_conf_dir }}/server.crt'
+            csr_content: '{{ _redis_tls_csr.csr }}'
+            privatekey_path: '{{ redis_conf_dir }}/server.key'
+            provider: ownca
+            ownca_path: '{{ _ca_tls_dir }}/ca.cert'
+            ownca_privatekey_path: '{{ _ca_tls_dir }}/ca.key'
+            ownca_privatekey_passphrase: '{{ ca_tls_key_passphrase | default(omit) }}'
+            mode: '0640'
+
+- name: Import TLS certificate and key
+  when:
+    - redis_tls_cert is defined
+    - redis_tls_key is defined
+  block:
+    - name: Copy redis TLS certificate
+      ansible.builtin.copy:
+        src: '{{ redis_tls_cert }}'
+        dest: '{{ redis_conf_dir }}/server.crt'
+        mode: '0640'
+        remote_src: '{{ redis_tls_remote | default(false) }}'
+      notify: Restart redis
+
+    - name: Copy redis TLS key
+      ansible.builtin.copy:
+        src: '{{ redis_tls_key }}'
+        dest: '{{ redis_conf_dir }}/server.key'
+        mode: '0400'
+        remote_src: '{{ redis_tls_remote | default(false) }}'
+      notify: Restart redis
+...

@@ -1,6 +1,6 @@
 ---
 - name: Collect services facts
-  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes:automationdashboard
+  hosts: automationcontroller:automationeda:automationhub:database:execution_nodes:automationdashboard:redis
   gather_facts: false
   become: false
   tasks:
@@ -23,6 +23,47 @@
       ansible.builtin.import_role:
         name: automationdashboard
         tasks_from: uninstall.yml
+
+- name: Uninstall redis cluster
+  hosts: redis
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Uninstall redis cluster tcp socket
+      ansible.builtin.include_role:
+        name: redis
+        tasks_from: uninstall.yml
+      vars:
+        redis_unix_socket: false
+        redis_cluster: true
+      when: redis_mode | default('cluster') == 'cluster'
+
+- name: Uninstall redis
+  hosts: automationcontroller:automationeda:automationgateway:automationhub:automationdashboard
+  any_errors_fatal: true
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Uninstall redis unix socket
+      ansible.builtin.include_role:
+        name: redis
+        tasks_from: uninstall.yml
+      when: >
+        inventory_hostname in groups.get('automationcontroller', []) or
+        inventory_hostname in groups.get('automationhub', []) or
+        (inventory_hostname in groups.get('automationeda', []) and groups.get('automationeda', []) | length == 1) or
+        (inventory_hostname in groups.get('automationdashboard', []) and groups.get('automationdashboard', []) | length == 1)
+
+    # - name: Uninstall redis tcp socket
+    #   ansible.builtin.include_role:
+    #     name: redis
+    #     tasks_from: uninstall.yml
+    #   vars:
+    #     redis_unix_socket: false
+    #   when:
+    #     - redis_mode | default('cluster') == 'standalone'
+    #     - inventory_hostname == groups['automationgateway'] | first
 
 - name: Uninstall the database
   hosts: database
