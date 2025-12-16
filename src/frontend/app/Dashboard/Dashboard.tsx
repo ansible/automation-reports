@@ -64,8 +64,8 @@ const Dashboard: React.FunctionComponent = () => {
   const logErrorMessage = useAuthStore((state) => state.logErrorMessage);
 
   const saveEnableTemplateCreationTime = useCommonStore((state) => state.saveEnableTemplateCreationTime);
-  const setAutomatedProcessCost = useFilterStore((state) => state.setAutomatedProcessCost);
-  const setManualProcessCost = useFilterStore((state) => state.setManualProcessCost);
+  const setAutomatedProcessCost = useFilterStore((state) => state.setAutomatedProcessCostPerMinute);
+  const setManualProcessCost = useFilterStore((state) => state.setManualProcessCostPerHour);
   const maxPDFJobTemplates = useFilterStore((state) => state.max_pdf_job_templates);
   const reloadData = useFilterStore((state)=>state.reloadData);
   const setReloadData = useFilterStore((state) => state.setReloadData);

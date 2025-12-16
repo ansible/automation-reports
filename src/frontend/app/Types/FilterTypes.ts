@@ -22,11 +22,11 @@ export interface Currency {
 }
 
 export interface FilterOptionResponse {
-  automated_process_cost: number | string;
+  automated_process_cost_per_minute: number | string;
   clusters: ClusterOption[];
   date_ranges: FilterOption[];
   labels: FilterOptionWithId[];
-  manual_cost_automation: number | string;
+  manual_cost_automation_per_hour: number | string;
   organizations: FilterOption[];
   instances: FilterOptionWithId[];
   currencies: Currency[];
@@ -34,7 +34,7 @@ export interface FilterOptionResponse {
   currency: number;
   enable_template_creation_time: boolean;
   filter_sets: FilterSet[];
-  max_pdf_job_templates: number,
+  max_pdf_job_templates: number;
 }
 
 export interface Settings {
@@ -44,13 +44,13 @@ export interface Settings {
 
 export interface FilterState {
   filterOptions: FilterOption[];
-  automatedProcessCost: number | string;
+  automatedProcessCostPerMinute: number | string;
   clusters: ClusterOption[];
   dateRangeOptions: FilterOption[];
-  manualCostAutomation: number | string;
+  manualCostAutomationPerHour: number | string;
   loading: 'idle' | 'pending' | 'succeeded' | 'failed';
   error: boolean;
-  max_pdf_job_templates: number,
+  max_pdf_job_templates: number;
 }
 
 

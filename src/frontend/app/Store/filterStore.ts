@@ -15,8 +15,8 @@ type FilterStoreState = FilterState & {
 
 type FilterStoreActions = {
   fetchTemplateOptions: () => Promise<void>;
-  setAutomatedProcessCost: (cost: number) => void;
-  setManualProcessCost: (cost: number) => void;
+  setAutomatedProcessCostPerMinute: (cost: number) => void;
+  setManualProcessCostPerHour: (cost: number) => void;
   setReloadData: (value: boolean) => void;
 };
 
@@ -27,22 +27,18 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
     { key: 'project', value: 'Project' },
     { key: 'job_template', value: 'Template' },
   ],
-  automatedProcessCost: 0,
+  automatedProcessCostPerMinute: 0,
   clusters: [],
   dateRangeOptions: [],
-  manualCostAutomation: 0,
+  manualCostAutomationPerHour: 0,
   loading: 'idle',
   error: false,
   reloadData: false,
   max_pdf_job_templates: 0,
 
   fetchTemplateOptions: async () => {
-    const {
-      setCurrencies,
-      setDefaultCurrency,
-      setFilterViews,
-      setEnableTemplateCreationTime
-    } = useCommonStore.getState();
+    const { setCurrencies, setDefaultCurrency, setFilterViews, setEnableTemplateCreationTime } =
+      useCommonStore.getState();
 
     set({ loading: 'pending', error: false });
     try {
@@ -63,18 +59,18 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
       set({
         loading: 'succeeded',
         dateRangeOptions: data.date_ranges,
-        manualCostAutomation: data.manual_cost_automation,
-        automatedProcessCost: data.automated_process_cost,
-        max_pdf_job_templates: data.max_pdf_job_templates
+        manualCostAutomationPerHour: data.manual_cost_automation_per_hour,
+        automatedProcessCostPerMinute: data.automated_process_cost_per_minute,
+        max_pdf_job_templates: data.max_pdf_job_templates,
       });
     } catch {
       set({ loading: 'failed', error: true });
     }
   },
 
-  setAutomatedProcessCost: (cost: number) => set({ automatedProcessCost: cost }),
-  setManualProcessCost: (cost: number) => set({ manualCostAutomation: cost }),
-  setReloadData: (value: boolean)=> set({reloadData: value}),
+  setAutomatedProcessCostPerMinute: (cost: number) => set({ automatedProcessCostPerMinute: cost }),
+  setManualProcessCostPerHour: (cost: number) => set({ manualCostAutomationPerHour: cost }),
+  setReloadData: (value: boolean) => set({ reloadData: value }),
 }));
 
 export default useFilterStore;
