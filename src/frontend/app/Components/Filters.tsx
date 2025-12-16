@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {
-  Alert, AlertActionCloseButton,
   Button,
   Label,
   LabelGroup,
@@ -11,7 +10,7 @@ import {
   ToolbarGroup,
   ToolbarItem,
 } from '@patternfly/react-core';
-import { AddEditView, BaseDropdown, DateRangePicker, MultiChoiceDropdown } from '@app/Components';
+import { AddEditView, BaseDropdown, DateRangePicker, MultiChoiceDropdown, useToaster } from '@app/Components';
 import { FilterComponentProps, FilterOption, FilterOptionWithId, FilterProps, RequestFilter } from '@app/Types';
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon';
 import '../styles/filters.scss';
@@ -24,16 +23,16 @@ import {
   useFetchData,
   useFetchNextPage,
   useFilterChoicesData,
-  useFilterChoicesDataById, useFilterLoadingData,
+  useFilterChoicesDataById,
+  useFilterLoadingData,
   useFilterOptionsById,
-  useFilterRetrieveError, useSearch
+  useFilterRetrieveError,
+  useSearch,
 } from '@app/Store/filterSelectors';
-import {
-  useViewsById
-} from '@app/Store/commonSelectors';
+import { useViewsById } from '@app/Store/commonSelectors';
 import { useRef } from 'react';
 import { useAuthStore } from '@app/Store/authStore';
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { toasterFromError } from '@app/Components/Toaster';
 
 export const Filters: React.FunctionComponent<FilterComponentProps> = (props: FilterComponentProps) => {
   const filterOptionsList = useFilterStore((state) => state.filterOptions);
@@ -46,7 +45,6 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
   const filterChoicesDataByOption = useFilterChoicesDataById();
   const fetchOneFilterOption = fetchOneOption();
   const fetchNextPageData = useFetchNextPage();
-  const [errors, setErrors] = React.useState<string[]>([]);
   const [filterSelection, selectFilter] = React.useState<FilterProps>({
     organization: [],
     job_template: [],
@@ -54,7 +52,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     project: [],
     date_range: null,
     start_date: undefined,
-    end_date: undefined
+    end_date: undefined,
   });
   const fetchTemplateOptions = useFilterStore((state) => state.fetchTemplateOptions);
   const fetchFilterOptionsData = useFetchData();
@@ -65,22 +63,25 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
 
   const hasFetched = useRef(false);
   const getMyUserData = useAuthStore((state) => state.getMyUserData);
-  const reloadData = useFilterStore((state)=>state.reloadData);
+  const reloadData = useFilterStore((state) => state.reloadData);
 
   const fetchFilters = async () => {
     await fetchTemplateOptions();
-    await Promise.all(filterOptionsList.map(async (option) => {
-      if (fetchFilterOptionsData[option.key]) {
-        try {
-          await fetchFilterOptionsData[option.key]();
-        }catch(e){
-          setErrors((errors) => [...errors, (e as { message?: string })?.message ?? 'Something went wrong. Please try again later.']);
+    await Promise.all(
+      filterOptionsList.map(async (option) => {
+        if (fetchFilterOptionsData[option.key]) {
+          try {
+            await fetchFilterOptionsData[option.key]();
+          } catch (e) {
+            toaster.add(toasterFromError(e));
+          }
         }
-      }
-    }));
+      }),
+    );
   };
 
   const dateChoices = useFilterStore((state) => state.dateRangeOptions);
+  const toaster = useToaster();
 
   React.useEffect(() => {
     const execute = async () => {
@@ -100,7 +101,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     const execute = async () => {
       await fetchFilters();
     };
-    if (reloadData){
+    if (reloadData) {
       execute().then();
     }
   }, [reloadData]);
@@ -115,7 +116,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     }
 
     const options: RequestFilter = {
-      date_range: filterSelection.date_range
+      date_range: filterSelection.date_range,
     };
 
     for (const key of ['organization', 'job_template', 'label', 'project']) {
@@ -142,7 +143,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
   };
 
   const clearFilters = () => {
-    let range: string |  null = null;
+    let range: string | null = null;
     if (dateChoices?.length) {
       const index = dateChoices.findIndex((v) => v.key === 'month_to_date');
       range = (index > -1 ? dateChoices[index].key : dateChoices[0].key).toString();
@@ -154,9 +155,9 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       project: [],
       date_range: range,
       start_date: undefined,
-      end_date: undefined
+      end_date: undefined,
     } as FilterProps;
-    selectFilter(()=>filters);
+    selectFilter(() => filters);
     setView(null);
   };
 
@@ -168,26 +169,30 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     const view = allViews[viewId];
     const filterOptions = ['organization', 'job_template', 'label', 'project'];
     const viewOptions = {};
-    await Promise.all(filterOptions.map(async (option) => {
-      viewOptions[option] = [];
-      if (view.filters?.[option]?.length) {
-        await Promise.all(view.filters[option].map(async (key: number) => {
-          let value = filterChoicesDataByOption[option][key];
-          if (value) {
-            viewOptions[option].push(value);
-          } else {
-            try {
-              value = await fetchOneFilterOption[option](key);
-            } catch(e){
-              setErrors((errors) => [...errors, (e as { message?: string })?.message ?? 'Something went wrong. Please try again later.']);
-            }
-            if (value) {
-              viewOptions[option].push(value);
-            }
-          }
-        }));
-      }
-    }));
+    await Promise.all(
+      filterOptions.map(async (option) => {
+        viewOptions[option] = [];
+        if (view.filters?.[option]?.length) {
+          await Promise.all(
+            view.filters[option].map(async (key: number) => {
+              let value = filterChoicesDataByOption[option][key];
+              if (value) {
+                viewOptions[option].push(value);
+              } else {
+                try {
+                  value = await fetchOneFilterOption[option](key);
+                } catch (e) {
+                  toaster.add(toasterFromError(e));
+                }
+                if (value) {
+                  viewOptions[option].push(value);
+                }
+              }
+            }),
+          );
+        }
+      }),
+    );
     selectFilter((prevState) => ({
       ...prevState,
       ['organization']: viewOptions?.['organization'] ?? [],
@@ -196,7 +201,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       ['label']: viewOptions?.['label'] ?? [],
       ['date_range']: view?.filters?.date_range ?? 'month_to_date',
       ['start_date']: view?.filters?.start_date ? new Date(view.filters.start_date) : undefined,
-      ['end_date']: view?.filters?.end_date ? new Date(view.filters.end_date) : undefined
+      ['end_date']: view?.filters?.end_date ? new Date(view.filters.end_date) : undefined,
     }));
   };
 
@@ -207,12 +212,13 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     }
     const currentState = filterSelection[selectedOption];
     const item = JSON.parse(JSON.stringify(filterChoicesDataByOption[selectedOption][itemId]));
-    const newState = currentState.findIndex((v: FilterOptionWithId) => v.key === item.key) > -1
-      ? currentState.filter((selection: FilterOptionWithId) => selection.key !== item.key)
-      : [item, ...currentState];
+    const newState =
+      currentState.findIndex((v: FilterOptionWithId) => v.key === item.key) > -1
+        ? currentState.filter((selection: FilterOptionWithId) => selection.key !== item.key)
+        : [item, ...currentState];
     selectFilter((prevState) => ({
       ...prevState,
-      [selectedOption]: newState
+      [selectedOption]: newState,
     }));
   };
 
@@ -222,19 +228,19 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       const key = 'date_range';
       selectFilter((prevState) => ({
         ...prevState,
-        [key]: newState
+        [key]: newState,
       }));
     }
     if (startDate) {
       selectFilter((prevState) => ({
         ...prevState,
-        ['start_date']: startDate
+        ['start_date']: startDate,
       }));
     }
     if (endDate) {
       selectFilter((prevState) => ({
         ...prevState,
-        ['end_date']: endDate
+        ['end_date']: endDate,
       }));
     }
   };
@@ -242,7 +248,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
   const deleteLabelGroup = (group: string | number) => {
     selectFilter((prevState) => ({
       ...prevState,
-      [group]: []
+      [group]: [],
     }));
   };
 
@@ -251,7 +257,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     const newState = currentState.filter((selection: FilterOptionWithId) => selection.key !== item.key);
     selectFilter((prevState) => ({
       ...prevState,
-      [group]: newState
+      [group]: newState,
     }));
   };
 
@@ -259,12 +265,6 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     if (selectedOption) {
       await fetchNextPageData[selectedOption]();
     }
-  };
-
-  const closeAlert = (errorIndex:number):void=>{
-    const newList = [...errors];
-    newList.splice(errorIndex, 1);
-    setErrors(newList);
   };
 
   const filterSelector = (
@@ -278,7 +278,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
         icon={<FilterIcon />}
         style={
           {
-            width: '160px'
+            width: '160px',
           } as React.CSSProperties
         }
       ></BaseDropdown>
@@ -297,7 +297,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
         onReachBottom={loadNextPage}
         style={
           {
-            minWidth: '250px'
+            minWidth: '250px',
           } as React.CSSProperties
         }
       ></MultiChoiceDropdown>
@@ -349,23 +349,6 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
     </ToolbarGroup>
   );
 
-    const errorElements =  (
-      <div
-        style={{
-          marginTop: '16px',
-        }}>
-        {errors.map((error: string, i:number) => (
-        <Alert
-          style={{
-             marginBottom: '16px',
-          }}
-          key={i}
-          title={error}
-          variant={'danger'}
-          actionClose={<AlertActionCloseButton onClose={() => closeAlert(i)} />}>
-        </Alert>))}
-      </div>
-  );
   const toolBar = (
     <Toolbar id="filter-toolbar" clearAllFilters={clearFilters} className="pf-v6-l-flex pf-m-row-gap-md pf-v6-u-pb-0">
       <ToolbarContent>
@@ -393,8 +376,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
 
   return (
     <div>
-      <React.Fragment>{!error && (toolBar)}</React.Fragment>
-      {errorElements}
+      <React.Fragment>{!error && toolBar}</React.Fragment>
     </div>
   );
 };

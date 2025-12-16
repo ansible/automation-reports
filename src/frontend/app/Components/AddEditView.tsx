@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {
-  Alert,
   Button,
   Form,
   FormGroup,
@@ -23,11 +22,8 @@ import { AddEditViewProps, FilterOptionWithId, FilterProps } from '@app/Types';
 import { deepClone, formatDateTimeToDate } from '@app/Utils';
 import { FilterSet } from '@app/Types';
 import useCommonStore from '@app/Store/commonStore';
-import {
-  useViewSaveError,
-  useViewSavingProcess,
-  useViewsById,
-} from '@app/Store/commonSelectors';
+import { useViewSavingProcess, useViewsById } from '@app/Store/commonSelectors';
+import { toasterFromError, toasterSuccessMsg, useToaster } from '@app/Components/Toaster';
 
 const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditViewProps) => {
   const [isModalOpen, setModalOpen] = React.useState(false);
@@ -35,16 +31,14 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
   const [modalVariant, setModalVariant] = React.useState<string>('create');
   const [filterNameValue, setFilterNameValue] = React.useState('');
   const filterSaveProcess = useViewSavingProcess();
-  const filterSaveError = useViewSaveError();
   const menuRef = React.useRef<HTMLDivElement>(null);
   const toggleRef = React.useRef<HTMLButtonElement>(null);
   const containerRefDropdown = React.useRef<HTMLDivElement>(null);
   const selectedViewItem = useCommonStore((state) => state.selectedView);
   const allViews = useViewsById();
-
   const saveView = useCommonStore((state) => state.saveView);
   const deleteView = useCommonStore((state) => state.deleteView);
-
+  const toaster = useToaster();
   const handleMenuClickOutside = (event: MouseEvent) => {
     if (isMenuOpen && !containerRefDropdown.current?.contains(event.target as Node)) {
       setIsMenuOpen(false);
@@ -71,14 +65,16 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
 
   const saveFilter = async () => {
     if (modalVariant === 'delete') {
-      deleteView(selectedViewItem as number).then((response) => {
-        if (!response?.['error']) {
+      deleteView(selectedViewItem as number)
+        .then((response) => {
+          toaster.add(toasterSuccessMsg('Report deleted successfully.'));
           closeModal();
           props.onViewDelete();
           setModalVariant('create');
-        }
-      });
-
+        })
+        .catch((e) => {
+          toaster.add(toasterFromError(e));
+        });
     } else {
       const filters = deepClone(props.filters) as FilterProps;
       const viewData = {
@@ -104,11 +100,14 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
         }
       }
 
-      saveView(viewData).then((response) => {
-        if (!response?.['error']) {
+      saveView(viewData)
+        .then((response) => {
+          toaster.add(toasterSuccessMsg('Report saved successfully.'));
           closeModal();
-        }
-      });
+        })
+        .catch((e) => {
+          toaster.add(toasterFromError(e));
+        });
     }
   };
 
@@ -135,7 +134,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const onFormSubmit =  async (event: React.FormEvent<HTMLFormElement>) => {
+  const onFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (modalVariant === 'create' || modalVariant === 'edit') {
       await saveFilter();
@@ -169,7 +168,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       id={'filter-set-menu-toggle'}
       aria-label={' Save as Report'}
       splitButtonItems={[
-        <MenuToggleAction key="split-action-save" onClick={toggleClick} aria-label="Save" className='pf-v6-u-w-100'>
+        <MenuToggleAction key="split-action-save" onClick={toggleClick} aria-label="Save" className="pf-v6-u-w-100">
           Save as Report
         </MenuToggleAction>,
       ]}
@@ -211,17 +210,18 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
         onClose={closeModal}
         aria-labelledby="form-modal-set-filter"
         aria-describedby="modal-box-set-filter-form"
-        className='pf-v6-u-mt-4xl'
+        className="pf-v6-u-mt-4xl"
       >
         <ModalHeader
-          title={modalVariant === 'create' ? 'Create report' : modalVariant === 'edit' ? 'Edit report' : 'Delete report'}
+          title={
+            modalVariant === 'create' ? 'Create report' : modalVariant === 'edit' ? 'Edit report' : 'Delete report'
+          }
           descriptorId="modal-box-description-form"
           labelId="form-filter-set-title"
         />
         <ModalBody>
           {modalVariant !== 'delete' && (
             <div className={'modal-wrap'}>
-              {filterSaveError && <Alert variant="danger" isInline title={filterSaveError} />}
               {filterSaveProcess && (
                 <div className={'pf-v6-l-flex pf-m-justify-content-center pf-v6-u-py-md'}>
                   <Spinner className={'spinner'} diameter="40px" aria-label="Loader" />
@@ -258,7 +258,13 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
           >
             {modalVariant === 'create' ? 'Create' : modalVariant === 'edit' ? 'Save' : 'Delete'}
           </Button>
-          <Button className="add-edit-report-modal-button" key="cancel" variant="link" onClick={closeModal} isDisabled={filterSaveProcess}>
+          <Button
+            className="add-edit-report-modal-button"
+            key="cancel"
+            variant="link"
+            onClick={closeModal}
+            isDisabled={filterSaveProcess}
+          >
             Cancel
           </Button>
         </ModalFooter>
