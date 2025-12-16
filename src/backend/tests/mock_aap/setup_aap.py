@@ -125,16 +125,14 @@ aap_version = os.environ["AAP_VERSION"]
 default_org_id = 1
 demo_credential_id = 1
 demo_inventory_id = 1
+org2_id_gw = 2  # id in AAP gateway api
+org2_id_cnt = 2  # id in AAP controller api
 if aap_version in ["26"]:
     # AAP 2.6
     default_execution_environment_id = 4
-    org2_id_gw = 2  # id in AAP gateway api
-    org2_id_cnt = 8  # id in AAP controller api
 elif aap_version in ["25", "24"]:
     # AAP 2.4, 2.5
     default_execution_environment_id = 2
-    org2_id_gw = 2
-    org2_id_cnt = 2  # id in AAP controller api
 project2_id = 8 # Demo Project is 6, next project is 8
 project3_id = project2_id + 1
 project4_id = project2_id + 2
