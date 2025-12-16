@@ -113,6 +113,22 @@ ansible-galaxy collection install -r requirements.yml
 ansible-playbook -i inventory ansible.containerized_installer.dashboard_install
 ```
 
+##### TLS certificate for automation dashboard
+
+By default, a self-signed TLS certificate is generated when `ansible-playbook ansible.containerized_installer.dashboard_install` is run.
+
+A commercial certificate can be optionally configured.
+In `inventory` file two variables need to be set:
+
+ - `dashboard_tls_key`
+ - `dashboard_tls_cert`
+
+The `dashboard_tls_key` is a private TLS key.
+
+The `dashboard_tls_cert` is a public TLS certificate.
+It must include server certificate, intermediate CA certificates and root CA certificate.
+**Note**: the server certificate must be the at the beginning of the `dashboard_tls_cert` file.
+
 #### Configure application
 
 ```bash
