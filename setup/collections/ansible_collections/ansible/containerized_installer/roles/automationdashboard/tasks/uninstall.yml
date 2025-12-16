@@ -48,6 +48,7 @@
     - dashboard_channels
     - dashboard_postgres
     - dashboard_secret_key
+    - dashboard_database_key
 
 - name: Delete the directories/files
   ansible.builtin.file:

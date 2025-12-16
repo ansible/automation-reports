@@ -34,6 +34,7 @@
   ansible.builtin.set_fact:
     _common_secrets:
       - 'dashboard_secret_key,target=/etc/dashboard/SECRET_KEY,mode=0400,uid={{ ansible_user_uid }}'
+      - 'dashboard_database_key,target=/etc/dashboard/DATABASE_KEY,mode=0400,uid={{ ansible_user_uid }}'
       # - 'dashboard_channels,target=/etc/tower/conf.d/channels.py,mode=0400,uid={{ ansible_user_uid }}'
       - 'dashboard_postgres,target=/etc/dashboard/conf.d/postgres.py,mode=0400,uid={{ ansible_user_uid }}'
     _common_volumes:

@@ -17,6 +17,7 @@ DATABASES = {
 }
 
 SECRET_KEY = 'django-insecure-cu=@gv*8$8+rr2-^-8^g00!ib_9-utgu!26#q#@)!y%3#wt^1#'
+DATABASE_KEY = 'insecure-database-encryption-key-cu=@gv*8$8+rr2-^-8^g00!ib_9-utgu!26#q#@)!y%3#wt^1#'
 
 AAP_AUTH_PROVIDER = {
     "name": "Ansible Automation Platform",
