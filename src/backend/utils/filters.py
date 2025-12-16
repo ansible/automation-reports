@@ -6,7 +6,6 @@ from django_guid import get_guid
 from backend.common_utils import is_testing
 from backend.constants import LOGGER_BLOCKLIST
 
-logger = logging.getLogger('awx.main.utils')
 
 def record_is_blocked(record):
     """Given a log record, return True if it is considered to be
@@ -21,7 +20,7 @@ def record_is_blocked(record):
 class DynamicLevelFilter(logging.Filter):
     def filter(self, record):
         """Filters out logs that have a level below the threshold defined
-        by the databse setting LOG_AGGREGATOR_LEVEL
+        by the database setting LOG_AGGREGATOR_LEVEL
         """
         if record_is_blocked(record):
             # Fine to write denied loggers to file, apply default filtering level
@@ -41,8 +40,6 @@ class RequireDebugTrueOrTest(logging.Filter):
     """
 
     def filter(self, record):
-        from django.conf import settings
-
         return settings.DEBUG or is_testing()
 
 

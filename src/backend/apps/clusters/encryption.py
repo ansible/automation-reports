@@ -7,7 +7,7 @@ from cryptography.hazmat.backends import default_backend
 from django.conf import settings
 from django.utils.encoding import smart_bytes, smart_str
 
-logger = logging.getLogger("automation-dashboard.clusters.encryption")
+logger = logging.getLogger("automation_dashboard.clusters.encryption")
 
 class Fernet256(Fernet):
     """Not techincally Fernet, but uses the base of the Fernet spec and uses AES-256-CBC

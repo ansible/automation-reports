@@ -7,7 +7,7 @@ from rest_framework.request import Request
 
 from backend.apps.aap_auth.jwt_token import JWTToken
 
-logger = logging.getLogger("automation-dashboard.auth")
+logger = logging.getLogger("automation_dashboard.auth")
 
 
 def enforce_csrf(request):

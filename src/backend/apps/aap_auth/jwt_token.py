@@ -11,7 +11,7 @@ from backend.apps.aap_auth.models import JwtUserToken, JwtUserRefreshToken
 from backend.apps.aap_auth.schema import AAPToken
 from backend.apps.users.models import User
 
-logger = logging.getLogger("automation-dashboard.jwt")
+logger = logging.getLogger("automation_dashboard.jwt")
 
 
 class JWTToken:

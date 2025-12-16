@@ -20,7 +20,7 @@ from backend.apps.clusters.models import (
 )
 from backend.apps.clusters.schemas import ClusterSchema
 
-logger = logging.getLogger("automation-reports.clusters.connector")
+logger = logging.getLogger("automation_dashboard.clusters.connector")
 
 
 class ApiConnector:
