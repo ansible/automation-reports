@@ -35,7 +35,7 @@ class Command(BaseCommand):
             if options['decrypt']:
                 cluster_dict.update({kk: decrypt_value(getattr(cluster, kk)) for kk in cluster_attrs_encrypted})
             cluster_dict["sync_schedules"] = []
-            for sync_setting in SyncScheduleModel.objects.all():
+            for sync_setting in SyncScheduleModel.objects.filter(cluster=cluster):
                 sync_setting_dict = {kk: getattr(sync_setting, kk) for kk in sync_attrs}
                 cluster_dict["sync_schedules"].append(sync_setting_dict)
             clusters_list.append(cluster_dict)
