@@ -52,6 +52,7 @@ jobs:
           DB_HOST = "localhost"
           DB_PORT = 5432
           SECRET_KEY = "$(uuidgen)"
+          DATABASE_KEY = "$(uuidgen)"
           EOF
 
       - name: Run tests
