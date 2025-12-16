@@ -1,3 +1,4 @@
+import logging
 import base64
 import hashlib
 
@@ -6,6 +7,7 @@ from cryptography.hazmat.backends import default_backend
 from django.conf import settings
 from django.utils.encoding import smart_bytes, smart_str
 
+logger = logging.getLogger("automation_dashboard.clusters.encryption")
 
 class Fernet256(Fernet):
     """Not techincally Fernet, but uses the base of the Fernet spec and uses AES-256-CBC
@@ -24,24 +26,32 @@ class Fernet256(Fernet):
 
 
 def get_encryption_key() -> bytes:
+    logger.debug("Generating encryption key from SECRET_KEY.")
     h = hashlib.sha512()
     h.update(smart_bytes(settings.SECRET_KEY))
-    return base64.urlsafe_b64encode(h.digest())
+    key = base64.urlsafe_b64encode(h.digest())
+    logger.debug("Encryption key generated.")
+    return key
 
 
 def encrypt_value(value: str) -> bytes:
+    logger.info("Encrypting value.")
     key = get_encryption_key()
     f = Fernet256(key)
     value = smart_str(value)
-    return f.encrypt(smart_bytes(value))
+    encrypted = f.encrypt(smart_bytes(value))
+    logger.debug("Value encrypted.")
+    return encrypted
 
 
 def decrypt_value(value: bytes) -> str:
+    logger.info("Decrypting value.")
     key = get_encryption_key()
     f = Fernet256(key)
     if value == b'':
-        # In DB is stored b'' only for old objects, where DB migration populated the field value.
+        logger.warning("Empty value detected for decryption.")
         decrypted = b''
     else:
         decrypted = f.decrypt(value)
+        logger.debug("Value decrypted.")
     return smart_str(decrypted)
