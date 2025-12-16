@@ -67,8 +67,8 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
 
     def get_base_queryset(self) -> QuerySet[Job]:
         costs = Costs.get()
-        automated_cost_value = costs[CostsChoices.AUTOMATED] / decimal.Decimal(60)
-        manual_cost_value = costs[CostsChoices.MANUAL]
+        automated_cost_value_per_second = costs[CostsChoices.AUTOMATED] / decimal.Decimal(60)
+        manual_cost_value_per_minute = costs[CostsChoices.MANUAL] / decimal.Decimal(60)
 
         enable_template_creation_time = Settings.enable_template_creation_time()
 
@@ -86,10 +86,10 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
                 failed_runs=Count("id", filter=Q(status=JobStatusChoices.FAILED)),
                 elapsed=Sum("elapsed"),
                 num_hosts=Sum("num_hosts"),
-                automated_costs=((F("time_taken_create_automation_minutes") * manual_cost_value) + (F("elapsed") * automated_cost_value))
+                automated_costs=((F("time_taken_create_automation_minutes") * manual_cost_value_per_minute) + (F("elapsed") * automated_cost_value_per_second))
                 if enable_template_creation_time
-                else (F("elapsed") * automated_cost_value),
-                manual_costs=(F("num_hosts") * F("time_taken_manually_execute_minutes") * manual_cost_value),
+                else (F("elapsed") * automated_cost_value_per_second),
+                manual_costs=(F("num_hosts") * F("time_taken_manually_execute_minutes") * manual_cost_value_per_minute),
                 manual_time=(F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)),
                 time_savings=(F("manual_time") - F("elapsed") - (F("time_taken_create_automation_minutes") * 60)) if enable_template_creation_time else (F("manual_time") - F("elapsed")),
                 savings=(F("manual_costs") - F("automated_costs")),
