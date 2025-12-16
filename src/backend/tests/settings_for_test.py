@@ -36,8 +36,8 @@ DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES = 60
 # Default Time taken to manually create automation (min)
 DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES = 60
 
-#Default average cost of an employee per minute
-DEFAULT_MANUAL_COST_AUTOMATION = 50
+#Default average cost of an employee per hour
+DEFAULT_MANUAL_COST_AUTOMATION = 3000
 
 #Deafult cost per minute of AAP
 DEFAULT_AUTOMATED_PROCESS_COST = 20

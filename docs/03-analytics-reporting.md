@@ -82,8 +82,8 @@ The analytics engine aggregates job data by template, providing key metrics:
 ```python
 def get_base_queryset(self) -> QuerySet[Job]:
     costs = Costs.get()
-    automated_cost_value = costs[CostsChoices.AUTOMATED] / decimal.Decimal(60)
-    manual_cost_value = costs[CostsChoices.MANUAL]
+    automated_cost_value_per_second = costs[CostsChoices.AUTOMATED] / decimal.Decimal(60)
+    manual_cost_value_per_minute = costs[CostsChoices.MANUAL] / decimal.Decimal(60)
 
     qs = (
         Job.objects.successful_or_failed()
@@ -101,9 +101,9 @@ def get_base_queryset(self) -> QuerySet[Job]:
             num_hosts=Sum("num_hosts"),
             
             # Cost calculations
-            automated_costs=((F("time_taken_create_automation_minutes") * manual_cost_value) + 
-                           (F("elapsed") * automated_cost_value)),
-            manual_costs=(F("num_hosts") * F("time_taken_manually_execute_minutes") * manual_cost_value),
+            automated_costs=((F("time_taken_create_automation_minutes") * manual_cost_value_per_minute) +
+                           (F("elapsed") * automated_cost_value_per_second)),
+            manual_costs=(F("num_hosts") * F("time_taken_manually_execute_minutes") * manual_cost_value_per_minute),
             
             # Time calculations  
             manual_time=(F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)),
@@ -186,7 +186,7 @@ class Costs(models.Model):
     type = CharField(choices=CostsChoices.choices, unique=True)
     
     # Default values from settings
-    DEFAULT_MANUAL_COST_AUTOMATION = 50      # $/minute per employee
+    DEFAULT_MANUAL_COST_AUTOMATION = 50      # $/hour per employee
     DEFAULT_AUTOMATED_PROCESS_COST = 20      # $/minute for AAP
 ```
 

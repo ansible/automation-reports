@@ -131,9 +131,9 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             <FlexItem>
               <Form onSubmit={(e) => e.preventDefault()}>
                 <FormGroup
-                  label={`Average cost of per minute to manually run the job (${selectedCurrencySign})`}
+                  label={`Hourly rate for manually running the job (${selectedCurrencySign})`}
                   labelHelp={
-                    <Tooltip content="Please enter an average cost per minute for the engineer manually running jobs">
+                    <Tooltip content="Please enter an average cost per hour for the engineer manually running jobs">
                       <Icon size="md" className="pf-v6-u-ml-sm">
                         <OutlinedQuestionCircleIcon />
                       </Icon>
@@ -174,9 +174,15 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                 </FormGroup>
               </Form>
             </FlexItem>
-            <FlexItem className={'switch-time-taken-automation pf-v6-u-mt-xl-on-lg'}>{switchEnableTemplateCreationTime}</FlexItem>
+            <FlexItem className={'switch-time-taken-automation pf-v6-u-mt-xl-on-lg'}>
+              {switchEnableTemplateCreationTime}
+            </FlexItem>
             {props.data.count > 0 && (
-              <FlexItem className={'pf-v6-u-ml-auto-on-lg pf-v6-u-w-100-on-sm pf-v6-u-w-auto-on-lg pf-v6-u-mt-sm-on-sm pf-v6-u-mt-0-on-lg'}>
+              <FlexItem
+                className={
+                  'pf-v6-u-ml-auto-on-lg pf-v6-u-w-100-on-sm pf-v6-u-w-auto-on-lg pf-v6-u-mt-sm-on-sm pf-v6-u-mt-0-on-lg'
+                }
+              >
                 <Button id={'csv-export'} onClick={exportToCsv} variant="secondary" isInline>
                   Export as CSV
                 </Button>

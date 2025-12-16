@@ -33,8 +33,8 @@ test_template_option_expected_data = {
         {'key': 'last_2_years', 'value': 'Past 2 years'},
         {'key': 'custom', 'value': 'Custom'}
     ],
-    'manual_cost_automation': 50.0,
-    'automated_process_cost': 20.0,
+    'manual_cost_automation_per_hour': 3000.0,
+    'automated_process_cost_per_minute': 20.0,
     'currency': 1,
     'enable_template_creation_time': True,
     'filter_sets': [

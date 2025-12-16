@@ -5,10 +5,10 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLabelStore, useJobTemplateStore, useOrganizationStore, useProjectStore } from '@app/Store';
 
 export const useManualCostAutomation = () =>
-  useFilterStore((state) => state.manualCostAutomation);
+  useFilterStore((state) => state.manualCostAutomationPerHour);
 
 export const useAutomatedProcessCost = () =>
-  useFilterStore((state) => state.automatedProcessCost);
+  useFilterStore((state) => state.automatedProcessCostPerMinute);
 
 export const useFilterRetrieveError = () =>
   useFilterStore((state) => state.error);
