@@ -2,6 +2,8 @@ import csv
 import decimal
 import logging
 from collections import OrderedDict
+from datetime import datetime, date
+from random import choices
 
 from django.conf import settings
 from django.db import models
@@ -19,7 +21,8 @@ from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from django_generate_series.models import generate_series
 from django_weasyprint.views import WeasyTemplateResponse
-from rest_framework import mixins, filters, status
+from drf_spectacular.utils import extend_schema, inline_serializer, extend_schema_view, OpenApiParameter
+from rest_framework import mixins, filters, status, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -56,7 +59,24 @@ from backend.apps.common.models import Settings, Currency
 
 logger = logging.getLogger("automation-dashboard")
 
+OPEN_API_PARAMETERS = [
+    OpenApiParameter(name='date_range', description='Date range', type=str, enum=DateRangeChoices, required=True,
+                     default=DateRangeChoices.MONTH_TO_DATE),
+    OpenApiParameter(name='start_date', description='Start date if date range is custom', type=date),
+    OpenApiParameter(name='end_date', description='End date if date range is custom', type=date),
+    OpenApiParameter(name='organization', description='Filter by organization IDs', type=int, many=True),
+    OpenApiParameter(name='job_template', description='Filter by job template IDs', type=int, many=True),
+    OpenApiParameter(name='project', description='Filter by project IDs', type=int, many=True),
+    OpenApiParameter(name='label', description='Filter by label IDs', type=int, many=True, ),
+]
 
+
+@extend_schema_view(
+    list=extend_schema(parameters=OPEN_API_PARAMETERS),
+    details=extend_schema(parameters=OPEN_API_PARAMETERS),
+    csv=extend_schema(parameters=OPEN_API_PARAMETERS),
+    pdf=extend_schema(parameters=OPEN_API_PARAMETERS),
+)
 class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
     filter_backends = [CustomReportFilter, DjangoFilterBackend, filters.OrderingFilter]
     serializer_class = JobSerializer
@@ -86,12 +106,15 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
                 failed_runs=Count("id", filter=Q(status=JobStatusChoices.FAILED)),
                 elapsed=Sum("elapsed"),
                 num_hosts=Sum("num_hosts"),
-                automated_costs=((F("time_taken_create_automation_minutes") * manual_cost_value_per_minute) + (F("elapsed") * automated_cost_value_per_second))
+                automated_costs=((F("time_taken_create_automation_minutes") * manual_cost_value_per_minute) + (
+                        F("elapsed") * automated_cost_value_per_second))
                 if enable_template_creation_time
                 else (F("elapsed") * automated_cost_value_per_second),
                 manual_costs=(F("num_hosts") * F("time_taken_manually_execute_minutes") * manual_cost_value_per_minute),
                 manual_time=(F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)),
-                time_savings=(F("manual_time") - F("elapsed") - (F("time_taken_create_automation_minutes") * 60)) if enable_template_creation_time else (F("manual_time") - F("elapsed")),
+                time_savings=(F("manual_time") - F("elapsed") - (
+                        F("time_taken_create_automation_minutes") * 60)) if enable_template_creation_time else (
+                        F("manual_time") - F("elapsed")),
                 savings=(F("manual_costs") - F("automated_costs")),
             ))
         return filter_by_range(self.request, queryset=qs)
@@ -178,18 +201,22 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
             total_number_of_job_runs=ReportDataValue(value=report_data_qs["total_runs"]),
             total_number_of_host_job_runs=ReportDataValue(value=report_data_qs["total_num_hosts"]),
             total_hours_of_automation=ReportDataValue(
-                value=round((report_data_qs["total_elapsed"] / 3600), 2) if report_data_qs["total_elapsed"] is not None else 0),
+                value=round((report_data_qs["total_elapsed"] / 3600), 2) if report_data_qs[
+                                                                                "total_elapsed"] is not None else 0),
             cost_of_automated_execution=ReportDataValue(
-                value=round(report_data_qs["total_automated_costs"], 2) if report_data_qs["total_automated_costs"] is not None else 0
+                value=round(report_data_qs["total_automated_costs"], 2) if report_data_qs[
+                                                                               "total_automated_costs"] is not None else 0
             ),
             cost_of_manual_automation=ReportDataValue(
-                value=round(report_data_qs["total_manual_costs"], 2) if report_data_qs["total_manual_costs"] is not None else 0
+                value=round(report_data_qs["total_manual_costs"], 2) if report_data_qs[
+                                                                            "total_manual_costs"] is not None else 0
             ),
             total_saving=ReportDataValue(
                 value=round(report_data_qs["total_savings"], 2) if report_data_qs["total_savings"] is not None else 0
             ),
             total_time_saving=ReportDataValue(
-                value=round((report_data_qs["total_time_savings"] / 3600), 2) if report_data_qs["total_time_savings"] is not None else 0
+                value=round((report_data_qs["total_time_savings"] / 3600), 2) if report_data_qs[
+                                                                                     "total_time_savings"] is not None else 0
             ),
             users=list(top_users_qs),
             projects=list(top_projects_qs),
@@ -282,6 +309,9 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
 
         return Response(data=response_data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        responses={(200, "text/csv; charset=UTF-8"): str},
+    )
     @action(methods=["get"], detail=False)
     def csv(self, request: Request) -> Response:
         qs = self.filter_queryset(self.get_base_queryset())
@@ -333,6 +363,16 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
 
         return response
 
+    @extend_schema(
+        request=inline_serializer(
+            name="InlineFormPDFSerializer",
+            fields={
+                "job_chart": serializers.CharField(),
+                "host_chart": serializers.CharField(),
+            }
+        ),
+        responses={(200, "application/pdf"): bytes},
+    )
     @action(methods=["post"], detail=False)
     def pdf(self, request: Request) -> WeasyTemplateResponse:
         table_qs = self.filter_queryset(self.get_base_queryset())[:settings.MAX_PDF_JOB_TEMPLATES]

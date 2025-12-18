@@ -23,6 +23,7 @@ setuptools==80.9.0
 split-settings==1.0.0
 urllib3==2.5.0
 uvicorn==0.38.0
+drf-spectacular==0.29.0
 
 # Deployment dependencies
 uwsgi==2.0.31

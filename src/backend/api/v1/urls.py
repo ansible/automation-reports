@@ -1,4 +1,6 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
+
+from backend.api.schema import schema_view, swagger_ui_view, redoc_view
 
 urlpatterns = [
     path("ping/", include("backend.api.v1.ping.urls")),
@@ -13,4 +15,7 @@ urlpatterns = [
     path("projects/", include("backend.api.v1.projects.urls")),
     path("organizations/", include("backend.api.v1.organizations.urls")),
     path("metrics/", include("backend.api.v1.metrics.urls")),
+    re_path(r'^schema/$', schema_view, name='schema-json'),
+    re_path(r'^docs/$', swagger_ui_view, name='schema-swagger-ui'),
+    re_path(r'^redoc/$', redoc_view, name='schema-redoc'),
 ]

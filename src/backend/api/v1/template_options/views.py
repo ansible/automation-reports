@@ -8,10 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from backend.api.v1.common.serializers.currency import CurrencySerializer
-from backend.api.v1.common.serializers.filter_set import FilterSetSerializer
 from backend.api.v1.mixins import AdminOnlyViewSet
-from backend.api.v1.template_options.serializers import ClusterSerializer
+from backend.api.v1.template_options.serializers import TemplateOptionsSerializer
 from backend.apps.clusters.models import (
     DateRangeChoices,
     Cluster,
@@ -22,6 +20,7 @@ from backend.django_config import settings
 
 
 class TemplateOptionsView(AdminOnlyViewSet):
+    serializer_class = TemplateOptionsSerializer
 
     def list(self, request: Request) -> Response:
         date_range = [
@@ -30,29 +29,24 @@ class TemplateOptionsView(AdminOnlyViewSet):
             }
             for choice in DateRangeChoices.choices
         ]
-        clusters = Cluster.objects.all().order_by('address')
-
-        currencies = Currency.objects.all().order_by("name")
 
         costs = Costs.get()
 
-        filter_sets = FilterSet.objects.all().order_by("name")
-
-        result = {
-            "clusters": ClusterSerializer(clusters, many=True).data,
-            "currencies": CurrencySerializer(currencies, many=True).data,
+        data = {
+            "clusters": Cluster.objects.all().order_by('address'),
+            "currencies": Currency.objects.all().order_by("name"),
             "date_ranges": date_range,
             "manual_cost_automation_per_hour": costs[CostsChoices.MANUAL],
             "automated_process_cost_per_minute": costs[CostsChoices.AUTOMATED],
             "currency": Settings.currency(),
             "enable_template_creation_time": Settings.enable_template_creation_time(),
-            "filter_sets": FilterSetSerializer(filter_sets, many=True).data,
+            "filter_sets": FilterSet.objects.all().order_by("name"),
             "max_pdf_job_templates": settings.MAX_PDF_JOB_TEMPLATES,
         }
 
         return Response(
             status=status.HTTP_200_OK,
-            data=result)
+            data=self.serializer_class(data).data)
 
     @action(methods=["post"], detail=False)
     def restore_user_inputs(self, request: Request) -> Response:

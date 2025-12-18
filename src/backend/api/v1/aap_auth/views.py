@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from backend.api.v1.aap_auth.serializers import AAPAuthSettingsSerializer
 from backend.apps.aap_auth.aap_auth import AAPAuth
 from backend.apps.aap_auth.models import JwtUserToken, JwtUserRefreshToken
 
@@ -44,7 +45,6 @@ class BaseAAPView(APIView):
     authentication_classes = ()
     permission_classes = ()
 
-
     def handle_exception(self, exc):
         """
         Django returns 403 Forbidden instead of 401 unauthorized, so an override is required.
@@ -65,12 +65,14 @@ class BaseAAPView(APIView):
 
 
 class AAPSettingsView(BaseAAPView):
+    serializer_class = AAPAuthSettingsSerializer
 
     def get(self, request: Request) -> Response:
         aap_auth = AAPAuth()
-        data = aap_auth.ui_data()
-
-        return Response(data=data, status=status.HTTP_200_OK)
+        return Response(
+            data=self.serializer_class(aap_auth.ui_data()).data,
+            status=status.HTTP_200_OK
+        )
 
 
 class AAPTokenView(BaseAAPView):

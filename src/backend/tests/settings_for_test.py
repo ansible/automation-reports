@@ -5,8 +5,8 @@ from backend.django_config.settings import *
 # Turn off task submission, because sqlite3 does not have pg_notify
 DISPATCHER_MOCK_PUBLISH = True
 
-
-CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'unique-{}'.format(str(uuid.uuid4()))}}
+CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+                      'LOCATION': 'unique-{}'.format(str(uuid.uuid4()))}}
 TEST_DATABASE_PREFIX = 'test'
 
 DATABASES = {
@@ -28,7 +28,6 @@ DATABASES = {
     }
 }
 
-
 LOG_LEVEL = 'ERROR'
 # Default Time taken to manually execute automation (min)
 DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES = 60
@@ -36,10 +35,10 @@ DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES = 60
 # Default Time taken to manually create automation (min)
 DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES = 60
 
-#Default average cost of an employee per hour
+# Default average cost of an employee per hour
 DEFAULT_MANUAL_COST_AUTOMATION = 3000
 
-#Deafult cost per minute of AAP
+# Deafult cost per minute of AAP
 DEFAULT_AUTOMATED_PROCESS_COST = 20
 
 START_TASK_LIMIT = 5
@@ -50,7 +49,8 @@ TASK_MANAGER_LOCK_TIMEOUT = TASK_MANAGER_TIMEOUT + TASK_MANAGER_TIMEOUT_GRACE_PE
 JWT_ACCESS_TOKEN_LIFETIME_SECONDS = 60
 JWT_REFRESH_TOKEN_LIFETIME_SECONDS = 7200
 
-SECRET_KEY='test_secret_key_for_backend_tests'
+SECRET_KEY = 'test_secret_key_for_backend_tests'
+DATABASE_KEY = 'test_database_key_for_backend_tests'
 
 AAP_AUTH_PROVIDER = {
     'name': 'test_name',
