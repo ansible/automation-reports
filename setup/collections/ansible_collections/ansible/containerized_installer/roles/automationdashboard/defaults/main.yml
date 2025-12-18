@@ -19,6 +19,7 @@ dashboard_container_requires: []
 dashboard_uwsgi_port: 8053
 dashboard_uwsgi_processes: 5
 dashboard_update_secret: false
+dashboard_update_database_key: false
 dashboard_event_workers: 4
 
 ### database
