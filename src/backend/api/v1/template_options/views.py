@@ -16,7 +16,6 @@ from backend.apps.clusters.models import (
     CostsChoices,
     Costs, JobTemplate, max_minutes_input, min_minutes_input)
 from backend.apps.common.models import Currency, Settings, FilterSet
-from backend.django_config import settings
 
 
 class TemplateOptionsView(AdminOnlyViewSet):

@@ -2,8 +2,7 @@ import csv
 import decimal
 import logging
 from collections import OrderedDict
-from datetime import datetime, date
-from random import choices
+from datetime import date
 
 from django.conf import settings
 from django.db import models
