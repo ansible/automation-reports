@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'backend.apps.aap_auth',
     'backend.analytics',
     'solo',
+    'drf_spectacular',
 ]
 
 AUTH_USER_MODEL = "users.User"
@@ -98,6 +99,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'backend.apps.aap_auth.authentication.AAPAuthentication',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'backend.utils.schema.CustomAutoSchema',
 }
 
 ROOT_URLCONF = 'django_config.urls'
@@ -431,6 +433,30 @@ ALLOW_METRICS_FOR_ANONYMOUS_USERS = False
 
 BROKER_URL = 'unix:///var/run/redis/redis.sock'
 CLUSTER_HOST_ID = socket.gethostname()
+
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'AUTOMATION DASHBOARD API',
+    'DESCRIPTION': 'AUTOMATION DASHBOARD API Documentation',
+    'VERSION': 'v1',
+    'OAS_VERSION': '3.0.3',  # Set OpenAPI Specification version to 3.0.3
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': r'/api/v[0-9]',
+    'DEFAULT_GENERATOR_CLASS': 'drf_spectacular.generators.SchemaGenerator',
+    'SCHEMA_COERCE_PATH_PK_SUFFIX': True,
+    'CONTACT': {'email': 'controller-eng@redhat.com'},
+    'LICENSE': {'name': 'Apache License'},
+    'TERMS_OF_SERVICE': 'https://www.google.com/policies/terms/',
+    # Use our custom schema class that handles swagger_topic and deprecated views
+    'DEFAULT_SCHEMA_CLASS': 'backend.utils.schema.CustomAutoSchema',
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': True,
+    },
+}
 
 ### Local settings
 local_config_file = os.path.join(BASE_DIR, "django_config", "local_settings.py")

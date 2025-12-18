@@ -33,8 +33,8 @@ test_template_option_expected_data = {
         {'key': 'last_2_years', 'value': 'Past 2 years'},
         {'key': 'custom', 'value': 'Custom'}
     ],
-    'manual_cost_automation_per_hour': 3000.0,
-    'automated_process_cost_per_minute': 20.0,
+    'manual_cost_automation_per_hour': '3000.00',
+    'automated_process_cost_per_minute': '20.00',
     'currency': 1,
     'enable_template_creation_time': True,
     'filter_sets': [
@@ -372,7 +372,8 @@ class TestViews:
         client = APIClient()
         job_template = JobTemplate.objects.get(name="Job Template A")
         data = dict(time_taken_manually_execute_minutes=120, time_taken_create_automation_minutes=30)
-        response = client.put(f"/api/v1/templates/{job_template.id}/", content_type='application/json', data=json.dumps(data))
+        response = client.put(f"/api/v1/templates/{job_template.id}/", content_type='application/json',
+                              data=json.dumps(data))
         assert response.status_code == 200
         job_template = JobTemplate.objects.get(name="Job Template A")
         assert job_template.time_taken_manually_execute_minutes == 120
@@ -415,7 +416,8 @@ class TestViews:
         client = APIClient()
         filter_set = FilterSet.objects.get(name="Report 1")
         data = dict(name="Report 1 updated", filters=dict(date_range='last_year'))
-        response = client.put(f"/api/v1/common/filter_set/{filter_set.id}/", content_type='application/json', data=json.dumps(data))
+        response = client.put(f"/api/v1/common/filter_set/{filter_set.id}/", content_type='application/json',
+                              data=json.dumps(data))
         assert response.status_code == 200
         filter_set = FilterSet.objects.get(name="Report 1 updated")
         assert filter_set.filters == dict(date_range='last_year')
