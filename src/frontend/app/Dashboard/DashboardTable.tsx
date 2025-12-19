@@ -61,6 +61,8 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
         setHourlyManualCostsChangedError(null);
         props.onCostChanged('manual', value);
       }
+    } else {
+      setHourlyManualCostsChangedError('Please enter a valid number!');
     }
   };
 
@@ -74,6 +76,8 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
         setHourlyAutomatedProcessCostsChangedError(null);
         props.onCostChanged('automated', value);
       }
+    }else{
+      setHourlyAutomatedProcessCostsChangedError('Please enter a valid number!');
     }
   };
 
