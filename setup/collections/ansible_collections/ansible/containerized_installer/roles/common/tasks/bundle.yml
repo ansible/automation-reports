@@ -41,6 +41,7 @@
       - database
       # - execution_nodes
       - automationdashboard
+      - redis
 
 - name: Include container image tasks
   ansible.builtin.include_tasks: images.yml

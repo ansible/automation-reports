@@ -45,7 +45,8 @@
   when: >
     inventory_hostname in groups.get('automationcontroller', []) or
     inventory_hostname in groups.get('automationeda', []) or
-    inventory_hostname in groups.get('automationhub', [])
+    inventory_hostname in groups.get('automationhub', []) or
+    inventory_hostname in groups.get('redis', [])
 
 - name: Add postgresql image to the list
   ansible.builtin.set_fact:
