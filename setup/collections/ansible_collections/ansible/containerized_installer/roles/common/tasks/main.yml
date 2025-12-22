@@ -146,6 +146,7 @@
         image: '{{ (item | basename).split(":")[0] }}'
       when: |
         item == _dashboard_image_be
+        or item == _redis_image
         or (item == _postgresql_image and _existing_postgresql_image_result.images | length == 0)
 
     - name: Load the controlplane container images
@@ -156,6 +157,7 @@
         image: '{{ (item | basename).split(":")[0] }}'
       when:
         item == _dashboard_image_be
+        or item == _redis_image
         or (item == _postgresql_image and _existing_postgresql_image_result.images | length == 0)
 
     - name: Load the executionplane container images
