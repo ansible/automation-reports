@@ -1,0 +1,21 @@
+packages: [
+  findutils,
+  glibc-langpack-en, 
+  nginx,
+  python3.12,
+  python3.12-devel,
+  libpq-devel,
+  gcc,
+  pango,
+  gcc-c++,
+  zlib-devel,
+  libjpeg-devel,
+  libffi-devel,
+  python3.9
+]
+contentOrigin:
+  repofiles: ["./ubi.repo"]
+arches: [x86_64, aarch64]
+installWeakDeps: false
+context:
+  containerfile: docker/Dockerfile.backend
