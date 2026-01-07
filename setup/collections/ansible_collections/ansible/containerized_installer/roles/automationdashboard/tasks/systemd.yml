@@ -6,7 +6,7 @@
     enabled: true
     scope: user
     daemon_reload: true
-    ignore_errors: true
+  ignore_errors: true
   loop: '{{ __services }}'
 
 - name: Ensure automation dashboard containers are enabled and started - without deamon_reload
