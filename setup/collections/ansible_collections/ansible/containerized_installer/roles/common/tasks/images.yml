@@ -13,7 +13,7 @@
     _postgresql_image: '{{ registry_url }}/{{ registry_ns_rhel }}/{{ postgresql_image }}'
     _receptor_image: '{{ registry_url }}/{{ registry_ns_aap }}/{{ receptor_image }}'
     _redis_image: '{{ registry_url }}/{{ registry_ns_rhel }}/{{ redis_image }}'
-    _dashboard_image_be: '{{ registry_url }}/{{ registry_ns_aap_automation_dashboard }}/{{ dashboard_image_be }}'
+    _dashboard_image_be: '{{ registry_url_aap_automation_dashboard }}/{{ registry_ns_aap_automation_dashboard }}/{{ dashboard_image_be }}'
 
   run_once: true
 
