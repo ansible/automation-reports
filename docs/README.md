@@ -12,6 +12,7 @@ This directory contains comprehensive architectural documentation for the Automa
 6. **[Database Schema](06-database-schema.md)** - Data models and relationships
 7. **[Deployment Architecture](07-deployment-architecture.md)** - Container deployment and infrastructure
 8. **[Security Architecture](08-security-architecture.md)** - Authentication, authorization, and data protection
+9. **[Release Process](09-release-process.md)** - Release process
 
 ## Quick Reference
 
