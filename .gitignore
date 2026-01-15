@@ -41,6 +41,7 @@ storybook-static
 .venv
 clusters.yaml
 .coverage
+aap_access.json
 
 # Local settings
 local_settings.py
