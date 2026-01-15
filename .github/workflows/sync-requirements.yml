@@ -5,7 +5,7 @@ on:
         branches: [main]
         paths:
             - "requirements-pinned.txt"
-    pull_request:
+    pull_request_target:
         paths:
             - "requirements-pinned.txt"
 
@@ -18,10 +18,26 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - name: "Checkout automation-reports (${{ github.ref }})"
+            - name: "Checkout automation-reports (${{ github.ref }}) - tested repo, PR"
+              if: github.event_name == 'pull_request_target'
               uses: actions/checkout@v5
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
+                  ref: ${{ github.event.pull_request.head.sha }}
+                  path: test-repo
+
+            - name: "Checkout automation-reports (${{ github.ref }}) - tested repo, push to main"
+              if: github.event_name == 'push'
+              uses: actions/checkout@v5
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  path: test-repo
+
+            - name: "Checkout automation-reports (${{ github.ref }}) - main repo"
+              uses: actions/checkout@v5
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  path: main-repo
 
             - name: "Set up Python"
               uses: actions/setup-python@v5
@@ -35,12 +51,14 @@ jobs:
 
             - name: "Sync requirements files"
               run: |
-                  chmod +x sync-requirements.sh
-                  ./sync-requirements.sh
+                  chmod +x main-repo/sync-requirements.sh
+                  cd test-repo
+                  ../main-repo/sync-requirements.sh
 
             - name: "Check for changes"
               id: changes
               run: |
+                  cd test-repo
                   if ! git diff --quiet requirements-build.txt; then
                     echo "changed=true" >> $GITHUB_OUTPUT
                     echo "Requirements-build.txt has been updated"
@@ -52,6 +70,7 @@ jobs:
             - name: "Commit and push changes"
               if: steps.changes.outputs.changed == 'true' && github.event_name == 'push'
               run: |
+                  cd test-repo
                   git config --local user.email "action@github.com"
                   git config --local user.name "GitHub Action"
                   git add requirements-build.txt
@@ -59,7 +78,7 @@ jobs:
                   git push
 
             - name: "Add PR comment for changes"
-              if: steps.changes.outputs.changed == 'true' && github.event_name == 'pull_request'
+              if: steps.changes.outputs.changed == 'true' && github.event_name == 'pull_request_target'
               uses: actions/github-script@v7
               with:
                   script: |
@@ -71,8 +90,9 @@ jobs:
                       })
 
             - name: "Fail if requirements out of sync in PR"
-              if: steps.changes.outputs.changed == 'true' && github.event_name == 'pull_request'
+              if: steps.changes.outputs.changed == 'true' && github.event_name == 'pull_request_target'
               run: |
+                  cd test-repo
                   echo "Requirements-build.txt is out of sync. Please run 'make sync-requirements' locally and commit the changes."
                   git diff requirements-build.txt
                   exit 1
