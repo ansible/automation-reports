@@ -23,7 +23,8 @@ sync-requirements:
 			echo "Installing pip-tools..."; \
 			pip install pip-tools; \
 		fi && \
-		./sync-requirements.sh
+		./sync-requirements.sh $${EXTRA_DEPS:-}
+# above - we want to split EXTRA_DEPS on spaces, so we use normal shell splitting
 
 requirements: sync-requirements
 

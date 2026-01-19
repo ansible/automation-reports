@@ -63,3 +63,24 @@ If you see a PR check failure, run `make sync-requirements` locally and commit t
 - `requirements.txt`: Contains the base dependencies (for reference)
 - `requirements-pinned.txt`: Contains exact version pins
 - `requirements-build.txt`: Contains build dependencies for downstream hermetic builds, compiled from requirements-pinned.txt (auto-generated)
+
+## Tricks
+
+### Update all dependencies
+
+Remove `requirements-build.txt`, and file will be regenerated using latest versions.
+
+### Update a single dependency library
+
+Example: there is vulnerability in a single dependency library.
+Like [CVE-2025-6176](https://nvd.nist.gov/vuln/detail/CVE-2025-6176) - brotli<=1.1.0.
+You need to upgrade brotli to >=1.2.0.
+The `sync-requirement.sh` does not update all packages to latest version.
+To update only `brotli`:
+
+```bash
+make sync-requirements EXTRA_DEPS="brotli>=1.2.0"
+
+# EXTRA_DEPS can contain multiple dependencies. They need to be space-separated.
+make sync-requirements EXTRA_DEPS="brotli>=1.2.0 urllib3>=0.0.1"
+```
