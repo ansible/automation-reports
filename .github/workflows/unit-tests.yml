@@ -73,8 +73,8 @@ jobs:
           !cancelled()
           && github.event_name == 'pull_request'
         run: |
-          if [ -f "reports/coverage-backend.xml" ]; then
-            sed -i '2i<!-- PR ${{ github.event.pull_request.number }} -->' reports/coverage-backend.xml
+          if [ -f "src/backend/coverage-backend.xml" ]; then
+            sed -i '2i<!-- PR ${{ github.event.pull_request.number }} -->' src/backend/coverage-backend.xml
             echo "Injected PR number ${{ github.event.pull_request.number }} into coverage-backend.xml"
           fi
 
