@@ -61,6 +61,13 @@ jobs:
           export PYTHONPATH=$PWD/..
           pytest --cov=backend --cov-report=term-missing:skip-covered --cov-report=xml:coverage-backend.xml
 
+      - name: Get Cover
+        uses: orgoro/coverage@v3.2
+        with:
+            coverageFile: src/backend/coverage-backend.xml
+            token: ${{ secrets.GITHUB_TOKEN }}
+            sourceDir: src/backend
+
       - name: Inject PR number into coverage.xml
         if: >-
           !cancelled()
