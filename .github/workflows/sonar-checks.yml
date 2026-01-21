@@ -24,7 +24,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: Unit Tests
           run_id: ${{ github.event.workflow_run.id }}
-          pattern: coverage-*
+          name: coverage-*
+          name_is_regex: true
 
       # Extract PR metadata from workflow_run event
       - name: Set PR metadata and prepare files for analysis
@@ -172,7 +173,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: Unit Tests
           run_id: ${{ github.event.workflow_run.id }}
-          pattern: coverage-*
+          name: coverage-*
+          name_is_regex: true
 
       - name: Print SonarCloud Analysis Summary
         env:
