@@ -29,6 +29,10 @@ DATABASES = {
 }
 
 LOG_LEVEL = 'ERROR'
+
+# Use Redis via TCP instead of Unix socket for tests
+BROKER_URL = 'redis://127.0.0.1:6379/0'
+
 # Default Time taken to manually execute automation (min)
 DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES = 60
 

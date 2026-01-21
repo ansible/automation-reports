@@ -97,7 +97,7 @@ First, start the PostgreSQL database in Docker:
 ```bash
 cp -i .env.example .env
 source .env
-(cd compose; docker compose --project-directory .. -f compose.yml up --build db)
+(cd compose; docker compose --project-directory .. -f compose.yml up --build db redis)
 ```
 
 ### Migrations and superuser
