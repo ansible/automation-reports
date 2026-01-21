@@ -57,3 +57,8 @@ export AAP_VERSION=25 AAP_URL="https://aap.example.com" AAP_USERNAME=admin AAP_P
 ./setup_aap.py
 ./get_mock_data.py
 ```
+
+## Test against real AAP
+
+There is a test that requires a real AAP instance.
+See [README-test-real-aap.md](README-test-real-aap.md)

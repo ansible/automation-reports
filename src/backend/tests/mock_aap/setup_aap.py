@@ -352,12 +352,21 @@ def create_aap_access_file(oauth2app: OAuth2App, aaptoken: AAPToken, aap_version
         "25": "2.5",
         "26": "2.6",
     }
+    aap_proto = os.environ["AAP_URL"].split(":")[0]
+    aap_host_port = os.environ["AAP_URL"].replace("https://", "").replace("http://", "")
+    assert "/" not in aap_host_port
+    aap_host = aap_host_port.split(":")[0]
+    aap_port = aap_host_port.split(":")[1]
+
     data = {
         "client_id": oauth2app.client_id,
         "client_secret": oauth2app.client_secret,
         "access_token": aaptoken.access_token,
         "refresh_token": aaptoken.refresh_token,
         "aap_url": os.environ["AAP_URL"],
+        "aap_protocol": aap_proto,
+        "aap_address": aap_host,
+        "aap_port": aap_port,
         "aap_version": aap_verssion_map[aap_version],
     }
     with open("aap_access.json", "w") as ff:
