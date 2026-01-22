@@ -65,10 +65,10 @@ As a developer, I need automated pytest validation to verify that data synchroni
 
 **Acceptance Scenarios**:
 
-1. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies at least 5 Currency objects exist (for different currencies)
-2. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies at least 2 SyncJob objects exist (one for sync_jobs, one for parse tasks)
-3. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies at least 1 AAPUser object exists representing the admin user from AAP
-4. **Given** the validation finds insufficient or incorrect objects, **When** the pytest script completes, **Then** it fails the test with clear assertion messages indicating what was expected vs actual
+1. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies exactly 5 Currency objects exist, exactly 6 SyncJob objects exist, exactly 1 AAPUser object exists
+2. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies exactly 2 Organization objects, exactly 3 JobTemplate objects, exactly 4 Job objects
+3. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies exactly 2 Project objects and exactly 2 Label objects
+4. **Given** the validation finds incorrect object counts (more or fewer than expected), **When** the pytest script completes, **Then** it fails the test with clear assertion messages showing expected vs actual counts
 
 ---
 
@@ -110,8 +110,7 @@ As a developer, I need automated pytest validation to verify that data synchroni
 - **FR-009**: System MUST execute `setclusters` management command with AAP connection details
 - **FR-010**: System MUST execute `syncdata` management command to trigger data synchronization from AAP
 - **FR-011**: System MUST wait for task container to retrieve and parse data from AAP before validation by polling database for SyncJob completion status every 5 seconds with 300-second timeout
-- **FR-012**: System MUST validate database objects using pytest, checking minimum counts: Currency ≥5, SyncJob ≥2, AAPUser ≥1
-The setup_aap.py creates exact number of objects in AAP. Test needs to check for exact number of DB objects too.
+- **FR-012**: System MUST validate database objects using pytest, checking exact counts as determined by setup_aap.py script behavior: Currency=5, SyncJob=6, AAPUser=1, Organization=2, JobTemplate=3, Job=4, Project=2, Label=2 (validating exact equality, not minimum thresholds)
 - **FR-013**: System MUST support local test execution via bash script (`run_integration_test.sh`)
 - **FR-014**: System MUST provide structured logging with phase markers ([PHASE] prefix), timing metrics for each phase, and detailed error context for debugging failed tests
 - **FR-015**: System MUST support cleanup mode to remove all resources after test completion
@@ -125,9 +124,8 @@ The setup_aap.py creates exact number of objects in AAP. Test needs to check for
 - **Test Environment**: Consists of AAP instance, PostgreSQL, Redis, web container, task container running together in isolated network
 - **AAP Instance**: Real AAP installation (2.5 or 2.6) with test data (orgs, projects, templates, jobs, users)
 - **Container Image**: The automation-dashboard Docker image being tested, sourced from registry or built locally
-- **Test Data**: AAP objects created by setup_aap.py including 2+ organizations, 3+ job templates, 4+ jobs, 2+ labels
-The setup_aap.py creates exact number of objects in AAP - not N+.
-- **Database Objects**: Currency, SyncJob, AAPUser Django model instances created during data synchronization
+- **Test Data**: AAP objects created by setup_aap.py with exact deterministic counts: 2 organizations, 3 job templates, 4 jobs, 2 labels, 2 projects
+- **Database Objects**: Currency, SyncJob, AAPUser, Organization, JobTemplate, Job, Project, Label Django model instances created during data synchronization with expected counts: Currency=5, SyncJob=6, AAPUser=1, Organization=2, JobTemplate=3, Job=4, Project=2, Label=2
 - **Validation Script**: pytest-based Python script that queries database and asserts expected object counts
 
 ## Success Criteria *(mandatory)*
@@ -206,6 +204,7 @@ The setup_aap.py creates exact number of objects in AAP - not N+.
 - Q: Should we standardize the image reference format in examples? → A: Yes, use full registry format [registry/][namespace/]name:tag (e.g., quay.io/aap/automation-dashboard:v1.2.3, automation-dashboard:test for local)
 - Q: What logging/metrics should be captured during test execution for observability? → A: Structured logging with phase markers ([PHASE] prefix), timing metrics for each phase, error context (container logs, DB state, AAP responses), and success indicators (object counts, sync status)
 - Q: How should the test determine when data synchronization is complete? → A: Poll database for SyncJob completion status every 5 seconds, wait for status='completed', timeout after 300 seconds (5 minutes), fail with clear message on timeout or error
+- Q: What are the exact expected counts for all validated entities? → A: Currency=5, SyncJob=6, AAPUser=1, Organization=2, JobTemplate=3, Job=4, Project=2, Label=2 (comprehensive validation using exact counts derived from setup_aap.py script behavior analysis; validates equality not minimums)
 
 ## Open Questions
 
