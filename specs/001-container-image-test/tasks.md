@@ -93,7 +93,7 @@
 - [ ] T035 [US1] Add data sync step in workflow (setclusters + syncdata commands)
 - [ ] T036 [US1] Add validation step in workflow (invoke pytest validate_results.py)
 - [ ] T037 [US1] Add log capture step in workflow (on failure, collect container logs, AAP logs, database state)
-- [ ] T038 [US1] Configure GitHub secrets for registry authentication (REGISTRY_QUAY_IO_USERNAME, REGISTRY_QUAY_IO_PASSWORD)
+- [ ] T038 [US1] Configure GitHub secrets for registry authentication (REGISTRY_QUAY_IO_USERNAME, REGISTRY_QUAY_IO_PASSWORD) - Manual: Repository Settings → Secrets and variables → Actions → New repository secret
 - [ ] T039 [US1] Test workflow manually via GitHub UI with main branch image
 - [ ] T040 [US1] Update specs/001-container-image-test/quickstart.md with GitHub Actions trigger instructions
 
@@ -149,7 +149,7 @@
 
 **Purpose**: Documentation, validation, and final improvements
 
-- [ ] T059 [P] Create tests/integration/QUICKSTART.md quick reference guide (if not already created)
+- [ ] T059 [P] Create tests/integration/QUICKSTART.md quick reference guide for running tests (separate from specs/001-container-image-test/quickstart.md which is feature planning documentation)
 - [ ] T060 [P] Update CI-INTEG-TEST.md with implementation details and workflow summary
 - [ ] T061 [P] Add troubleshooting section to tests/integration/README.md (common issues, fixes)
 - [ ] T062 Validate all 4 user stories work together (full integration test run)
