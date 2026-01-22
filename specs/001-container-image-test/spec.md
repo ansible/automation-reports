@@ -111,6 +111,7 @@ As a developer, I need automated pytest validation to verify that data synchroni
 - **FR-010**: System MUST execute `syncdata` management command to trigger data synchronization from AAP
 - **FR-011**: System MUST wait for task container to retrieve and parse data from AAP before validation by polling database for SyncJob completion status every 5 seconds with 300-second timeout
 - **FR-012**: System MUST validate database objects using pytest, checking minimum counts: Currency ≥5, SyncJob ≥2, AAPUser ≥1
+The setup_aap.py creates exact number of objects in AAP. Test needs to check for exact number of DB objects too.
 - **FR-013**: System MUST support local test execution via bash script (`run_integration_test.sh`)
 - **FR-014**: System MUST provide structured logging with phase markers ([PHASE] prefix), timing metrics for each phase, and detailed error context for debugging failed tests
 - **FR-015**: System MUST support cleanup mode to remove all resources after test completion
@@ -125,6 +126,7 @@ As a developer, I need automated pytest validation to verify that data synchroni
 - **AAP Instance**: Real AAP installation (2.5 or 2.6) with test data (orgs, projects, templates, jobs, users)
 - **Container Image**: The automation-dashboard Docker image being tested, sourced from registry or built locally
 - **Test Data**: AAP objects created by setup_aap.py including 2+ organizations, 3+ job templates, 4+ jobs, 2+ labels
+The setup_aap.py creates exact number of objects in AAP - not N+.
 - **Database Objects**: Currency, SyncJob, AAPUser Django model instances created during data synchronization
 - **Validation Script**: pytest-based Python script that queries database and asserts expected object counts
 
