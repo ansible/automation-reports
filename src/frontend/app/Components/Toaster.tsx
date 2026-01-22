@@ -43,7 +43,7 @@ export function ToasterProvider(props: { children: ReactNode }) {
 
   return (
     <ToasterContext.Provider value={pageToaster}>
-      <AlertGroup data-cy="alert-toaster" isToast isLiveRegion hasAnimations style={{top: '6rem', }}>
+      <AlertGroup data-cy="alert-toaster" isToast isLiveRegion hasAnimations style={{ top: '6rem', }}>
         {alerts.map((alertProps, index) => (
           <Alert
             {...alertProps}

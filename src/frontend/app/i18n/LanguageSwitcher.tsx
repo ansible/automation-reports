@@ -15,7 +15,7 @@ import { GlobeIcon } from '@patternfly/react-icons';
 import { SUPPORTED_LANGUAGES } from './languages';
 
 export const LanguageSwitcher: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = React.useState(false);
 
   const productionLanguages = SUPPORTED_LANGUAGES.filter((lang) => !lang.isTestingOnly);
@@ -55,9 +55,9 @@ export const LanguageSwitcher: React.FC = () => {
           onClick={onToggle}
           isExpanded={isOpen}
           icon={<GlobeIcon />}
-          aria-label="Select Language"
+          aria-label={t('Select Language')}
         >
-          {productionLanguages.find((lang) => lang.code === i18n.language)?.nativeName || 'Select Language'}
+          {productionLanguages.find((lang) => lang.code === i18n.language)?.nativeName || t('Select Language')}
         </MenuToggle>
       )}
     >

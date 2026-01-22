@@ -14,8 +14,10 @@ import {
 import { formatNumber, generateChartData } from '@app/Utils';
 import { AnimatePropTypeInterface } from 'victory-core';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
+import { useTranslation } from 'react-i18next';
 
 export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {
+  const { t } = useTranslation();
   const chartData = generateChartData(props.chartData);
   const [useAnimation, setUseAnimation] = React.useState<boolean | AnimatePropTypeInterface>(false);
   React.useEffect(() => {
@@ -33,8 +35,8 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
       <Card style={{ height: 'inherit' }}>
         <CardTitle>
           <DashboardTotals
-            title={'Number of times jobs were run'} result={props.value}
-            tooltip={'This is the total number of individual job executions.'}
+            title={t('Number of times jobs were run')} result={props.value}
+            tooltip={t('This is the total number of individual job executions.')}
             infoIcon={true}
           />
         </CardTitle>
@@ -42,8 +44,8 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
           <div className={`pf-v6-u-h-initial pf-v6-u-w-100 jobs-chart ${chartData.items.length === 0 && 'no-data'}`}>
             <Chart
               height={250}
-              ariaDesc="Number of times jobs were run"
-              ariaTitle="Number of times jobs were run"
+              ariaDesc={t('Number of times jobs were run')}
+              ariaTitle={t('Number of times jobs were run')}
               minDomain={{ y: 0 }}
               maxDomain={{ y: chartData.maxValue }}
               domain={{ x: [0, chartData.items.length + 1] }}

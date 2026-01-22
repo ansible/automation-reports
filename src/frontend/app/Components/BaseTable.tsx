@@ -5,6 +5,7 @@ import { CustomInput } from '@app/Components';
 import { ColumnProps, PaginationProps, SortProps, TableResult } from '@app/Types';
 import { deepClone, formatCurrency, formatNumber } from '@app/Utils';
 import { useCurrencySign } from '@app/Store/commonSelectors';
+import { useTranslation } from 'react-i18next';
 
 export type ColumnError = {
   rowNum: number;
@@ -23,6 +24,7 @@ export const BaseTable: React.FunctionComponent<{
   onItemBlur?: (event?: never) => void;
   className?: string;
 }> = (props) => {
+  const { t } = useTranslation();
   const [activeSortIndex, setActiveSortIndex] = React.useState<number | undefined>(0);
   const [activeSortDirection, setActiveSortDirection] = React.useState<'asc' | 'desc' | undefined>('asc');
   const [editingError, setEditingError] = React.useState<ColumnError | undefined>(undefined);
@@ -52,7 +54,7 @@ export const BaseTable: React.FunctionComponent<{
 
   const pagination = (
     <Pagination
-      titles={{ paginationAriaLabel: 'Table pagination' }}
+      titles={{ paginationAriaLabel: t('Table pagination') }}
       itemCount={props.pagination.totalItems}
       perPage={props.pagination.perPage}
       page={props.pagination.currentPage}
@@ -66,22 +68,22 @@ export const BaseTable: React.FunctionComponent<{
       setEditingError({
         rowNum: rowNum,
         columnName: columnName,
-        message: 'Value must be greater then 0!',
+        message: t('Value must be greater than 0!'),
       });
       return;
-    } else if (value > 1000000){
+    } else if (value > 1000000) {
       setEditingError({
         rowNum: rowNum,
         columnName: columnName,
-        message: 'Value must be less than or equal to 1000000!',
+        message: t('Value must be less than or equal to 1000000!'),
       });
       return;
     }
-    if (isNaN(value)){
+    if (isNaN(value)) {
       setEditingError({
         rowNum: rowNum,
         columnName: columnName,
-        message: 'Please enter a valid number!',
+        message: t('Please enter a valid number!'),
       });
       return;
     }
@@ -89,7 +91,7 @@ export const BaseTable: React.FunctionComponent<{
       setEditingError({
         rowNum: rowNum,
         columnName: columnName,
-        message: 'Value must be an integer!',
+        message: t('Value must be an integer!'),
       });
       return;
     }
@@ -152,9 +154,9 @@ export const BaseTable: React.FunctionComponent<{
                             <div
                               className={
                                 editingError?.message &&
-                                editingError?.message?.length > 0 &&
-                                editingError?.rowNum === rowNum &&
-                                editingError?.columnName !== column.name
+                                  editingError?.message?.length > 0 &&
+                                  editingError?.rowNum === rowNum &&
+                                  editingError?.columnName !== column.name
                                   ? 'has-error'
                                   : ''
                               }
@@ -166,10 +168,10 @@ export const BaseTable: React.FunctionComponent<{
                                 value={item[column.name]}
                                 errorMessage={
                                   editingError &&
-                                  editingError?.rowNum === rowNum &&
-                                  editingError.columnName === column.name &&
-                                  editingError?.message &&
-                                  editingError?.message?.length > 0
+                                    editingError?.rowNum === rowNum &&
+                                    editingError.columnName === column.name &&
+                                    editingError?.message &&
+                                    editingError?.message?.length > 0
                                     ? editingError.message
                                     : ''
                                 }
@@ -188,9 +190,9 @@ export const BaseTable: React.FunctionComponent<{
                             <div
                               className={
                                 editingError &&
-                                editingError?.message &&
-                                editingError?.message?.length > 0 &&
-                                editingError?.rowNum === rowNum
+                                  editingError?.message &&
+                                  editingError?.message?.length > 0 &&
+                                  editingError?.rowNum === rowNum
                                   ? 'has-error'
                                   : ''
                               }
@@ -221,7 +223,7 @@ export const BaseTable: React.FunctionComponent<{
                   style={{ textAlign: 'center' }}
                   className="pf-v6-u-font-size-xl pf-v6-u-font-weight-bold pf-v6-u-p-2xl"
                 >
-                  No data available
+                  {t('No data available')}
                 </Td>
               </Tr>
             )}
