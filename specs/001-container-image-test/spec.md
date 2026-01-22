@@ -19,6 +19,7 @@ As a DevOps engineer or release manager, I need to manually trigger integration 
 
 1. **Given** I have a container image tagged `v1.2.3` in quay.io, **When** I trigger the integration test workflow with image_tag=`v1.2.3` and aap_version=`2.6`, **Then** the test downloads the image, starts all containers, syncs data from AAP, and verifies database objects were created correctly
 2. **Given** I build a container image locally and tag it as `automation-dashboard:test`, **When** I run the integration test script with `--image automation-dashboard:test`, **Then** the test uses my local image and validates it works correctly
+<-- both 1 and 2 should use syntax similar to "--image registry.example.com/namespace/automation-dashboard:tag" -->
 3. **Given** the integration test workflow is running, **When** any step fails (AAP setup, container startup, data sync, validation), **Then** the workflow fails with clear error messages and logs are captured for debugging
 
 ---
@@ -180,6 +181,7 @@ As a developer, I need automated pytest validation to verify that data synchroni
 - **Internal**: Management commands (setclusters, syncdata) must be functional
 - **Internal**: Database models (Currency, SyncJob, AAPUser) must be defined
 - **Internal**: Existing docker-compose infrastructure if used
+<-- login to quay.io etc is required -->
 
 ## Risks & Mitigations
 
