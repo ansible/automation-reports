@@ -1,0 +1,12 @@
+{
+  "An error occurred while resetting data. Please try again later.": "An error occurred while resetting data. Please try again later.",
+  "Are you sure you want to continue?": "Are you sure you want to continue?",
+  "Cancel": "Cancel",
+  "Close": "Close",
+  "Data reset was successful.": "Data reset was successful.",
+  "Loader": "Loader",
+  "Logout": "Logout",
+  "Restore all user inputs to defaults": "Restore all user inputs to defaults",
+  "This action will reset all user inputs to default values.": "This action will reset all user inputs to default values.",
+  "Yes": "Yes"
+}

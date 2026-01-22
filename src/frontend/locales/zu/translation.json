@@ -1,0 +1,12 @@
+{
+  "An error occurred while resetting data. Please try again later.": "A_N E_R_R_O_R O_C_C_U_R_R_E_D W_H_I_L_E R_E_S_E_T_T_I_N_G D_A_T_A_. P_L_E_A_S_E T_R_Y A_G_A_I_N L_A_T_E_R_.",
+  "Are you sure you want to continue?": "A_R_E Y_O_U S_U_R_E Y_O_U W_A_N_T T_O C_O_N_T_I_N_U_E_?",
+  "Cancel": "C_A_N_C_E_L",
+  "Close": "C_L_O_S_E",
+  "Data reset was successful.": "D_A_T_A R_E_S_E_T W_A_S S_U_C_C_E_S_S_F_U_L_.",
+  "Loader": "L_O_A_D_E_R",
+  "Logout": "L_O_G_O_U_T",
+  "Restore all user inputs to defaults": "R_E_S_T_O_R_E__A_L_L__U_S_E_R__I_N_P_U_T_S__T_O__D_E_F_A_U_L_T_S",
+  "This action will reset all user inputs to default values.": "T_H_I_S A_C_T_I_O_N W_I_L_L R_E_S_E_T A_L_L U_S_E_R I_N_P_U_T_S T_O D_E_F_A_U_L_T V_A_L_U_E_S_.",
+  "Yes": "Y_E_S"
+}
