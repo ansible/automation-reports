@@ -17,9 +17,8 @@ As a DevOps engineer or release manager, I need to manually trigger integration 
 
 **Acceptance Scenarios**:
 
-1. **Given** I have a container image tagged `v1.2.3` in quay.io, **When** I trigger the integration test workflow with image_tag=`v1.2.3` and aap_version=`2.6`, **Then** the test downloads the image, starts all containers, syncs data from AAP, and verifies database objects were created correctly
-2. **Given** I build a container image locally and tag it as `automation-dashboard:test`, **When** I run the integration test script with `--image automation-dashboard:test`, **Then** the test uses my local image and validates it works correctly
-<-- both 1 and 2 should use syntax similar to "--image registry.example.com/namespace/automation-dashboard:tag" -->
+1. **Given** I have a container image in quay.io, **When** I trigger the integration test workflow with image_tag=`quay.io/aap/automation-dashboard:v1.2.3` and aap_version=`2.6`, **Then** the test downloads the image, starts all containers, syncs data from AAP, and verifies database objects were created correctly
+2. **Given** I build a container image locally, **When** I run the integration test script with `--image automation-dashboard:test`, **Then** the test uses my local image and validates it works correctly
 3. **Given** the integration test workflow is running, **When** any step fails (AAP setup, container startup, data sync, validation), **Then** the workflow fails with clear error messages and logs are captured for debugging
 
 ---
@@ -66,9 +65,9 @@ As a developer, I need automated pytest validation to verify that data synchroni
 
 **Acceptance Scenarios**:
 
-1. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies Currency objects exist (at least 5 for different currencies)
-2. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies SyncJob objects exist showing the sync operation completed
-3. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies AAPUser objects exist representing users from the AAP instance
+1. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies at least 5 Currency objects exist (for different currencies)
+2. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies at least 2 SyncJob objects exist (one for sync_jobs, one for parse tasks)
+3. **Given** data has been synchronized from AAP, **When** the pytest validation script runs, **Then** it verifies at least 1 AAPUser object exists representing the admin user from AAP
 4. **Given** the validation finds insufficient or incorrect objects, **When** the pytest script completes, **Then** it fails the test with clear assertion messages indicating what was expected vs actual
 
 ---
@@ -101,7 +100,7 @@ As a developer, I need automated pytest validation to verify that data synchroni
 ### Functional Requirements
 
 - **FR-001**: System MUST support manual trigger of integration tests via GitHub Actions workflow with configurable parameters (image_tag, aap_version)
-- **FR-002**: System MUST support testing of container images from both external registries (quay.io) and locally built images
+- **FR-002**: System MUST support testing of container images from both external registries (quay.io) and locally built images, with optional authentication via environment variables and anonymous fallback
 - **FR-003**: System MUST automatically setup AAP instance using aap-dev repository (versions 2.5 or 2.6)
 - **FR-004**: System MUST retrieve AAP admin password and URL automatically from aap-dev
 - **FR-005**: System MUST create test data in AAP using the existing `setup_aap.py` script (organizations, projects, job templates, jobs, users)
@@ -110,14 +109,15 @@ As a developer, I need automated pytest validation to verify that data synchroni
 - **FR-008**: System MUST start two separate containers from the dashboard image: web container (Django + Nginx) and task container (Celery worker)
 - **FR-009**: System MUST execute `setclusters` management command with AAP connection details
 - **FR-010**: System MUST execute `syncdata` management command to trigger data synchronization from AAP
-- **FR-011**: System MUST wait for task container to retrieve and parse data from AAP before validation
-- **FR-012**: System MUST validate database objects using pytest, checking counts for Currency, SyncJob, and AAPUser models
+- **FR-011**: System MUST wait for task container to retrieve and parse data from AAP before validation by polling database for SyncJob completion status every 5 seconds with 300-second timeout
+- **FR-012**: System MUST validate database objects using pytest, checking minimum counts: Currency ≥5, SyncJob ≥2, AAPUser ≥1
 - **FR-013**: System MUST support local test execution via bash script (`run_integration_test.sh`)
-- **FR-014**: System MUST provide detailed logging and error messages for debugging failed tests
+- **FR-014**: System MUST provide structured logging with phase markers ([PHASE] prefix), timing metrics for each phase, and detailed error context for debugging failed tests
 - **FR-015**: System MUST support cleanup mode to remove all resources after test completion
 - **FR-016**: System MUST support skip-aap mode to reuse existing AAP instance for faster test iterations
 - **FR-017**: System MUST capture container logs on test failure for debugging
 - **FR-018**: Test MUST complete within reasonable time (< 25 minutes total, < 20 minutes typical)
+- **FR-019**: System MUST log success indicators including object counts, sync job status, and API endpoint responses for validation and reliability tracking
 
 ### Key Entities *(include if feature involves data)*
 
@@ -181,7 +181,7 @@ As a developer, I need automated pytest validation to verify that data synchroni
 - **Internal**: Management commands (setclusters, syncdata) must be functional
 - **Internal**: Database models (Currency, SyncJob, AAPUser) must be defined
 - **Internal**: Existing docker-compose infrastructure if used
-<-- login to quay.io etc is required -->
+- **External**: Optional registry credentials via environment variables (REGISTRY_QUAY_IO_USERNAME/PASSWORD) for private images; anonymous access used as fallback for public images
 
 ## Risks & Mitigations
 
@@ -194,6 +194,16 @@ As a developer, I need automated pytest validation to verify that data synchroni
 | Disk space exhaustion | Medium - test failures | Add disk space checks before test; auto-cleanup old AAP instances; document requirements |
 | AAP API changes break setup_aap.py | High - tests fail incorrectly | Pin AAP versions; add API version detection; maintain compatibility layer |
 | Database migrations fail | High - tests unusable | Test migrations separately; add migration validation step; fail fast with clear error |
+
+## Clarifications
+
+### Session 2026-01-22
+
+- Q: What are the expected minimum counts for Currency, SyncJob, and AAPUser objects in validation? → A: Currency ≥5, SyncJob ≥2, AAPUser ≥1 (based on setup_aap.py test data)
+- Q: How should the test handle registry authentication for pulling images from quay.io? → A: Use environment variables/secrets for credentials with fallback to anonymous access (CI uses GitHub secrets, local uses optional env vars, fallback to public pull)
+- Q: Should we standardize the image reference format in examples? → A: Yes, use full registry format [registry/][namespace/]name:tag (e.g., quay.io/aap/automation-dashboard:v1.2.3, automation-dashboard:test for local)
+- Q: What logging/metrics should be captured during test execution for observability? → A: Structured logging with phase markers ([PHASE] prefix), timing metrics for each phase, error context (container logs, DB state, AAP responses), and success indicators (object counts, sync status)
+- Q: How should the test determine when data synchronization is complete? → A: Poll database for SyncJob completion status every 5 seconds, wait for status='completed', timeout after 300 seconds (5 minutes), fail with clear message on timeout or error
 
 ## Open Questions
 
