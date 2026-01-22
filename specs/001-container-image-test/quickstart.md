@@ -15,7 +15,7 @@ Updated integration test validation from **minimum threshold checks** (≥5, ≥
 |--------|-------|--------|
 | Currency | 5 | Django initialization |
 | SyncJob | 6 | 2 sync + 4 parse tasks |
-| AAPUser | 1 | Admin user |
+| AAPUser | 1 | Admin user | <-- this is not Django admin user, it is user synced from AAP instance -->
 | Organization | 2 | Test data |
 | JobTemplate | 3 | Test data |
 | Job | 4 | Test data |
