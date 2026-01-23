@@ -44,6 +44,8 @@ ENV DESCRIPTION="Red Hat Automation Platform - dashboard backend \
 
 LABEL description="$DESCRIPTION"
 
+LABEL cpe="cpe:/a:redhat:ansible_automation_platform:2.5::el9"
+
 USER root
 
 ENV LANG=en_US.UTF-8
