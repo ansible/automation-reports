@@ -160,7 +160,6 @@ As a developer, I need to cleanup AAP instances after testing to free up resourc
 - Q: Should aap-dev commit be hardcoded or configurable? → A: Use --aap-dev-version parameter accepting git commit SHA, branch name, or git tag; defaults to main branch
 - Q: What AAP logs should be captured on setup failure? → A: Container logs from all AAP containers, disk space info, port status, network connectivity checks, aap-dev console output, plus debugging guidance with inspection commands and documentation links
 - Q: Where should disk space be validated? → A: Validate available space in /tmp and current directory where aap-dev will be cloned
-- Q: What AAP logs should be captured on setup failure? → A: Container logs from all AAP containers, disk space info, port status, network connectivity checks, aap-dev console output, plus debugging guidance with inspection commands and documentation links
 
 ## Open Questions
 
