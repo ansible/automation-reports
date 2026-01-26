@@ -73,7 +73,7 @@ As a developer, I need to cleanup AAP instances after testing to free up resourc
 - **FR-002**: System MUST automatically clone/update aap-dev repository from https://github.com/ansible/aap-dev
 - **FR-003**: System MUST support --aap-dev-version parameter to specify git commit SHA, branch name, or git tag for aap-dev repository checkout (defaults to main branch if not specified)
 - **FR-004**: System MUST start AAP instance on correct port (44925 for AAP 2.5, 44926 for AAP 2.6)
-- **FR-005**: System MUST retrieve AAP admin password from ~/.aap-dev/admin_password.txt
+- **FR-005**: System MUST retrieve AAP admin password using aap-dev's make admin-password command (which reads from Kubernetes secret via kubectl)
 - **FR-006**: System MUST retrieve AAP URL from aap-dev runtime state
 - **FR-007**: System MUST validate AAP instance is running via health check endpoint (/api/gateway/v1/ping/ for AAP 2.5+, /api/v2/ping/ for AAP 2.4)
 - **FR-008**: System MUST implement health check polling strategy with 5-second interval, 600-second timeout, and 120 attempts maximum

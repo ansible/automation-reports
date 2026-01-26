@@ -11,10 +11,11 @@
 **Decision**: Use aap-dev's make targets for AAP lifecycle management
 
 **Rationale**:
-- aap-dev provides standardized make targets: `make install`, `make start`, `make stop`
-- Version selection via `AAP_VERSION` environment variable (25 or 26)
-- Automatically handles container orchestration, network setup, and port mapping
+- aap-dev provides standardized make target: `make aap` (alias for `make skaffold-dev`)
+- Version selection via `AAP_VERSION` environment variable (2.5-next or 2.6)
+- Automatically handles container orchestration, network setup, and port mapping via Skaffold
 - Well-maintained by Ansible team with documentation
+- Admin password retrieved from ~/.aap-dev/admin_password.txt via `make admin-password`
 
 **Implementation Details**:
 ```bash
@@ -25,15 +26,13 @@ cd aap-dev
 # Checkout specific version if needed
 git checkout ${AAP_DEV_VERSION:-main}
 
-# Start AAP 2.6 (default port 44926)
-export AAP_VERSION=26
-make install
-make start
+# Start AAP 2.6 (default port 44926, default version)
+export AAP_VERSION=2.6
+make aap
 
-# Start AAP 2.5 (default port 44925)
-export AAP_VERSION=25
-make install
-make start
+# Start AAP 2.5 (port 44925)
+export AAP_VERSION=2.5-next
+make aap
 ```
 
 **Alternatives Considered**:
@@ -44,24 +43,26 @@ make start
 
 ### Q2: How to retrieve AAP admin password from aap-dev?
 
-**Decision**: Parse aap-dev output files in `~/.aap-dev/` directory
+**Decision**: Use aap-dev's `make admin-password` command to retrieve password
 
 **Rationale**:
-- aap-dev stores credentials in `~/.aap-dev/admin_password.txt`
-- Also available in `~/.aap-dev/config.yml` for programmatic access
-- Consistent location across AAP versions
-- No need to parse console output or container logs
+- aap-dev provides `make admin-password` target that queries password from Kubernetes secret
+- Password is stored in K8s secret created during AAP deployment (NOT in a pre-existing file)
+- The `.tmp/admin-password` file may exist if someone cached the output via `make admin-password > .tmp/admin-password`, but it's not the source
+- Using the make target queries K8s directly and is always current
+- Consistent across AAP versions
 
 **Implementation Details**:
 ```bash
-# Read password from file
-AAP_PASSWORD=$(cat ~/.aap-dev/admin_password.txt)
-
-# Or parse from config
-AAP_PASSWORD=$(grep 'admin_password:' ~/.aap-dev/config.yml | awk '{print $2}')
+# Use aap-dev make target (queries K8s secret)
+cd aap-dev
+AAP_PASSWORD=$(make admin-password)
 
 # Username is always 'admin'
 AAP_USERNAME="admin"
+
+# Note: Do NOT read from .tmp/admin-password file - it doesn't pre-exist.
+# It's only created if someone manually runs: make admin-password > .tmp/admin-password
 ```
 
 **Alternatives Considered**:

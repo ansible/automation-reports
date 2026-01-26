@@ -124,9 +124,8 @@ export AAP_USERNAME="admin"
 1. **Clone**: `git clone https://github.com/ansible/aap-dev`
 2. **Checkout**: `git checkout ${AAP_DEV_VERSION}` (if specified)
 3. **Configure**: Set `AAP_VERSION` environment variable
-4. **Start**: Execute `make install && make start`
-// This 'make install' is implemented in aap-dev Makefile - yes or no?
-5. **Cleanup**: Execute `make stop` + remove directory
+4. **Start**: Execute `make aap` (alias for `make skaffold-dev`)
+5. **Cleanup**: Execute `make clean` (removes kind cluster) + optionally remove aap-dev directory
 
 ---
 
@@ -179,7 +178,7 @@ Clone/Update aap-dev
 (--aap-dev-version)
     ↓
 Start AAP Instance
-(make install && make start)
+(make aap)
     ↓
 Wait for Ready State
 (health check polling)
