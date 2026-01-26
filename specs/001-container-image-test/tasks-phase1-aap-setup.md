@@ -17,9 +17,9 @@
 
 **Purpose**: Create test infrastructure directory
 
-- [ ] T001 Create tests/integration/ directory
-- [ ] T002 Create tests/integration/.gitignore (ignore aap-dev/ and *.log files)
-- [ ] T003 [P] Create tests/integration/README-phase1.md with AAP setup documentation
+- [X] T001 Create tests/integration/ directory
+- [X] T002 Create tests/integration/.gitignore (ignore aap-dev/ and *.log files)
+- [X] T003 [P] Create tests/integration/README-phase1.md with AAP setup documentation
 
 ---
 
@@ -27,32 +27,32 @@
 
 **Purpose**: Core AAP setup functionality
 
-- [ ] T004 Create tests/integration/setup_aap.sh with script skeleton and argument parsing
-- [ ] T005 Implement --aap-version argument parsing (2.5 or 2.6, default 2.6)
-- [ ] T006 Implement --aap-dev-version argument parsing (git commit SHA, branch name, or tag, default main)
-- [ ] T007 Implement --skip-aap flag for reusing existing AAP instance
-- [ ] T008 Implement structured logging functions (log_phase, log_info, log_error, log_success)
-- [ ] T009 Implement prerequisites check function (validate docker/podman, git, curl availability)
-- [ ] T010 Implement disk space check function for /tmp directory (minimum 10GB free)
-- [ ] T011 Implement disk space check function for current directory (minimum 10GB free)
-- [ ] T012 Implement TCP port check function (verify 44925/44926 availability based on version)
-- [ ] T013 Implement aap-dev clone/update function (clone from https://github.com/ansible/aap-dev or update if exists)
-- [ ] T014 Implement aap-dev version checkout (git checkout to specified commit/branch/tag if --aap-dev-version provided)
-- [ ] T015 Implement AAP start function (execute aap-dev make aap with AAP_VERSION=2.6 or AAP_VERSION=2.5-next)
-- [ ] T016 Implement AAP health check function using endpoint determined by AAP_VERSION: 2.5/2.6 → /api/gateway/v1/ping/, 2.4 → /api/v2/ping/ (no discovery needed, version is known from FR-001)
-- [ ] T017 Implement health check polling (5-second interval, 600-second timeout, 120 attempts maximum)
-- [ ] T018 Implement admin password retrieval using aap-dev make admin-password command
-- [ ] T019 Implement AAP URL parsing and component extraction (protocol, address, port)
-- [ ] T020 Implement aap_access.json generation with all fields (OAuth2 fields set to null, AAP fields populated)
-- [ ] T021 Implement admin credentials validation (test login with retrieved password using curl)
-- [ ] T022 Implement environment variable export (AAP_URL, AAP_PASSWORD, AAP_VERSION, AAP_USERNAME)
-- [ ] T023 Implement skip-aap mode (validate existing AAP instance is running and reachable)
-- [ ] T024 Implement comprehensive diagnostic capture on failure (container logs, disk space, port status, network checks)
-- [ ] T025 Implement debugging guidance output (commands to inspect containers, aap-dev docs link, troubleshooting steps)
-- [ ] T026 Add timing metrics to each phase (report duration for setup steps)
-- [ ] T027 Make script executable (chmod +x setup_aap.sh)
+- [X] T004 Create tests/integration/setup_aap.sh with script skeleton and argument parsing
+- [X] T005 Implement --aap-version argument parsing (2.5 or 2.6, default 2.6)
+- [X] T006 Implement --aap-dev-version argument parsing (git commit SHA, branch name, or tag, default main)
+- [X] T007 Implement --skip-aap flag for reusing existing AAP instance
+- [X] T008 Implement structured logging functions (log_phase, log_info, log_error, log_success)
+- [X] T009 Implement prerequisites check function (validate docker/podman, git, curl availability)
+- [X] T010 Implement disk space check function for /tmp directory (minimum 10GB free)
+- [X] T011 Implement disk space check function for current directory (minimum 10GB free)
+- [X] T012 Implement TCP port check function (verify 44925/44926 availability based on version)
+- [X] T013 Implement aap-dev clone/update function (clone from https://github.com/ansible/aap-dev or update if exists)
+- [X] T014 Implement aap-dev version checkout (git checkout to specified commit/branch/tag if --aap-dev-version provided)
+- [X] T015 Implement AAP start function (execute aap-dev make aap with AAP_VERSION=2.6 or AAP_VERSION=2.5-next)
+- [X] T016 Implement AAP health check function using endpoint determined by AAP_VERSION: 2.5/2.6 → /api/gateway/v1/ping/, 2.4 → /api/v2/ping/ (no discovery needed, version is known from FR-001)
+- [X] T017 Implement health check polling (5-second interval, 600-second timeout, 120 attempts maximum)
+- [X] T018 Implement admin password retrieval using aap-dev make admin-password command
+- [X] T019 Implement AAP URL parsing and component extraction (protocol, address, port)
+- [X] T020 Implement aap_access.json generation with all fields (OAuth2 fields set to null, AAP fields populated)
+- [X] T021 Implement admin credentials validation (test login with retrieved password using curl)
+- [X] T022 Implement environment variable export (AAP_URL, AAP_PASSWORD, AAP_VERSION, AAP_USERNAME)
+- [X] T023 Implement skip-aap mode (validate existing AAP instance is running and reachable)
+- [X] T024 Implement comprehensive diagnostic capture on failure (container logs, disk space, port status, network checks)
+- [X] T025 Implement debugging guidance output (commands to inspect containers, aap-dev docs link, troubleshooting steps)
+- [X] T026 Add timing metrics to each phase (report duration for setup steps)
+- [X] T027 Make script executable (chmod +x setup_aap.sh)
 
-**Checkpoint**: setup_aap.sh can start AAP and validate it's working
+**Checkpoint**: setup_aap.sh can start AAP and validate it's working ✅
 
 ---
 
@@ -60,18 +60,18 @@
 
 **Purpose**: Clean shutdown of AAP instances
 
-- [ ] T028 Create tests/integration/cleanup_aap.sh with script skeleton
-- [ ] T029 Implement --version argument parsing (optional, cleans all versions if not specified)
-- [ ] T030 Implement --remove-aap-dev flag for removing aap-dev directory
-- [ ] T031 Implement --force flag to skip confirmation prompts
-- [ ] T032 Implement AAP shutdown function (cd aap-dev && make clean to remove kind cluster)
-- [ ] T033 Implement aap-dev directory removal (if --remove-aap-dev specified)
-- [ ] T034 Implement aap_access.json cleanup
-- [ ] T035 Implement port verification (confirm ports 44925/44926 are freed)
-- [ ] T036 Add cleanup confirmation prompt (list what will be cleaned, require --force or user confirmation)
-- [ ] T037 Make script executable (chmod +x cleanup_aap.sh)
+- [X] T028 Create tests/integration/cleanup_aap.sh with script skeleton
+- [X] T029 Implement --version argument parsing (optional, cleans all versions if not specified)
+- [X] T030 Implement --remove-aap-dev flag for removing aap-dev directory
+- [X] T031 Implement --force flag to skip confirmation prompts
+- [X] T032 Implement AAP shutdown function (cd aap-dev && make clean to remove kind cluster)
+- [X] T033 Implement aap-dev directory removal (if --remove-aap-dev specified)
+- [X] T034 Implement aap_access.json cleanup
+- [X] T035 Implement port verification (confirm ports 44925/44926 are freed)
+- [X] T036 Add cleanup confirmation prompt (list what will be cleaned, require --force or user confirmation)
+- [X] T037 Make script executable (chmod +x cleanup_aap.sh)
 
-**Checkpoint**: cleanup_aap.sh can stop AAP and free resources
+**Checkpoint**: cleanup_aap.sh can stop AAP and free resources ✅
 
 ---
 
@@ -79,13 +79,13 @@
 
 **Purpose**: Usage documentation and examples
 
-- [ ] T038 [P] Document setup_aap.sh usage in README-phase1.md (all arguments including --aap-dev-version, examples, troubleshooting)
-- [ ] T039 [P] Document cleanup_aap.sh usage in README-phase1.md (all flags including --force and --remove-aap-dev)
-- [ ] T040 [P] Add prerequisites section to README-phase1.md (docker/podman, git, curl, 10GB disk space in /tmp and current dir)
-- [ ] T041 [P] Add quick start section to README-phase1.md (TL;DR commands, common workflows)
-- [ ] T042 [P] Add aap_access.json structure reference to README-phase1.md
-- [ ] T043 [P] Add troubleshooting section to README-phase1.md (6 common issues: missing tools, disk space, port conflicts, timeout, password not found, debugging)
-- [ ] T044 [P] Add example output to README-phase1.md (show expected [PHASE] markers and success indicators)
+- [X] T038 [P] Document setup_aap.sh usage in README-phase1.md (all arguments including --aap-dev-version, examples, troubleshooting)
+- [X] T039 [P] Document cleanup_aap.sh usage in README-phase1.md (all flags including --force and --remove-aap-dev)
+- [X] T040 [P] Add prerequisites section to README-phase1.md (docker/podman, git, curl, 10GB disk space in /tmp and current dir)
+- [X] T041 [P] Add quick start section to README-phase1.md (TL;DR commands, common workflows)
+- [X] T042 [P] Add aap_access.json structure reference to README-phase1.md
+- [X] T043 [P] Add troubleshooting section to README-phase1.md (6 common issues: missing tools, disk space, port conflicts, timeout, password not found, debugging)
+- [X] T044 [P] Add example output to README-phase1.md (show expected [PHASE] markers and success indicators)
 
 **Checkpoint**: Documentation complete, developers can follow README to setup AAP
 
