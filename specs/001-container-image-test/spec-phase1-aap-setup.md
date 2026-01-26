@@ -81,6 +81,7 @@ As a developer, I need to cleanup AAP instances after testing to free up resourc
 - **FR-010**: System MUST support --cleanup mode to stop AAP instance and free resources
 - **FR-011**: System MUST capture AAP logs on setup failure for debugging
 - **FR-012**: System MUST export AAP_URL and AAP_PASSWORD as environment variables for later phases
+// generate also partial aap_access.json. Missing fields have null value.
 - **FR-013**: System MUST validate disk space before starting AAP (minimum 10GB free)
 - **FR-014**: System MUST validate required tools are available (docker/podman, git, curl)
 
