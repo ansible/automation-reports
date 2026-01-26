@@ -219,15 +219,15 @@ cd aap-dev && cat install.log
 
 **Solution**:
 ```bash
-# Check aap-dev directory
-ls -la ~/.aap-dev/
-// no such direcotry in aap-dev. Use aap-dev docs, make sure valid scripts and command are used.
+# Retrieve password from aap-dev (queries Kubernetes secret)
+cd aap-dev
+make admin-password
 
-# Manually retrieve password
-cat ~/.aap-dev/admin_password.txt
+# Or check if script already exported it
+echo $AAP_PASSWORD
 
-# Or from config
-grep admin_password ~/.aap-dev/config.yml
+# Or read from generated config
+cat ../aap_access.json | jq -r '.aap_password'
 ```
 
 ---
