@@ -75,7 +75,7 @@ As a developer, I need to cleanup AAP instances after testing to free up resourc
 - **FR-004**: System MUST start AAP instance on correct port (44925 for AAP 2.5, 44926 for AAP 2.6)
 - **FR-005**: System MUST retrieve AAP admin password using aap-dev's make admin-password command (which reads from Kubernetes secret via kubectl)
 - **FR-006**: System MUST retrieve AAP URL from aap-dev runtime state
-- **FR-007**: System MUST validate AAP instance is running via health check endpoint (/api/gateway/v1/ping/ for AAP 2.5+, /api/v2/ping/ for AAP 2.4)
+- **FR-007**: System MUST validate AAP instance is running via version-specific health check endpoint determined by AAP_VERSION (2.5/2.6 use /api/gateway/v1/ping/, 2.4 uses /api/v2/ping/)
 - **FR-008**: System MUST implement health check polling strategy with 5-second interval, 600-second timeout, and 120 attempts maximum
 - **FR-009**: System MUST provide structured logging with [PHASE] markers for AAP setup steps
 - **FR-010**: System MUST support --skip-aap mode to reuse existing AAP instance

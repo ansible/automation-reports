@@ -74,23 +74,30 @@ AAP_USERNAME="admin"
 
 ### Q3: What health check endpoint should be used for AAP readiness?
 
-**Decision**: Use `/api/v2/ping/` or `/api/gateway/v1/ping/` depending on AAP version
+**Decision**: Use version-specific endpoint determined by known AAP_VERSION
 
 **Rationale**:
+- AAP version is known from setup (FR-001, --aap-version parameter), not discovered
 - AAP 2.4: Uses `/api/v2/ping/` (AWX-style API)
 - AAP 2.5+: Uses `/api/gateway/v1/ping/` (new gateway architecture)
 - Both endpoints return 200 OK when AAP is fully ready
 - Response includes version information for validation
 - No authentication required for ping endpoints
+- Since version is known, endpoint selection is deterministic (no fallback logic needed)
 
 **Implementation Details**:
 ```bash
-# Try gateway endpoint first (AAP 2.5+)
-if curl -s -f -k "${AAP_URL}/api/gateway/v1/ping/" >/dev/null 2>&1; then
-    echo "AAP is ready (version 2.5+)"
-# Fall back to v2 endpoint (AAP 2.4)
-elif curl -s -f -k "${AAP_URL}/api/v2/ping/" >/dev/null 2>&1; then
-    echo "AAP is ready (version 2.4)"
+# Deterministic endpoint selection based on known AAP_VERSION
+if [[ "$AAP_VERSION" == "2.5-next" || "$AAP_VERSION" == "2.6" ]]; then
+    HEALTH_ENDPOINT="/api/gateway/v1/ping/"
+else
+    # AAP 2.4
+    HEALTH_ENDPOINT="/api/v2/ping/"
+fi
+
+# Check health
+if curl -s -f -k "${AAP_URL}${HEALTH_ENDPOINT}" >/dev/null 2>&1; then
+    echo "AAP is ready"
 else
     echo "AAP not ready yet"
     return 1
