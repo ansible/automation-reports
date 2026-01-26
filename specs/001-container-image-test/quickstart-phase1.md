@@ -136,6 +136,7 @@ AAP URL: http://localhost:44926
 - `AAP_URL` - Base URL
 - `AAP_PASSWORD` - Admin password
 - `AAP_VERSION` - Version code (25/26)
+// aap version is known - input param. use it
 - `AAP_USERNAME` - Always "admin"
 
 ---
@@ -221,6 +222,7 @@ cd aap-dev && cat install.log
 ```bash
 # Check aap-dev directory
 ls -la ~/.aap-dev/
+// no such direcotry in aap-dev. Use aap-dev docs, make sure valid scripts and command are used.
 
 # Manually retrieve password
 cat ~/.aap-dev/admin_password.txt
