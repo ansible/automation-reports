@@ -73,16 +73,16 @@ As a developer, I need to cleanup AAP instances after testing to free up resourc
 - **FR-002**: System MUST automatically clone/update aap-dev repository from https://github.com/ansible/aap-dev
 - **FR-003**: System MUST support --aap-dev-version parameter to specify git commit SHA, branch name, or git tag for aap-dev repository checkout (defaults to main branch if not specified)
 - **FR-004**: System MUST start AAP instance on correct port (44925 for AAP 2.5, 44926 for AAP 2.6)
-- **FR-005**: System MUST retrieve AAP admin password automatically from aap-dev output
-- **FR-006**: System MUST retrieve AAP URL automatically from aap-dev output
-- **FR-007**: System MUST validate AAP instance is running via health check endpoint (/api/v2/ping/) with continuous polling every 5 seconds until success or 600-second timeout (120 attempts maximum)
-- **FR-008**: System MUST wait for AAP to be fully ready (timeout 600 seconds)
+- **FR-005**: System MUST retrieve AAP admin password from ~/.aap-dev/admin_password.txt
+- **FR-006**: System MUST retrieve AAP URL from aap-dev runtime state
+- **FR-007**: System MUST validate AAP instance is running via health check endpoint (/api/gateway/v1/ping/ for AAP 2.5+, /api/v2/ping/ for AAP 2.4)
+- **FR-008**: System MUST implement health check polling strategy with 5-second interval, 600-second timeout, and 120 attempts maximum
 - **FR-009**: System MUST provide structured logging with [PHASE] markers for AAP setup steps
 - **FR-010**: System MUST support --skip-aap mode to reuse existing AAP instance
-- **FR-011**: System MUST support --cleanup mode to stop AAP instance and free resources
+- **FR-011**: System MUST provide cleanup script (cleanup_aap.sh) to stop AAP instance and free resources
 - **FR-012**: System MUST capture comprehensive diagnostic information on setup failure: container logs from all AAP containers, disk space info, port status, network connectivity checks, and aap-dev console output
 - **FR-013**: System MUST provide debugging guidance on failure including: commands to inspect running containers, location of aap-dev documentation, how to access aap-dev logs, and common troubleshooting steps
-- **FR-014**: System MUST export AAP_URL and AAP_PASSWORD as environment variables for later phases
+- **FR-014**: System MUST export AAP_URL, AAP_PASSWORD, AAP_VERSION, and AAP_USERNAME as environment variables for later phases
 - **FR-015**: System MUST generate aap_access.json file with structure matching setup_aap.py output: `{client_id, client_secret, access_token, refresh_token, aap_url, aap_protocol, aap_address, aap_port, aap_version, aap_password}` where Phase 1 populates `{aap_url, aap_protocol, aap_address, aap_port, aap_version, aap_password}` and sets OAuth2/token fields to null for later phases
 - **FR-016**: System MUST validate disk space before starting AAP with minimum 10GB free in /tmp directory and current directory (where aap-dev will be cloned)
 - **FR-017**: System MUST validate required tools are available (docker/podman, git, curl)
