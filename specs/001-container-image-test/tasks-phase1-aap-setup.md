@@ -38,10 +38,10 @@
 - [ ] T012 Implement TCP port check function (verify 44925/44926 availability based on version)
 - [ ] T013 Implement aap-dev clone/update function (clone from https://github.com/ansible/aap-dev or update if exists)
 - [ ] T014 Implement aap-dev version checkout (git checkout to specified commit/branch/tag if --aap-dev-version provided)
-- [ ] T015 Implement AAP start function (execute aap-dev make install && make start for version 2.5 or 2.6)
+- [ ] T015 Implement AAP start function (execute aap-dev make aap with AAP_VERSION=2.6 or AAP_VERSION=2.5-next)
 - [ ] T016 Implement AAP health check function (try /api/gateway/v1/ping/ first for 2.5+, fall back to /api/v2/ping/)
 - [ ] T017 Implement health check polling (5-second interval, 600-second timeout, 120 attempts maximum)
-- [ ] T018 Implement admin password retrieval from ~/.aap-dev/admin_password.txt
+- [ ] T018 Implement admin password retrieval using aap-dev make admin-password command
 - [ ] T019 Implement AAP URL parsing and component extraction (protocol, address, port)
 - [ ] T020 Implement aap_access.json generation with all fields (OAuth2 fields set to null, AAP fields populated)
 - [ ] T021 Implement admin credentials validation (test login with retrieved password using curl)
@@ -64,7 +64,7 @@
 - [ ] T029 Implement --version argument parsing (optional, cleans all versions if not specified)
 - [ ] T030 Implement --remove-aap-dev flag for removing aap-dev directory
 - [ ] T031 Implement --force flag to skip confirmation prompts
-- [ ] T032 Implement AAP shutdown function (cd aap-dev && make stop)
+- [ ] T032 Implement AAP shutdown function (cd aap-dev && make clean to remove kind cluster)
 - [ ] T033 Implement aap-dev directory removal (if --remove-aap-dev specified)
 - [ ] T034 Implement aap_access.json cleanup
 - [ ] T035 Implement port verification (confirm ports 44925/44926 are freed)
@@ -183,7 +183,7 @@
 - **Phase 2-4**: Future phases documented in separate spec files (spec-phase2-aap-data.md, spec-phase3-containers.md, spec-phase4-validation.md)
 - **Testing approach**: Manual verification sufficient for Phase 1. Automated tests (shellcheck, bats) may come in later phases.
 - **Health check strategy**: From research-phase1.md - try /api/gateway/v1/ping/ first (AAP 2.5+), fall back to /api/v2/ping/ (AAP 2.4)
-- **Password retrieval**: From research-phase1.md - use ~/.aap-dev/admin_password.txt (aap-dev Makefile writes it there)
+- **Password retrieval**: From research-phase1.md - use aap-dev make admin-password command (reads from Kubernetes secret)
 - **Disk validation**: From clarifications - check both /tmp (aap-dev requirement) and current directory (script outputs), 10GB minimum for each
 - **aap_access.json format**: From data-model-phase1.md - 10 fields (6 OAuth2 null, 4 AAP populated matching setup_aap.py output)
 
