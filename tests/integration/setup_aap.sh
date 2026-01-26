@@ -25,7 +25,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AAP_VERSION_ARG="2.6"
 AAP_DEV_VERSION_ARG="main"
 SKIP_AAP=false
-AAP_DEV_REPO="https://github.com/ansible/aap-dev.git"
+#AAP_DEV_REPO="https://github.com/ansible/aap-dev.git"
+AAP_DEV_REPO="git@github.com:ansible/aap-dev.git"
 AAP_DEV_DIR="${SCRIPT_DIR}/aap-dev"
 AAP_ACCESS_JSON="${SCRIPT_DIR}/aap_access.json"
 
@@ -222,6 +223,8 @@ check_all_disk_space() {
 
 check_port() {
     log_phase "Port Availability Check"
+    # TODO do not complain if already used by existing AAP instance we only try to start again
+    return 0
     
     local port
     if [[ "$AAP_VERSION_ARG" == "2.5" ]]; then
@@ -313,7 +316,7 @@ start_aap() {
         export AAP_VERSION="2.5-next"
         local expected_port=44925
     else
-        export AAP_VERSION="2.6"
+        export AAP_VERSION="2.6-next"
         local expected_port=44926
     fi
     
@@ -322,14 +325,36 @@ start_aap() {
     log_info ""
     
     # Start AAP using make aap
-    if ! make aap; then
+    # TODO if needed, podman start 26-control-plane
+    # TODO set AAP_URL before capture_diagnostics is called
+    # TODO make aap does not return control until stopped, so we need to background it or use another method
+    make aap &> aap_dev_startup.log &
+    AAP_PID=$!
+    if ! kill -0 "$AAP_PID" 2>/dev/null; then
         log_error "Failed to start AAP instance"
         capture_diagnostics
         return 1
     fi
+    log_info "AAP startup running in background (PID: $AAP_PID)"
+    log_info "Logs: $AAP_DEV_DIR/aap_dev_startup.log"
+    # wait until string "AAP-DEV is up and ready" appears in log or timeout
+    local timeout=900
+    local interval=10
+    local elapsed=0
+    while ! grep -q "AAP-DEV is up and ready" "$AAP_DEV_DIR/aap_dev_startup.log"; do
+        sleep $interval
+        elapsed=$((elapsed + interval))
+        if [ $elapsed -ge $timeout ]; then
+            log_error "AAP startup timed out after ${timeout}s"
+            capture_diagnostics
+            return 1
+        fi
+    done
+    log_info "AAP startup completed within ${elapsed}s"
     
     # Set AAP URL based on version
     export AAP_URL="http://localhost:${expected_port}"
+    #
     
     log_success "AAP start command completed"
     return 0
@@ -571,6 +596,7 @@ capture_diagnostics() {
     
     # Network connectivity
     log_info "Network connectivity:"
+    # AAP_URL: unbound variable
     curl -s -o /dev/null -w "HTTP %{http_code}\n" -k "$AAP_URL/api/v2/ping/" 2>/dev/null || log_warning "Cannot reach AAP API"
 }
 
