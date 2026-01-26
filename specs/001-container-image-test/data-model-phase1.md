@@ -159,7 +159,6 @@ export AAP_USERNAME="admin"
 Poll every 5 seconds for 600 seconds maximum:
   1. Try /api/gateway/v1/ping/ (AAP 2.5+)
   2. If fails, try /api/v2/ping/ (AAP 2.4)
-// version is known - input param. Use known version.
   3. If both fail, continue polling
   4. If timeout reached, fail with diagnostics
 ```

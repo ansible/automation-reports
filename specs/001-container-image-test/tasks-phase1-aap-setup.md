@@ -39,7 +39,7 @@
 - [ ] T013 Implement aap-dev clone/update function (clone from https://github.com/ansible/aap-dev or update if exists)
 - [ ] T014 Implement aap-dev version checkout (git checkout to specified commit/branch/tag if --aap-dev-version provided)
 - [ ] T015 Implement AAP start function (execute aap-dev make aap with AAP_VERSION=2.6 or AAP_VERSION=2.5-next)
-- [ ] T016 Implement AAP health check function (try /api/gateway/v1/ping/ first for 2.5+, fall back to /api/v2/ping/)
+- [ ] T016 Implement AAP health check function using endpoint determined by AAP_VERSION: 2.5/2.6 → /api/gateway/v1/ping/, 2.4 → /api/v2/ping/ (no discovery needed, version is known from FR-001)
 - [ ] T017 Implement health check polling (5-second interval, 600-second timeout, 120 attempts maximum)
 - [ ] T018 Implement admin password retrieval using aap-dev make admin-password command
 - [ ] T019 Implement AAP URL parsing and component extraction (protocol, address, port)
