@@ -32,6 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Show python version
@@ -61,22 +62,14 @@ jobs:
           export PYTHONPATH=$PWD/..
           pytest --cov=backend --cov-report=term-missing:skip-covered --cov-report=xml:coverage-backend.xml
 
-      - name: Get Cover
-        uses: orgoro/coverage@v3.2
+      - name: SonarCube Static Scans (on push)
+        uses: SonarSource/sonarqube-scan-action@v5
+        if: github.event_name == 'push' && startsWith(github.repository, 'ansible') && endsWith(github.repository, '/automation-reports')
+        env:
+          SONAR_TOKEN: ${{ secrets[format('{0}', vars.SONAR_TOKEN_SECRET_NAME)] }}
         with:
-            coverageFile: src/backend/coverage-backend.xml
-            token: ${{ secrets.GITHUB_TOKEN }}
-            sourceDir: src/backend
-
-      - name: Inject PR number into coverage.xml
-        if: >-
-          !cancelled()
-          && github.event_name == 'pull_request'
-        run: |
-          if [ -f "src/backend/coverage-backend.xml" ]; then
-            sed -i '2i<!-- PR ${{ github.event.pull_request.number }} -->' src/backend/coverage-backend.xml
-            echo "Injected PR number ${{ github.event.pull_request.number }} into coverage-backend.xml"
-          fi
+          args: >
+            -Dsonar.python.coverage.reportPaths=src/backend/coverage-backend.xml
 
       - name: Upload Code Coverage Report from Unit Tests
         uses: actions/upload-artifact@v4
