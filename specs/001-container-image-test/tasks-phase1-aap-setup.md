@@ -42,6 +42,7 @@
 - [X] T016 Implement AAP health check function using endpoint determined by AAP_VERSION: 2.5/2.6 → /api/gateway/v1/ping/, 2.4 → /api/v2/ping/ (no discovery needed, version is known from FR-001)
 - [X] T017 Implement health check polling (5-second interval, 600-second timeout, 120 attempts maximum)
 - [X] T018 Implement admin password retrieval using aap-dev make admin-password command
+- [X] T018 Set AAP license using aap-dev "make aap-apply-license" command
 - [X] T019 Implement AAP URL parsing and component extraction (protocol, address, port)
 - [X] T020 Implement aap_access.json generation with all fields (OAuth2 fields set to null, AAP fields populated)
 - [X] T021 Implement admin credentials validation (test login with retrieved password using curl)
