@@ -72,6 +72,31 @@ AAP_USERNAME="admin"
 
 ---
 
+### Q2.5: Does AAP require licensing for API operations?
+
+**Decision**: Apply AAP license after startup using aap-dev's make aap-apply-license command
+
+**Rationale**:
+- AAP instances require valid license for full API functionality
+- aap-dev provides `make aap-apply-license` target for entitlement
+- License must be applied after AAP is running (after health check passes)
+- Ensures test environment mirrors production licensing state
+- Without license, AAP may restrict API operations needed for testing
+
+**Implementation Details**:
+```bash
+# Apply license after AAP is confirmed running
+cd aap-dev
+make aap-apply-license
+```
+
+**Alternatives Considered**:
+- Skip licensing: Rejected - may cause API restrictions and test failures
+- Manual license file: Rejected - aap-dev provides automated solution
+- License in later phases: Rejected - should be part of AAP setup foundation
+
+---
+
 ### Q3: What health check endpoint should be used for AAP readiness?
 
 **Decision**: Use version-specific endpoint determined by known AAP_VERSION
