@@ -409,6 +409,29 @@ check_aap_health() {
 }
 
 # =============================================================================
+# License Management
+# =============================================================================
+
+apply_aap_license() {
+    log_phase "AAP License Application"
+    
+    cd "$AAP_DEV_DIR"
+    
+    log_info "Applying AAP license to enable full API functionality..."
+    
+    # Apply license using aap-dev make target
+    if ! make aap-apply-license 2>&1 | tee /tmp/aap-license.log; then
+        log_error "Failed to apply AAP license"
+        log_error "See /tmp/aap-license.log for details"
+        log_warning "AAP may have restricted API functionality without license"
+        return 1
+    fi
+    
+    log_success "AAP license applied successfully"
+    return 0
+}
+
+# =============================================================================
 # Credentials Management
 # =============================================================================
 
@@ -659,6 +682,9 @@ main() {
         
         # Health check
         check_aap_health || exit 1
+        
+        # Apply license
+        apply_aap_license || exit 1
         
         # Retrieve credentials
         retrieve_admin_password || exit 1
