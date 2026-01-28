@@ -25,6 +25,11 @@ dict_sync_schedule_1min = dict(
     rrule="DTSTART;TZID=Europe/Ljubljana:20250630T070000 FREQ=MINUTELY;INTERVAL=1",
     enabled=True,
 )
+dict_sync_schedule_10sec = dict(
+    name="Every 10 seconds sync",
+    rrule="DTSTART;TZID=Europe/Ljubljana:20250630T070000 FREQ=SECONDLY;INTERVAL=10",
+    enabled=True,
+)
 
 
 def cluster_from_dict_cluster(dict_cluster):

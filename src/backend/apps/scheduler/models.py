@@ -53,7 +53,7 @@ def _fast_forward_rrule(rrule, ref_dt=None):
     Returns a new rrule with a new dtstart
     '''
 
-    if rrule._freq not in {dateutil.rrule.HOURLY, dateutil.rrule.MINUTELY}:
+    if rrule._freq not in {dateutil.rrule.HOURLY, dateutil.rrule.MINUTELY, dateutil.rrule.SECONDLY}:
         return rrule
 
     if rrule._count:
