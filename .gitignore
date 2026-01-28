@@ -51,3 +51,7 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# i18n
+*.mo
+.i18n_built
