@@ -20,9 +20,14 @@ pop_allexport() {
 # we do "source this_script.sh"
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 pushd "$SCRIPT_DIR"
+# Load environment variables
 push_allexport
 source .env
 pop_allexport
+# Activate virtual environment
+source .venv/bin/activate
+# Set Python path
+export PYTHONPATH=$PWD/src
 popd
 
 echo DB_NAME=$DB_NAME

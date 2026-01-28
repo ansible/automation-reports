@@ -71,21 +71,23 @@ sudo dnf install python3.12-devel libpq-devel
 
 ### Common Terminal Setup
 
-Throughout this guide, you'll need to prepare your terminal environment. Here's the standard pattern:
+Throughout this guide, you'll need to prepare your terminal environment.
+This assumes you already:
+
+- created python virtual environment in .venv
+- created .env file
+
+Here's the standard pattern:
 
 ```bash
 # Navigate to project directory
 cd /path/to/automation-reports
 
-# Activate virtual environment
-source .venv/bin/activate
+# Load environment variables, activate virtual environment, set Python path
+source .env.sh
 
-# Load environment variables
-source .env
-
-# Navigate to backend and set Python path
+# Navigate to backend
 cd src/backend
-export PYTHONPATH=$PWD/..
 ```
 
 **Note:** The sections below will reference "prepare your terminal" to mean running these commands.
@@ -347,7 +349,7 @@ npx playwright test --headed
 
 If only blank page is visible at URL <http://localhost:9000/>, check browser console for errors.
 Error `Error: Missing API url` means VITE_API_URL is not set.
-Fix this by loading `.env` file content - `set -o allexport; source .env; set +o allexport`.
+Fix this by loading environ variables - `source .env.sh`.
 
 ## Performance Tuning
 
