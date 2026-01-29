@@ -347,7 +347,7 @@ jobs = [
 
 
 def create_aap_access_file(oauth2app: OAuth2App, aaptoken: AAPToken, aap_version: str):
-    aap_verssion_map = {
+    aap_version_map = {
         "24": "2.4",
         "25": "2.5",
         "26": "2.6",
@@ -367,7 +367,7 @@ def create_aap_access_file(oauth2app: OAuth2App, aaptoken: AAPToken, aap_version
         "aap_protocol": aap_proto,
         "aap_address": aap_host,
         "aap_port": aap_port,
-        "aap_version": aap_verssion_map[aap_version],
+        "aap_version": aap_version_map[aap_version],
     }
     with open("aap_access.json", "w") as ff:
         json.dump(data, ff, indent=4)
