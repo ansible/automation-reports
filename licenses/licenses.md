@@ -65,6 +65,6 @@
 | typing_extensions      | 4.15.0      | PSF-2.0                                                                                                                                        |
 | urllib3                | 2.5.0       | MIT                                                                                                                                            |
 | uvicorn                | 0.38.0      | BSD-3-Clause                                                                                                                                   |
-| weasyprint             | 66.0        | BSD License                                                                                                                                    |
+| weasyprint             | 68.0        | BSD License                                                                                                                                    |
 | webencodings           | 0.5.1       | BSD License                                                                                                                                    |
 | zopfli                 | 0.4.0       | Apache Software License                                                                                                                        |

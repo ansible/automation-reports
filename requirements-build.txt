@@ -127,9 +127,7 @@ brotli==1.2.0 \
     --hash=sha256:f8d635cafbbb0c61327f942df2e3f474dde1cff16c3cd0580564774eaba1ee13 \
     --hash=sha256:fc1530af5c3c275b8524f2e24841cbe2599d74462455e9bae5109e9ff42e9361 \
     --hash=sha256:ff09cd8c5eec3b9d02d2408db41be150d8891c5566addce57513bf546e3d6c6d
-    # via
-    #   -r requirements-pinned.txt
-    #   fonttools
+    # via fonttools
 certifi==2025.10.5 \
     --hash=sha256:0f212c2744a9bb6de0c56639a6f68afe01ecd92d91f14ae897c4fe7bbeeef0de \
     --hash=sha256:47c09d31ccf2acf0be3f701ea53595ee7e0b8fa08801c6624be771df09ae7b43
@@ -1364,9 +1362,9 @@ time-machine==2.19.0 \
     --hash=sha256:fb4897c7a5120a4fd03f0670f332d83b7e55645886cd8864a71944c4c2e5b35b \
     --hash=sha256:fe59909d95a2ef5e01ce3354fdea3908404c2932c2069f00f66dff6f27e9363e
     # via -r requirements-pinned.txt
-tinycss2==1.4.0 \
-    --hash=sha256:10c0972f6fc0fbee87c3edb76549357415e94548c1ae10ebccdea16fb404a9b7 \
-    --hash=sha256:3a49cf47b7675da0b15d0c6e1df8df4ebd96e9394bb905a5775adb0d884c5289
+tinycss2==1.5.1 \
+    --hash=sha256:3415ba0f5839c062696996998176c4a3751d18b7edaaeeb658c9ce21ec150661 \
+    --hash=sha256:d339d2b616ba90ccce58da8495a78f46e55d4d25f9fd71dfd526f07e7d53f957
     # via
     #   cssselect2
     #   weasyprint
@@ -1408,10 +1406,12 @@ uvicorn==0.38.0 \
 uwsgi==2.0.31 \
     --hash=sha256:e8f8b350ccc106ff93a65247b9136f529c14bf96b936ac5b264c6ff9d0c76257
     # via -r requirements-pinned.txt
-weasyprint==66.0 \
-    --hash=sha256:82b0783b726fcd318e2c977dcdddca76515b30044bc7a830cc4fbe717582a6d0 \
-    --hash=sha256:da71dc87dc129ac9cffdc65e5477e90365ab9dbae45c744014ec1d06303dde40
-    # via django-weasyprint
+weasyprint==68.0 \
+    --hash=sha256:447f40898b747cb44ac31a5d493d512e7441fd56e13f63744c099383bbf9cda9 \
+    --hash=sha256:c2cb40c71b50837c5971f00171c9e4078e8c9912dd7c217f3e90e068f11e8aa1
+    # via
+    #   -r requirements-pinned.txt
+    #   django-weasyprint
 webencodings==0.5.1 \
     --hash=sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78 \
     --hash=sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923
