@@ -301,6 +301,11 @@ docker exec -it aapdashboard-db-1 psql -c 'ALTER USER root CREATEDB;'
 pytest --cov=backend
 ```
 
+#### Mock tests
+
+Mock tests replace AAP HTTP responses with prerecorded responses stored as json files.
+For details see [src/backend/tests/mock_aap/README.md](src/backend/tests/mock_aap/README.md).
+
 #### Integration tests
 
 Integration test setup real AAP, fill it with know data (job templates, jobs, etc).
