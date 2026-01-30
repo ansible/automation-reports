@@ -79,9 +79,11 @@ jobs:
 
       - name: Save off PR Number
         run: echo "PR ${{ github.event.number }}" > pr_number.txt
+        if: github.event_name == 'pull_request'
 
       - name: Upload PR Number
         uses: actions/upload-artifact@v4
+        if: github.event_name == 'pull_request'
         with:
           name: pr_number
           path: pr_number.txt
