@@ -4,7 +4,7 @@ from django.conf import settings
 from backend.apps.dispatch.pool import get_auto_max_workers
 
 
-def get_dispatcherd_config(for_service: bool = False, mock_publish: bool = False):
+def get_dispatcherd_config(for_service: bool = False):
     config = {
         "version": 2,
         "service": {
@@ -59,25 +59,20 @@ def get_dispatcherd_config(for_service: bool = False, mock_publish: bool = False
         }
     }
 
-    if mock_publish:
-        config["brokers"]["noop"] = {}
-        config["publish"]["default_broker"] = "noop"
-    else:
-        config["brokers"]["pg_notify"] = {
+    config["brokers"]["pg_notify"] = {
 
-            "config": get_pg_notify_params(),
-            "sync_connection_factory": "ansible_base.lib.utils.db.psycopg_connection_from_django",
-            "channels": [
-                settings.DISPATCHER_SYNC_CHANNEL,
-                settings.DISPATCHER_PARSE_CHANNEL,
-                settings.DISPATCHER_METRICS_CHANNEL
-            ],
-            "default_publish_channel": settings.CLUSTER_HOST_ID,
-            "max_connection_idle_seconds": 5,
-            "max_self_check_message_age_seconds": 2
-        }
-
-        config["publish"]["default_broker"] = "pg_notify"
+        "config": get_pg_notify_params(),
+        "sync_connection_factory": "ansible_base.lib.utils.db.psycopg_connection_from_django",
+        "channels": [
+            settings.DISPATCHER_SYNC_CHANNEL,
+            settings.DISPATCHER_PARSE_CHANNEL,
+            settings.DISPATCHER_METRICS_CHANNEL
+        ],
+        "default_publish_channel": settings.CLUSTER_HOST_ID,
+        "max_connection_idle_seconds": 5,
+        "max_self_check_message_age_seconds": 2
+    }
+    config["publish"]["default_broker"] = "pg_notify"
 
     if for_service:
         config["producers"] = {
