@@ -3,7 +3,7 @@ PyJWT==2.10.1
 ansible-runner==2.4.2
 channels==4.3.1
 channels_redis==4.3.0
-dispatcherd[pg_notify]==2025.5.21
+dispatcherd[pg_notify]==2026.1.27
 django-ansible-base==2025.10.20
 django-cors-headers==4.9.0
 django-filter==25.2

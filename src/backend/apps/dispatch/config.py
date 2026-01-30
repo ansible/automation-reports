@@ -16,7 +16,6 @@ def get_dispatcherd_config(for_service: bool = False):
                 "node_id": settings.CLUSTER_HOST_ID
             },
             "metrics_kwargs": {
-                "log_level": "debug"
             },
             "process_manager_kwargs": {
                 "preload_modules": [

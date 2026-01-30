@@ -37,6 +37,7 @@
     network: host
     secrets: '{{ _common_secrets }}'
     volume: '{{ _task_volumes }}'
+    stop_timeout: 60
     security_opt: ['label=disable']
     env: '{{ __task_env }}'
     label:
