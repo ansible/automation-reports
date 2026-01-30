@@ -67,7 +67,7 @@ class TestDispatcherTask:
         cluster = Cluster.objects.get()
 
         # call_command("run_dispatcher")
-        # config = get_dispatcherd_config(for_service=True)
+        # config = get_dispatcherd_config()
         # dispatcher_setup(config=config)
         # run_service() #
         

@@ -42,7 +42,7 @@ class Command(BaseCommand):
             raise CommandError('Dispatcher is not running locally')
 
     def handle(self, *arg, **options):
-        config = get_dispatcherd_config(for_service=True)
+        config = get_dispatcherd_config()
         dispatcher_setup(config=config)
         if options.get('status'):
             ctl = get_control_from_settings()
