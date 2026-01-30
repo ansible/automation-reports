@@ -4,7 +4,7 @@ from django.conf import settings
 from backend.apps.dispatch.pool import get_auto_max_workers
 
 
-def get_dispatcherd_config(for_service: bool = False):
+def get_dispatcherd_config():
     config = {
         "version": 2,
         "service": {
@@ -74,11 +74,10 @@ def get_dispatcherd_config(for_service: bool = False):
     }
     config["publish"]["default_broker"] = "pg_notify"
 
-    if for_service:
-        config["producers"] = {
-            "ScheduledProducer": {"task_schedule": settings.DISPATCHER_SCHEDULE},
-            "OnStartProducer": {"task_list": {"backend.apps.dispatch.tasks.dispatch_startup": {}}},
-            "ControlProducer": {}
-        }
+    config["producers"] = {
+        "ScheduledProducer": {"task_schedule": settings.DISPATCHER_SCHEDULE},
+        "OnStartProducer": {"task_list": {"backend.apps.dispatch.tasks.dispatch_startup": {}}},
+        "ControlProducer": {}
+    }
 
     return config
