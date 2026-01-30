@@ -12,6 +12,7 @@
 # Run:
 #   ./setup_aap.py
 
+import json
 import logging
 import time
 from typing import NamedTuple
@@ -30,6 +31,17 @@ class ObjectSpec(NamedTuple):
     data: dict
     expected: dict = dict()
     extra: dict = dict()
+
+
+class OAuth2App(NamedTuple):
+    id: int
+    client_id: str
+    client_secret: str
+
+
+class AAPToken(NamedTuple):
+    access_token: str
+    refresh_token: str
 
 
 class AAP:
@@ -121,15 +133,55 @@ class AAP:
         # "/api/gateway/v1/tokens/" has no refresh_token, and no OAuth2 app is associated.
         print(f"access_token={self.access_token}")
 
+    def create_oauth2_app(self, description: str, organization_id: int, redirect_uris: str) -> OAuth2App:
+        spec = ObjectSpec({
+            "name": "ad-app",
+            "redirect_uris": "https://aap-ad:8447/auth-callback",
+            "description": description,
+            "organization": organization_id,
+            "app_url": "",
+            "client_type": "confidential",
+            "authorization_grant_type": "authorization-code"
+        })
+        response = self.post("/api/gateway/v1/applications/", spec)
+        data = response.json()
+        # print(f"OAuth2 app created: {data}")
+        oauth2app = OAuth2App(
+            id=data["id"],
+            client_id=data["client_id"],
+            client_secret=data["client_secret"],
+        )
+        return oauth2app
+
+    def create_oauth2_app_token(self, oauth2app: OAuth2App, user_id: int) -> AAPToken:
+        spec = ObjectSpec({
+            "description": "ad-aap-token",
+            "scope": "read",
+            "application": oauth2app.id,
+            "user": user_id,
+        })
+        response = self.post("/api/gateway/v1/tokens/", spec)
+        data = response.json()
+        # print(f"OAuth2 app token created: {data}")
+        aaptoken = AAPToken(
+            access_token=data["token"],
+            refresh_token=data["refresh_token"],
+        )
+        print(f"AAPToken created: {aaptoken}")
+        return aaptoken
+
+
 aap_version = os.environ["AAP_VERSION"]
 default_org_id = 1
+admin_user_id = 2
 demo_credential_id = 1
 demo_inventory_id = 1
 org2_id_gw = 2  # id in AAP gateway api
 org2_id_cnt = 2  # id in AAP controller api
 if aap_version in ["26"]:
-    # AAP 2.6
-    default_execution_environment_id = 4
+    # AAP 2.6, containerised deployment - id is 4
+    # AAP 2.6, aap-dev development deployment - id is 2
+    default_execution_environment_id = 2
 elif aap_version in ["25", "24"]:
     # AAP 2.4, 2.5
     default_execution_environment_id = 2
@@ -294,10 +346,41 @@ jobs = [
 ]
 
 
+def create_aap_access_file(oauth2app: OAuth2App, aaptoken: AAPToken, aap_version: str):
+    aap_version_map = {
+        "24": "2.4",
+        "25": "2.5",
+        "26": "2.6",
+    }
+    aap_proto = os.environ["AAP_URL"].split(":")[0]
+    aap_host_port = os.environ["AAP_URL"].replace("https://", "").replace("http://", "")
+    assert "/" not in aap_host_port
+    aap_host = aap_host_port.split(":")[0]
+    aap_port = aap_host_port.split(":")[1]
+
+    data = {
+        "client_id": oauth2app.client_id,
+        "client_secret": oauth2app.client_secret,
+        "access_token": aaptoken.access_token,
+        "refresh_token": aaptoken.refresh_token,
+        "aap_url": os.environ["AAP_URL"],
+        "aap_protocol": aap_proto,
+        "aap_address": aap_host,
+        "aap_port": aap_port,
+        "aap_version": aap_version_map[aap_version],
+    }
+    with open("aap_access.json", "w") as ff:
+        json.dump(data, ff, indent=4)
+
+
 def main():
     aap = AAP.get_instance()
     aap.login()
     # aap.create_access_token("bla", "write")
+    oauth2app = aap.create_oauth2_app("ad-app-desc", default_org_id, "https://aap-ad:8447/auth-callback")
+    token =aap.create_oauth2_app_token(oauth2app, admin_user_id)
+
+    create_aap_access_file(oauth2app, token, aap_version)
 
     assert aap_version == aap.version
     if aap.version in ["25", "26"]:

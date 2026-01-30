@@ -1,0 +1,11 @@
+# AAP development environment
+aap-dev/
+
+# Generated configuration
+aap_access.json
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp

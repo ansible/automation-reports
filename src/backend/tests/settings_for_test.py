@@ -2,9 +2,6 @@
 import uuid
 from backend.django_config.settings import *
 
-# Turn off task submission, because sqlite3 does not have pg_notify
-DISPATCHER_MOCK_PUBLISH = True
-
 CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
                       'LOCATION': 'unique-{}'.format(str(uuid.uuid4()))}}
 TEST_DATABASE_PREFIX = 'test'
@@ -29,6 +26,10 @@ DATABASES = {
 }
 
 LOG_LEVEL = 'ERROR'
+
+# Use Redis via TCP instead of Unix socket for tests
+BROKER_URL = 'redis://127.0.0.1:6379/0'
+
 # Default Time taken to manually execute automation (min)
 DEFAULT_TIME_TAKEN_TO_MANUALLY_EXECUTE_MINUTES = 60
 

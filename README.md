@@ -99,7 +99,7 @@ First, start the PostgreSQL database in Docker:
 ```bash
 cp -i .env.example .env
 source .env
-(cd compose; docker compose --project-directory .. -f compose.yml up --build db)
+(cd compose; docker compose --project-directory .. -f compose.yml up --build db redis)
 ```
 
 ### Migrations and superuser
@@ -286,6 +286,8 @@ python manage.py run_dispatcher --cancel <task_uuid>
 
 ### Tests
 
+#### Unit tests
+
 Run backend tests in a **new terminal**. Prepare your terminal, then run:
 
 ```bash
@@ -298,6 +300,17 @@ docker exec -it aapdashboard-db-1 psql -c 'ALTER USER root CREATEDB;'
 # Run tests with coverage
 pytest --cov=backend
 ```
+
+#### Mock tests
+
+Mock tests replace AAP HTTP responses with prerecorded responses stored as json files.
+For details see [src/backend/tests/mock_aap/README.md](src/backend/tests/mock_aap/README.md).
+
+#### Integration tests
+
+Integration test setup real AAP, fill it with know data (job templates, jobs, etc).
+Also OAuth2 app and token are used in this test.
+For details see [tests/integration/README-short.md](tests/integration/README-short.md).
 
 ### Requirements Management
 

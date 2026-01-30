@@ -22,10 +22,36 @@ services:
        - type: volume
          source: postgres-data
          target: /var/lib/psql/data
+       - type: bind
+         source: ./compose/init-db.sh
+         target: /usr/share/container-scripts/postgresql/start/10-grant-createdb.sh
+         read_only: true
+         bind:
+           create_host_path: false
+
+  redis:
+    image: registry.redhat.io/rhel8/redis-6:latest
+    user: "1001:0"
+    ports:
+      - "6379:6379"
+    volumes:
+      - type: bind
+        source: ./compose/redis.conf
+        target: /etc/redis.conf
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   backend:
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     build:
       context: ./

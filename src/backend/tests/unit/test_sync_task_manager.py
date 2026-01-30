@@ -115,7 +115,7 @@ class TestSyncTaskManager:
         job.refresh_from_db()
         assert job.status == JobStatusChoices.PENDING
 
-        config = get_dispatcherd_config(for_service=True, mock_publish=True)
+        config = get_dispatcherd_config(for_service=True)
         dispatcher_setup(config=config)
 
         # 4. Run SyncTaskManager to process PENDING jobs (sets WAITING, triggers celery task)
