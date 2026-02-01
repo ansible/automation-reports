@@ -4,6 +4,9 @@ import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
+import i18next from "eslint-plugin-i18next";
+import globals from "globals";
+
 
 export default defineConfig([
   {
@@ -15,7 +18,7 @@ export default defineConfig([
       parser: typescriptParser,
       parserOptions: {
         project: "./tsconfig.json",
-        tsconfigRootDir: ".",
+        tsconfigRootDir: import.meta.dirname,
         ecmaVersion: 2021,
         sourceType: "module",
         ecmaFeatures: {
@@ -23,25 +26,20 @@ export default defineConfig([
         },
       },
       globals: {
-        window: "readonly",
-        describe: "readonly",
-        test: "readonly",
-        expect: "readonly",
-        it: "readonly",
-        process: "readonly",
-        document: "readonly",
+        ...globals.browser,
+        ...globals.node,
+        ...globals.jest,
         insights: "readonly",
         shallow: "readonly",
         render: "readonly",
         mount: "readonly",
-        setTimeout: "readonly",
-        clearTimeout: "readonly",
       },
     },
     plugins: {
       "@typescript-eslint": typescriptEslint,
       react,
       "react-hooks": reactHooks,
+      i18next,
     },
     settings: {
       react: {
@@ -62,6 +60,15 @@ export default defineConfig([
       "import/no-unresolved": "off",
       "import/extensions": "off",
       "react/prop-types": "off",
+      "i18next/no-literal-string": [
+        "error",
+        {
+          mode: "jsx-only",
+          "jsx-attributes": {
+            include: ["label", "placeholder", "helperText", "title", "aria-label"]
+          }
+        }
+      ],
     },
   },
   {

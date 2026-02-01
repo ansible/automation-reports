@@ -33,8 +33,10 @@ import { useViewsById } from '@app/Store/commonSelectors';
 import { useRef } from 'react';
 import { useAuthStore } from '@app/Store/authStore';
 import { toasterFromError } from '@app/Components/Toaster';
+import { useTranslation } from 'react-i18next';
 
 export const Filters: React.FunctionComponent<FilterComponentProps> = (props: FilterComponentProps) => {
+  const { t } = useTranslation();
   const filterOptionsList = useFilterStore((state) => state.filterOptions);
   const filterChoicesList = useFilterChoicesData();
   const filterLoadingData = useFilterLoadingData();
@@ -290,7 +292,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       <MultiChoiceDropdown
         selections={selectedOption ? filterSelection[selectedOption] : []}
         options={selectedOption ? filterChoicesList[selectedOption] : []}
-        label={selectedOption ? 'Filter by ' + filterOptionsDict[selectedOption].value + 's' : ''}
+        label={selectedOption ? t('Filter by {{type}}', { type: filterOptionsDict[selectedOption].value + 's' }) : ''}
         loading={selectedOption ? filterLoadingData[selectedOption] : false}
         onSelect={onMultiSelectionChanged}
         onSearch={selectedOption ? searchOptions[selectedOption] : undefined}
@@ -311,7 +313,7 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
       onChange={onDateRangeChange}
       dateFrom={filterSelection.start_date}
       dateTo={filterSelection.end_date}
-      label={'Duration'}
+      label={t('Duration')}
     ></DateRangePicker>
   );
 
@@ -341,10 +343,10 @@ export const Filters: React.FunctionComponent<FilterComponentProps> = (props: Fi
           filterSelection.job_template.length > 0 ||
           filterSelection.label.length > 0 ||
           filterSelection.project.length > 0) && (
-          <Button variant="link" className={'pf-v6-u-mb-md'} onClick={() => clearFilters()} isInline>
-            Clear all filters
-          </Button>
-        )}
+            <Button variant="link" className={'pf-v6-u-mb-md'} onClick={() => clearFilters()} isInline>
+              {t('Clear all filters')}
+            </Button>
+          )}
       </ToolbarItem>
     </ToolbarGroup>
   );

@@ -13,8 +13,10 @@ import {
 } from '@patternfly/react-charts/victory';
 import { AnimatePropTypeInterface } from 'victory-core';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
+import { useTranslation } from 'react-i18next';
 
 export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {
+  const { t } = useTranslation();
   const chartData = generateChartData(props.chartData);
   const [useAnimation, setUseAnimation] = React.useState<boolean | AnimatePropTypeInterface>(false);
 
@@ -27,8 +29,8 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
       <Card style={{ height: 'inherit' }}>
         <CardTitle>
           <DashboardTotals
-            title={'Number of hosts jobs are running on'}
-            tooltip={'This is the total number of hosts that jobs are executed upon.'}
+            title={t('Number of hosts jobs are running on')}
+            tooltip={t('This is the total number of hosts that jobs are executed upon.')}
             infoIcon={true}
             result={props.value} />
         </CardTitle>
@@ -36,8 +38,8 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
           <div className={`pf-v6-u-h-initial pf-v6-u-w-100 host-chart ${chartData.items.length === 0 && 'no-data'}`}>
             <Chart
               height={250}
-              ariaDesc="Number of hosts jobs are running on"
-              ariaTitle="Number of hosts jobs are running on"
+              ariaDesc={t('Number of hosts jobs are running on')}
+              ariaTitle={t('Number of hosts jobs are running on')}
               containerComponent={
                 <ChartVoronoiContainer
                   labels={({ datum }) => `${formatNumber(datum?.y)}`}

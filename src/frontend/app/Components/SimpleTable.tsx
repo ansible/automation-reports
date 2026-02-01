@@ -3,6 +3,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import '../styles/table.scss';
 import { ColumnProps } from '@app/Types';
 import { formatNumber } from '@app/Utils';
+import { useTranslation } from 'react-i18next';
 
 interface TableProps {
   columns: ColumnProps[];
@@ -10,6 +11,8 @@ interface TableProps {
 }
 
 export const SimpleTable: React.FunctionComponent<TableProps> = (props) => {
+  const { t } = useTranslation();
+
   return (
     <>
       <Table className={'top-table'}>
@@ -47,7 +50,7 @@ export const SimpleTable: React.FunctionComponent<TableProps> = (props) => {
                 style={{ textAlign: 'center' }}
                 className="pf-v6-u-font-size-xl pf-v6-u-font-weight-bold pf-v6-u-p-2xl"
               >
-                No data available
+                {t('No data available')}
               </Td>
             </Tr>
           )}

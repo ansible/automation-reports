@@ -4,10 +4,12 @@ import { useAuthStore } from '@app/Store/authStore';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { AppSettings } from '@app/Types/AuthTypes';
+import { useTranslation } from 'react-i18next';
 import logo from '../../assets/images/logo.svg';
 
 
 export const Login: React.FunctionComponent = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const fetchAppSettings = useAuthStore((state) => state.fetchAppSettings);
@@ -19,7 +21,7 @@ export const Login: React.FunctionComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const defaultErrorMessage = 'Something went wrong during authorization. Please contact your system administrator.';
+  const defaultErrorMessage = t('Something went wrong during authorization. Please contact your system administrator.');
 
   const [errorMessage, seterrorMessage] = useState('false');
 
@@ -32,7 +34,7 @@ export const Login: React.FunctionComponent = () => {
       navigate('/');
     }).catch((e) => {
       seterrorMessage((
-        e?.message ? e.message + ' Please contact your system administrator.' : defaultErrorMessage));
+        e?.message ? e.message + ' ' + t('Please contact your system administrator.') : defaultErrorMessage));
     }).finally(() => {
       setLoading(false);
     });
@@ -53,7 +55,7 @@ export const Login: React.FunctionComponent = () => {
         handleLogin(code);
       } else {
         setLoading(false);
-        seterrorMessage('Authorization code is missing');
+        seterrorMessage(t('Authorization code is missing'));
       }
       initialized.current = true;
     }
@@ -63,12 +65,12 @@ export const Login: React.FunctionComponent = () => {
     <>
       <LoginPage
         brandImgSrc={logo}
-        brandImgAlt="Logo"
-        loginTitle="Log in to your account"
+        brandImgAlt={t('Logo')}
+        loginTitle={t('Log in to your account')}
       >
         {loading ? (
           <div className="pf-v6-l-flex pf-m-justify-content-center pf-v6-u-py-md">
-            <Spinner className="spinner" aria-label="Loader" />
+            <Spinner className="spinner" aria-label={t('Loader')} />
           </div>
         ) : error ? (
           <Alert variant="danger" isInline title={errorMessage} />
@@ -78,7 +80,7 @@ export const Login: React.FunctionComponent = () => {
             className="btn-pdf pf-v6-u-ml-auto-on-xl pf-v6-u-ml-0"
             variant="primary"
           >
-            Login with {appSettings?.name}
+            {t('Login with {{provider}}', { provider: appSettings?.name })}
           </Button>
         )}
       </LoginPage>

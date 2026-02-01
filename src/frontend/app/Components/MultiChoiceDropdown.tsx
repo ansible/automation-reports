@@ -14,10 +14,12 @@ import {
 } from '@patternfly/react-core';
 import { MultiChoiceDropdownProps, baseDropDownDefaultProps, FilterOptionWithId } from '@app/Types';
 import { deepClone } from '@app/Utils';
+import { useTranslation } from 'react-i18next';
 
 export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownProps> = (
   props: MultiChoiceDropdownProps
 ) => {
+  const { t } = useTranslation();
   props = { ...baseDropDownDefaultProps, ...props };
   const searchInput = React.useRef<HTMLInputElement>(null);
   const selectContainerRef = React.useRef<HTMLDivElement>(null);
@@ -85,7 +87,7 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
         <SearchInput
           ref={searchInput}
           value={searchValue}
-          aria-label="Filter dropdown items"
+          aria-label={t('Filter dropdown items')}
           onChange={(_event, value) => onSearch(value)}
         />
       </MenuSearchInput>
@@ -136,12 +138,12 @@ export const MultiChoiceDropdown: React.FunctionComponent<MultiChoiceDropdownPro
           })}
           {options.length === 0 && (
             <MenuItem isDisabled key={'no result'}>
-              No results found
+              {t('No results found')}
             </MenuItem>
           )}
           {props.loading && (
             <div className={'dropdown-loader'}>
-              <Spinner className={'spinner'} diameter="20px" aria-label="Loader" />
+              <Spinner className={'spinner'} diameter="20px" aria-label={t('Loader')} />
             </div>
           )}
         </MenuList>

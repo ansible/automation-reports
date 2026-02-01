@@ -1,12 +1,14 @@
 import * as React from 'react';
 import { BaseDropdown } from '@app/Components/BaseDropdown';
-import useCommonStore  from '@app/Store/commonStore';
+import useCommonStore from '@app/Store/commonStore';
+import { useTranslation } from 'react-i18next';
 
 type ViewSelectorProps = {
   onSelect: (itemId: string | number | null) => void;
 };
 
 const ViewSelector: React.FunctionComponent<ViewSelectorProps> = (props: ViewSelectorProps) => {
+  const { t } = useTranslation();
   const viewChoices = useCommonStore((state) => state.filterSetOptions);
   const selectedItem = useCommonStore((state) => state.selectedView);
   const setView = useCommonStore((state) => state.setView);
@@ -22,7 +24,7 @@ const ViewSelector: React.FunctionComponent<ViewSelectorProps> = (props: ViewSel
       props.onSelect(null);
     }
   };
-  
+
 
   return (
     <BaseDropdown
@@ -33,7 +35,7 @@ const ViewSelector: React.FunctionComponent<ViewSelectorProps> = (props: ViewSel
       onSelect={onSelect}
       idKey={'id'}
       valueKey={'name'}
-      placeholder={'Select a Report'}
+      placeholder={t('Select a Report')}
       nullable={true}
     ></BaseDropdown>
   );
