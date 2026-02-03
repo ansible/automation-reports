@@ -387,9 +387,9 @@ class TestParser:
     ])
     def test_update_project(self, cluster, cluster_sync_data, projects, expected):
         parser = DataParser(cluster_sync_data.id)
-        assert Project.objects.count() == 2
+        assert Project.objects.count() == 3
         project = parser.project
-        assert Project.objects.count() == 2
+        assert Project.objects.count() == 3
         for key, value in expected.items():
             assert getattr(project, key) == value
 

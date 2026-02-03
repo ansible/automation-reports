@@ -91,6 +91,7 @@ def projects(cluster):
     projects = [
         Project(name="Project A", cluster=cluster, external_id=1),
         Project(name="Project B", cluster=cluster, external_id=2),
+        Project(name="Project C", cluster=cluster, external_id=3),
     ]
     return Project.objects.bulk_create(projects)
 
@@ -174,6 +175,29 @@ def jobs(
             project=Project.objects.get(name="Project A"),
             cluster=cluster,
             external_id=1)
+
+        # Third job - git project checkout failed
+        # The values might be wrong here, please check real AAP.
+        , Job(
+            type=JobTypeChoices.JOB,
+            launch_type=JobLaunchTypeChoices.MANUAL,
+            name="Job Template C",
+            description="",
+            organization=Organization.objects.get(name="Organization A"),
+            instance_group=InstanceGroup.objects.get(name="Instance Group A"),
+            execution_environment=ExecutionEnvironment.objects.get(name="Execution Environment"),
+            inventory=Inventory.objects.get(name="Inventory A"),
+            job_template=JobTemplate.objects.get(name="Job Template C"),
+            launched_by=AAPUser.objects.get(name="AAP User"),
+            status=JobStatusChoices.FAILED, # or ERROR ?
+            started=None,
+            finished=None,
+            elapsed=0,
+            failed=True,
+            num_hosts=2,
+            project=Project.objects.get(name="Project C"),
+            cluster=cluster,
+            external_id=1)  # TODO check is 1 correct?
     ]
     return Job.objects.bulk_create(jobs)
 
@@ -203,6 +227,7 @@ def host_summaries(jobs, hosts):
     created2 = datetime.datetime.strptime('2025-02-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC'))
     job1 = Job.objects.get(name="Job Template A")
     job2 = Job.objects.get(name="Job Template B")
+    job3 = Job.objects.get(name="Job Template C")
     host_1 = Host.objects.get(name="Host A")
     host_2 = Host.objects.get(name="Host B")
     host_3 = Host.objects.get(name="Host C")
@@ -242,6 +267,14 @@ def host_summaries(jobs, hosts):
             host_name=host_3.name,
             created=created2,
             modified=created2
+        )
+
+        , JobHostSummary(
+            job=job3,
+            host=host_3,
+            host_name=host_3.name,
+            created=created,
+            modified=created
         )
     ]
 
@@ -450,6 +483,63 @@ def api_jobs(api_organizations_existing, api_job_templates_existing):
             "elapsed": 8.263,
             "failed": False,
             "status": "successful",
+            "job_type": "run",
+            "launch_type": "manual"
+        },
+        # Job failed, git project checkout failed.
+        # Finished and started are null.
+        # The values might be wrong here, please check real AAP.
+        {
+            "id": 1,
+            "type": "job",
+            "name": "Job Template C",
+            "description": "",
+            "launched_by": {
+                "id": 1,
+                "name": "AAP User",
+                "type": "user",
+            },
+            "summary_fields": {
+                "organization": api_organizations_existing[0],
+                "job_template": api_job_templates_existing[2],
+                "inventory": {
+                    "id": 1,
+                    "name": "Inventory A",
+                    "description": "Description for inventory A",
+                },
+                "execution_environment": {
+                    "id": 1,
+                    "name": "Execution Environment",
+                    "description": "Execution Environment description",
+                },
+                "instance_group": {
+                    "id": 1,
+                    "name": "Instance Group A",
+                    "is_container_group": False,
+                },
+                "labels": {
+                    "count": 1,
+                    "results": [
+                        {
+                            "id": 1,
+                            "name": "Label A",
+                        }
+                    ]
+                },
+                "project": {
+                    "id": 3,
+                    "name": "Project C",
+                    "scm_type": "",
+                    "description": "",
+                }
+            },
+            "started": None,
+            "finished": None,
+            "created": "2025-04-05T18:30:02.730338Z",
+            "modified": "2025-04-05T18:30:03.739997Z",
+            "elapsed": 0.0,
+            "failed": True,
+            "status": "failed",
             "job_type": "run",
             "launch_type": "manual"
         }
