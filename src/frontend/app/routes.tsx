@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { Dashboard } from '@app/Dashboard';
 import { Login } from '@app/Components';
 import { useAuthStore } from '@app/Store/authStore';

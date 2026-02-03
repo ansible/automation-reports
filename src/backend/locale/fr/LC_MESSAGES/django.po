@@ -1,0 +1,325 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-01-26 09:11+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+#: apps/clusters/management/commands/setclusters.py:27
+msgid ""
+"Valid DTSTART required in rrule. Value should start with: "
+"DTSTART:YYYYMMDDTHHMMSSZ"
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:29
+msgid ""
+"DTSTART cannot be a naive datetime.  Specify ;TZINFO= or YYYYMMDDTHHMMSSZZ."
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:31
+msgid "Multiple DTSTART is not supported."
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:33
+msgid "EXDATE not allowed in rrule."
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:35
+msgid "RDATE not allowed in rrule."
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:38
+msgid "INTERVAL required in rrule"
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:40
+msgid "SECONDLY is not supported"
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:42
+msgid "BYDAY with numeric prefix not supported"
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:44
+msgid "RRULE may not contain both COUNT and UNTIL"
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:49
+msgid "COUNT > 999 is unsupported"
+msgstr ""
+
+#: apps/clusters/management/commands/setclusters.py:56
+msgid "rrule parsing failed validation: {}"
+msgstr ""
+
+#: apps/clusters/models.py:46
+msgid "Protocol"
+msgstr ""
+
+#: apps/clusters/models.py:47
+msgid "Address"
+msgstr ""
+
+#: apps/clusters/models.py:48
+msgid "Port"
+msgstr ""
+
+#: apps/clusters/models.py:49
+msgid "Access Token"
+msgstr ""
+
+#: apps/clusters/models.py:50
+msgid "Refresh Token"
+msgstr ""
+
+#: apps/clusters/models.py:51
+msgid "Client ID"
+msgstr ""
+
+#: apps/clusters/models.py:52
+msgid "Client Secret"
+msgstr ""
+
+#: apps/clusters/models.py:53
+msgid "Verify SSL"
+msgstr ""
+
+#: apps/clusters/models.py:58
+msgid "AAP Version"
+msgstr ""
+
+#: apps/clusters/models.py:157
+msgid "Past year"
+msgstr ""
+
+#: apps/clusters/models.py:158
+msgid "Past 6 months"
+msgstr ""
+
+#: apps/clusters/models.py:159
+msgid "Past 3 months"
+msgstr ""
+
+#: apps/clusters/models.py:160
+msgid "Past month"
+msgstr ""
+
+#: apps/clusters/models.py:161
+msgid "Year to date"
+msgstr ""
+
+#: apps/clusters/models.py:162
+msgid "Quarter to date"
+msgstr ""
+
+#: apps/clusters/models.py:163
+msgid "Month to date"
+msgstr ""
+
+#: apps/clusters/models.py:164
+msgid "Past 3 years"
+msgstr ""
+
+#: apps/clusters/models.py:165
+msgid "Past 2 years"
+msgstr ""
+
+#: apps/clusters/models.py:166
+msgid "Custom"
+msgstr ""
+
+#: apps/clusters/models.py:255
+msgid "New"
+msgstr ""
+
+#: apps/clusters/models.py:256
+msgid "Pending"
+msgstr ""
+
+#: apps/clusters/models.py:257
+msgid "Waiting"
+msgstr ""
+
+#: apps/clusters/models.py:258
+msgid "Running"
+msgstr ""
+
+#: apps/clusters/models.py:259
+msgid "Successful"
+msgstr ""
+
+#: apps/clusters/models.py:260
+msgid "Failed"
+msgstr ""
+
+#: apps/clusters/models.py:261
+msgid "Error"
+msgstr ""
+
+#: apps/clusters/models.py:262
+msgid "Canceled"
+msgstr ""
+
+#: apps/clusters/models.py:266
+msgid "Job"
+msgstr ""
+
+#: apps/clusters/models.py:267
+msgid "Playbook Run"
+msgstr ""
+
+#: apps/clusters/models.py:271 apps/clusters/models.py:636
+msgid "Manual"
+msgstr ""
+
+#: apps/clusters/models.py:272
+msgid "Relaunch"
+msgstr ""
+
+#: apps/clusters/models.py:273
+msgid "Callback"
+msgstr ""
+
+#: apps/clusters/models.py:274
+msgid "Scheduled"
+msgstr ""
+
+#: apps/clusters/models.py:275
+msgid "Dependency"
+msgstr ""
+
+#: apps/clusters/models.py:276
+msgid "Workflow"
+msgstr ""
+
+#: apps/clusters/models.py:277
+msgid "Webhook"
+msgstr ""
+
+#: apps/clusters/models.py:278
+msgid "Sync"
+msgstr ""
+
+#: apps/clusters/models.py:279
+msgid "SCM Update"
+msgstr ""
+
+#: apps/clusters/models.py:283
+msgid "Run"
+msgstr ""
+
+#: apps/clusters/models.py:284
+msgid "Check"
+msgstr ""
+
+#: apps/clusters/models.py:285
+msgid "Scan"
+msgstr ""
+
+#: apps/clusters/models.py:420
+msgid "Time taken to manually execute (minutes)"
+msgstr ""
+
+#: apps/clusters/models.py:421
+msgid "Average time in minutes to manually execute this job"
+msgstr ""
+
+#: apps/clusters/models.py:426
+msgid "Time taken to create automation (minutes)"
+msgstr ""
+
+#: apps/clusters/models.py:427
+msgid "Average time in minutes to create this automation"
+msgstr ""
+
+#: apps/clusters/models.py:637
+msgid "Automated"
+msgstr ""
+
+#: apps/clusters/models.py:651
+msgid "Value"
+msgstr ""
+
+#: apps/clusters/models.py:652
+msgid "Cost value"
+msgstr ""
+
+#: apps/clusters/models.py:658
+msgid "Type"
+msgstr ""
+
+#: apps/clusters/models.py:659
+msgid "Cost type (manual or automated)"
+msgstr ""
+
+#: apps/scheduler/models.py:127
+msgid "Enables processing of this schedule."
+msgstr ""
+
+#: apps/scheduler/models.py:128
+msgid "The first occurrence of the schedule occurs on or after this time."
+msgstr ""
+
+#: apps/scheduler/models.py:130
+msgid ""
+"The last occurrence of the schedule occurs before this time, afterwards the "
+"schedule expires."
+msgstr ""
+
+#: apps/scheduler/models.py:132
+msgid "A value representing the schedules iCal recurrence rule."
+msgstr ""
+
+#: apps/scheduler/models.py:133
+msgid "The next time that the scheduled action will run."
+msgstr ""
+
+#: apps/scheduler/models.py:295
+msgid "Sync jobs"
+msgstr ""
+
+#: apps/scheduler/models.py:296
+msgid "Parse job data"
+msgstr ""
+
+#: apps/scheduler/models.py:347
+msgid "The date and time the job was queued for starting."
+msgstr ""
+
+#: apps/scheduler/models.py:354
+msgid "The date and time the job finished execution."
+msgstr ""
+
+#: apps/scheduler/models.py:362
+msgid "Elapsed time in seconds that the job ran."
+msgstr ""
+
+#: apps/scheduler/models.py:369
+msgid ""
+"A status field to indicate the state of the job if it wasn't able to run and "
+"capture stdout"
+msgstr ""
+
+#: apps/tasks/system.py:52
+msgid ""
+"Scheduled job could not start because it                     was not in the "
+"right state"
+msgstr ""
+
+#: apps/tasks/system.py:86
+msgid ""
+"Data parse job could not start because it                     was not in the "
+"right state"
+msgstr ""

@@ -39,4 +39,16 @@ requirements-check:
 		echo "Requirements-build.txt is in sync."; \
 	fi
 
-.PHONY: sync-requirements requirements requirements-check
+# Backend i18n/l10n
+makemessages:
+	@echo "Extracting translatable strings from backend..."
+	$(DOCKER_COMPOSE) --file compose/compose.yml exec -T backend python manage.py makemessages -l en -l es -l fr -l de -l zh -l ja --ignore=venv --ignore=.venv
+
+compilemessages:
+	@echo "Compiling backend message files..."
+	$(DOCKER_COMPOSE) --file compose/compose.yml exec -T backend python manage.py compilemessages
+
+translations: makemessages compilemessages
+	@echo "Backend translation files updated and compiled."
+
+.PHONY: sync-requirements requirements requirements-check makemessages compilemessages translations

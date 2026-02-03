@@ -24,8 +24,10 @@ import { FilterSet } from '@app/Types';
 import useCommonStore from '@app/Store/commonStore';
 import { useViewSavingProcess, useViewsById } from '@app/Store/commonSelectors';
 import { toasterFromError, toasterSuccessMsg, useToaster } from '@app/Components/Toaster';
+import { useTranslation } from 'react-i18next';
 
 const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditViewProps) => {
+  const { t } = useTranslation();
   const [isModalOpen, setModalOpen] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
   const [modalVariant, setModalVariant] = React.useState<string>('create');
@@ -67,7 +69,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
     if (modalVariant === 'delete') {
       deleteView(selectedViewItem as number)
         .then((response) => {
-          toaster.add(toasterSuccessMsg('Report deleted successfully.'));
+          toaster.add(toasterSuccessMsg(t('Report deleted successfully.')));
           closeModal();
           props.onViewDelete();
           setModalVariant('create');
@@ -102,7 +104,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
 
       saveView(viewData)
         .then((response) => {
-          toaster.add(toasterSuccessMsg('Report saved successfully.'));
+          toaster.add(toasterSuccessMsg(t('Report saved successfully.')));
           closeModal();
         })
         .catch((e) => {
@@ -146,13 +148,13 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       <MenuContent>
         <MenuList>
           <MenuItem key="create" itemId="create">
-            Create new report
+            {t('Create new report')}
           </MenuItem>
           <MenuItem isDisabled={!selectedViewItem} key="edit" itemId="edit">
-            Edit current report
+            {t('Edit current report')}
           </MenuItem>
           <MenuItem isDisabled={!selectedViewItem} key="delete" itemId="delete">
-            Delete current report
+            {t('Delete current report')}
           </MenuItem>
         </MenuList>
       </MenuContent>
@@ -168,8 +170,8 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       id={'filter-set-menu-toggle'}
       aria-label={' Save as Report'}
       splitButtonItems={[
-        <MenuToggleAction key="split-action-save" onClick={toggleClick} aria-label="Save" className="pf-v6-u-w-100">
-          Save as Report
+        <MenuToggleAction key="split-action-save" onClick={toggleClick} aria-label={t('Save')} className="pf-v6-u-w-100">
+          {t('Save as Report')}
         </MenuToggleAction>,
       ]}
     ></MenuToggle>
@@ -214,7 +216,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
       >
         <ModalHeader
           title={
-            modalVariant === 'create' ? 'Create report' : modalVariant === 'edit' ? 'Edit report' : 'Delete report'
+            modalVariant === 'create' ? t('Create report') : modalVariant === 'edit' ? t('Edit report') : t('Delete report')
           }
           descriptorId="modal-box-description-form"
           labelId="form-filter-set-title"
@@ -224,11 +226,11 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
             <div className={'modal-wrap'}>
               {filterSaveProcess && (
                 <div className={'pf-v6-l-flex pf-m-justify-content-center pf-v6-u-py-md'}>
-                  <Spinner className={'spinner'} diameter="40px" aria-label="Loader" />
+                  <Spinner className={'spinner'} diameter="40px" aria-label={t('Loader')} />
                 </div>
               )}
               <Form id="modal-set-view-form" className={filterSaveProcess ? 'hidden' : ''} onSubmit={onFormSubmit}>
-                <FormGroup isRequired label={'Report name'}>
+                <FormGroup isRequired label={t('Report name')}>
                   <TextInput
                     value={filterNameValue}
                     onChange={handleFilterNameValueChange}
@@ -244,7 +246,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
             </div>
           )}
           {modalVariant === 'delete' && (
-            <div className={'modal-wrap'}>Do you really want to delete the report: {filterNameValue}?</div>
+            <div className={'modal-wrap'}>{t('Do you really want to delete the report: {{name}}?', { name: filterNameValue })}</div>
           )}
         </ModalBody>
         <ModalFooter>
@@ -256,7 +258,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
             onClick={saveFilter}
             className="add-edit-report-modal-button"
           >
-            {modalVariant === 'create' ? 'Create' : modalVariant === 'edit' ? 'Save' : 'Delete'}
+            {modalVariant === 'create' ? t('Create') : modalVariant === 'edit' ? t('Save') : t('Delete')}
           </Button>
           <Button
             className="add-edit-report-modal-button"
@@ -265,7 +267,7 @@ const AddEditView: React.FunctionComponent<AddEditViewProps> = (props: AddEditVi
             onClick={closeModal}
             isDisabled={filterSaveProcess}
           >
-            Cancel
+            {t('Cancel')}
           </Button>
         </ModalFooter>
       </Modal>

@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import QuerySet, Min
+from django.utils.translation import gettext_lazy as _
 
 from backend.apps.clusters.schemas import DateRangeSchema, RelatedLinks
 
@@ -42,15 +43,20 @@ class ClusterVersionChoices(models.TextChoices):
 
 
 class Cluster(CreatUpdateModel):
-    protocol = models.CharField(max_length=10)
-    address = models.CharField(max_length=255)
-    port = models.IntegerField()
-    access_token = models.BinaryField()
-    refresh_token = models.BinaryField(default=b'')
-    client_id = models.CharField(max_length=255, default='')
-    client_secret = models.BinaryField(default=b'')
-    verify_ssl = models.BooleanField(default=True)
-    aap_version = models.CharField(max_length=15, choices=ClusterVersionChoices.choices, default=ClusterVersionChoices.AAP24)
+    protocol = models.CharField(max_length=10, verbose_name=_("Protocol"))
+    address = models.CharField(max_length=255, verbose_name=_("Address"))
+    port = models.IntegerField(verbose_name=_("Port"))
+    access_token = models.BinaryField(verbose_name=_("Access Token"))
+    refresh_token = models.BinaryField(default=b'', verbose_name=_("Refresh Token"))
+    client_id = models.CharField(max_length=255, default='', verbose_name=_("Client ID"))
+    client_secret = models.BinaryField(default=b'', verbose_name=_("Client Secret"))
+    verify_ssl = models.BooleanField(default=True, verbose_name=_("Verify SSL"))
+    aap_version = models.CharField(
+        max_length=15,
+        choices=ClusterVersionChoices.choices,
+        default=ClusterVersionChoices.AAP24,
+        verbose_name=_("AAP Version")
+    )
 
     def __str__(self):
         return f'{self.protocol}://{self.address}:{self.port}'
@@ -148,16 +154,16 @@ class Cluster(CreatUpdateModel):
 
 
 class DateRangeChoices(models.TextChoices):
-    LAST_YEAR = "last_year", "Past year"
-    LAST_6_MONTH = "last_6_month", "Past 6 months"
-    LAST_3_MONTH = "last_3_month", "Past 3 months"
-    LAST_MONTH = "last_month", "Past month"
-    YEAR_TO_DATE = "year_to_date", "Year to date"
-    QUARTER_TO_DATE = "quarter_to_date", "Quarter to date"
-    MONTH_TO_DATE = "month_to_date", "Month to date"
-    LAST_3_YEARS = "last_3_years", "Past 3 years"
-    LAST_2_YEARS = "last_2_years", "Past 2 years"
-    CUSTOM = "custom", "Custom"
+    LAST_YEAR = "last_year", _("Past year")
+    LAST_6_MONTH = "last_6_month", _("Past 6 months")
+    LAST_3_MONTH = "last_3_month", _("Past 3 months")
+    LAST_MONTH = "last_month", _("Past month")
+    YEAR_TO_DATE = "year_to_date", _("Year to date")
+    QUARTER_TO_DATE = "quarter_to_date", _("Quarter to date")
+    MONTH_TO_DATE = "month_to_date", _("Month to date")
+    LAST_3_YEARS = "last_3_years", _("Past 3 years")
+    LAST_2_YEARS = "last_2_years", _("Past 2 years")
+    CUSTOM = "custom", _("Custom")
 
     @classmethod
     def get_date_range(cls, choice: str, start: str = None, end: str = None) -> DateRangeSchema:
@@ -246,37 +252,37 @@ class DateRangeChoices(models.TextChoices):
 
 
 class JobStatusChoices(models.TextChoices):
-    NEW = "new", "New"
-    PENDING = "pending", "Pending"
-    WAITING = "waiting", "Waiting"
-    RUNNING = "running", "Running"
-    SUCCESSFUL = "successful", "Successful"
-    FAILED = "failed", "Failed"
-    ERROR = "error", "Error"
-    CANCELED = "canceled", "Canceled"
+    NEW = "new", _("New")
+    PENDING = "pending", _("Pending")
+    WAITING = "waiting", _("Waiting")
+    RUNNING = "running", _("Running")
+    SUCCESSFUL = "successful", _("Successful")
+    FAILED = "failed", _("Failed")
+    ERROR = "error", _("Error")
+    CANCELED = "canceled", _("Canceled")
 
 
 class JobTypeChoices(models.TextChoices):
-    JOB = "job", "Job"
-    PLAYBOOK_RUN = "Playbook Run", "Playbook Run"
+    JOB = "job", _("Job")
+    PLAYBOOK_RUN = "Playbook Run", _("Playbook Run")
 
 
 class JobLaunchTypeChoices(models.TextChoices):
-    MANUAL = "manual", "Manual"
-    RELAUNCH = "relaunch", "Relaunch"
-    CALLBACK = "callback", "Callback"
-    SCHEDULED = "scheduled", "Scheduled"
-    DEPENDENCY = "dependency", "Dependency"
-    WORKFLOW = "workflow", "Workflow"
-    WEBHOOK = "webhook", "Webhook"
-    SYNC = "sync", "Sync"
-    SCM = "scm", "SCM Update"
+    MANUAL = "manual", _("Manual")
+    RELAUNCH = "relaunch", _("Relaunch")
+    CALLBACK = "callback", _("Callback")
+    SCHEDULED = "scheduled", _("Scheduled")
+    DEPENDENCY = "dependency", _("Dependency")
+    WORKFLOW = "workflow", _("Workflow")
+    WEBHOOK = "webhook", _("Webhook")
+    SYNC = "sync", _("Sync")
+    SCM = "scm", _("SCM Update")
 
 
 class JobRunTypeChoices(models.TextChoices):
-    RUN = "run", "Run"
-    CHECK = "check", "Check"
-    SCAN = "scan", "Scan"
+    RUN = "run", _("Run")
+    CHECK = "check", _("Check")
+    SCAN = "scan", _("Scan")
 
 
 class ClusterSyncData(CreatUpdateModel):
@@ -410,10 +416,16 @@ class JobTemplate(NameDescriptionModel):
     #Calculations can result in large values, so bigint field
     time_taken_manually_execute_minutes = models.BigIntegerField(
         default=manual_time,
-        validators=[MinValueValidator(min_minutes_input), MaxValueValidator(max_minutes_input)])
+        validators=[MinValueValidator(min_minutes_input), MaxValueValidator(max_minutes_input)],
+        verbose_name=_("Time taken to manually execute (minutes)"),
+        help_text=_("Average time in minutes to manually execute this job")
+    )
     time_taken_create_automation_minutes = models.BigIntegerField(
         default=automation_time,
-        validators=[MinValueValidator(min_minutes_input), MaxValueValidator(max_minutes_input)])
+        validators=[MinValueValidator(min_minutes_input), MaxValueValidator(max_minutes_input)],
+        verbose_name=_("Time taken to create automation (minutes)"),
+        help_text=_("Average time in minutes to create this automation")
+    )
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, related_name='job_templates')
 
     class Meta:
@@ -621,8 +633,8 @@ class CostsChoices(models.TextChoices):
     automated = 'Cost per minute of AAP'
     """
 
-    MANUAL = "manual", "Manual"
-    AUTOMATED = "automated", "Automated"
+    MANUAL = "manual", _("Manual")
+    AUTOMATED = "automated", _("Automated")
 
 
 class Costs(CreatUpdateModel):
@@ -632,9 +644,20 @@ class Costs(CreatUpdateModel):
     """
 
     value = models.DecimalField(
-        max_digits=15, decimal_places=2, default=decimal.Decimal(0),
-        validators=[MinValueValidator(decimal.Decimal(0)), MaxValueValidator(decimal.Decimal(1000))])
-    type = models.CharField(choices=CostsChoices.choices, unique=True, max_length=20)
+        max_digits=15,
+        decimal_places=2,
+        default=decimal.Decimal(0),
+        validators=[MinValueValidator(decimal.Decimal(0)), MaxValueValidator(decimal.Decimal(1000))],
+        verbose_name=_("Value"),
+        help_text=_("Cost value")
+    )
+    type = models.CharField(
+        choices=CostsChoices.choices,
+        unique=True,
+        max_length=20,
+        verbose_name=_("Type"),
+        help_text=_("Cost type (manual or automated)")
+    )
 
     def __str__(self) -> str:
         return f'{self.type}: {self.value}'

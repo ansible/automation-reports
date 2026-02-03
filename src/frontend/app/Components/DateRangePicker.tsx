@@ -3,8 +3,10 @@ import { BaseDropdown } from '@app/Components';
 import { DateRangePickerProps, FilterOption, datePickerDefaultProps } from '@app/Types';
 import { DatePicker, Flex, FlexItem, isValidDate, yyyyMMddFormat } from '@patternfly/react-core';
 import useFilterStore from '@app/Store/filterStore';
+import { useTranslation } from 'react-i18next';
 
 export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (props: DateRangePickerProps) => {
+  const { t } = useTranslation();
   props = { ...datePickerDefaultProps, ...props };
   const [dateOptions, setDateChoices] = React.useState<FilterOption[]>([]);
   const dateChoices = useFilterStore((state) => state.dateRangeOptions);
@@ -28,13 +30,13 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
 
   const fromValidator = (date: Date): string => {
     return props.dateTo && yyyyMMddFormat(props.dateTo) < yyyyMMddFormat(date)
-      ? 'The "from" date must be before the "to" date'
+      ? t('The "from" date must be before the "to" date')
       : '';
   };
 
   const toValidator = (date: Date): string => {
     return props.dateFrom && yyyyMMddFormat(props.dateFrom) > yyyyMMddFormat(date)
-      ? 'The "to" date must be after the "from" date'
+      ? t('The "to" date must be after the "from" date')
       : '';
   };
 
@@ -52,8 +54,8 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
 
   const fromDate = (
     <DatePicker
-      aria-label="Start date"
-      placeholder="YYYY-MM-DD"
+      aria-label={t('Start date')}
+      placeholder={t('YYYY-MM-DD')}
       value={props.dateFrom && isValidDate(props.dateFrom) ? yyyyMMddFormat(props.dateFrom) : undefined}
       onChange={onFromChange}
       validators={[fromValidator]}
@@ -62,8 +64,8 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
 
   const toDate = (
     <DatePicker
-      aria-label="End date"
-      placeholder="YYYY-MM-DD"
+      aria-label={t('End date')}
+      placeholder={t('YYYY-MM-DD')}
       value={props.dateTo && isValidDate(props.dateTo) ? yyyyMMddFormat(props.dateTo) : undefined}
       rangeStart={props.dateFrom && isValidDate(props.dateFrom) ? props.dateFrom : undefined}
       isDisabled={!props.dateFrom || !isValidDate(props.dateFrom)}
@@ -99,7 +101,7 @@ export const DateRangePicker: React.FunctionComponent<DateRangePickerProps> = (p
         {props.selectedRange === 'custom' && (
           <Flex style={{ alignItems: 'self-start' }}>
             <FlexItem>{fromDate}</FlexItem>
-            <FlexItem style={{ marginTop: '8px' }}>to</FlexItem>
+            <FlexItem style={{ marginTop: '8px' }}>{t('to')}</FlexItem>
             <FlexItem>{toDate}</FlexItem>
           </Flex>
         )}

@@ -48,12 +48,14 @@ import useCommonStore from '@app/Store/commonStore';
 import { useAutomatedProcessCost, useFilterRetrieveError, useManualCostAutomation } from '@app/Store/filterSelectors';
 import { useAuthStore } from '@app/Store/authStore';
 import { toasterFromError, ToasterProvider, toasterSuccessMsg } from '@app/Components/Toaster';
+import { useTranslation } from 'react-i18next';
 
 const refreshInterval: string = import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
   ? import.meta.env.DATA_REFRESH_INTERVAL_SECONDS
   : '60';
 
 const Dashboard: React.FunctionComponent = () => {
+  const { t } = useTranslation();
   const filterError = useFilterRetrieveError();
   const [tableData, setTableData] = React.useState<TableResponse>({ count: 0, results: [] } as TableResponse);
   const [detailData, setDetailData] = React.useState<ReportDetail>({} as ReportDetail);
@@ -102,8 +104,8 @@ const Dashboard: React.FunctionComponent = () => {
         setLoading(false);
       })
       .catch((e) => {
-        const msg = 'Something went wrong while retrieving report details. ' + getErrorMessage(e);
-        handelError({name: e.name, message: msg});
+        const msg = t('Something went wrong while retrieving report details.') + ' ' + getErrorMessage(e);
+        handelError({ name: e.name, message: msg });
       });
   };
 
@@ -144,8 +146,8 @@ const Dashboard: React.FunctionComponent = () => {
         }
       })
       .catch((e) => {
-        const msg = 'Something went wrong while retrieving report data. ' + getErrorMessage(e);
-        handelError({name: e.name, message: msg});
+        const msg = t('Something went wrong while retrieving report data.') + ' ' + getErrorMessage(e);
+        handelError({ name: e.name, message: msg });
       });
   };
 
@@ -201,11 +203,11 @@ const Dashboard: React.FunctionComponent = () => {
       value = Number(value.toFixed(2));
       let msg =
         type === 'manual'
-          ? 'Average cost of per minute to manually run the job'
-          : 'Average cost per minute of running on AAP';
+          ? t('Average cost per minute to manually run the job')
+          : t('Average cost per minute of running on AAP');
       RestService.updateCosts({ type: type, value: value })
         .then(() => {
-          msg += ' updated successfully.';
+          msg += ' ' + t('updated successfully.');
           toaster.add(toasterSuccessMsg(msg));
           fetchServerTableData(true, false);
           if (type === 'manual') {
@@ -215,8 +217,8 @@ const Dashboard: React.FunctionComponent = () => {
           }
         })
         .catch((e) => {
-          const errorMsg = 'Failed to update ' + msg + '. ' + getErrorMessage(e);
-          handelError({name: e?.name, message: errorMsg});
+          const errorMsg = t('Failed to update') + ' ' + msg + '. ' + getErrorMessage(e);
+          handelError({ name: e?.name, message: errorMsg });
         });
     } else {
       afterDataRetrieve();
@@ -247,11 +249,11 @@ const Dashboard: React.FunctionComponent = () => {
     RestService.updateTemplate(newItem)
       .then(() => {
         fetchServerTableData(true, false);
-        toaster.add(toasterSuccessMsg(msg + ' updated successfully.'));
+        toaster.add(toasterSuccessMsg(t('Template {{name}} updated successfully.', { name: newItem.name })));
       })
       .catch((e) => {
-        const errorMsg = 'Failed to update ' + msg + '. ' + getErrorMessage(e);
-        handelError({name: e?.name, message: errorMsg});
+        const errorMsg = t('Failed to update Template {{name}}.', { name: newItem.name }) + ' ' + getErrorMessage(e);
+        handelError({ name: e?.name, message: errorMsg });
       });
   };
 
@@ -272,12 +274,12 @@ const Dashboard: React.FunctionComponent = () => {
   const topProjectColumns: ColumnProps[] = [
     {
       name: 'project_name',
-      title: 'Project name',
+      title: t('Project name'),
       isVisible: true,
     },
     {
       name: 'count',
-      title: 'Total no. of jobs',
+      title: t('Total no. of jobs'),
       type: 'number',
       isVisible: true,
     },
@@ -286,12 +288,12 @@ const Dashboard: React.FunctionComponent = () => {
   const topUsersColumns: ColumnProps[] = [
     {
       name: 'user_name',
-      title: 'User name',
+      title: t('User name'),
       isVisible: true,
     },
     {
       name: 'count',
-      title: 'Total no. of jobs',
+      title: t('Total no. of jobs'),
       type: 'number',
       isVisible: true,
     },
@@ -308,8 +310,8 @@ const Dashboard: React.FunctionComponent = () => {
         setTableLoading(false);
       })
       .catch((e) => {
-        const errorMsg = 'Something went wrong while exporting CSV. Please try again later.';
-        handelError({name: e?.name, message: errorMsg});
+        const errorMsg = t('Something went wrong while exporting CSV. Please try again later.');
+        handelError({ name: e?.name, message: errorMsg });
       });
   };
 
@@ -326,8 +328,8 @@ const Dashboard: React.FunctionComponent = () => {
       hostChartPng,
     )
       .catch((e) => {
-        const errorMsg = 'Something went wrong while exporting PDF. Please try again later.';
-        handelError({name: e?.name, message: errorMsg});
+        const errorMsg = t('Something went wrong while exporting PDF. Please try again later.');
+        handelError({ name: e?.name, message: errorMsg });
       })
       .finally(() => {
         setPdfLoading(false);
@@ -349,7 +351,7 @@ const Dashboard: React.FunctionComponent = () => {
     saveEnableTemplateCreationTime(checked)
       .then(() => {
         toaster.add(
-          toasterSuccessMsg('Include time taken to create automation into calculation updated successfully.'),
+          toasterSuccessMsg(t('Include time taken to create automation into calculation updated successfully.')),
         );
         fetchServerTableData(true, true);
       })
@@ -361,14 +363,12 @@ const Dashboard: React.FunctionComponent = () => {
   const topUsersToolTip = (
     <div>
       <div>
-        This section lists the top five users of Ansible Automation Platform, with a breakdown of the total number of
-        jobs run by each user.
+        {t('This section lists the top five users of Ansible Automation Platform, with a breakdown of the total number of jobs run by each user.')}
       </div>
       <ul>
         <br />
         <li>
-          <strong>○ NOTE:</strong> Scheduled jobs can affect these results, because they do not represent a real,
-          logged-in user.
+          <strong>○ {t('NOTE')}:</strong> {t('Scheduled jobs can affect these results, because they do not represent a real, logged-in user.')}
         </li>
       </ul>
     </div>
@@ -377,7 +377,7 @@ const Dashboard: React.FunctionComponent = () => {
   const pdfModalTitle = (
     <HelperText>
       <HelperTextItem variant="error" style={{ fontSize: '20px' }}>
-        PDF Download Failed: Data Volume Exceeded
+        {t('PDF Download Failed: Data Volume Exceeded')}
       </HelperTextItem>
     </HelperText>
   );
@@ -394,10 +394,10 @@ const Dashboard: React.FunctionComponent = () => {
       <ModalBody id="pdf-warning-modal-body">
         <HelperText style={{ fontSize: '14px' }}>
           <HelperTextItem variant={'default'}>
-            We were unable to generate your PDF because the selected report exceeds the maximum record limit.
+            {t('We were unable to generate your PDF because the selected report exceeds the maximum record limit.')}
           </HelperTextItem>
           <HelperTextItem variant={'default'}>
-            Please apply additional filters to narrow your data and retry.
+            {t('Please apply additional filters to narrow your data and retry.')}
           </HelperTextItem>
         </HelperText>
       </ModalBody>
@@ -409,7 +409,7 @@ const Dashboard: React.FunctionComponent = () => {
             setPDFWarningModalOpen(false);
           }}
         >
-          Close
+          {t('Close')}
         </Button>
       </ModalFooter>
     </Modal>
@@ -419,13 +419,11 @@ const Dashboard: React.FunctionComponent = () => {
   return (
     <div>
       <Header
-        title={'Automation Dashboard'}
-        subtitle={
-          'Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.'
-        }
+        title={t('Automation Dashboard')}
+        subtitle={t('Discover the significant cost and time savings achieved by automating Ansible jobs with the Ansible Automation Platform. Explore how automation reduces manual effort, enhances efficiency, and optimizes IT operations across your organization.')}
         pdfBtnText={
           !loadDataError && !filterError && !logErrorMessage && !loading && !pdfLoading && tableData?.count > 0
-            ? 'Save as PDF'
+            ? t('Save as PDF')
             : undefined
         }
         onPdfBtnClick={onPdfBtnClick}
@@ -433,8 +431,8 @@ const Dashboard: React.FunctionComponent = () => {
       {(loadDataError || filterError) && !logErrorMessage && (
         <div className={'error'}>
           <ErrorState
-            titleText="Something went wrong"
-            bodyText="Please contact your system administrator."
+            titleText={t('Something went wrong')}
+            bodyText={t('Please contact your system administrator.')}
             customFooter="&nbsp;"
             headingLevel={'h1'}
             variant={'full'}
@@ -452,7 +450,7 @@ const Dashboard: React.FunctionComponent = () => {
           {pdfWarningModal}
           {(loading || pdfLoading) && (
             <div className={'loader'}>
-              <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />
+              <Spinner className={'spinner'} diameter="80px" aria-label={t('Loader')} />
             </div>
           )}
 
@@ -498,10 +496,8 @@ const Dashboard: React.FunctionComponent = () => {
                   <GridItem className="pf-m-12-col pf-m-6-col-on-md pf-m-12-col-on-2xl" style={{ height: '100%' }}>
                     <div style={{ height: '100%' }}>
                       <DashboardTopTable
-                        title={'Top 5 projects'}
-                        tooltip={
-                          'This section lists the top five automation projects based on the number of jobs executed.'
-                        }
+                        title={t('Top 5 projects')}
+                        tooltip={t('This section lists the top five automation projects based on the number of jobs executed.')}
                         infoIcon={true}
                         columns={topProjectColumns}
                         data={detailData?.projects ? detailData.projects : []}
@@ -511,7 +507,7 @@ const Dashboard: React.FunctionComponent = () => {
                   <GridItem className="pf-m-12-col pf-m-6-col-on-md pf-m-12-col-on-2xl" style={{ height: '100%' }}>
                     <div style={{ height: '100%' }}>
                       <DashboardTopTable
-                        title={'Top 5 users'}
+                        title={t('Top 5 users')}
                         tooltip={topUsersToolTip}
                         infoIcon={true}
                         columns={topUsersColumns}

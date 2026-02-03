@@ -5,7 +5,10 @@
     "outDir": "dist",
     "module": "esnext",
     "target": "es5",
-    "lib": ["es6", "dom"],
+    "lib": [
+      "es6",
+      "dom"
+    ],
     "sourceMap": true,
     "jsx": "react-jsx",
     "moduleResolution": "node",
@@ -18,11 +21,16 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "paths": {
-      "@app/*": ["src/frontend/app/*"],
-      "@assets/*": ["node_modules/@patternfly/react-core/dist/styles/assets/*"]
+      "@app/*": [
+        "src/frontend/app/*"
+      ],
+      "@assets/*": [
+        "node_modules/@patternfly/react-core/dist/styles/assets/*"
+      ]
     },
     "importHelpers": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
   },
   "include": [
     "vite.config.ts",
@@ -30,7 +38,10 @@
     "./src/frontend/**/*.tsx",
     "./src/frontend/**/*.jsx",
     "./src/frontend/**/*.js",
+    "./src/frontend/locales/**/*.json",
     "playwright.config.ts",
   ],
-  "exclude": ["node_modules",]
+  "exclude": [
+    "node_modules",
+  ]
 }
