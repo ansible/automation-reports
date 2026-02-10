@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 
@@ -62,11 +63,13 @@ class Command(BaseCommand):
     help = "Set up AAP instances"
 
     def add_arguments(self, parser):
-        parser.add_argument("path", nargs='+', type=str)
+        parser.add_argument("--keep", action="store_true", help="Keep (do not remove) the clusters.yaml after processing")
+        parser.add_argument("path", nargs='+', type=str, help="Path to the clusters.yaml file")
 
     def handle(self, *args, **options):
         self.stdout.write('Check if table exists.')
         path = options['path'][0] if len(options['path']) == 1 else options['path']
+        keep_file = options['keep']
         try:
             db_clusters = {i.address: i for i in Cluster.objects.all()}
         except django.db.ProgrammingError:
@@ -179,3 +182,6 @@ class Command(BaseCommand):
         if error:
             sys.exit(1)
         self.stdout.write(self.style.SUCCESS('Successfully set up AAP clusters'))
+        if not keep_file:
+            self.stdout.write(self.style.NOTICE(f'Removing file {path}'))
+            os.remove(path)
