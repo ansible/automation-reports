@@ -226,12 +226,13 @@ test_organizations_expected_data = {
 }
 
 test_projects_expected_data = {
-    'count': 2,
+    'count': 3,
     'next': None,
     'previous': None,
     'results': [
         {'key': 1, 'value': 'Project A', 'cluster_id': 1},
-        {'key': 2, 'value': 'Project B', 'cluster_id': 1}
+        {'key': 2, 'value': 'Project B', 'cluster_id': 1},
+        {'key': 3, 'value': 'Project C', 'cluster_id': 1},
     ]
 }
 
