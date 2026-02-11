@@ -28,8 +28,10 @@ import {
   useAutomatedProcessCost,
   useManualCostAutomation
 } from '@app/Store/filterSelectors';
+import { useTranslation } from 'react-i18next';
 
 export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (props: DashboardTableProps) => {
+  const { t } = useTranslation();
   const hourly_manual_costs = useManualCostAutomation();
   const hourly_automated_process_costs = useAutomatedProcessCost();
   const selectedCurrencySign = useCurrencySign();
@@ -54,30 +56,30 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
   const hourlyManualCostsChanged = (value: number | null | undefined) => {
     if (value || value === 0) {
       if (value <= 0) {
-        setHourlyManualCostsChangedError('Value must be greater then 0!');
+        setHourlyManualCostsChangedError(t('Value must be greater than 0!'));
       } else if (value > 1000) {
-        setHourlyManualCostsChangedError('Value must be less than or equal to 1000!');
+        setHourlyManualCostsChangedError(t('Value must be less than or equal to 1000!'));
       } else {
         setHourlyManualCostsChangedError(null);
         props.onCostChanged('manual', value);
       }
     } else {
-      setHourlyManualCostsChangedError('Please enter a valid number!');
+      setHourlyManualCostsChangedError(t('Please enter a valid number!'));
     }
   };
 
   const hourlyAutomatedProcessCostsChanged = (value: number | null | undefined) => {
     if (value || value === 0) {
       if (value <= 0) {
-        setHourlyAutomatedProcessCostsChangedError('Value must be greater then 0!');
+        setHourlyAutomatedProcessCostsChangedError(t('Value must be greater than 0!'));
       } else if (value > 1000) {
-        setHourlyAutomatedProcessCostsChangedError('Value must be less than or equal to 1000!');
+        setHourlyAutomatedProcessCostsChangedError(t('Value must be less than or equal to 1000!'));
       } else {
         setHourlyAutomatedProcessCostsChangedError(null);
         props.onCostChanged('automated', value);
       }
-    }else{
-      setHourlyAutomatedProcessCostsChangedError('Please enter a valid number!');
+    } else {
+      setHourlyAutomatedProcessCostsChangedError(t('Please enter a valid number!'));
     }
   };
 
@@ -91,7 +93,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
 
   const switchEnableTemplateCreationTime = (
     <Switch
-      label="Include time taken to create automation into calculation"
+      label={t('Include time taken to create automation into calculation')}
       id="switch-time-taken-automation"
       isChecked={switchEnableTemplateCreationTimeIsChecked}
       aria-checked={switchEnableTemplateCreationTimeIsChecked}
@@ -100,27 +102,27 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
   );
 
   const columns: ColumnProps[] = [
-    { name: 'name', title: 'Template Name', isVisible: true },
-    { name: 'runs', title: 'Number of job executions', type: 'number', isVisible: true },
-    { name: 'num_hosts', title: 'Host executions', type: 'number', isVisible: true },
+    { name: 'name', title: t('Template Name'), isVisible: true },
+    { name: 'runs', title: t('Number of job executions'), type: 'number', isVisible: true },
+    { name: 'num_hosts', title: t('Host executions'), type: 'number', isVisible: true },
     {
       name: 'time_taken_manually_execute_minutes',
-      title: 'Time taken to manually execute (min)',
-      info: { tooltip: 'Please enter an average time that an engineer would spend to run the job' },
+      title: t('Time taken to manually execute (min)'),
+      info: { tooltip: t('Please enter an average time that an engineer would spend to run the job') },
       isEditable: true,
       isVisible: true
     },
     {
       name: 'time_taken_create_automation_minutes',
-      title: 'Time taken to create automation (min)',
-      info: { tooltip: 'Please enter the time an engineer would spend to automate this job' },
+      title: t('Time taken to create automation (min)'),
+      info: { tooltip: t('Please enter the time an engineer would spend to automate this job') },
       isEditable: true,
       isVisible: switchEnableTemplateCreationTimeIsChecked
     },
-    { name: 'elapsed', title: 'Running time', valueKey: 'elapsed_str', type: 'time-string', isVisible: true },
-    { name: 'automated_costs', title: 'Automated cost', type: 'currency', isVisible: true },
-    { name: 'manual_costs', title: 'Manual cost', type: 'currency', isVisible: true },
-    { name: 'savings', title: 'Savings', type: 'currency', isVisible: true }
+    { name: 'elapsed', title: t('Running time'), valueKey: 'elapsed_str', type: 'time-string', isVisible: true },
+    { name: 'automated_costs', title: t('Automated cost'), type: 'currency', isVisible: true },
+    { name: 'manual_costs', title: t('Manual cost'), type: 'currency', isVisible: true },
+    { name: 'savings', title: t('Savings'), type: 'currency', isVisible: true }
   ];
   return (
     <>
@@ -128,16 +130,16 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
         <CardBody>
           {props.loading && (
             <div className={'table-loader'}>
-              <Spinner className={'spinner'} diameter="80px" aria-label="Loader" />
+              <Spinner className={'spinner'} diameter="80px" aria-label={t('Loader')} />
             </div>
           )}
           <Flex className="pf-v6-u-mb-lg pf-v6-u-align-items-flex-start pf-m-row-gap-sm">
             <FlexItem>
               <Form onSubmit={(e) => e.preventDefault()}>
                 <FormGroup
-                  label={`Hourly rate for manually running the job (${selectedCurrencySign})`}
+                  label={t('Hourly rate for manually running the job ({{currency}})', { currency: selectedCurrencySign })}
                   labelHelp={
-                    <Tooltip content="Please enter an average cost per hour for the engineer manually running jobs">
+                    <Tooltip content={t('Please enter an average cost per hour for the engineer manually running jobs')}>
                       <Icon size="md" className="pf-v6-u-ml-sm">
                         <OutlinedQuestionCircleIcon />
                       </Icon>
@@ -158,9 +160,9 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             <FlexItem>
               <Form onSubmit={(e) => e.preventDefault()}>
                 <FormGroup
-                  label={`Average cost per minute of running on AAP (${selectedCurrencySign})`}
+                  label={t('Average cost per minute of running on AAP ({{currency}})', { currency: selectedCurrencySign })}
                   labelHelp={
-                    <Tooltip content="Please enter an average cost per minute of running a job in the Ansible Automation Platform">
+                    <Tooltip content={t('Please enter an average cost per minute of running a job in the Ansible Automation Platform')}>
                       <Icon size="md" className="pf-v6-u-ml-sm">
                         <OutlinedQuestionCircleIcon />
                       </Icon>
@@ -188,7 +190,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                 }
               >
                 <Button id={'csv-export'} onClick={exportToCsv} variant="secondary" isInline>
-                  Export as CSV
+                  {t('Export as CSV')}
                 </Button>
               </FlexItem>
             )}
@@ -198,11 +200,9 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
               <Card className="card">
                 <CardBody>
                   <DashboardTotals
-                    title={'Cost of manual automation'}
+                    title={t('Cost of manual automation')}
                     result={formatCurrency(props?.costOfManualAutomation?.value, selectedCurrencySign)}
-                    tooltip={
-                      'Manual time of automation (minutes) * Host executions * Average cost of an employee minute'
-                    }
+                    tooltip={t('Manual time of automation (minutes) * Host executions * Average cost of an employee minute')}
                   />
                 </CardBody>
               </Card>
@@ -211,12 +211,12 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
               <Card style={{ height: '100%' }}>
                 <CardBody>
                   <DashboardTotals
-                    title={'Cost of automated execution'}
+                    title={t('Cost of automated execution')}
                     result={formatCurrency(props?.costOfAutomatedExecution?.value, selectedCurrencySign)}
                     tooltip={
                       switchEnableTemplateCreationTimeIsChecked
-                        ? 'Running time (s) / 60 * Cost per minute of AAP + Time taken to create automation (minutes) * Average cost of an employee minute'
-                        : 'Running time (s) / 60 * Cost per minute of AAP'
+                        ? t('Running time (s) / 60 * Cost per minute of AAP + Time taken to create automation (minutes) * Average cost of an employee minute')
+                        : t('Running time (s) / 60 * Cost per minute of AAP')
                     }
                   />
                 </CardBody>
@@ -226,9 +226,9 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
               <Card style={{ height: '100%' }}>
                 <CardBody>
                   <DashboardTotals
-                    title={'Total savings/cost avoided'}
+                    title={t('Total savings/cost avoided')}
                     result={formatCurrency(props?.totalSaving?.value, selectedCurrencySign)}
-                    tooltip={'Cost of manual automation - Cost of automated execution'}
+                    tooltip={t('Cost of manual automation - Cost of automated execution')}
                   />
                 </CardBody>
               </Card>
@@ -237,7 +237,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
               <Card style={{ height: '100%' }}>
                 <CardBody>
                   <DashboardTotals
-                    title={'Total hours saved/avoided'}
+                    title={t('Total hours saved/avoided')}
                     result={
                       props?.totalTimeSavings?.value || props?.totalTimeSavings?.value === 0
                         ? formatNumber(props.totalTimeSavings.value, 2) + 'h'
@@ -245,8 +245,8 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                     }
                     tooltip={
                       switchEnableTemplateCreationTimeIsChecked
-                        ? 'Manual time of automation (minutes) * Host executions  + Time taken to create automation (minutes) - Running time (s) / 60'
-                        : 'Manual time of automation (minutes) * Host executions - Running time (s) / 60'
+                        ? t('Manual time of automation (minutes) * Host executions + Time taken to create automation (minutes) - Running time (s) / 60')
+                        : t('Manual time of automation (minutes) * Host executions - Running time (s) / 60')
                     }
                   />
                 </CardBody>
