@@ -337,7 +337,7 @@ jobs = [
 ]
 
 
-def create_aap_access_file(aap: AAP, oauth2app: OAuth2App, aaptoken: AAPToken, aap_version: str):
+def create_aap_access_file(json_output: str, aap: AAP, oauth2app: OAuth2App, aaptoken: AAPToken, aap_version: str):
     aap_version_map = {
         "24": "2.4",
         "25": "2.5",
@@ -361,21 +361,53 @@ def create_aap_access_file(aap: AAP, oauth2app: OAuth2App, aaptoken: AAPToken, a
         "aap_version": aap_version_map[aap_version],
         "aap_password": aap.password,
     }
-    with open("aap_access.json", "w") as ff:
+    with open(json_output, "w") as ff:
         json.dump(data, ff, indent=4)
         ff.write("\n")
-    print("AAP access data written to aap_access.json")
+    print(f"AAP access data written to {json_output}")
+
+
+def arg_parse():
+    parser = argparse.ArgumentParser(description="Setup AAP with test data")
+    parser.add_argument("--url", required=False, help="AAP URL (e.g., https://1.2.3.4:443)")
+    parser.add_argument("--username", required=False, help="AAP username")
+    parser.add_argument("--password", required=False, help="AAP password")
+    parser.add_argument("--version", required=False, choices=["24", "25", "26"], help="AAP version (24, 25, or 26)")
+    parser.add_argument("--json-input", required=False, help="json file with AAP url,password,username,version - if not provided, other args are used")
+    #
+    parser.add_argument("--oauth2-redirect-urls", required=False, help="OAuth2 redirect URLs (comma-separated list, e.g., 'https://dashboard:8447/auth-callback')")
+    parser.add_argument("--json-output", default="aap_access.json", help="output json file with AAP access details")
+
+    args = parser.parse_args()
+
+    # print all input args
+    # print("Input arguments 1:")
+    # for arg, value in vars(args).items():
+    #     print(f"  {arg}: {value}")
+
+    # if json_input is provided, override other args with values from the json file
+    if args.json_input:
+        print(f"Loading AAP access details from {args.json_input}")
+        with open(args.json_input, "r") as f:
+            json_data = json.load(f)
+            args.url = json_data.get("aap_url", args.url)
+            args.username = json_data.get("aap_username", args.username)
+            args.password = json_data.get("aap_password", args.password)
+            args.version = json_data.get("aap_version", args.version)
+    # apply default values
+    if not args.username:
+        args.username = "admin"
+
+    print("Input arguments:")
+    for arg, value in vars(args).items():
+        if arg == "password":
+            value = "******"
+        print(f"  {arg}: {value}")
+    return args
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Setup AAP with test data")
-    parser.add_argument("--url", required=True, help="AAP URL (e.g., https://1.2.3.4:443)")
-    parser.add_argument("--username", default="admin", help="AAP username")
-    parser.add_argument("--password", required=True, help="AAP password")
-    parser.add_argument("--version", required=True, choices=["24", "25", "26"], help="AAP version (24, 25, or 26)")
-    parser.add_argument("--oauth2-redirect-urls", required=True, help="OAuth2 redirect URLs (comma-separated list, e.g., 'https://dashboard:8447/auth-callback')")
-
-    args = parser.parse_args()
+    args = arg_parse()
     aap_version = args.version
 
     aap = AAP.get_instance(args.url, args.username, args.password)
@@ -384,7 +416,7 @@ def main():
     oauth2app = aap.create_oauth2_app("ad-app-desc", default_org_id, args.oauth2_redirect_urls)
     token = aap.create_oauth2_app_token(oauth2app, admin_user_id)
 
-    create_aap_access_file(aap, oauth2app, token, aap_version)
+    create_aap_access_file(args.json_output, aap, oauth2app, token, aap_version)
 
     assert aap_version == aap.version
     if aap.version in ["25", "26"]:
