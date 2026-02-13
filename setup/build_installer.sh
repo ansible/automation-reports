@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -u
 
 # Include container images into .tar.gz installer (e.g. bundled installer) or not (e.g. online installer).
 AAP_DASHBOARD_BUNDLED_INSTALLER="${AAP_DASHBOARD_BUNDLED_INSTALLER:-1}"
@@ -48,12 +49,21 @@ function build_or_pull_container_image() {
       podman tag $AAP_DASHBOARD_IMAGE $AAP_DASHBOARD_IMAGE_base:$git_branch
     fi
   fi
-  echo "Used AAP_DASHBOARD_IMAGE=$AAP_DASHBOARD_IMAGE image for installer"
+  echo "Built or pulled AAP_DASHBOARD_IMAGE=$AAP_DASHBOARD_IMAGE image for installer"
+  # Extract registry, namespace, and image name from AAP_DASHBOARD_IMAGE
+  REGISTRY_URL_AAP_AUTOMATION_DASHBOARD=$(echo "$AAP_DASHBOARD_IMAGE" | cut -d'/' -f1)
+  REGISTRY_NS_AAP_AUTOMATION_DASHBOARD=$(echo "$AAP_DASHBOARD_IMAGE" | cut -d'/' -f2)
+  DASHBOARD_IMAGE_BE=$(echo "$AAP_DASHBOARD_IMAGE" | cut -d'/' -f3)
 }
 
 function save_container_image() {
   /bin/rm -f bundle/images/*
-  ansible-playbook -i inventory ansible.containerized_installer.dashboard_bundle -e bundle_install=true
+  #  _dashboard_image_be: '{{ registry_url_aap_automation_dashboard }}/{{ registry_ns_aap_automation_dashboard }}/{{ dashboard_image_be }}'
+  ansible-playbook -i inventory ansible.containerized_installer.dashboard_bundle \
+    -e bundle_install=true \
+    -e registry_url_aap_automation_dashboard="$REGISTRY_URL_AAP_AUTOMATION_DASHBOARD" \
+    -e registry_ns_aap_automation_dashboard="$REGISTRY_NS_AAP_AUTOMATION_DASHBOARD" \
+    -e dashboard_image_be="$DASHBOARD_IMAGE_BE"
   /bin/rm -f bundle/images/*.tar  # keep only .tar.gz files
 }
 
@@ -65,6 +75,19 @@ function adjust_inventory_example() {
   else
     sed -i 's/^bundle_install=.*/bundle_install=false/' inventory.example
   fi
+
+  # Append registry configuration if defined
+  if [ -n "${REGISTRY_URL_AAP_AUTOMATION_DASHBOARD:-}" ]
+  then
+    cat <<EOF >> inventory.example
+
+# Container registry configuration. This is used only for testing.
+registry_url_aap_automation_dashboard=$REGISTRY_URL_AAP_AUTOMATION_DASHBOARD
+registry_ns_aap_automation_dashboard=$REGISTRY_NS_AAP_AUTOMATION_DASHBOARD
+dashboard_image_be=$DASHBOARD_IMAGE_BE
+EOF
+  fi
+  cp inventory.example inventory.example.22
 }
 
 # ===================================================================
@@ -73,7 +96,6 @@ cat <<EOF
 Building AAP automation-dashboard installer...
 Build configuration:
   AAP_DASHBOARD_BUNDLED_INSTALLER=$AAP_DASHBOARD_BUNDLED_INSTALLER
-  (default) AAP_DASHBOARD_IMAGE=$AAP_DASHBOARD_IMAGE
   USE_QUAY_IO_IMAGE=$USE_QUAY_IO_IMAGE
   QUAY_IO_IMAGE_TAG=$QUAY_IO_IMAGE_TAG
   USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=$USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE
