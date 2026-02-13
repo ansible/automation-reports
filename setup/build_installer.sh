@@ -42,11 +42,6 @@ function build_or_pull_container_image() {
       echo "Building $AAP_DASHBOARD_IMAGE image"
       ansible-playbook -i inventory ansible.containerized_installer.util_podman_login
       podman build -f ../docker/Dockerfile.backend --ignorefile ../docker/Dockerfile.backend.dockerignore -t $AAP_DASHBOARD_IMAGE .. # --no-cache
-      # Additional tags for easier identification of the image.
-      git_commit_sha=$(git rev-parse HEAD)
-      git_branch=$(git branch --show-current | tr '/' '-')
-      podman tag $AAP_DASHBOARD_IMAGE $AAP_DASHBOARD_IMAGE_base:$git_commit_sha
-      podman tag $AAP_DASHBOARD_IMAGE $AAP_DASHBOARD_IMAGE_base:$git_branch
     fi
   fi
   echo "Built or pulled AAP_DASHBOARD_IMAGE=$AAP_DASHBOARD_IMAGE image for installer"
