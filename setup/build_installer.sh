@@ -4,11 +4,6 @@ set -e
 # Include container images into .tar.gz installer (e.g. bundled installer) or not (e.g. online installer).
 AAP_DASHBOARD_BUNDLED_INSTALLER="${AAP_DASHBOARD_BUNDLED_INSTALLER:-1}"
 
-# GHA pushes to quay.io/aap/automation-dashboard:latest,
-# but all other images are at registry.redhat.io.
-AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest}"
-# AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-quay.io/aap/automation-dashboard:latest}"
-
 # Building in GHA:
 # USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=1 USE_QUAY_IO_IMAGE=1
 # We want to use the container image already built by GHA.
@@ -29,23 +24,31 @@ function build_or_pull_container_image() {
   then
     # Use real image from registry.redhat.io.
     # Usable for online or bundled installer.
+    AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest}"
     podman pull $AAP_DASHBOARD_IMAGE
   else
     if [ "$USE_QUAY_IO_IMAGE" == "1" ]
     then
+      AAP_DASHBOARD_IMAGE="quay.io/aap/automation-dashboard:$QUAY_IO_IMAGE_TAG"
       # Pull image from quay.io,
-      # rename it to registry.redhat.io/...,
       # include it into bundled installer.
-      echo "Pulling quay.io/aap/automation-dashboard:$QUAY_IO_IMAGE_TAG image"
-      podman pull quay.io/aap/automation-dashboard:$QUAY_IO_IMAGE_TAG
-      podman tag quay.io/aap/automation-dashboard:$QUAY_IO_IMAGE_TAG $AAP_DASHBOARD_IMAGE
+      echo "Pulling $AAP_DASHBOARD_IMAGE image"
+      podman pull $AAP_DASHBOARD_IMAGE
     else
       # Build image, include it into bundled installer.
+      AAP_DASHBOARD_IMAGE_base="local-registry/local-ns/automation-dashboard-rhel9"
+      AAP_DASHBOARD_IMAGE="$AAP_DASHBOARD_IMAGE_base:latest"
       echo "Building $AAP_DASHBOARD_IMAGE image"
       ansible-playbook -i inventory ansible.containerized_installer.util_podman_login
-      podman build -f ../docker/Dockerfile.backend -t $AAP_DASHBOARD_IMAGE .. # --no-cache
+      podman build -f ../docker/Dockerfile.backend --ignorefile ../docker/Dockerfile.backend.dockerignore -t $AAP_DASHBOARD_IMAGE .. # --no-cache
+      # Additional tags for easier identification of the image.
+      git_commit_sha=$(git rev-parse HEAD)
+      git_branch=$(git branch --show-current | tr '/' '-')
+      podman tag $AAP_DASHBOARD_IMAGE $AAP_DASHBOARD_IMAGE_base:$git_commit_sha
+      podman tag $AAP_DASHBOARD_IMAGE $AAP_DASHBOARD_IMAGE_base:$git_branch
     fi
   fi
+  echo "Used AAP_DASHBOARD_IMAGE=$AAP_DASHBOARD_IMAGE image for installer"
 }
 
 function save_container_image() {
@@ -70,7 +73,7 @@ cat <<EOF
 Building AAP automation-dashboard installer...
 Build configuration:
   AAP_DASHBOARD_BUNDLED_INSTALLER=$AAP_DASHBOARD_BUNDLED_INSTALLER
-  AAP_DASHBOARD_IMAGE=$AAP_DASHBOARD_IMAGE
+  (default) AAP_DASHBOARD_IMAGE=$AAP_DASHBOARD_IMAGE
   USE_QUAY_IO_IMAGE=$USE_QUAY_IO_IMAGE
   QUAY_IO_IMAGE_TAG=$QUAY_IO_IMAGE_TAG
   USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=$USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE
