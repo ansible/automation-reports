@@ -184,4 +184,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Successfully set up AAP clusters'))
         if not keep_file:
             self.stdout.write(self.style.NOTICE(f'Removing file {path}'))
-            os.remove(path)
+            try:
+                os.remove(path)
+            except Exception as ex:
+                self.stdout.write(self.style.ERROR(f'Error removing file {path}: {ex}'))
