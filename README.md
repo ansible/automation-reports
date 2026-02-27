@@ -369,3 +369,16 @@ Fix this by loading environ variables - `source .env.sh`.
 - `JOB_EVENT_WORKERS`: Number of processes for event processing (default: 4)
 - `SCHEDULE_MAX_DATA_PARSE_JOBS`: Maximum concurrent parse jobs (default: 30)
 - `DISPATCHER_DB_DOWNTIME_TOLERANCE`: Database reconnection timeout (default: 40 seconds)
+
+## Dependencies management
+
+Dependencies management for backend is described in [REQUIREMENTS.md](REQUIREMENTS.md)
+
+## Licenses management
+
+Licenses for used backend libraries are listed in [licenses/licenses.md](licenses/licenses.md).
+File is updated by running
+
+```bash
+make licenses
+```
