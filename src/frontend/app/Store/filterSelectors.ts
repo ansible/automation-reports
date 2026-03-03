@@ -7,8 +7,7 @@ import { useLabelStore, useJobTemplateStore, useOrganizationStore, useProjectSto
 export const useManualCostAutomation = () =>
   useFilterStore((state) => state.manualCostAutomationPerHour);
 
-export const useAutomatedProcessCost = () =>
-  useFilterStore((state) => state.automatedProcessCostPerMinute);
+export const useMonthlySubscriptionCost = () => useFilterStore((state) => state.monthlySubscriptionCost);
 
 export const useFilterRetrieveError = () =>
   useFilterStore((state) => state.error);

@@ -13,8 +13,7 @@ from backend.api.v1.template_options.serializers import TemplateOptionsSerialize
 from backend.apps.clusters.models import (
     DateRangeChoices,
     Cluster,
-    CostsChoices,
-    Costs, JobTemplate, max_minutes_input, min_minutes_input)
+    JobTemplate, max_minutes_input, min_minutes_input, SubscriptionCost)
 from backend.apps.common.models import Currency, Settings, FilterSet
 
 
@@ -29,14 +28,14 @@ class TemplateOptionsView(AdminOnlyViewSet):
             for choice in DateRangeChoices.choices
         ]
 
-        costs = Costs.get()
+        costs = SubscriptionCost.get()
 
         data = {
             "clusters": Cluster.objects.all().order_by('address'),
             "currencies": Currency.objects.all().order_by("name"),
             "date_ranges": date_range,
-            "manual_cost_automation_per_hour": costs[CostsChoices.MANUAL],
-            "automated_process_cost_per_minute": costs[CostsChoices.AUTOMATED],
+            "manual_cost_automation_per_hour": costs.engineer_avg_hourly_rate,
+            "monthly_subscription_cost": costs.monthly_subscription_cost,
             "currency": Settings.currency(),
             "enable_template_creation_time": Settings.enable_template_creation_time(),
             "filter_sets": FilterSet.objects.all().order_by("name"),
@@ -66,13 +65,9 @@ class TemplateOptionsView(AdminOnlyViewSet):
                 template.time_taken_create_automation_minutes = settings.DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES
                 template.save()
 
-            costs = Costs.objects.all()
-            for cost in costs:
-                if cost.type == CostsChoices.MANUAL:
-                    cost.value = decimal.Decimal(settings.DEFAULT_MANUAL_COST_AUTOMATION)
-                elif cost.type == CostsChoices.AUTOMATED:
-                    cost.value = decimal.Decimal(settings.DEFAULT_AUTOMATED_PROCESS_COST)
-                else:
-                    pass
-                cost.save()
+            costs = SubscriptionCost.get()
+            costs.monthly_subscription_cost = decimal.Decimal(settings.DEFAULT_AUTOMATED_PROCESS_COST)
+            costs.engineer_avg_hourly_rate = decimal.Decimal(settings.DEFAULT_MANUAL_COST_AUTOMATION)
+            costs.save()
+
         return Response(status=status.HTTP_204_NO_CONTENT)

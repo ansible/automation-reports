@@ -10,7 +10,7 @@ import time_machine
 from rest_framework.test import APIClient
 
 from backend.api.v1.ping.views import PingView
-from backend.apps.clusters.models import Project, JobTemplate, Costs, CostsChoices
+from backend.apps.clusters.models import Project, JobTemplate, SubscriptionCost
 from backend.apps.common.models import FilterSet, Currency, Settings, SettingsChoices
 
 test_template_option_expected_data = {
@@ -33,8 +33,8 @@ test_template_option_expected_data = {
         {'key': 'last_2_years', 'value': 'Past 2 years'},
         {'key': 'custom', 'value': 'Custom'}
     ],
-    'manual_cost_automation_per_hour': '3000.00',
-    'automated_process_cost_per_minute': '20.00',
+    'manual_cost_automation_per_hour': '60.00',
+    'monthly_subscription_cost': '10000.00',
     'currency': 1,
     'enable_template_creation_time': True,
     'filter_sets': [
@@ -74,9 +74,9 @@ test_report_expected_data = {
             'time_taken_create_automation_minutes': 60,
             'successful_runs': 1,
             'failed_runs': 0,
-            'automated_costs': '3008.33',
-            'manual_costs': '6000.00',
-            'savings': '2991.67',
+            'automated_costs': '60.09',
+            'manual_costs': '120.00',
+            'savings': '59.91',
             'job_template_id': 1,
             'time_savings': '3575.00',
             'time_savings_str': '59min 35sec'
@@ -100,9 +100,9 @@ test_report_past_month_expected_data = {
             'time_taken_create_automation_minutes': 60,
             'successful_runs': 1,
             'failed_runs': 0,
-            'automated_costs': '3008.33',
-            'manual_costs': '6000.00',
-            'savings': '2991.67',
+            'automated_costs': '60.10',
+            'manual_costs': '120.00',
+            'savings': '59.90',
             'job_template_id': 2,
             'time_savings': '3575.00',
             'time_savings_str': '59min 35sec'
@@ -130,13 +130,13 @@ test_report_details_expected_data = {
         'value': 0.01
     },
     'cost_of_automated_execution': {
-        'value': 6016.67
+        'value': 120.19
     },
     'cost_of_manual_automation': {
-        'value': 12000.0
+        'value': 240.0
     },
     'total_saving': {
-        'value': 5983.33
+        'value': 119.81
     },
     'total_time_saving': {
         'value': 1.99
@@ -183,9 +183,9 @@ test_report_disabled_time_taken_to_create_automation_save_expected_data = {
             'time_taken_create_automation_minutes': 60,
             'successful_runs': 1,
             'failed_runs': 0,
-            'automated_costs': '8.33',
-            'manual_costs': '6000.00',
-            'savings': '5991.67',
+            'automated_costs': '0.10',
+            'manual_costs': '120.00',
+            'savings': '119.90',
             'job_template_id': 2,
             'time_savings': '7175.00',
             'time_savings_str': '1h 59min 35sec'
@@ -382,19 +382,20 @@ class TestViews:
 
     def test_update_manual_costs(self, mock_auth):
         client = APIClient()
-        data = dict(type="manual", value=1000)
-        response = client.post(f"/api/v1/costs/", content_type='application/json', data=json.dumps(data))
+        data = dict(monthly_subscription_cost=5000, engineer_avg_hourly_rate=1000)
+        response = client.post("/api/v1/costs/", content_type='application/json', data=json.dumps(data))
         assert response.status_code == 202
-        costs = Costs.get()
-        assert costs[CostsChoices.MANUAL] == 1000
+        costs = SubscriptionCost.get()
+        assert costs.engineer_avg_hourly_rate == 1000
 
-    def test_update_automated_costs(self, mock_auth):
+    @pytest.mark.usefixtures("mock_auth")
+    def test_update_monthly_subscription_cost(self):
         client = APIClient()
-        data = dict(type="automated", value=1000)
-        response = client.post(f"/api/v1/costs/", content_type='application/json', data=json.dumps(data))
+        data = dict(monthly_subscription_cost=5000, engineer_avg_hourly_rate=1000)
+        response = client.post("/api/v1/costs/", content_type='application/json', data=json.dumps(data))
         assert response.status_code == 202
-        costs = Costs.get()
-        assert costs[CostsChoices.AUTOMATED] == 1000
+        costs = SubscriptionCost.get()
+        assert costs.monthly_subscription_cost == 5000
 
     def test_create_new_report(self, mock_auth):
         client = APIClient()
@@ -488,9 +489,9 @@ class TestViews:
             ("Time taken to create automation (minutes)", "60"),
             ("Running time (seconds)", "25.000"),
             ("Running time", "0min 25sec"),
-            ("Automated costs", "3008.33"),
-            ("Manual costs", "6000.00"),
-            ("Savings", "2991.67"),
+            ("Automated costs", "60.10"),
+            ("Manual costs", "120.00"),
+            ("Savings", "59.90"),
         ]
 
         for index, data in enumerate(expected_data):

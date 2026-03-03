@@ -15,7 +15,7 @@ from .fixtures import all_aap_versions, dict_sync_schedule_1min
 from .fixtures.aap_common import dict_cluster_versioned
 
 from backend.apps.clusters.connector import ApiConnector
-from backend.apps.clusters.models import AAPUser, ClusterSyncData, ClusterSyncStatus, ClusterVersionChoices, Cluster, Costs, ExecutionEnvironment, Host, InstanceGroup, Inventory, Job, JobHostSummary, JobLabel, JobStatusChoices, JobTemplate, Label, NameDescriptionModel, Organization, Project
+from backend.apps.clusters.models import AAPUser, ClusterSyncData, ClusterSyncStatus, ClusterVersionChoices, Cluster, SubscriptionCost, ExecutionEnvironment, Host, InstanceGroup, Inventory, Job, JobHostSummary, JobLabel, JobStatusChoices, JobTemplate, Label, NameDescriptionModel, Organization, Project
 from backend.apps.clusters.encryption import encrypt_value
 
 from django.core.management import call_command
@@ -59,7 +59,7 @@ class TestDispatcherTask:
         assert 0 == Job.objects.count()
         assert 0 == JobLabel.objects.count()
         assert 0 == JobHostSummary.objects.count()
-        assert 0 == Costs.objects.count()
+        assert 0 == SubscriptionCost.objects.count()
 
         call_command("setclusters", clusters_yaml_filename)
         assert 1 == Cluster.objects.count()
@@ -121,7 +121,7 @@ class TestDispatcherTask:
         assert 0 == Job.objects.count()
         assert 0 == JobLabel.objects.count()
         assert 0 == JobHostSummary.objects.count()
-        assert 0 == Costs.objects.count()
+        assert 0 == SubscriptionCost.objects.count()
 
         # the tested function
         task.run(pk=sync_job.pk)
@@ -150,7 +150,7 @@ class TestDispatcherTask:
         assert 0 == Job.objects.count()
         assert 0 == JobLabel.objects.count()
         assert 0 == JobHostSummary.objects.count()
-        assert 0 == Costs.objects.count()
+        assert 0 == SubscriptionCost.objects.count()
 
         # Note: this seems to be ONLY the first step of sync.
         # Objects as AAPUser, Inventory etc - who creates those?
@@ -186,7 +186,7 @@ class TestDispatcherTask:
         assert 0 == Job.objects.count()
         assert 0 == JobLabel.objects.count()
         assert 0 == JobHostSummary.objects.count()
-        assert 0 == Costs.objects.count()
+        assert 0 == SubscriptionCost.objects.count()
 
         # The first SyncJob (type=SyncJobTypeChoices.SYNC_JOBS) created
         # N ClusterSyncData and N SyncJob objects.
@@ -234,7 +234,7 @@ class TestDispatcherTask:
         assert 1 == Job.objects.count() #
         assert 1 == JobLabel.objects.count()
         assert 1 == JobHostSummary.objects.count() #
-        assert 0 == Costs.objects.count()
+        assert 0 == SubscriptionCost.objects.count()
 
         for sync_data in ClusterSyncData.objects.all():
             sync_job = SyncJob.objects.get(cluster_sync_data=sync_data)
@@ -268,5 +268,5 @@ class TestDispatcherTask:
         assert 4 == Job.objects.count() #
         assert 6 == JobLabel.objects.count()
         assert 4 == JobHostSummary.objects.count() #
-        assert 0 == Costs.objects.count()
+        assert 0 == SubscriptionCost.objects.count()
         # Here we see, which objects are missing in AAP, so that part of code is not tested.

@@ -2,7 +2,7 @@ import calendar
 import datetime
 import decimal
 import logging
-from typing import List
+from typing import List, Self, Any
 from urllib.parse import urlencode
 
 import dateutil.parser
@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import QuerySet, Min
+from solo.models import SingletonModel
 
 from backend.apps.clusters.schemas import DateRangeSchema, RelatedLinks
 
@@ -21,8 +22,32 @@ automation_time = settings.DEFAULT_TIME_TAKEN_TO_CREATE_AUTOMATION_MINUTES
 max_minutes_input = 1000000
 min_minutes_input = 1
 
-
 logger = logging.getLogger('automation_dashboard.models')
+
+
+def month_range_iter(start_date, end_date):
+    """
+    Helper generator to iterate over each (year, month) tuple between start_date and end_date (inclusive).
+    Advances month and year correctly, handling year rollover.
+    """
+    year, month = start_date.year, start_date.month
+    while (year < end_date.year) or (year == end_date.year and month <= end_date.month):
+        yield year, month
+        month += 1
+        if month > 12:
+            month = 1
+            year += 1
+
+
+def get_month_overlap_days(current_year, current_month, start_date, end_date):
+    """
+    Helper function to calculate the number of days in a month and the actual overlap range
+    for a given start_date and end_date. Returns (month_days, month_start_day, month_end_day).
+    """
+    month_days = calendar.monthrange(current_year, current_month)[1]
+    month_start_day = start_date.day if (current_year == start_date.year and current_month == start_date.month) else 1
+    month_end_day = end_date.day if (current_year == end_date.year and current_month == end_date.month) else month_days
+    return month_days, month_start_day, month_end_day
 
 
 class CreatUpdateModel(models.Model):
@@ -50,7 +75,8 @@ class Cluster(CreatUpdateModel):
     client_id = models.CharField(max_length=255, default='')
     client_secret = models.BinaryField(default=b'')
     verify_ssl = models.BooleanField(default=True)
-    aap_version = models.CharField(max_length=15, choices=ClusterVersionChoices.choices, default=ClusterVersionChoices.AAP24)
+    aap_version = models.CharField(max_length=15, choices=ClusterVersionChoices.choices,
+                                   default=ClusterVersionChoices.AAP24)
 
     def __str__(self):
         return f'{self.protocol}://{self.address}:{self.port}'
@@ -364,8 +390,8 @@ class BaseModel(CreatUpdateModel):
                 model.save()
             except cls.DoesNotExist:
                 model, created = cls.objects.update_or_create(
-                    name = name,
-                    cluster = cluster,
+                    name=name,
+                    cluster=cluster,
                     defaults={**kwargs, 'external_id': external_id},
                 )
         else:
@@ -407,7 +433,7 @@ class Organization(NameDescriptionModel):
 
 
 class JobTemplate(NameDescriptionModel):
-    #Calculations can result in large values, so bigint field
+    # Calculations can result in large values, so bigint field
     time_taken_manually_execute_minutes = models.BigIntegerField(
         default=manual_time,
         validators=[MinValueValidator(min_minutes_input), MaxValueValidator(max_minutes_input)])
@@ -460,7 +486,7 @@ class AAPUser(BaseModel):
 
 
 class Inventory(NameDescriptionModel):
-   pass
+    pass
 
 
 class ExecutionEnvironment(NameDescriptionModel):
@@ -549,12 +575,14 @@ class JobManager(JobFilterMethods, models.Manager):
 class Job(BaseModel):
     type = models.CharField(choices=JobTypeChoices.choices, default=JobTypeChoices.JOB, max_length=20)
     job_type = models.CharField(choices=JobRunTypeChoices.choices, default=JobTypeChoices.JOB, max_length=20)
-    launch_type = models.CharField(choices=JobLaunchTypeChoices.choices, default=JobLaunchTypeChoices.MANUAL, max_length=20)
+    launch_type = models.CharField(choices=JobLaunchTypeChoices.choices, default=JobLaunchTypeChoices.MANUAL,
+                                   max_length=20)
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, related_name='jobs')
     instance_group = models.ForeignKey(InstanceGroup, on_delete=models.CASCADE, null=True, related_name='jobs')
-    execution_environment = models.ForeignKey(ExecutionEnvironment, on_delete=models.CASCADE, null=True, related_name='jobs')
+    execution_environment = models.ForeignKey(ExecutionEnvironment, on_delete=models.CASCADE, null=True,
+                                              related_name='jobs')
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, null=True, related_name='jobs')
     job_template = models.ForeignKey(JobTemplate, on_delete=models.CASCADE, null=True, related_name='jobs')
     launched_by = models.ForeignKey(AAPUser, on_delete=models.CASCADE, null=True, related_name='jobs')
@@ -615,60 +643,88 @@ class JobHostSummary(CreatUpdateModel):
         return f'{self.job.name} - {self.host.name}'
 
 
-class CostsChoices(models.TextChoices):
+class SubscriptionCost(SingletonModel):
     """
-    manual = 'Average cost of an employee minute'
-    automated = 'Cost per minute of AAP'
+    Stores subscription cost information for the AAP subscription, including monthly cost and average engineer hourly rate.
+    This is used for cost calculations in the dashboard reports.
+
+    There should typically only be one record in this table, which can be updated as needed when subscription costs change.
     """
+    monthly_subscription_cost = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=decimal.Decimal('0.01'),
+        validators=[MinValueValidator(decimal.Decimal('0.01')), MaxValueValidator(decimal.Decimal(1000000))],
+        help_text="Monthly cost of running the Ansible Automation Platform. This value includes license, labor and infrastructure costs to run AAP. It is used to calculate the automation savings.",
 
-    MANUAL = "manual", "Manual"
-    AUTOMATED = "automated", "Automated"
+    )
 
+    engineer_avg_hourly_rate = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=decimal.Decimal('0.01'),
+        validators=[MinValueValidator(decimal.Decimal('0.01')), MaxValueValidator(decimal.Decimal(1000))],
+        help_text="Average hourly rate for engineers performing manual tasks (used for cost calculations in reports)",
+    )
 
-class Costs(CreatUpdateModel):
-    """
-    This class represents a cost entry in the system, storing a monetary value and its type (manual or automated).
-    It inherits timestamp fields from `CreatUpdateModel` and ensures each cost type is unique.
-    """
+    def __str__(self):
+        return f'Monthly Subscription Cost: {self.monthly_subscription_cost}, Engineer Average Hourly Rate: {self.engineer_avg_hourly_rate}'
 
-    value = models.DecimalField(
-        max_digits=15, decimal_places=2, default=decimal.Decimal(0),
-        validators=[MinValueValidator(decimal.Decimal(0)), MaxValueValidator(decimal.Decimal(1000))])
-    type = models.CharField(choices=CostsChoices.choices, unique=True, max_length=20)
-
-    def __str__(self) -> str:
-        return f'{self.type}: {self.value}'
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if self.monthly_subscription_cost <= decimal.Decimal(0):
+            raise ValueError("Monthly AAP cost must be greater than zero.")
+        if self.monthly_subscription_cost > decimal.Decimal(1000000):
+            raise ValueError("Monthly AAP cost be less than or equal to 1000000.")
+        if self.engineer_avg_hourly_rate <= decimal.Decimal(0):
+            raise ValueError("Engineer average hourly rate must be greater than zero.")
+        if self.engineer_avg_hourly_rate > decimal.Decimal(1000):
+            raise ValueError("Engineer average hourly rate must be less than or equal to 1000.")
+        super().save(*args, **kwargs)
 
     @classmethod
-    def get(cls) -> dict[str, decimal.Decimal]:
-
+    def get(cls) -> Self:
         """
-        This function retrieves the current cost entries (manual and automated) from the database.
-        If any cost type is missing, it creates it with a default value from settings.
-        The function ensures both cost types always exist and returns a dictionary mapping cost type to cost instance.
+        Retrieves the singleton instance of SubscriptionCost. If it does not exist, it creates one with default values.
+        Returns the SubscriptionCost instance containing the monthly subscription cost and average engineer hourly rate.
         """
-        costs = {cost.type: cost.value for cost in list(Costs.objects.all())}
+        instance, _ = cls.objects.get_or_create(
+            pk=1,
+            defaults={
+                "monthly_subscription_cost": decimal.Decimal(settings.DEFAULT_AUTOMATED_PROCESS_COST),
+                "engineer_avg_hourly_rate": decimal.Decimal(settings.DEFAULT_MANUAL_COST_AUTOMATION),
+            },
+        )
+        return instance
 
-        manual_cost = costs.get(CostsChoices.MANUAL, None)
-        automated_cost = costs.get(CostsChoices.AUTOMATED, None)
+    @classmethod
+    def daily_subscription_cost(cls,
+                                start: datetime.datetime | None = None,
+                                end: datetime.datetime | None = None) -> decimal.Decimal:
+        """
+        Calculates the daily subscription cost for a given date range based on the monthly subscription cost.
+        It prorates the monthly cost to a daily cost and multiplies it by the number of days in the date range.
+        """
+        subscription_cost = cls.get()
+        monthly_cost = subscription_cost.monthly_subscription_cost
+        now = datetime.datetime.now(pytz.utc)
+        default_days_in_month = calendar.monthrange(now.year, now.month)[1]
+        default_daily_cost = monthly_cost / decimal.Decimal(default_days_in_month)
+        if start is None or end is None:
+            return default_daily_cost
+        if start > end:
+            start, end = end, start
+        if start.year == end.year and start.month == end.month:
+            days_in_month = calendar.monthrange(start.year, start.month)[1]
+            return monthly_cost / decimal.Decimal(days_in_month)
 
-        if manual_cost and automated_cost:
-            return costs
-
-        if manual_cost is None:
-            default_value = decimal.Decimal(settings.DEFAULT_MANUAL_COST_AUTOMATION)
-            Costs.objects.create(
-                type=CostsChoices.MANUAL,
-                value=default_value,
-            )
-
-        if automated_cost is None:
-            default_value = decimal.Decimal(settings.DEFAULT_AUTOMATED_PROCESS_COST)
-            Costs.objects.create(
-                type=CostsChoices.AUTOMATED,
-                value=default_value,
-            )
-
-        costs = {cost.type: cost.value for cost in list(Costs.objects.all())}
-
-        return costs
+        total_days = 0
+        total_cost = decimal.Decimal(0)
+        for current_year, current_month in month_range_iter(start, end):
+            month_days, month_start_day, month_end_day = get_month_overlap_days(current_year, current_month, start, end)
+            overlap_days = month_end_day - month_start_day + 1
+            if overlap_days <= 0:
+                continue
+            proportional_cost = monthly_cost * decimal.Decimal(overlap_days) / decimal.Decimal(month_days)
+            total_days += overlap_days
+            total_cost += proportional_cost
+        return total_cost / decimal.Decimal(total_days) if total_days > 0 else default_daily_cost

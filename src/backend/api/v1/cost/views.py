@@ -6,35 +6,28 @@ from rest_framework.viewsets import GenericViewSet
 
 from backend.api.v1.cost.serializers import CostSerializer, CostCreateSerializer
 from backend.api.v1.mixins import AdminOnlyViewSet
-from backend.apps.clusters.models import Costs, CostsChoices
+from backend.apps.clusters.models import SubscriptionCost
 
 
 class CostView(AdminOnlyViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     serializer_class = CostSerializer
 
-    def get_queryset(self) -> QuerySet[Costs]:
-        return Costs.objects.all()
+    def get_queryset(self) -> QuerySet[SubscriptionCost]:
+        return SubscriptionCost.objects.all()
+
+    def list(self, request, *args, **kwargs) -> Response:
+        try:
+            instance = SubscriptionCost.objects.get(pk=1)
+        except SubscriptionCost.DoesNotExist:
+            return Response(
+                {"detail": "Subscription cost is not initialized."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        serializer = self.get_serializer(instance, many=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request: Request, *args, **kwargs) -> Response:
         serializer = CostCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        value = serializer.data['value']
-        _type = serializer.data['type']
-
-        instance = Costs.objects.filter(type=_type).first()
-        if instance is None:
-            Costs.objects.create(
-                value=value,
-                type=_type,
-            )
-        else:
-            instance.value = value
-            instance.save()
-
-        costs = Costs.get()
-        response_data = {
-            "manual_cost_automation": costs[CostsChoices.MANUAL],
-            "automated_process_cost": costs[CostsChoices.AUTOMATED]
-        }
-        return Response(data=response_data, status=status.HTTP_202_ACCEPTED)
+        serializer.save()
+        return Response(data=serializer.data, status=status.HTTP_202_ACCEPTED)

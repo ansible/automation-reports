@@ -119,7 +119,10 @@ const exportToPDF = async (
     })
 };
 
-const updateCosts = async (payload) => {
+const updateCosts = async (payload: {
+  monthly_subscription_cost: string | number;
+  engineer_avg_hourly_rate: string | number;
+}) => {
   return api.post('api/v1/costs/', payload);
 };
 

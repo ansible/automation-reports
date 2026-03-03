@@ -38,16 +38,15 @@ from backend.api.v1.report.serializers import (
 from backend.apps.clusters.models import (
     Job,
     JobStatusChoices,
-    CostsChoices,
     JobTemplate,
     Organization,
     Label,
     Project,
     JobHostSummary,
     Cluster,
-    Costs,
     DateRangeChoices,
-    JobLabel)
+    JobLabel,
+    SubscriptionCost)
 from backend.apps.clusters.schemas import (
     ReportData,
     ReportDataValue,
@@ -85,9 +84,18 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
     ordering = ["name"]
 
     def get_base_queryset(self) -> QuerySet[Job]:
-        costs = Costs.get()
-        automated_cost_value_per_second = costs[CostsChoices.AUTOMATED] / decimal.Decimal(60)
-        manual_cost_value_per_minute = costs[CostsChoices.MANUAL] / decimal.Decimal(60)
+        options = get_filter_options(self.request)
+        costs = SubscriptionCost.get()
+        if options.date_range is not None:
+            daily_subscription_cost = SubscriptionCost.daily_subscription_cost(
+                start=options.date_range.start,
+                end=options.date_range.end
+            )
+        else:
+            daily_subscription_cost = SubscriptionCost.daily_subscription_cost()
+
+        automated_cost_value_per_second = daily_subscription_cost / decimal.Decimal(86400)
+        manual_cost_value_per_minute = costs.engineer_avg_hourly_rate / decimal.Decimal(60)
 
         enable_template_creation_time = Settings.enable_template_creation_time()
 
@@ -312,7 +320,7 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
         responses={(200, "text/csv; charset=UTF-8"): str},
     )
     @action(methods=["get"], detail=False)
-    def csv(self, request: Request) -> Response:
+    def csv(self, request: Request) -> HttpResponse:
         qs = self.filter_queryset(self.get_base_queryset())
         response = HttpResponse(
             content_type="text/csv; charset=UTF-8",
@@ -373,7 +381,12 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
         responses={(200, "application/pdf"): bytes},
     )
     @action(methods=["post"], detail=False)
-    def pdf(self, request: Request) -> WeasyTemplateResponse:
+    def pdf(self, request: Request) -> WeasyTemplateResponse | Response:
+        options = get_filter_options(request)
+        if options.date_range is None:
+            return Response(data={"error": "Date range is required for PDF generation."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         table_qs = self.filter_queryset(self.get_base_queryset())[:settings.MAX_PDF_JOB_TEMPLATES]
 
         currency_value = Settings.currency()
@@ -385,8 +398,6 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
 
         serializer = JobSerializer(table_qs, many=True)
         details = self.get_details(request)
-
-        options = get_filter_options(request)
 
         options_data = OrderedDict()
 

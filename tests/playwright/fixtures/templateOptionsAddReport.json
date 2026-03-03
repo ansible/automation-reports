@@ -737,8 +737,8 @@
             "cluster_id": 2
         }
     ],
-    "manual_cost_automation": 45.0,
-    "automated_process_cost": 63.0,
+    "manual_cost_automation_per_hour": 45.0,
+    "monthly_subscription_cost": 1000.0,
     "currency": 3,
     "enable_template_creation_time": true,
     "filter_sets": [

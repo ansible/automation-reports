@@ -6,7 +6,7 @@ import os
 from django.conf import settings
 
 from .fixtures import all_aap_versions, dict_sync_schedule_1min, dict_sync_schedule_10sec
-from backend.apps.clusters.models import AAPUser, ClusterSyncData, ClusterSyncStatus, Cluster, Costs, ExecutionEnvironment, Host, InstanceGroup, Inventory, Job, JobHostSummary, JobLabel, JobTemplate, Label, Organization, Project
+from backend.apps.clusters.models import AAPUser, ClusterSyncData, ClusterSyncStatus, Cluster, SubscriptionCost, ExecutionEnvironment, Host, InstanceGroup, Inventory, Job, JobHostSummary, JobLabel, JobTemplate, Label, Organization, Project
 from backend.apps.common.models import Currency, FilterSet, Settings
 from backend.apps.scheduler.models import SyncJob, SyncSchedule, SyncScheduleState, JobTypeChoices as SyncJobTypeChoices
 
@@ -92,4 +92,4 @@ class TestSetClusters:
         assert 4 == Job.objects.count() #
         assert 6 == JobLabel.objects.count()
         assert 4 == JobHostSummary.objects.count() #
-        assert 0 == Costs.objects.count()
+        assert 0 == SubscriptionCost.objects.count()

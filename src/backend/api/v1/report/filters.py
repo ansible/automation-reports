@@ -1,4 +1,5 @@
 from django.db.models import QuerySet
+from django.http import HttpRequest
 from rest_framework import filters
 from rest_framework.request import Request
 
@@ -6,22 +7,24 @@ from backend.apps.clusters.models import DateRangeChoices, Job
 from backend.apps.clusters.schemas import DateRangeSchema, QueryParams
 
 
-def get_filter_options(request: Request) -> QueryParams:
+def get_filter_options(request: Request | HttpRequest) -> QueryParams:
     options = QueryParams()
     fields = type(options).model_fields
     date_range_fields = ["start_date", "end_date", "date_range"]
 
+    query_params = getattr(request, 'query_params', request.GET)
+
     for field in fields:
         if field in date_range_fields:
             continue
-        values = request.query_params.get(field, None)
+        values = query_params.get(field, None)
         if values:
             values = sorted([int(value) for value in values.split(",")], key=int)
             setattr(options, field, values)
 
-    date_range = request.query_params.get("date_range", None)
-    start_date = request.query_params.get("start_date", None)
-    end_date = request.query_params.get("end_date", None)
+    date_range = query_params.get("date_range", None)
+    start_date = query_params.get("start_date", None)
+    end_date = query_params.get("end_date", None)
 
     if date_range is not None:
         options.date_range = DateRangeChoices.get_date_range(
@@ -29,7 +32,6 @@ def get_filter_options(request: Request) -> QueryParams:
             start=start_date,
             end=end_date,
         )
-
     return options
 
 

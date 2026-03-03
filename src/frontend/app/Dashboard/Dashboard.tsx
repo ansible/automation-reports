@@ -45,7 +45,11 @@ import { CurrencySelector } from '@app/Components';
 
 import useFilterStore from '@app/Store/filterStore';
 import useCommonStore from '@app/Store/commonStore';
-import { useAutomatedProcessCost, useFilterRetrieveError, useManualCostAutomation } from '@app/Store/filterSelectors';
+import {
+  useMonthlySubscriptionCost,
+  useFilterRetrieveError,
+  useManualCostAutomation,
+} from '@app/Store/filterSelectors';
 import { useAuthStore } from '@app/Store/authStore';
 import { toasterFromError, ToasterProvider, toasterSuccessMsg } from '@app/Components/Toaster';
 
@@ -68,7 +72,7 @@ const Dashboard: React.FunctionComponent = () => {
   } as PaginationParams);
   const [ordering, setOrdering] = React.useState<string>('name');
   const hourly_manual_costs = useManualCostAutomation();
-  const hourly_automated_process_costs = useAutomatedProcessCost();
+  const monthlySubscriptionCost = useMonthlySubscriptionCost();
   const interval = React.useRef<number | undefined>(undefined);
   const requestParamsData = React.useRef<RequestFilter>(requestParams as RequestFilter);
   const controller = React.useRef<AbortController | undefined>(undefined);
@@ -76,7 +80,7 @@ const Dashboard: React.FunctionComponent = () => {
   const containerLineRefChart = React.useRef<HTMLDivElement>(null);
   const logErrorMessage = useAuthStore((state) => state.logErrorMessage);
   const saveEnableTemplateCreationTime = useCommonStore((state) => state.saveEnableTemplateCreationTime);
-  const setAutomatedProcessCost = useFilterStore((state) => state.setAutomatedProcessCostPerMinute);
+  const setMonthlySubscriptionCost = useFilterStore((state) => state.setMonthlySubscriptionCost);
   const setManualProcessCost = useFilterStore((state) => state.setManualProcessCostPerHour);
   const maxPDFJobTemplates = useFilterStore((state) => state.max_pdf_job_templates);
   const reloadData = useFilterStore((state) => state.reloadData);
@@ -194,29 +198,38 @@ const Dashboard: React.FunctionComponent = () => {
   }, [reloadData]);
 
   const costChanged = (type: string, value: number) => {
-    const oldValue = type === 'manual' ? hourly_manual_costs : hourly_automated_process_costs;
-    if (oldValue !== value) {
+    const currentManualCost = Number(hourly_manual_costs);
+    const currentMonthlyCost = Number(monthlySubscriptionCost);
+    const normalizedValue = Number(value.toFixed(2));
+
+    const hasChanged =
+      (type === 'manual' && currentManualCost !== normalizedValue) ||
+      (type === 'automated' && currentMonthlyCost !== normalizedValue);
+
+    if (hasChanged) {
       clearTimeout();
       setLoading(true);
       value = Number(value.toFixed(2));
-      let msg =
-        type === 'manual'
-          ? 'Average cost of per minute to manually run the job'
-          : 'Average cost per minute of running on AAP';
-      RestService.updateCosts({ type: type, value: value })
+      const data = {
+        monthly_subscription_cost: type === 'manual' ? currentMonthlyCost : value,
+        engineer_avg_hourly_rate: type === 'manual' ? value : currentManualCost,
+      };
+      let msg = type === 'manual' ? 'Hourly rate for manually running the job' : 'Monthly AAP cost';
+
+      RestService.updateCosts(data)
         .then(() => {
           msg += ' updated successfully.';
           toaster.add(toasterSuccessMsg(msg));
           fetchServerTableData(true, false);
           if (type === 'manual') {
-            setManualProcessCost(value);
+            setManualProcessCost(normalizedValue);
           } else {
-            setAutomatedProcessCost(value);
+            setMonthlySubscriptionCost(normalizedValue);
           }
         })
         .catch((e) => {
           const errorMsg = 'Failed to update ' + msg + '. ' + getErrorMessage(e);
-          handelError({name: e?.name, message: errorMsg});
+          handelError({ name: e?.name, message: errorMsg });
         });
     } else {
       afterDataRetrieve();
