@@ -39,4 +39,8 @@ requirements-check:
 		echo "Requirements-build.txt is in sync."; \
 	fi
 
-.PHONY: sync-requirements requirements requirements-check
+licenses:
+	@echo "Syncing licenses/licenses.md..."
+	@./sync-licenses.sh
+
+.PHONY: docker-compose sync-requirements requirements requirements-check licenses
