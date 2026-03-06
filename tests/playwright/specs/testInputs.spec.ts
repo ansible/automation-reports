@@ -57,7 +57,7 @@ test.describe('Test inputs', () => {
   test('Test numerical inputs max value', async ({ page }) => {
     const maxValues = [
       { element: 'hourly-manual-costs', maxValue: 1000 },
-      { element: 'hourly-automated-process-costs', maxValue: 1000 },
+      { element: 'monthly-subscription-cost', maxValue: 1000000 },
       { element: '0-time_taken_manually_execute_minutes', maxValue: 1000000 },
     ];
     const count = maxValues.length;

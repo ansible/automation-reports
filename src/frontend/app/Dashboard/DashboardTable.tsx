@@ -25,18 +25,18 @@ import {
   useEnableTemplateCreationTime
 } from '@app/Store/commonSelectors';
 import {
-  useAutomatedProcessCost,
-  useManualCostAutomation
+  useMonthlySubscriptionCost,
+  useManualCostAutomation,
 } from '@app/Store/filterSelectors';
 
 export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (props: DashboardTableProps) => {
   const hourly_manual_costs = useManualCostAutomation();
-  const hourly_automated_process_costs = useAutomatedProcessCost();
+  const monthly_subscription_cost = useMonthlySubscriptionCost();
   const selectedCurrencySign = useCurrencySign();
   const [hourlyManualCostsChangedError, setHourlyManualCostsChangedError] = React.useState<string | null>(null);
-  const [hourlyAutomatedProcessCostsChangedError, setHourlyAutomatedProcessCostsChangedError] = React.useState<
-    string | null
-  >(null);
+  const [monthlySubscriptionCostChangedError, setMonthlySubscriptionCostChangedError] = React.useState<string | null>(
+    null,
+  );
   const switchEnableTemplateCreationTimeIsChecked = useEnableTemplateCreationTime();
 
   const handlePageChange = (newPage: number) => {
@@ -66,18 +66,18 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
     }
   };
 
-  const hourlyAutomatedProcessCostsChanged = (value: number | null | undefined) => {
+  const monthlySubscriptionCostChanged = (value: number | null | undefined) => {
     if (value || value === 0) {
       if (value <= 0) {
-        setHourlyAutomatedProcessCostsChangedError('Value must be greater then 0!');
-      } else if (value > 1000) {
-        setHourlyAutomatedProcessCostsChangedError('Value must be less than or equal to 1000!');
+        setMonthlySubscriptionCostChangedError('Value must be greater then 0!');
+      } else if (value > 1000000) {
+        setMonthlySubscriptionCostChangedError('Value must be less than or equal to 1000000!');
       } else {
-        setHourlyAutomatedProcessCostsChangedError(null);
+        setMonthlySubscriptionCostChangedError(null);
         props.onCostChanged('automated', value);
       }
     }else{
-      setHourlyAutomatedProcessCostsChangedError('Please enter a valid number!');
+      setMonthlySubscriptionCostChangedError('Please enter a valid number!');
     }
   };
 
@@ -158,9 +158,9 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
             <FlexItem>
               <Form onSubmit={(e) => e.preventDefault()}>
                 <FormGroup
-                  label={`Average cost per minute of running on AAP (${selectedCurrencySign})`}
+                  label={`Monthly AAP cost (${selectedCurrencySign})`}
                   labelHelp={
-                    <Tooltip content="Please enter an average cost per minute of running a job in the Ansible Automation Platform">
+                    <Tooltip content="Monthly cost of running the Ansible Automation Platform. This value includes license, labor and infrastructure costs to run AAP. It is used to calculate the automation savings.">
                       <Icon size="md" className="pf-v6-u-ml-sm">
                         <OutlinedQuestionCircleIcon />
                       </Icon>
@@ -169,10 +169,10 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                 >
                   <CustomInput
                     type={'number'}
-                    id={'hourly-automated-process-costs'}
-                    onBlur={(value) => hourlyAutomatedProcessCostsChanged(value ? parseFloat(value) : value)}
-                    value={hourly_automated_process_costs}
-                    errorMessage={hourlyAutomatedProcessCostsChangedError}
+                    id={'monthly-subscription-cost'}
+                    onBlur={(value) => monthlySubscriptionCostChanged(value ? parseFloat(value) : value)}
+                    value={monthly_subscription_cost}
+                    errorMessage={monthlySubscriptionCostChangedError}
                     onFocus={props.onInputFocus}
                   />
                 </FormGroup>
@@ -215,8 +215,8 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                     result={formatCurrency(props?.costOfAutomatedExecution?.value, selectedCurrencySign)}
                     tooltip={
                       switchEnableTemplateCreationTimeIsChecked
-                        ? 'Running time (s) / 60 * Cost per minute of AAP + Time taken to create automation (minutes) * Average cost of an employee minute'
-                        : 'Running time (s) / 60 * Cost per minute of AAP'
+                        ? 'Running time (s) * Daily subscription cost / 86400 + Time taken to create automation (minutes) * Average cost of an employee minute'
+                        : 'Running time (s) * Daily subscription cost / 86400'
                     }
                   />
                 </CardBody>

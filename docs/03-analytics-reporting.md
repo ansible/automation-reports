@@ -129,7 +129,7 @@ The cost analysis system calculates the business value of automation by comparin
 flowchart TD
     subgraph "Cost Inputs"
         MANUAL_RATE[Manual Cost Rate<br/>$/minute per employee]
-        AUTO_RATE[Automation Cost Rate<br/>$/minute for AAP]
+        AUTO_RATE[Automation Cost Rate<br/>$/day from monthly subscription]
         EXEC_TIME[Execution Time<br/>Minutes to manually run]
         CREATE_TIME[Creation Time<br/>Minutes to create automation]
         HOST_COUNT[Host Count<br/>Number of managed hosts]
@@ -181,13 +181,13 @@ flowchart TD
 **Cost Model Configuration**:
 
 ```python
-class Costs(models.Model):
-    value = DecimalField(max_digits=15, decimal_places=2)
-    type = CharField(choices=CostsChoices.choices, unique=True)
-    
+class SubscriptionCost(SingletonModel):
+    monthly_subscription_cost = DecimalField(max_digits=15, decimal_places=2)
+    engineer_avg_hourly_rate = DecimalField(max_digits=15, decimal_places=2)
+
     # Default values from settings
     DEFAULT_MANUAL_COST_AUTOMATION = 50      # $/hour per employee
-    DEFAULT_AUTOMATED_PROCESS_COST = 20      # $/minute for AAP
+    DEFAULT_AUTOMATED_PROCESS_COST = 10000   # $/monthly subscription for AAP
 ```
 
 ### 3. Time Series Analytics

@@ -173,7 +173,7 @@ test.describe("Set filters", () => {
     await checkCardContent(page, expectedTotals);
   })
 
-  test("Should change curreny to Euro", async ({ page }) => {
+  test("Should change currency to Euro", async ({ page }) => {
     await mockSettingsRoute(page, {"type":"currency","value":2});
     await page.getByRole("button", { name: "British Pound Sterling" }).click();
     await page.getByRole("menuitem", { name: "Euro" }).click();
@@ -210,11 +210,11 @@ test.describe("Set filters", () => {
     );
   })
 
-  test("Should change cost per minute", async ({ page }) => {
-    await mockCostsRoute(page, {"manual_cost_automation":45.0,"automated_process_cost":80.0});
+  test("Should change AAP monthly subscription", async ({ page }) => {
+    await mockCostsRoute(page, { engineer_avg_hourly_rate: 45.0, monthly_subscription_cost: 80.0 });
     await mockReportRoute(page, reportResponseCostPerMinute);
     await mockReportDetailsRoute(page, reportDetailsResponseCostPerMinute);
-    const input = page.getByRole("spinbutton", { name: "hourly-automated-process-costs" });
+    const input = page.getByRole('spinbutton', { name: 'monthly-subscription-cost' });
     await input.fill("80");
     await input.press("Enter");
 

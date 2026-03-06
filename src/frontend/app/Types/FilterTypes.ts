@@ -22,7 +22,7 @@ export interface Currency {
 }
 
 export interface FilterOptionResponse {
-  automated_process_cost_per_minute: number | string;
+  monthly_subscription_cost: number | string;
   clusters: ClusterOption[];
   date_ranges: FilterOption[];
   labels: FilterOptionWithId[];
@@ -44,7 +44,7 @@ export interface Settings {
 
 export interface FilterState {
   filterOptions: FilterOption[];
-  automatedProcessCostPerMinute: number | string;
+  monthlySubscriptionCost: number | string;
   clusters: ClusterOption[];
   dateRangeOptions: FilterOption[];
   manualCostAutomationPerHour: number | string;

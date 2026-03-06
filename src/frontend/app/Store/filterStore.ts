@@ -15,7 +15,7 @@ type FilterStoreState = FilterState & {
 
 type FilterStoreActions = {
   fetchTemplateOptions: () => Promise<void>;
-  setAutomatedProcessCostPerMinute: (cost: number) => void;
+  setMonthlySubscriptionCost: (cost: number) => void;
   setManualProcessCostPerHour: (cost: number) => void;
   setReloadData: (value: boolean) => void;
 };
@@ -27,7 +27,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
     { key: 'project', value: 'Project' },
     { key: 'job_template', value: 'Template' },
   ],
-  automatedProcessCostPerMinute: 0,
+  monthlySubscriptionCost: 0,
   clusters: [],
   dateRangeOptions: [],
   manualCostAutomationPerHour: 0,
@@ -60,7 +60,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
         loading: 'succeeded',
         dateRangeOptions: data.date_ranges,
         manualCostAutomationPerHour: data.manual_cost_automation_per_hour,
-        automatedProcessCostPerMinute: data.automated_process_cost_per_minute,
+        monthlySubscriptionCost: data.monthly_subscription_cost,
         max_pdf_job_templates: data.max_pdf_job_templates,
       });
     } catch {
@@ -68,7 +68,7 @@ const useFilterStore = create<FilterStoreState & FilterStoreActions>((set) => ({
     }
   },
 
-  setAutomatedProcessCostPerMinute: (cost: number) => set({ automatedProcessCostPerMinute: cost }),
+  setMonthlySubscriptionCost: (cost: number) => set({ monthlySubscriptionCost: cost }),
   setManualProcessCostPerHour: (cost: number) => set({ manualCostAutomationPerHour: cost }),
   setReloadData: (value: boolean) => set({ reloadData: value }),
 }));

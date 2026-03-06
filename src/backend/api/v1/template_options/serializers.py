@@ -30,7 +30,12 @@ class TemplateOptionsSerializer(serializers.Serializer):
     currencies = CurrencySerializer(many=True)
     date_ranges = DateRangeSerializer(many=True)
     manual_cost_automation_per_hour = serializers.DecimalField(max_digits=15, decimal_places=2)
-    automated_process_cost_per_minute = serializers.DecimalField(max_digits=15, decimal_places=2)
+    monthly_subscription_cost = serializers.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        min_value=0,
+        max_value=1000000
+    )
     currency = serializers.IntegerField()
     enable_template_creation_time = serializers.BooleanField()
     filter_sets = FilterSetSerializer(many=True)
