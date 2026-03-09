@@ -30,7 +30,7 @@ def get_encryption_key() -> bytes:
     h = hashlib.sha512()
     h.update(smart_bytes(settings.DATABASE_KEY))
     key = base64.urlsafe_b64encode(h.digest())
-    logger.debug("Datebase encryption key loaded.")
+    logger.debug("Database encryption key loaded.")
     return key
 
 
