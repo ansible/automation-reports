@@ -28,9 +28,12 @@ export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (
         <CardTitle>
           <DashboardTotals
             title={'Number of hosts jobs are running on'}
-            tooltip={'This is the total number of hosts that jobs are executed upon.'}
+            tooltip={
+              'Number of hosts that ran at least one job in the selected period. Complements run count by showing how broadly automation is applied across your inventory.'
+            }
             infoIcon={true}
-            result={props.value} />
+            result={props.value}
+          />
         </CardTitle>
         <CardBody>
           <div className={`pf-v6-u-h-initial pf-v6-u-w-100 host-chart ${chartData.items.length === 0 && 'no-data'}`}>

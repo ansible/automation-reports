@@ -33,8 +33,11 @@ export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = 
       <Card style={{ height: 'inherit' }}>
         <CardTitle>
           <DashboardTotals
-            title={'Number of times jobs were run'} result={props.value}
-            tooltip={'This is the total number of individual job executions.'}
+            title={'Number of times jobs were run'}
+            result={props.value}
+            tooltip={
+              'Total number of job executions in the selected period, regardless of success or failure. Use this to understand automation volume, trends, and adoption over time.'
+            }
             infoIcon={true}
           />
         </CardTitle>

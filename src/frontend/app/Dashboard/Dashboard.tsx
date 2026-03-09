@@ -374,8 +374,8 @@ const Dashboard: React.FunctionComponent = () => {
   const topUsersToolTip = (
     <div>
       <div>
-        This section lists the top five users of Ansible Automation Platform, with a breakdown of the total number of
-        jobs run by each user.
+        Users ranked by automation runs they triggered or that ran in their context in the selected period. Shows
+        individual adoption and activity.
       </div>
       <ul>
         <br />
@@ -513,7 +513,7 @@ const Dashboard: React.FunctionComponent = () => {
                       <DashboardTopTable
                         title={'Top 5 projects'}
                         tooltip={
-                          'This section lists the top five automation projects based on the number of jobs executed.'
+                          'Projects ranked by total job count in the selected period. Helps identify which projects are driving the most automation activity.'
                         }
                         infoIcon={true}
                         columns={topProjectColumns}

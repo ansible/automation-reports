@@ -21,7 +21,7 @@ export async function checkCardContent(
       .locator(".pf-v6-c-card")
       .filter({ hasText: label });
   
-    const labelSpan = card.locator("span", { hasText: label });
+    const labelSpan = card.locator("span", { hasText: label }).first();
     await expect(labelSpan).toBeVisible();
     const valueSpan = card.locator("span").filter({ hasText: value }).first();
     await expect(valueSpan).toBeVisible();
@@ -35,10 +35,10 @@ export async function generateExpectedTotals(
   automationHours: string
 ) {
   return [
-    { label: "Total number of successful jobs", value: successfulJobs },
-    { label: "Total number of failed jobs", value: failedJobs },
-    { label: "Total number of unique hosts automated", value: uniqueHosts },
-    { label: "Total hours of automation", value: automationHours },
+    { label: 'Successful jobs', value: successfulJobs },
+    { label: 'Failed jobs', value: failedJobs },
+    { label: 'Hosts automated', value: uniqueHosts },
+    { label: 'Hours of automation', value: automationHours },
   ];
 }
 
