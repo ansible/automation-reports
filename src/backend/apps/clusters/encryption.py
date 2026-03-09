@@ -26,11 +26,11 @@ class Fernet256(Fernet):
 
 
 def get_encryption_key() -> bytes:
-    logger.debug("Generating encryption key from SECRET_KEY.")
+    logger.debug("Loading database encryption key.")
     h = hashlib.sha512()
     h.update(smart_bytes(settings.DATABASE_KEY))
     key = base64.urlsafe_b64encode(h.digest())
-    logger.debug("Encryption key generated.")
+    logger.debug("Datebase encryption key loaded.")
     return key
 
 
