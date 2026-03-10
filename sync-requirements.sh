@@ -25,7 +25,7 @@ for arg in "$@"; do
 done
 # Generate build requirements from pinned requirements
 echo "Generating requirements-build.txt..."
-pip-compile --generate-hashes --output-file=requirements-build.txt requirements-pinned.txt
+pip-compile --generate-hashes --output-file=requirements-build.txt --allow-unsafe requirements-pinned.txt
 git checkout requirements-pinned.txt
 
 echo "Requirements files synced successfully!"
