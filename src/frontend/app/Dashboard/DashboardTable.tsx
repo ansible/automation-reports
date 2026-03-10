@@ -115,7 +115,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
       title: 'Time taken to create automation (min)',
       info: {
         tooltip:
-          'Estimated time spent creating or authoring the automation (e.g. writing playbooks, setting up jobs) before it could be run. Included in cost when the switch above is on.',
+          'Estimated time spent creating or authoring the automation (for example writing playbooks, setting up jobs) before it could be run. Included in cost when the switch above is on.',
       },
       isEditable: true,
       isVisible: switchEnableTemplateCreationTimeIsChecked,
