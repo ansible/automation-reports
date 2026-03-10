@@ -13,8 +13,10 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
           <Card className="card">
             <CardBody>
               <DashboardTotals
-                title={'Total number of successful jobs'}
-                tooltip={'This indicates the number of automation jobs that were completed successfully.'}
+                title={'Successful jobs'}
+                tooltip={
+                  'Number of job runs that completed without error in the selected period. Use the ratio between successful and failed jobs to track automation health and reliability over time.'
+                }
                 infoIcon={true}
                 result={props?.data?.total_number_of_successful_jobs?.value}
                 url={{
@@ -29,8 +31,10 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
           <Card style={{ height: '100%' }}>
             <CardBody>
               <DashboardTotals
-                title={'Total number of failed jobs'}
-                tooltip={'This shows the number of automation jobs that encountered errors. Analyzing these failures can help improve automation throughput, reduce errors, and improve efficiency.'}
+                title={'Failed jobs'}
+                tooltip={
+                  'Number of job runs that ended in failure in the selected period. Review failed jobs to fix playbooks, credentials, or inventory issues and improve success rates.'
+                }
                 infoIcon={true}
                 result={props?.data?.total_number_of_failed_jobs?.value}
                 url={{
@@ -45,8 +49,10 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
           <Card style={{ height: '100%' }}>
             <CardBody>
               <DashboardTotals
-                title={'Total number of unique hosts automated'}
-                tooltip={'This is the number of Controller inventory records you have automated.'}
+                title={'Hosts automated'}
+                tooltip={
+                  'Number of hosts that executed at least one automation job in the selected period. Indicates how much of your inventory is actively automated and can help with license or capacity planning.'
+                }
                 infoIcon={true}
                 result={props?.data?.total_number_of_unique_hosts?.value}
               />
@@ -57,8 +63,10 @@ export const DashboardTotalCards: React.FunctionComponent<{ data: ReportDetail }
           <Card style={{ height: '100%' }}>
             <CardBody>
               <DashboardTotals
-                title={'Total hours of automation'}
-                tooltip={'This represents the cumulative time that Ansible Automation Platform spent jobs executed.'}
+                title={'Hours of automation'}
+                tooltip={
+                  'Sum of all job runtimes in the selected period. Reflects total automation workload and can inform capacity planning and resource allocation.'
+                }
                 infoIcon={true}
                 result={
                   props?.data?.total_hours_of_automation?.value || props?.data?.total_hours_of_automation?.value === 0

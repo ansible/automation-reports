@@ -106,21 +106,24 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
     {
       name: 'time_taken_manually_execute_minutes',
       title: 'Time taken to manually execute (min)',
-      info: { tooltip: 'Please enter an average time that an engineer would spend to run the job' },
+      info: { tooltip: 'Estimated manual execution time in minutes' },
       isEditable: true,
-      isVisible: true
+      isVisible: true,
     },
     {
       name: 'time_taken_create_automation_minutes',
       title: 'Time taken to create automation (min)',
-      info: { tooltip: 'Please enter the time an engineer would spend to automate this job' },
+      info: {
+        tooltip:
+          'Estimated time spent creating or authoring the automation (for example writing playbooks, setting up jobs) before it could be run. Included in cost when the switch above is on.',
+      },
       isEditable: true,
-      isVisible: switchEnableTemplateCreationTimeIsChecked
+      isVisible: switchEnableTemplateCreationTimeIsChecked,
     },
     { name: 'elapsed', title: 'Running time', valueKey: 'elapsed_str', type: 'time-string', isVisible: true },
     { name: 'automated_costs', title: 'Automated cost', type: 'currency', isVisible: true },
     { name: 'manual_costs', title: 'Manual cost', type: 'currency', isVisible: true },
-    { name: 'savings', title: 'Savings', type: 'currency', isVisible: true }
+    { name: 'savings', title: 'Savings', type: 'currency', isVisible: true },
   ];
   return (
     <>
@@ -137,7 +140,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                 <FormGroup
                   label={`Hourly rate for manually running the job (${selectedCurrencySign})`}
                   labelHelp={
-                    <Tooltip content="Please enter an average cost per hour for the engineer manually running jobs">
+                    <Tooltip content="The hourly labor cost used to estimate what it would cost to run these jobs manually. Used to calculate manual cost and savings in the table below.">
                       <Icon size="md" className="pf-v6-u-ml-sm">
                         <OutlinedQuestionCircleIcon />
                       </Icon>
@@ -200,9 +203,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                   <DashboardTotals
                     title={'Cost of manual automation'}
                     result={formatCurrency(props?.costOfManualAutomation?.value, selectedCurrencySign)}
-                    tooltip={
-                      'Manual time of automation (minutes) * Host executions * Average cost of an employee minute'
-                    }
+                    tooltip={'Total cost if all jobs were run manually'}
                   />
                 </CardBody>
               </Card>
@@ -213,11 +214,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                   <DashboardTotals
                     title={'Cost of automated execution'}
                     result={formatCurrency(props?.costOfAutomatedExecution?.value, selectedCurrencySign)}
-                    tooltip={
-                      switchEnableTemplateCreationTimeIsChecked
-                        ? 'Running time (s) * Daily subscription cost / 86400 + Time taken to create automation (minutes) * Average cost of an employee minute'
-                        : 'Running time (s) * Daily subscription cost / 86400'
-                    }
+                    tooltip={'Total cost of running jobs on AAP'}
                   />
                 </CardBody>
               </Card>
@@ -228,7 +225,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                   <DashboardTotals
                     title={'Total savings/cost avoided'}
                     result={formatCurrency(props?.totalSaving?.value, selectedCurrencySign)}
-                    tooltip={'Cost of manual automation - Cost of automated execution'}
+                    tooltip={'Difference between manual and automated cost'}
                   />
                 </CardBody>
               </Card>
@@ -243,11 +240,7 @@ export const DashboardTable: React.FunctionComponent<DashboardTableProps> = (pro
                         ? formatNumber(props.totalTimeSavings.value, 2) + 'h'
                         : ''
                     }
-                    tooltip={
-                      switchEnableTemplateCreationTimeIsChecked
-                        ? 'Manual time of automation (minutes) * Host executions  + Time taken to create automation (minutes) - Running time (s) / 60'
-                        : 'Manual time of automation (minutes) * Host executions - Running time (s) / 60'
-                    }
+                    tooltip={'Time saved by automation vs manual execution'}
                   />
                 </CardBody>
               </Card>
