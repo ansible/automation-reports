@@ -17,5 +17,6 @@ contentOrigin:
   repofiles: ["./ubi.repo"]
 arches: [x86_64, aarch64]
 installWeakDeps: false
+# Use public UBI image only (schema does not allow context.image + context.containerfile together)
 context:
-  containerfile: docker/Dockerfile.backend
+  image: registry.access.redhat.com/ubi9/ubi-minimal:latest
