@@ -78,7 +78,7 @@ RUN mkdir -p /code/src /etc/dashboard/conf.d
 
 # Install supervisor (requires setuptools, outside hermetic)
 RUN python3.9 -m ensurepip && \
-    pip3.9 install supervisor==4.2.4
+    pip3.9 install supervisor==4.3.0
 
 # Create Python 3.12 virtual environment and install dependencies
 COPY requirements-build.txt /code/
