@@ -1,3 +1,4 @@
+import os
 import random
 from datetime import datetime, timezone, timedelta
 
@@ -155,7 +156,7 @@ class Command(BaseCommand):
             protocol="http",
             address="localhost",
             port=8080,
-            access_token="test",
+            access_token=os.environ.get("TEST_CLUSTER_TOKEN", ""),
             verify_ssl=False
         )
         organizations = self.organizations(cluster)
