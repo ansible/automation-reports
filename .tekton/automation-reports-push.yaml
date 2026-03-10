@@ -154,7 +154,7 @@ spec:
         - name: name
           value: init
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-init:0.2@sha256:284e3029cce3ae5ee0b05866100e300046359f53ae4c77fe6b34c05aa7a72cee
+          value: quay.io/konflux-ci/tekton-catalog/task-init:0.2@sha256:3ca52e1d8885fc229bd9067275f44d5b21a9a609981d0324b525ddeca909bf10
         - name: kind
           value: task
         resolver: bundles
