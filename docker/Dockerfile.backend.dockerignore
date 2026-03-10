@@ -1,2 +1,2 @@
-# src/frontend/
+src/frontend/dist
 src/backend/django_config/local_settings.py
