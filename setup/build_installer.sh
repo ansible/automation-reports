@@ -88,12 +88,12 @@ EOF
 cd setup/
 if [ "$AAP_DASHBOARD_BUNDLED_INSTALLER" == "1" ]
 then
-  INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-bundle.tar.gz"
+  INSTALLER_FILE="${INSTALLER_FILE:-bundle/ansible-automation-dashboard-containerized-setup-bundle.tar.gz}"
   FILES_ADDITIONAL=" bundle/images "
   build_or_pull_container_image
   save_container_image
 else
-  INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup.tar.gz"
+  INSTALLER_FILE="${INSTALLER_FILE:-bundle/ansible-automation-dashboard-containerized-setup.tar.gz}"
   FILES_ADDITIONAL=""
   /bin/rm -f bundle/images/*
 fi
