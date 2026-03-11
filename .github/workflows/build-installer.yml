@@ -31,7 +31,7 @@ on:
 env:
   # use SELECTED_AAP_DASHBOARD_IMAGE, workflow_dispatch will work only after merge to main, so we need to set a default value for now
   # SELECTED_AAP_DASHBOARD_IMAGE: ${{ inputs.AAP_DASHBOARD_IMAGE || 'registry.stage.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest' }}
-  SELECTED_AAP_DASHBOARD_IMAGE: 'quay.io/aap/automation-dashboard:main'
+  SELECTED_AAP_DASHBOARD_IMAGE: 'registry.stage.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest'
 
 jobs:
   bundled-installer:
