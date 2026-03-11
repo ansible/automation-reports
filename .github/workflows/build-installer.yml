@@ -99,12 +99,13 @@ jobs:
           USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=0
           AAP_DASHBOARD_IMAGE=${{ env.SELECTED_AAP_DASHBOARD_IMAGE }}
           INSTALLER_ARCH=${{ matrix.installer_arch }}
+          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ github.ref_name }}-${{ matrix.installer_arch }}.tar.gz"
           setup/build_installer.sh
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: ansible-automation-dashboard-containerized-setup-bundle-${{ github.ref_name }}-${{ matrix.installer_arch }}.tar.gz
-          path: setup/bundle/ansible-automation-dashboard-containerized-setup-bundle.tar.gz
+          path: setup/bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ github.ref_name }}-${{ matrix.installer_arch }}.tar.gz
           retention-days: 31
 
   online-installer:
@@ -117,10 +118,11 @@ jobs:
       - name: Build online installer
         run: >
           AAP_DASHBOARD_BUNDLED_INSTALLER=0
+          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-${{ github.ref_name }}.tar.gz"
           setup/build_installer.sh
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
           name: ansible-automation-dashboard-containerized-setup-${{ github.ref_name }}.tar.gz
-          path: setup/bundle/ansible-automation-dashboard-containerized-setup.tar.gz
+          path: setup/bundle/ansible-automation-dashboard-containerized-setup-${{ github.ref_name }}.tar.gz
           retention-days: 31
