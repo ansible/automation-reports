@@ -79,9 +79,27 @@ def labels(cluster):
 @pytest.fixture
 def job_templates(cluster):
     templates = [
-        JobTemplate(name="Job Template A", cluster=cluster, external_id=1),
-        JobTemplate(name="Job Template B", cluster=cluster, external_id=2),
-        JobTemplate(name="Job Template C", cluster=cluster, external_id=4),
+        JobTemplate(
+            name="Job Template A",
+            cluster=cluster,
+            external_id=1,
+            time_taken_manually_execute_minutes=3500,  # Increased for positive savings
+            time_taken_create_automation_minutes=60
+        ),
+        JobTemplate(
+            name="Job Template B",
+            cluster=cluster,
+            external_id=2,
+            time_taken_manually_execute_minutes=5100,  # Increased for positive savings
+            time_taken_create_automation_minutes=60
+        ),
+        JobTemplate(
+            name="Job Template C",
+            cluster=cluster,
+            external_id=4,
+            time_taken_manually_execute_minutes=60,
+            time_taken_create_automation_minutes=60
+        ),
     ]
     return JobTemplate.objects.bulk_create(templates)
 
@@ -189,7 +207,7 @@ def jobs(
             inventory=Inventory.objects.get(name="Inventory A"),
             job_template=JobTemplate.objects.get(name="Job Template C"),
             launched_by=AAPUser.objects.get(name="AAP User"),
-            status=JobStatusChoices.FAILED, # or ERROR ?
+            status=JobStatusChoices.FAILED,  # or ERROR ?
             started=None,
             finished=None,
             elapsed=0,

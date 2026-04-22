@@ -86,15 +86,17 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
     def get_base_queryset(self) -> QuerySet[Job]:
         options = get_filter_options(self.request)
         costs = SubscriptionCost.get()
+
+        # cost_per_elapsed_second: currency / second — multiply by job.elapsed (seconds) to get job cost
         if options.date_range is not None:
-            daily_subscription_cost = SubscriptionCost.daily_subscription_cost(
+            cost_per_elapsed_second = SubscriptionCost.cost_per_elapsed_second(
                 start=options.date_range.start,
                 end=options.date_range.end
             )
         else:
-            daily_subscription_cost = SubscriptionCost.daily_subscription_cost()
+            cost_per_elapsed_second = SubscriptionCost.cost_per_elapsed_second()
 
-        automated_cost_value_per_second = daily_subscription_cost / decimal.Decimal(86400)
+        # cost_per_elapsed_minute: currency / minute — multiply by time_taken_*_minutes to get cost
         manual_cost_value_per_minute = costs.engineer_avg_hourly_rate / decimal.Decimal(60)
 
         enable_template_creation_time = Settings.enable_template_creation_time()
@@ -114,9 +116,9 @@ class ReportsView(AdminOnlyViewSet, mixins.ListModelMixin, GenericViewSet):
                 elapsed=Sum("elapsed"),
                 num_hosts=Sum("num_hosts"),
                 automated_costs=((F("time_taken_create_automation_minutes") * manual_cost_value_per_minute) + (
-                        F("elapsed") * automated_cost_value_per_second))
+                        F("elapsed") * cost_per_elapsed_second))
                 if enable_template_creation_time
-                else (F("elapsed") * automated_cost_value_per_second),
+                else (F("elapsed") * cost_per_elapsed_second),
                 manual_costs=(F("num_hosts") * F("time_taken_manually_execute_minutes") * manual_cost_value_per_minute),
                 manual_time=(F("num_hosts") * (F("time_taken_manually_execute_minutes") * 60)),
                 time_savings=(F("manual_time") - F("elapsed") - (
