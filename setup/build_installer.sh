@@ -19,6 +19,7 @@ AAP_DASHBOARD_BUNDLED_INSTALLER="${AAP_DASHBOARD_BUNDLED_INSTALLER:-1}"
 USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE="${USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE:-0}"
 USE_QUAY_IO_IMAGE="${USE_QUAY_IO_IMAGE:-0}"
 QUAY_IO_IMAGE_TAG="${QUAY_IO_IMAGE_TAG:-main}"
+INSTALLER_ARCH="${INSTALLER_ARCH:-$(uname -m)}"
 
 function build_or_pull_container_image() {
   if [ "$USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE" == "0" ]
@@ -26,7 +27,7 @@ function build_or_pull_container_image() {
     # Use real image from registry.redhat.io.
     # Usable for online or bundled installer.
     AAP_DASHBOARD_IMAGE="${AAP_DASHBOARD_IMAGE:-registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest}"
-    podman pull $AAP_DASHBOARD_IMAGE
+    podman pull --arch=$INSTALLER_ARCH $AAP_DASHBOARD_IMAGE
   else
     if [ "$USE_QUAY_IO_IMAGE" == "1" ]
     then
@@ -34,14 +35,14 @@ function build_or_pull_container_image() {
       # Pull image from quay.io,
       # include it into bundled installer.
       echo "Pulling $AAP_DASHBOARD_IMAGE image"
-      podman pull $AAP_DASHBOARD_IMAGE
+      podman pull --arch=$INSTALLER_ARCH $AAP_DASHBOARD_IMAGE
     else
       # Build image, include it into bundled installer.
       AAP_DASHBOARD_IMAGE_base="local-registry/local-ns/automation-dashboard-rhel9"
       AAP_DASHBOARD_IMAGE="$AAP_DASHBOARD_IMAGE_base:latest"
       echo "Building $AAP_DASHBOARD_IMAGE image"
       ansible-playbook -i inventory ansible.containerized_installer.util_podman_login
-      podman build -f ../docker/Dockerfile.backend --ignorefile ../docker/Dockerfile.backend.dockerignore -t $AAP_DASHBOARD_IMAGE .. # --no-cache
+      podman build --arch=$INSTALLER_ARCH -f ../docker/Dockerfile.backend --ignorefile ../docker/Dockerfile.backend.dockerignore -t $AAP_DASHBOARD_IMAGE .. # --no-cache
     fi
   fi
   echo "Built or pulled AAP_DASHBOARD_IMAGE=$AAP_DASHBOARD_IMAGE image for installer"
@@ -58,7 +59,8 @@ function save_container_image() {
     -e bundle_install=true \
     -e registry_url_aap_automation_dashboard="$REGISTRY_URL_AAP_AUTOMATION_DASHBOARD" \
     -e registry_ns_aap_automation_dashboard="$REGISTRY_NS_AAP_AUTOMATION_DASHBOARD" \
-    -e dashboard_image_be="$DASHBOARD_IMAGE_BE"
+    -e dashboard_image_be="$DASHBOARD_IMAGE_BE" \
+    -e container_image_arch="$INSTALLER_ARCH"
   /bin/rm -f bundle/images/*.tar  # keep only .tar.gz files
 }
 
@@ -81,16 +83,17 @@ Build configuration:
   USE_QUAY_IO_IMAGE=$USE_QUAY_IO_IMAGE
   QUAY_IO_IMAGE_TAG=$QUAY_IO_IMAGE_TAG
   USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=$USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE
+  INSTALLER_ARCH=$INSTALLER_ARCH
 EOF
 cd setup/
 if [ "$AAP_DASHBOARD_BUNDLED_INSTALLER" == "1" ]
 then
-  INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-bundle.tar.gz"
+  INSTALLER_FILE="${INSTALLER_FILE:-bundle/ansible-automation-dashboard-containerized-setup-bundle.tar.gz}"
   FILES_ADDITIONAL=" bundle/images "
   build_or_pull_container_image
   save_container_image
 else
-  INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup.tar.gz"
+  INSTALLER_FILE="${INSTALLER_FILE:-bundle/ansible-automation-dashboard-containerized-setup.tar.gz}"
   FILES_ADDITIONAL=""
   /bin/rm -f bundle/images/*
 fi

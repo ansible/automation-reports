@@ -11,6 +11,19 @@
     - not bundle_install | default(false) | bool
     - registry_auth | default(true) | bool
 
+- name: Ensure automation dashboard registry username and password are provided
+  ansible.builtin.assert:
+    that:
+      - registry_username_aap_automation_dashboard is defined
+      - registry_username_aap_automation_dashboard | length
+      - registry_password_aap_automation_dashboard is defined
+      - registry_password_aap_automation_dashboard | length
+    fail_msg: 'registry_username_aap_automation_dashboard and registry_password_aap_automation_dashboard must be set when registry_auth=true, and registry_url_aap_automation_dashboard is different than registry_url'
+  when:
+    - not bundle_install | default(false) | bool
+    - registry_auth | default(true) | bool
+    - registry_url_aap_automation_dashboard != registry_url
+
 - name: Include database checks
   ansible.builtin.include_tasks: database.yml
 

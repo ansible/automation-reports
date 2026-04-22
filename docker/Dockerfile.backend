@@ -1,97 +1,109 @@
 # https://catalog.redhat.com/software/containers/ansible-automation-platform-25/controller-rhel8/650a5670acdb2bef1d5d3a1b?container-tabs=dockerfile
 
 # =============================================================================
+# Stage 1: Build frontend
+# =============================================================================
 FROM registry.redhat.io/ubi9/nodejs-22 AS web-builder
 
-ENV DESCRIPTION="Red Hat Automation Platform - dashboard frontend \
-"
-
-LABEL description="$DESCRIPTION"
+LABEL description="Red Hat Automation Platform - dashboard frontend"
 
 USER root
 
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
-RUN node --version
-RUN npm --version
+RUN mkdir -p /code /output
 
-RUN mkdir -p /code
-COPY package.json package-lock.json /code/
 WORKDIR /code
-RUN npm install
-# RUN yarn install --immutable
-COPY stylePaths.js tsconfig.json vite.config.ts /code/
-COPY src /code/src
-RUN rm -fr dist/
-# env variables needed at build time
-# we are happy with relative URLs
+
+COPY package.json package-lock.json ./
+RUN npm install --no-fund --ignore-scripts
+
+COPY stylePaths.js tsconfig.json vite.config.ts ./
+COPY src ./src
+
 ENV VITE_API_URL=./
-RUN npm run build
 
-# https://github.com/sclorg/nginx-container/blob/master/1.22/README.md
-# FROM registry.redhat.io/ubi8/nginx-122
-# COPY --from=web-builder /code/dist /opt/app-root/src
-# CMD ["nginx", "-g", "daemon off;"]
+# Build frontend and copy to /output (same RUN to preserve in layer)
+# vite.config.ts has root: 'src/frontend', so dist is created at /code/src/frontend/dist
+RUN npm run build --no-fund --ignore-scripts && \
+    cp -r /code/src/frontend/dist /output/dist
 
-
+# =============================================================================
+# Stage 2: Build backend
 # =============================================================================
 FROM registry.redhat.io/ubi9/ubi-minimal:latest
 
-ENV DESCRIPTION="Red Hat Automation Platform - dashboard backend \
-"
-
-LABEL description="$DESCRIPTION"
+LABEL description="Red Hat Automation Platform - dashboard backend" \
+      com.redhat.component="automation-dashboard" \
+      name="ansible-automation-platform/automation-dashboard-rhel9" \
+      version="0.2" \
+      summary="Automation Dashboard Backend Service" \
+      io.k8s.description="Backend service for Ansible Automation Platform dashboard" \
+      io.k8s.display-name="Automation Dashboard Backend" \
+      io.openshift.tags="ansible,automation,dashboard"
 
 LABEL cpe="cpe:/a:redhat:ansible_automation_platform:2.5::el9"
 
 USER root
 
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
+    PYTHONPATH=/code/src
 
-#RUN microdnf -y module enable 'nginx:1.22' 'postgresql:15' 'redis:6' \
-# weasyprint might need also openjpeg2-devel - https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#fedora-39
-# But openjpeg2-devel is not available for ubi8 image
-RUN microdnf -y module enable 'nginx:1.26' \
-  && microdnf update --setopt=install_weak_deps=0 --nodocs -y \
-  && microdnf install --setopt=install_weak_deps=0 --nodocs -y findutils glibc-langpack-en nginx \
-  && microdnf install --setopt=install_weak_deps=0 --nodocs -y python3.12 python3.12-devel libpq-devel gcc \
-  && microdnf install --setopt=install_weak_deps=0 --nodocs -y pango gcc-c++ zlib-devel libjpeg-devel libffi-devel \
-  && microdnf reinstall --setopt=install_weak_deps=0 --nodocs -y tzdata \
-  && microdnf clean all
+# Install system dependencies
+RUN microdnf install --setopt=install_weak_deps=0 --nodocs -y \
+        findutils \
+        glibc-langpack-en \
+        nginx \
+        python3.12 \
+        python3.12-devel \
+        python3.9 \
+        libpq-devel \
+        gcc \
+        gcc-c++ \
+        pango \
+        zlib-devel \
+        libjpeg-devel \
+        libffi-devel && \
+    microdnf clean all
 
-# TODO use supervisor from rpm
-# Also, supervisor uses asynchat, and py3.12 dropped asynchat. Use py3.9
-RUN microdnf install --setopt=install_weak_deps=0 --nodocs -y python3.9 \
-  && microdnf clean all
-RUN python3.9 -m ensurepip && pip3.9 install supervisor==4.2.4 && supervisord -v
-
+# Create application user
 RUN useradd awx -u 1000 -g 0 --home-dir /var/lib/awx -s /bin/bash
 
-RUN python3.12 -m venv /venv
-RUN /venv/bin/pip install --upgrade pip wheel
-RUN mkdir /code /code/src
-COPY requirements-build.txt /code
-RUN /venv/bin/pip install -r /code/requirements-build.txt
+# Create directories
+RUN mkdir -p /code/src /etc/dashboard/conf.d
 
-# source .env
+# Install supervisor (requires setuptools, outside hermetic)
+RUN python3.9 -m ensurepip && \
+    pip3.9 install supervisor==4.3.0
+
+# Create Python 3.12 virtual environment and install dependencies
+COPY requirements-build.txt /code/
+RUN python3.12 -m venv /venv && \
+    /venv/bin/pip install -r /code/requirements-build.txt
+
+# Copy backend source and run collectstatic
 COPY src/backend /code/src/backend
 WORKDIR /code/src/backend
-ENV PYTHONPATH=/code/src
-RUN mkdir -p /etc/dashboard/conf.d
-RUN /venv/bin/python manage.py collectstatic
+RUN /venv/bin/python manage.py collectstatic --noinput
 
-COPY --from=web-builder /code/src/frontend/dist /opt/app-root/src
+# Copy frontend build from web-builder
+COPY --from=web-builder /output/dist /opt/app-root/src
 
+# Copy configuration files
 COPY docker/nginx.conf /etc/nginx/nginx.conf
-RUN mkdir /code/docker/
 COPY docker/supervisord_dashboard_web.conf /etc/
 COPY docker/stop-supervisor /usr/local/bin/stop-supervisor
 COPY docker/launch_awx_rsyslog.sh /usr/bin/launch_awx_rsyslog.sh
 COPY docker/launch_automation_dashboard.sh /code/docker/launch_automation_dashboard.sh
+
+# Copy license files for container certification
+COPY LICENSE.md /licenses/LICENSE.md
+COPY licenses/licenses.md /licenses/licenses.md
+
 RUN pip3 install dumb-init
 ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
 CMD ["/code/docker/launch_automation_dashboard.sh"]

@@ -1,0 +1,131 @@
+name: Build installer
+
+# This workflow builds online and bundled installers for Ansible Automation Dashboard.
+# The bundled installer includes the automation dashboard image pulled from "some" container registry, and is used for disconnected installations.
+# The online installer does not include any images, and pulls the automation dashboard image from the registry at install time, and is used for connected installations.
+
+# Required GHA setup:
+# GHA variables:
+#  - REGISTRY_REDHAT_IO_USERNAME
+#  - REGISTRY_STAGE_REDHAT_IO_USERNAME
+#  - REGISTRY_QUAY_IO_USERNAME
+# GHA secrets:
+#  - REGISTRY_REDHAT_IO_PASSWORD
+#  - REGISTRY_STAGE_REDHAT_IO_PASSWORD
+#  - REGISTRY_QUAY_IO_PASSWORD
+
+on:
+  push:
+  #   # tags:
+  #   #   - 'v*.*.*'
+    branches:
+      - release-0.2-rc4
+  workflow_dispatch:
+    inputs:
+      AAP_DASHBOARD_IMAGE:
+        description: 'Automation Dashboard image to use. Possible values: registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest, registry.stage.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest, quay.io/aap/automation-dashboard:'
+        required: false
+        default: 'registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest'
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  # use SELECTED_AAP_DASHBOARD_IMAGE, workflow_dispatch will work only after merge to main, so we need to set a default value for now
+  # SELECTED_AAP_DASHBOARD_IMAGE: ${{ inputs.AAP_DASHBOARD_IMAGE || 'registry.stage.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest' }}
+  SELECTED_AAP_DASHBOARD_IMAGE: 'quay.io/aap/automation-dashboard:main'
+
+jobs:
+  bundled-installer:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - installer_arch: x86_64
+          - installer_arch: aarch64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Log in to Red Hat Registry
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: registry.redhat.io
+          username: ${{ vars.REGISTRY_REDHAT_IO_USERNAME }}
+          password: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+      - name: Log in to Stage Red Hat Registry
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: registry.stage.redhat.io
+          username: ${{ vars.REGISTRY_STAGE_REDHAT_IO_USERNAME }}
+          password: ${{ secrets.REGISTRY_STAGE_REDHAT_IO_PASSWORD }}
+      - name: Log in to Quay.io Registry
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: quay.io
+          username: ${{ vars.REGISTRY_QUAY_IO_USERNAME }}
+          password: ${{ secrets.REGISTRY_QUAY_IO_PASSWORD }}
+      - name: Prepare inventory
+        run: |
+          REGISTRY_URL_AAP_AUTOMATION_DASHBOARD=$(echo "${{ env.SELECTED_AAP_DASHBOARD_IMAGE }}" | cut -d'/' -f1)
+          if [[ "$REGISTRY_URL_AAP_AUTOMATION_DASHBOARD" == "quay.io" ]]; then
+            dashboard_image_registry_username="${{ vars.REGISTRY_QUAY_IO_USERNAME }}"
+            dashboard_image_registry_password="${{ secrets.REGISTRY_QUAY_IO_PASSWORD }}"
+          elif [[ "$REGISTRY_URL_AAP_AUTOMATION_DASHBOARD" == "registry.stage.redhat.io" ]]; then
+            dashboard_image_registry_username="${{ vars.REGISTRY_STAGE_REDHAT_IO_USERNAME }}"
+            dashboard_image_registry_password="${{ secrets.REGISTRY_STAGE_REDHAT_IO_PASSWORD }}"
+          elif [[ "$REGISTRY_URL_AAP_AUTOMATION_DASHBOARD" == "registry.redhat.io" ]]; then
+            dashboard_image_registry_username="${{ vars.REGISTRY_REDHAT_IO_USERNAME }}"
+            dashboard_image_registry_password="${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}"
+          else
+            echo "Error: Unsupported registry URL: $REGISTRY_URL_AAP_AUTOMATION_DASHBOARD"
+            exit 1
+          fi
+
+          cat <<EOF >setup/inventory
+          [automationdashboard]
+          host.example.com ansible_connection=local
+          [automationdashboardeporter:vars]
+          [all:vars]
+          registry_username=${{ vars.REGISTRY_REDHAT_IO_USERNAME }}
+          registry_password=${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+          registry_username_aap_automation_dashboard=$dashboard_image_registry_username
+          registry_password_aap_automation_dashboard=$dashboard_image_registry_password
+          bundle_install=true
+          bundle_dir=$PWD/setup/bundle
+          EOF
+      - name: Build bundled installer
+        run: >
+          AAP_DASHBOARD_BUNDLED_INSTALLER=1
+          USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=0
+          AAP_DASHBOARD_IMAGE=${{ env.SELECTED_AAP_DASHBOARD_IMAGE }}
+          INSTALLER_ARCH=${{ matrix.installer_arch }}
+          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ github.ref_name }}-${{ matrix.installer_arch }}.tar.gz"
+          setup/build_installer.sh
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ansible-automation-dashboard-containerized-setup-bundle-${{ github.ref_name }}-${{ matrix.installer_arch }}.tar.gz
+          path: setup/bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ github.ref_name }}-${{ matrix.installer_arch }}.tar.gz
+          retention-days: 31
+
+  online-installer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build online installer
+        run: >
+          AAP_DASHBOARD_BUNDLED_INSTALLER=0
+          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-${{ github.ref_name }}.tar.gz"
+          setup/build_installer.sh
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ansible-automation-dashboard-containerized-setup-${{ github.ref_name }}.tar.gz
+          path: setup/bundle/ansible-automation-dashboard-containerized-setup-${{ github.ref_name }}.tar.gz
+          retention-days: 31

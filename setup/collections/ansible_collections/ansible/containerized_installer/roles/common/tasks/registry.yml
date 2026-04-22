@@ -10,4 +10,17 @@
     HTTP_PROXY: "{{ http_proxy | default('') }}"
     HTTPS_PROXY: "{{ https_proxy | default('') }}"
     NO_PROXY: "{{ no_proxy | default('') }}"
+
+- name: Login to the registry - automation dashboard image pull
+  containers.podman.podman_login:
+    authfile: '{{ ansible_user_dir }}/.config/containers/auth.json'
+    username: '{{ registry_username_aap_automation_dashboard }}'
+    password: '{{ registry_password_aap_automation_dashboard }}'
+    registry: '{{ registry_url_aap_automation_dashboard }}'
+    tlsverify: '{{ registry_tls_verify_aap_automation_dashboard }}'
+  environment:
+    HTTP_PROXY: "{{ http_proxy | default('') }}"
+    HTTPS_PROXY: "{{ https_proxy | default('') }}"
+    NO_PROXY: "{{ no_proxy | default('') }}"
+  when: registry_url != registry_url_aap_automation_dashboard
 ...
