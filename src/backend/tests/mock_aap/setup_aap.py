@@ -4,13 +4,8 @@
 # Manually setup data in AAP.
 # Next use this script, to visit all relevant URLs, and store responses into json files for mock testing.
 
-# Required input, as environ variables:
-#   export AAP_VERSION=25
-#   export AAP_URL="https://10.44.17.65:443"
-#   export AAP_USERNAME=admin
-#   export AAP_PASSWORD=...
-# Run:
-#   ./setup_aap.py
+# Usage:
+#   ./setup_aap.py --url "http://1.2.3.4:443" --username admin --password "thepass" --version 26
 
 import json
 import logging
@@ -18,6 +13,7 @@ import time
 from typing import NamedTuple
 import requests
 import os
+import argparse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -57,13 +53,12 @@ class AAP:
         self.version = ""
 
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls, base_url, username, password):
         aap = cls(
-            base_url=os.environ["AAP_URL"],
-            username=os.environ["AAP_USERNAME"],
-            password=os.environ["AAP_PASSWORD"],
+            base_url=base_url,
+            username=username,
+            password=password,
         )
-        # print(os.environ["AAP_URL"])
         return aap
 
     def detect_version(self):
@@ -136,7 +131,7 @@ class AAP:
     def create_oauth2_app(self, description: str, organization_id: int, redirect_uris: str) -> OAuth2App:
         spec = ObjectSpec({
             "name": "ad-app",
-            "redirect_uris": "https://aap-ad:8447/auth-callback",
+            "redirect_uris": redirect_uris,
             "description": description,
             "organization": organization_id,
             "app_url": "",
@@ -171,20 +166,17 @@ class AAP:
         return aaptoken
 
 
-aap_version = os.environ["AAP_VERSION"]
 default_org_id = 1
 admin_user_id = 2
 demo_credential_id = 1
 demo_inventory_id = 1
 org2_id_gw = 2  # id in AAP gateway api
 org2_id_cnt = 2  # id in AAP controller api
-if aap_version in ["26"]:
-    # AAP 2.6, containerised deployment - id is 4
-    # AAP 2.6, aap-dev development deployment - id is 2
-    default_execution_environment_id = 2
-elif aap_version in ["25", "24"]:
-    # AAP 2.4, 2.5
-    default_execution_environment_id = 2
+# default_execution_environment_id:
+#   AAP 2.6, containerised deployment - id is 4
+#   AAP 2.6, aap-dev development deployment - id is 2
+#   AAP 2.4, 2.5 - id is 2
+default_execution_environment_id = 2
 project2_id = 8 # Demo Project is 6, next project is 8
 project3_id = project2_id + 1
 project4_id = project2_id + 2
@@ -334,8 +326,7 @@ jobs = [
             job_template_id=job_templates[job_template_ind].expected["id"],
         )
     )
-    for job_template_ind, expected_job_id in
-    [
+    for job_template_ind, expected_job_id in [
         # run 0th template (jobtemplate2-org1) 2 times
         (0, jobrun_id + 0),
         (0, jobrun_id + 1),
@@ -346,14 +337,14 @@ jobs = [
 ]
 
 
-def create_aap_access_file(oauth2app: OAuth2App, aaptoken: AAPToken, aap_version: str):
+def create_aap_access_file(json_output: str, aap: AAP, oauth2app: OAuth2App, aaptoken: AAPToken, aap_version: str):
     aap_version_map = {
         "24": "2.4",
         "25": "2.5",
         "26": "2.6",
     }
-    aap_proto = os.environ["AAP_URL"].split(":")[0]
-    aap_host_port = os.environ["AAP_URL"].replace("https://", "").replace("http://", "")
+    aap_proto = aap.base_url.split(":")[0]
+    aap_host_port = aap.base_url.replace("https://", "").replace("http://", "")
     assert "/" not in aap_host_port
     aap_host = aap_host_port.split(":")[0]
     aap_port = aap_host_port.split(":")[1]
@@ -363,24 +354,69 @@ def create_aap_access_file(oauth2app: OAuth2App, aaptoken: AAPToken, aap_version
         "client_secret": oauth2app.client_secret,
         "access_token": aaptoken.access_token,
         "refresh_token": aaptoken.refresh_token,
-        "aap_url": os.environ["AAP_URL"],
+        "aap_url": aap.base_url,
         "aap_protocol": aap_proto,
         "aap_address": aap_host,
         "aap_port": aap_port,
         "aap_version": aap_version_map[aap_version],
+        "aap_password": aap.password,
     }
-    with open("aap_access.json", "w") as ff:
+    with open(json_output, "w") as ff:
         json.dump(data, ff, indent=4)
+        ff.write("\n")
+    print(f"AAP access data written to {json_output}")
+
+
+def arg_parse():
+    parser = argparse.ArgumentParser(description="Setup AAP with test data")
+    parser.add_argument("--url", required=False, help="AAP URL (e.g., https://1.2.3.4:443)")
+    parser.add_argument("--username", required=False, help="AAP username")
+    parser.add_argument("--password", required=False, help="AAP password")
+    parser.add_argument("--version", required=False, choices=["24", "25", "26"], help="AAP version (24, 25, or 26)")
+    parser.add_argument("--json-input", required=False, help="json file with AAP url,password,username,version - if not provided, other args are used")
+    #
+    parser.add_argument("--oauth2-redirect-urls", required=False, help="OAuth2 redirect URLs (comma-separated list, e.g., 'https://dashboard:8447/auth-callback')")
+    parser.add_argument("--json-output", default="aap_access.json", help="output json file with AAP access details")
+
+    args = parser.parse_args()
+
+    # print all input args
+    # print("Input arguments 1:")
+    # for arg, value in vars(args).items():
+    #     print(f"  {arg}: {value}")
+
+    # if json_input is provided, override other args with values from the json file
+    if args.json_input:
+        print(f"Loading AAP access details from {args.json_input}")
+        with open(args.json_input, "r") as f:
+            json_data = json.load(f)
+            args.url = json_data.get("aap_url", args.url)
+            args.username = json_data.get("aap_username", args.username)
+            args.password = json_data.get("aap_password", args.password)
+            args.version = json_data.get("aap_version", args.version)
+    # apply default values
+    if not args.username:
+        args.username = "admin"
+
+    print("Input arguments:")
+    for arg, value in vars(args).items():
+        if arg == "password":
+            value = "******"
+        print(f"  {arg}: {value}")
+    return args
 
 
 def main():
-    aap = AAP.get_instance()
+    args = arg_parse()
+    aap_version = args.version
+
+    aap = AAP.get_instance(args.url, args.username, args.password)
     aap.login()
     # aap.create_access_token("bla", "write")
-    oauth2app = aap.create_oauth2_app("ad-app-desc", default_org_id, "https://aap-ad:8447/auth-callback")
-    token =aap.create_oauth2_app_token(oauth2app, admin_user_id)
+    oauth2app = aap.create_oauth2_app("ad-app-desc", default_org_id, args.oauth2_redirect_urls)
+    token = aap.create_oauth2_app_token(oauth2app, admin_user_id)
 
-    create_aap_access_file(oauth2app, token, aap_version)
+    create_aap_access_file(args.json_output, aap, oauth2app, token, aap_version)
 
     assert aap_version == aap.version
     if aap.version in ["25", "26"]:
