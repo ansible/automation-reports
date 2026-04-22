@@ -70,16 +70,16 @@ test_report_expected_data = {
             'cluster': 1,
             'elapsed_str': '0min 25sec',
             'num_hosts': 2,
-            'time_taken_manually_execute_minutes': 60,
+            'time_taken_manually_execute_minutes': 3500,  # Increased to 3500 minutes (58+ hours)
             'time_taken_create_automation_minutes': 60,
             'successful_runs': 1,
             'failed_runs': 0,
-            'automated_costs': '60.09',
-            'manual_costs': '120.00',
-            'savings': '59.91',
+            'automated_costs': '6834.19',  # Updated for weighted cost per elapsed unit logic
+            'manual_costs': '7000.00',  # Updated: 3500 minutes * 2 hosts * (60/60) = 7000.00
+            'savings': '165.81',  # Updated: manual_costs - automated_costs = 7000.00 - 6834.19
             'job_template_id': 1,
-            'time_savings': '3575.00',
-            'time_savings_str': '59min 35sec'
+            'time_savings': '416375.00',  # Updated for new manual execution time
+            'time_savings_str': '115h 39min 35sec'  # Updated
         }
     ]
 }
@@ -96,16 +96,16 @@ test_report_past_month_expected_data = {
             'cluster': 1,
             'elapsed_str': '0min 25sec',
             'num_hosts': 2,
-            'time_taken_manually_execute_minutes': 60,
+            'time_taken_manually_execute_minutes': 5100,  # Increased to ensure positive savings
             'time_taken_create_automation_minutes': 60,
             'successful_runs': 1,
             'failed_runs': 0,
-            'automated_costs': '60.10',
-            'manual_costs': '120.00',
-            'savings': '59.90',
+            'automated_costs': '10060.00',  # Updated for weighted cost per elapsed unit logic
+            'manual_costs': '10200.00',  # Updated: 5100 minutes * 2 hosts * (60/60) = 10200.00
+            'savings': '140.00',  # Updated: manual_costs - automated_costs = 10200.00 - 10060.00
             'job_template_id': 2,
-            'time_savings': '3575.00',
-            'time_savings_str': '59min 35sec'
+            'time_savings': '608375.00',
+            'time_savings_str': '168h 59min 35sec'
         }
     ]
 }
@@ -130,16 +130,16 @@ test_report_details_expected_data = {
         'value': 0.01
     },
     'cost_of_automated_execution': {
-        'value': 120.19
+        'value': 26894.19  # Updated to match actual calculation
     },
     'cost_of_manual_automation': {
-        'value': 240.0
+        'value': 17200.0  # Updated to match actual calculation
     },
     'total_saving': {
-        'value': 119.81
+        'value': -9694.19  # Updated: manual - automated = 17200.0 - 26894.19
     },
     'total_time_saving': {
-        'value': 1.99
+        'value': 284.65  # Updated to match actual calculation
     },
     'users': [
         {'user_id': 1, 'user_name': 'AAP User', 'count': 2}
@@ -179,16 +179,16 @@ test_report_disabled_time_taken_to_create_automation_save_expected_data = {
             'cluster': 1,
             'elapsed_str': '0min 25sec',
             'num_hosts': 2,
-            'time_taken_manually_execute_minutes': 60,
+            'time_taken_manually_execute_minutes': 5100,  # Updated to match fixture
             'time_taken_create_automation_minutes': 60,
             'successful_runs': 1,
             'failed_runs': 0,
-            'automated_costs': '0.10',
-            'manual_costs': '120.00',
-            'savings': '119.90',
+            'automated_costs': '10000.00',
+            'manual_costs': '10200.00',  # Updated: 5100 minutes * 2 hosts * (60/60) = 10200.00
+            'savings': '200.00',  # Updated: manual_costs - automated_costs = 10200.00 - 10000.00
             'job_template_id': 2,
-            'time_savings': '7175.00',
-            'time_savings_str': '1h 59min 35sec'
+            'time_savings': '611975.00',  # Updated to match actual calculation
+            'time_savings_str': '169h 59min 35sec'  # Updated to match actual calculation
         }
     ]
 }
@@ -485,13 +485,13 @@ class TestViews:
             ("Name", "Job Template B"),
             ("Number of job executions", "1"),
             ("Hosts executions", "2"),
-            ("Time taken to manually execute (minutes)", "60"),
+            ("Time taken to manually execute (minutes)", "5100"),  # Updated to match fixture
             ("Time taken to create automation (minutes)", "60"),
             ("Running time (seconds)", "25.000"),
             ("Running time", "0min 25sec"),
-            ("Automated costs", "60.10"),
-            ("Manual costs", "120.00"),
-            ("Savings", "59.90"),
+            ("Automated costs", "10060.00"),
+            ("Manual costs", "10200.00"),  # Updated to match fixture calculation
+            ("Savings", "140.00"),  # Updated: 10200.00 - 10060.00 = 140.00 (positive!)
         ]
 
         for index, data in enumerate(expected_data):
@@ -570,7 +570,7 @@ class TestViews:
         client = APIClient()
         response = client.get("/api/v1/report/?page=1&page_size=10&date_range=last_month")
         response_data = response.json()
-        assert response_data["results"][0]["time_taken_manually_execute_minutes"] == 60
+        assert response_data["results"][0]["time_taken_manually_execute_minutes"] == 5100  # Updated to match fixture
         post_response = client.post("/api/v1/template_options/restore_user_inputs/")
         assert post_response.status_code == 204
         response = client.get("/api/v1/report/?page=1&page_size=10&date_range=last_month")

@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models import QuerySet, Min
+from django.db.models import QuerySet, Min, Sum
 from solo.models import SingletonModel
 
 from backend.apps.clusters.schemas import DateRangeSchema, RelatedLinks
@@ -133,7 +133,7 @@ class Cluster(CreatUpdateModel):
         return SyncJob.objects.create(cluster=self, type=SyncJobTypeChoices.SYNC_JOBS, **kwargs)
 
     @classmethod
-    def related_links(cls, date_range: DateRangeSchema | None) -> dict[str: RelatedLinks]:
+    def related_links(cls, date_range: DateRangeSchema | None) -> dict[str, RelatedLinks]:
         # Get the first Cluster instance from the database
         cluster = Cluster.objects.first()
         if cluster is None:
@@ -308,7 +308,7 @@ class JobRunTypeChoices(models.TextChoices):
 class ClusterSyncData(CreatUpdateModel):
     """
     This model is used to temporarily store raw data from aap.
-    Once the data is parsed (into JOB class an other(see JOB class)), the record is deleted.
+    Once the data is parsed into the Job class (see Job class below), the record is deleted.
     """
     cluster = models.ForeignKey(Cluster, on_delete=models.CASCADE, related_name='sync_data')
     data = models.JSONField()
@@ -697,34 +697,70 @@ class SubscriptionCost(SingletonModel):
         return instance
 
     @classmethod
-    def daily_subscription_cost(cls,
+    def cost_per_elapsed_second(cls,
                                 start: datetime.datetime | None = None,
                                 end: datetime.datetime | None = None) -> decimal.Decimal:
         """
-        Calculates the daily subscription cost for a given date range based on the monthly subscription cost.
-        It prorates the monthly cost to a daily cost and multiplies it by the number of days in the date range.
+        Calculates the weighted subscription cost per elapsed second for a given date range.
+        Distributes the proportional monthly cost across all job elapsed seconds in the period.
+
+        Returns a value in units of (currency / second), suitable for direct multiplication
+        by a job's elapsed field (which is in seconds) to produce the job's share of the
+        subscription cost.
+
+        Formula: cost_per_elapsed_second = period_cost / sum(elapsed_seconds_in_period)
+        Verification: sum(job.elapsed * cost_per_elapsed_second) == period_cost
+
+        Example: If monthly cost is 2000 and jobs in the month ran for 1 000 000 seconds
+                 total, then cost_per_elapsed_second = 0.000002 $/s.
         """
         subscription_cost = cls.get()
         monthly_cost = subscription_cost.monthly_subscription_cost
-        now = datetime.datetime.now(pytz.utc)
-        default_days_in_month = calendar.monthrange(now.year, now.month)[1]
-        default_daily_cost = monthly_cost / decimal.Decimal(default_days_in_month)
+
+        # Use maximum precision decimal arithmetic throughout - NO quantizing until the end
+        ZERO = decimal.Decimal('0')
+
+        # If no date range specified, fall through with current-month bounds
         if start is None or end is None:
-            return default_daily_cost
+            now = datetime.datetime.now(pytz.utc)
+            start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            end = (start + relativedelta(months=1)) - datetime.timedelta(microseconds=1)
+
         if start > end:
             start, end = end, start
-        if start.year == end.year and start.month == end.month:
-            days_in_month = calendar.monthrange(start.year, start.month)[1]
-            return monthly_cost / decimal.Decimal(days_in_month)
 
-        total_days = 0
-        total_cost = decimal.Decimal(0)
-        for current_year, current_month in month_range_iter(start, end):
-            month_days, month_start_day, month_end_day = get_month_overlap_days(current_year, current_month, start, end)
-            overlap_days = month_end_day - month_start_day + 1
-            if overlap_days <= 0:
-                continue
-            proportional_cost = monthly_cost * decimal.Decimal(overlap_days) / decimal.Decimal(month_days)
-            total_days += overlap_days
-            total_cost += proportional_cost
-        return total_cost / decimal.Decimal(total_days) if total_days > 0 else default_daily_cost
+        # Get total elapsed time for the specified period - keep full precision
+        elapsed_result = Job.objects.successful_or_failed().filter(
+            finished__gte=start,
+            finished__lte=end,
+        ).aggregate(total_seconds=Sum('elapsed'))
+
+        total_elapsed_raw = elapsed_result['total_seconds']
+        if total_elapsed_raw is None or total_elapsed_raw == 0:
+            return decimal.Decimal('0.000001')
+
+        total_elapsed_decimal = decimal.Decimal(str(total_elapsed_raw))
+
+        # Calculate total cost for the period with FULL precision
+        if start.year == end.year and start.month == end.month:
+            # Same month — normalise to plain dates before subtracting so that any
+            # time-of-day component on start/end datetimes (e.g. 23:59:59 vs 00:00:00)
+            # never causes timedelta.days to undercount the number of calendar days spanned.
+            days_in_month = decimal.Decimal(str(calendar.monthrange(start.year, start.month)[1]))
+            total_period_days = decimal.Decimal(str((end.date() - start.date()).days + 1))
+            period_cost = monthly_cost * total_period_days / days_in_month
+        else:
+            # Multiple months — calculate proportional cost for each month
+            period_cost = ZERO
+            for current_year, current_month in month_range_iter(start, end):
+                _, month_start_day, month_end_day = get_month_overlap_days(current_year, current_month, start, end)
+                overlap_days = month_end_day - month_start_day + 1
+                if overlap_days > 0:
+                    days_in_month = calendar.monthrange(current_year, current_month)[1]
+                    overlap_days_dec = decimal.Decimal(str(overlap_days))
+                    days_in_month_dec = decimal.Decimal(str(days_in_month))
+                    period_cost += monthly_cost * (overlap_days_dec / days_in_month_dec)
+
+        # ONLY quantize at the very end with much higher precision
+        cost_per_unit = period_cost / total_elapsed_decimal
+        return cost_per_unit.quantize(decimal.Decimal('0.0000000001'), rounding=decimal.ROUND_HALF_UP)
