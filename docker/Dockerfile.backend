@@ -38,7 +38,7 @@ FROM registry.redhat.io/ubi9/ubi-minimal:latest
 LABEL description="Red Hat Automation Platform - dashboard backend" \
       com.redhat.component="automation-dashboard" \
       name="ansible-automation-platform/automation-dashboard-rhel9" \
-      version="0.2" \
+      version="0.3" \
       summary="Automation Dashboard Backend Service" \
       io.k8s.description="Backend service for Ansible Automation Platform dashboard" \
       io.k8s.display-name="Automation Dashboard Backend" \
