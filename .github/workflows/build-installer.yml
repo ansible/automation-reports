@@ -19,7 +19,7 @@ on:
   #   # tags:
   #   #   - 'v*.*.*'
     branches:
-      - release-0.2-rc4
+      - release-*
   workflow_dispatch:
     inputs:
       AAP_DASHBOARD_IMAGE:
