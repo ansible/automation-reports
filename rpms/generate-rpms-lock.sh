@@ -44,6 +44,7 @@ cd "$PROJECT_ROOT"
 log_info "Running rpm-lockfile-prototype..."
 log_and_exec "podman run \
   -e GIT_SSL_NO_VERIFY=true \
+  --security-opt label=disable \
   -v $PWD:/data \
   rpm-lockfile-prototype:latest \
   --image $PUBLIC_IMAGE \
