@@ -32,7 +32,7 @@ permissions:
   contents: read
 
 env:
-  SELECTED_AAP_DASHBOARD_IMAGE: ${{ inputs.AAP_DASHBOARD_IMAGE || 'registry.stage.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest' }}
+  SELECTED_AAP_DASHBOARD_IMAGE: ${{ inputs.AAP_DASHBOARD_IMAGE || 'registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest' }}
 
 jobs:
   bundled-installer:
