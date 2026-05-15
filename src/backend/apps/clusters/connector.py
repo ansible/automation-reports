@@ -119,8 +119,8 @@ class ApiConnector:
                 verify=self.cluster.verify_ssl,
                 timeout=timeout if timeout is not None else self.timeout,
                 headers=headers)
-        except requests.exceptions.RequestException as e:
-            logger.error(f'Token refresh POST request failed with exception {e}')
+        except requests.exceptions.RequestException:
+            logger.exception('Token refresh POST request failed')
             return False
         if not response.ok:
             logger.error(
@@ -158,8 +158,8 @@ class ApiConnector:
             if isinstance(e_inner, str) and e_inner.startswith("Connection refused by Responses - "):
                 raise
             # end mock testing block ------------------------
-        except requests.exceptions.RequestException as e:
-            logger.error(f'GET request failed with exception {e}')
+        except requests.exceptions.RequestException:
+            logger.exception('GET request failed')
             return None
         logger.debug(f"First GET response status: {response.status_code}")
         if response.ok:
@@ -173,8 +173,8 @@ class ApiConnector:
 
         try:
             response = self._get_request(url, timeout)
-        except requests.exceptions.RequestException as e:
-            logger.error(f'GET request failed with exception {e}')
+        except requests.exceptions.RequestException:
+            logger.exception('GET request failed')
             return None
         logger.debug(f"Second GET response status: {response.status_code}")
         return response
@@ -315,8 +315,8 @@ class ApiConnector:
                 verify=self.cluster.verify_ssl,
                 timeout=timeout,
                 headers=self.headers)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Ping request failed: {e}")
+        except requests.exceptions.RequestException:
+            logger.exception('Ping request failed')
             return None
         if response is None or not response.ok:
             logger.warning(f"Ping to {url} failed or returned no response.")
@@ -366,6 +366,8 @@ class ApiConnector:
             if job_id is None or finished is None:
                 logger.warning(f"Missing id or finished date time in job: {job}")
                 continue
+            if job.get("started") is None:
+                logger.info(f"Job {job_id} has null started time (status={job.get('status')}); ingesting with started=None")
             try:
                 finished = datetime.datetime.fromisoformat(finished).astimezone(datetime.timezone.utc)
             except ValueError:
