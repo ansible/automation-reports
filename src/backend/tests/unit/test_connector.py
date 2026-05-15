@@ -1,6 +1,8 @@
 import json
+import logging
 from datetime import datetime
 from http import HTTPStatus
+from unittest.mock import PropertyMock
 
 import pytest
 import pytz
@@ -493,3 +495,33 @@ class TestConnector:
         connector = ApiConnector(cluster, since=since, until=until)
         assert str(connector.since) == '2025-10-01 00:00:00+00:00'
         assert str(connector.until) == '2025-10-31 23:59:59.999999+00:00'
+
+    def test_sync_jobs_null_started_is_ingested_and_logged(self, mocker, cluster, caplog):
+        """A job with started=null must be stored in ClusterSyncData and produce an info log."""
+        job = {
+            "id": 99,
+            "finished": "2025-01-16T20:44:21.000000Z",
+            "started": None,
+            "status": "failed",
+        }
+        connector = ApiConnector(cluster)
+        mocker.patch.object(type(connector), 'jobs', new_callable=PropertyMock, return_value=[job])
+        mocker.patch.object(connector, 'job_host_summaries', return_value=iter([]))
+
+        with caplog.at_level(logging.INFO, logger='automation_dashboard.clusters.connector'):
+            connector.sync_jobs()
+
+        assert 'has null started time' in caplog.text
+        assert ClusterSyncData.objects.filter(cluster=cluster, data__id=99).exists()
+
+    def test_sync_jobs_missing_finished_is_skipped(self, mocker, cluster, caplog):
+        """A job without a finished timestamp must be skipped and not stored."""
+        job = {"id": 100, "finished": None, "started": "2025-01-16T20:00:00.000000Z", "status": "running"}
+        connector = ApiConnector(cluster)
+        mocker.patch.object(type(connector), 'jobs', new_callable=PropertyMock, return_value=[job])
+
+        with caplog.at_level(logging.WARNING, logger='automation_dashboard.clusters.connector'):
+            connector.sync_jobs()
+
+        assert 'Missing id or finished date time' in caplog.text
+        assert not ClusterSyncData.objects.filter(cluster=cluster, data__id=100).exists()

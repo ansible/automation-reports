@@ -95,6 +95,21 @@ class TestJobs:
 
     @patch("backend.apps.tasks.jobs.DataParser")
     @patch("backend.apps.tasks.jobs.AAPParseDataTask.update_model")
+    def test_run_task_data_parser_init_exception_sets_failed(self, mock_update_model, mock_data_parser):
+        """DataParser.__init__ raising must mark the SyncJob FAILED, not leave it stuck in RUNNING."""
+        task = AAPParseDataTask()
+        sync_data = MagicMock()
+        sync_data.id = 42
+        instance = MagicMock()
+        instance.cluster_sync_data = sync_data
+        instance.pk = 1
+        task.instance = instance
+        mock_data_parser.side_effect = Exception("pydantic validation error: started is null")
+        task.run_task()
+        mock_update_model.assert_called_with(instance.pk, status=JobStatusChoices.FAILED, explanation="Failed to parse AAP sync data: 42")
+
+    @patch("backend.apps.tasks.jobs.DataParser")
+    @patch("backend.apps.tasks.jobs.AAPParseDataTask.update_model")
     def test_run_task_successful(self, mock_update_model, mock_data_parser):
         task = AAPParseDataTask()
         sync_data = MagicMock()
