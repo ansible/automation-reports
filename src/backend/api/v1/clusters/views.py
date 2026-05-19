@@ -148,7 +148,12 @@ class ClusterTestConnectionView(APIView):
                     cur.execute("SELECT 1")
             return Response({'success': True, 'detected_version': None, 'error': None})
         except Exception as e:
-            return Response({'success': False, 'detected_version': None, 'error': str(e)})
+            logger.exception('Database connectivity test failed')
+            return Response({
+                'success': False,
+                'detected_version': None,
+                'error': 'Database connectivity test failed. Check the connection settings and try again.',
+            })
 
     def _test_api(self, request):
         protocol = request.data.get('protocol', 'https')
