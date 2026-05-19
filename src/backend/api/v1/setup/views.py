@@ -130,7 +130,9 @@ class SetupTestConnectionView(APIView):
                 )
                 with conn:
                     with conn.cursor() as cur:
-                        cur.execute("SELECT 1")
+                        cur.execute("SELECT 1 FROM main_unifiedjob LIMIT 1")
+                        cur.execute("SELECT 1 FROM main_job LIMIT 1")
+                        cur.execute("SELECT 1 FROM main_jobhostsummary LIMIT 1")
                 return Response({'success': True, 'error': None})
             except Exception as e:
                 logger.warning('Setup DB connection test failed: %s', e)

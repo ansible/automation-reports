@@ -145,7 +145,14 @@ class ClusterTestConnectionView(APIView):
                 user=db_user, password=db_password, connect_timeout=10,
             ) as conn:
                 with conn.cursor() as cur:
-                    cur.execute("SELECT 1")
+                    # Verify the user can actually read the tables the sync needs.
+                    # SELECT 1 only proves the socket opened; this query confirms
+                    # SELECT privilege on the three core sync tables.
+                    cur.execute(
+                        "SELECT 1 FROM main_unifiedjob LIMIT 1"
+                    )
+                    cur.execute("SELECT 1 FROM main_job LIMIT 1")
+                    cur.execute("SELECT 1 FROM main_jobhostsummary LIMIT 1")
             return Response({'success': True, 'detected_version': None, 'error': None})
         except Exception:
             logger.exception('Database connectivity test failed for %s', db_host)
