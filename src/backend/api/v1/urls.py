@@ -15,6 +15,8 @@ urlpatterns = [
     path("projects/", include("backend.api.v1.projects.urls")),
     path("organizations/", include("backend.api.v1.organizations.urls")),
     path("metrics/", include("backend.api.v1.metrics.urls")),
+    path("setup/", include("backend.api.v1.setup.urls")),
+    path("clusters/", include("backend.api.v1.clusters.urls")),
     re_path(r'^schema/$', schema_view, name='schema-json'),
     re_path(r'^docs/$', swagger_ui_view, name='schema-swagger-ui'),
     re_path(r'^redoc/$', redoc_view, name='schema-redoc'),

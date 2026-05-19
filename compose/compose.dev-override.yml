@@ -1,0 +1,58 @@
+# Local development override — swaps Red Hat registry images for public equivalents.
+# Usage: docker compose -f compose/compose.yml -f compose/compose.dev-override.yml up -d --build
+---
+services:
+  db:
+    image: postgres:15
+    ports: []
+    environment:
+      # postgres:15 uses POSTGRES_* not POSTGRESQL_*
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - type: bind
+        source: ./init-db-public.sh
+        target: /docker-entrypoint-initdb.d/10-grant-createdb.sh
+        read_only: true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.backend
+    volumes:
+      - type: bind
+        source: ../src/backend
+        target: /code/src/backend
+        read_only: true
+      - type: bind
+        source: ./dev_settings/SECRET_KEY
+        target: /etc/dashboard/SECRET_KEY
+        read_only: true
+      - type: bind
+        source: ./dev_settings/DATABASE_KEY
+        target: /etc/dashboard/DATABASE_KEY
+        read_only: true
+      - type: bind
+        source: ./dev_settings/AAP_AUTH_PROVIDER_CLIENT_SECRET
+        target: /etc/dashboard/AAP_AUTH_PROVIDER_CLIENT_SECRET
+        read_only: true
+      - type: bind
+        source: ./dev_settings/conf.d
+        target: /etc/dashboard/conf.d
+        read_only: true
+
+  redis:
+    image: redis:6
+    ports: []
+    user: ""
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5

@@ -32,6 +32,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+# Allow the local-account dev login bypass. Set to True only in development.
+ALLOW_DEV_LOGIN = False
+
 
 ALLOWED_HOSTS = [
     'localhost',

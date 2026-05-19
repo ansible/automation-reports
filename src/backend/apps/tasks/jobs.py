@@ -8,7 +8,7 @@ from django.db import transaction
 
 from backend.analytics.subsystem_metrics import DispatcherMetrics
 from backend.apps.clusters.connector import ApiConnector
-from backend.apps.clusters.models import JobStatusChoices
+from backend.apps.clusters.models import JobStatusChoices, SyncModeChoices
 from backend.apps.clusters.parser import DataParser
 from backend.apps.scheduler.models import SyncJob
 from backend.utils.update_models import update_model
@@ -88,6 +88,35 @@ class AAPSyncTask(BaseTask):
     prefix = "automation_dashboard_sync_job"
 
     def run_task(self):
+        # --- Database-direct sync mode ---
+        if self.cluster.sync_mode == SyncModeChoices.DATABASE:
+            from backend.apps.clusters.db_connector import DbConnector
+            from datetime import datetime, timezone as _tz
+            job_args = self.instance.get_job_args or {}
+            since = None
+            until = None
+
+            def _to_dt(val):
+                if val is None:
+                    return None
+                if isinstance(val, datetime):
+                    return val if val.tzinfo else val.replace(tzinfo=_tz.utc)
+                return datetime.fromisoformat(str(val)).replace(tzinfo=_tz.utc)
+
+            since = _to_dt(job_args.get('since'))
+            until = _to_dt(job_args.get('until'))
+            try:
+                db_connector = DbConnector(cluster=self.cluster, since=since, until=until)
+                db_connector.sync()
+            except Exception:
+                msg = f'Database sync failed for cluster {self.cluster}'
+                logger.exception(msg)
+                self.update_model(self.instance.pk, status=JobStatusChoices.FAILED, explanation=msg)
+                return
+            self.update_model(self.instance.pk, status=JobStatusChoices.SUCCESSFUL)
+            return
+
+        # --- API (OAuth2) sync mode ---
         job_args = self.instance.get_job_args
 
         if job_args is None:

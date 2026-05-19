@@ -4,10 +4,9 @@ services:
   db:
     image: registry.redhat.io/rhel8/postgresql-15:latest
     env_file:
-      - path: "./.env"
+      - path: "../.env"
         required: true
     environment:
-      # - POSTGRESQL_ADMIN_PASSWORD=${DB_PASSWORD}
       - POSTGRESQL_USER=${DB_USER}
       - POSTGRESQL_PASSWORD=${DB_PASSWORD}
       - POSTGRESQL_DATABASE=${DB_NAME}
@@ -23,7 +22,7 @@ services:
          source: postgres-data
          target: /var/lib/psql/data
        - type: bind
-         source: ./compose/init-db.sh
+         source: ./init-db.sh
          target: /usr/share/container-scripts/postgresql/start/10-grant-createdb.sh
          read_only: true
          bind:
@@ -36,7 +35,7 @@ services:
       - "6379:6379"
     volumes:
       - type: bind
-        source: ./compose/redis.conf
+        source: ./redis.conf
         target: /etc/redis.conf
         read_only: true
         bind:
@@ -54,11 +53,10 @@ services:
       redis:
         condition: service_healthy
     build:
-      context: ./
+      context: ../
       dockerfile: docker/Dockerfile.backend
-    # command: /venv/bin/python manage.py -h
     env_file:
-      - path: "./.env"
+      - path: "../.env"
         required: true
     environment:
       - DB_HOST=db
@@ -70,13 +68,6 @@ services:
     ports:
       - "8083:8053"  # nginx
       # - "8000:8000"  # django-api
-
-  # frontend:
-  #   build:
-  #     context: ./
-  #     dockerfile: docker/Dockerfile.backend
-  #   ports:
-  #     - "9000:8080"
 
 volumes:
   postgres-data:

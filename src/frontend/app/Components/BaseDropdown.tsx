@@ -35,7 +35,12 @@ export const BaseDropdown: React.FunctionComponent<BaseDropdownProps> = (props: 
     }
     const choicesDict = listToDict(props.options, props.idKey);
     if (props?.selectedItem && choicesDict[props.selectedItem] && props.valueKey !== undefined) {
-      setValue(choicesDict[props.selectedItem][props.valueKey].toString());
+      const valueToSet = choicesDict[props.selectedItem]?.[props.valueKey];
+      if (valueToSet !== undefined && valueToSet !== null) {
+        setValue(valueToSet.toString());
+      } else {
+        setValue(null);
+      }
     } else {
       setValue(null);
     }

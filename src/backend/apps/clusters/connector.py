@@ -326,17 +326,21 @@ class ApiConnector:
         return response
 
     def detect_aap_version(self):
-        logger.info(f'Checking if is AAP 2.5 ... 2.6 at {self.cluster.base_url}')
+        logger.info(f'Checking if is AAP 2.5+ at {self.cluster.base_url}')
         response25 = self.ping("/api/gateway/v1/ping/")
         if response25:
-            logger.debug(f"AAP 2.5/2.6 ping response: {response25}")
-            if response25["version"] == "2.6":
-                return ClusterVersionChoices.AAP26
-            elif response25["version"] == "2.5":
-                return ClusterVersionChoices.AAP25
+            logger.debug(f"AAP 2.5+ ping response: {response25}")
+            version_map = {
+                "2.7": ClusterVersionChoices.AAP27,
+                "2.6": ClusterVersionChoices.AAP26,
+                "2.5": ClusterVersionChoices.AAP25,
+            }
+            ver = response25.get("version", "")
+            if ver in version_map:
+                return version_map[ver]
             else:
-                logger.error(f'Not valid version {response25["version"]} for cluster {self.cluster.base_url}.')
-                raise Exception(f'Not valid version {response25["version"]} for cluster {self.cluster.base_url}.')
+                logger.error(f'Not valid version {ver} for cluster {self.cluster.base_url}.')
+                raise Exception(f'Not valid version {ver} for cluster {self.cluster.base_url}.')
 
         logger.info(f'Checking if is AAP 2.4 at {self.cluster.base_url}')
         response24 = self.ping("/api/v2/ping/")

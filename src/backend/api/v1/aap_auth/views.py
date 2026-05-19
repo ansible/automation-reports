@@ -68,7 +68,15 @@ class AAPSettingsView(BaseAAPView):
     serializer_class = AAPAuthSettingsSerializer
 
     def get(self, request: Request) -> Response:
-        aap_auth = AAPAuth()
+        try:
+            aap_auth = AAPAuth()
+        except Exception:
+            # AAP auth provider not configured — return empty settings so the
+            # frontend can detect this and show a local login fallback.
+            return Response(
+                data={'name': '', 'url': '', 'client_id': '', 'scope': '', 'approval_prompt': '', 'response_type': ''},
+                status=status.HTTP_200_OK,
+            )
         return Response(
             data=self.serializer_class(aap_auth.ui_data()).data,
             status=status.HTTP_200_OK
@@ -108,6 +116,38 @@ class AAPRefreshTokenView(BaseAAPView):
             tokens = aap_auth.refresh_token(refresh_token=refresh_token)
         except Exception as e:
             return Response(data={"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        csrf.get_token(request)
+        return make_response(tokens)
+
+
+class DevLoginView(BaseAAPView):
+    """Local-account bypass for development (ALLOW_DEV_LOGIN=True only)."""
+
+    def post(self, request: Request) -> Response:
+        if not getattr(settings, 'ALLOW_DEV_LOGIN', False):
+            return Response(
+                {'error': 'Local login is not enabled on this server.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        from django.contrib.auth import authenticate as django_authenticate
+        from backend.apps.aap_auth.jwt_token import JWTToken
+        from backend.apps.aap_auth.schema import AAPToken
+
+        username = request.data.get('username', '')
+        password = request.data.get('password', '')
+        django_request = getattr(request, '_request', request)
+        user = django_authenticate(django_request, username=username, password=password)
+        if not user:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        dummy_aap_token = AAPToken(
+            access_token='dev',
+            refresh_token='dev',
+            expires_in=86400,
+            token_type='Bearer',
+        )
+        tokens = JWTToken().acquire_token_pair(user=user, aap_token=dummy_aap_token)
         csrf.get_token(request)
         return make_response(tokens)
 

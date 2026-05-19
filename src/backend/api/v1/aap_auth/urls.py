@@ -4,7 +4,8 @@ from backend.api.v1.aap_auth.views import (
     AAPSettingsView,
     AAPTokenView,
     AAPRefreshTokenView,
-    AAPLogoutView
+    AAPLogoutView,
+    DevLoginView,
 )
 
 urlpatterns = [
@@ -12,4 +13,5 @@ urlpatterns = [
     path("token/", AAPTokenView.as_view(), name="AAPTokenView"),
     path("refresh_token/", AAPRefreshTokenView.as_view(), name="AAPRefreshTokenView"),
     path("logout/", AAPLogoutView.as_view(), name="LogoutView"),
+    path("dev_login/", DevLoginView.as_view(), name="DevLoginView"),
 ]

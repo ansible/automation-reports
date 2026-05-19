@@ -61,9 +61,15 @@ class CreatUpdateModel(models.Model):
 
 
 class ClusterVersionChoices(models.TextChoices):
+    AAP27 = "AAP 2.7", "AAP 2.7"
     AAP26 = "AAP 2.6", "AAP 2.6"
     AAP25 = "AAP 2.5", "AAP 2.5"
     AAP24 = "AAP 2.4", "AAP 2.4"
+
+
+class SyncModeChoices(models.TextChoices):
+    API = 'api', 'API (OAuth2)'
+    DATABASE = 'database', 'Direct Database'
 
 
 class Cluster(CreatUpdateModel):
@@ -77,6 +83,12 @@ class Cluster(CreatUpdateModel):
     verify_ssl = models.BooleanField(default=True)
     aap_version = models.CharField(max_length=15, choices=ClusterVersionChoices.choices,
                                    default=ClusterVersionChoices.AAP24)
+    sync_mode = models.CharField(max_length=20, choices=SyncModeChoices.choices, default=SyncModeChoices.API)
+    db_host = models.CharField(max_length=255, blank=True, default='')
+    db_port = models.IntegerField(default=5432)
+    db_name = models.CharField(max_length=255, blank=True, default='awx')
+    db_user = models.CharField(max_length=255, blank=True, default='')
+    db_password = models.BinaryField(default=b'')
 
     def __str__(self):
         return f'{self.protocol}://{self.address}:{self.port}'
@@ -87,7 +99,7 @@ class Cluster(CreatUpdateModel):
 
     @property
     def api_url(self):
-        if self.aap_version in [ClusterVersionChoices.AAP25, ClusterVersionChoices.AAP26]:
+        if self.aap_version in [ClusterVersionChoices.AAP25, ClusterVersionChoices.AAP26, ClusterVersionChoices.AAP27]:
             return f'/api/controller/v2'
         elif self.aap_version == ClusterVersionChoices.AAP24:
             return f'/api/v2'
@@ -96,7 +108,7 @@ class Cluster(CreatUpdateModel):
 
     @property
     def gui_base_url(self):
-        if self.aap_version in [ClusterVersionChoices.AAP25, ClusterVersionChoices.AAP26]:
+        if self.aap_version in [ClusterVersionChoices.AAP25, ClusterVersionChoices.AAP26, ClusterVersionChoices.AAP27]:
             return f'{self.base_url}/execution/'
         elif self.aap_version == ClusterVersionChoices.AAP24:
             return f'{self.base_url}/#/'
@@ -105,7 +117,7 @@ class Cluster(CreatUpdateModel):
 
     @property
     def oauth_token_url(self):
-        if self.aap_version in [ClusterVersionChoices.AAP25, ClusterVersionChoices.AAP26]:
+        if self.aap_version in [ClusterVersionChoices.AAP25, ClusterVersionChoices.AAP26, ClusterVersionChoices.AAP27]:
             return '/o/token/'
         elif self.aap_version in [ClusterVersionChoices.AAP24]:
             return '/api/o/token/'

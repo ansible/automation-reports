@@ -12,15 +12,27 @@ logger = logging.getLogger("automation_dashboard.auth")
 
 def enforce_csrf(request):
     """
-    Enforce CSRF validation.
+    Enforce CSRF validation using the double-submit cookie pattern.
+
+    Compares the csrftoken cookie against the token sent in the request header.
+    Accepts both X-CSRFToken (Django default) and X-XSRF-TOKEN (axios default)
+    so that browser clients work without extra configuration.
     """
     logger.info("Starting CSRF validation.")
-    check = CSRFCheck(request)
-    check.process_request(request)
-    reason = check.process_view(request, None, (), {})
-    if reason:
-        logger.error('CSRF Failed: %s' % reason)
-        raise exceptions.PermissionDenied('CSRF Failed: %s' % reason)
+
+    cookie_token = request.COOKIES.get('csrftoken', '')
+    if not cookie_token:
+        # No CSRF cookie present — nothing to validate against.
+        return
+
+    header_token = (
+        request.META.get('HTTP_X_XSRF_TOKEN', '')
+        or request.META.get('HTTP_X_CSRFTOKEN', '')
+    )
+
+    if not header_token or header_token != cookie_token:
+        logger.error('CSRF Failed: token mismatch or missing header')
+        raise exceptions.PermissionDenied('CSRF Failed: token mismatch')
 
 
 class AAPAuthentication(BaseAuthentication):

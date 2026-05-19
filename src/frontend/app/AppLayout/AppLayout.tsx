@@ -1,11 +1,14 @@
 import * as React from 'react';
-import { Button, Dropdown, DropdownItem, DropdownList, HelperText, HelperTextItem, Icon, Masthead, MastheadBrand, MastheadContent, MastheadLogo, MastheadMain, MenuToggle, MenuToggleElement, Modal, ModalBody, ModalFooter, ModalHeader, Page, Spinner, ToolbarItem } from '@patternfly/react-core';
+import { Alert, Button, Dropdown, DropdownItem, DropdownList, HelperText, HelperTextItem, Icon, Masthead, MastheadBrand, MastheadContent, MastheadLogo, MastheadMain, MenuToggle, MenuToggleElement, Modal, ModalBody, ModalFooter, ModalHeader, Page, Spinner, ToolbarItem } from '@patternfly/react-core';
 import { useAuthStore } from '@app/Store/authStore';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RestService } from '@app/Services';
 import useFilterStore from '@app/Store/filterStore';
+import useSetupStore from '@app/Store/setupStore';
 import { CogsIcon, ExchangeAltIcon, PlusCircleIcon } from '@patternfly/react-icons';
+import { ClusterManagementModal } from '@app/Components/ClusterManagement';
+import useClusterStore from '@app/Store/clusterStore';
 
 interface IAppLayout {
   children: React.ReactNode;
@@ -25,6 +28,9 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
   const logout = useAuthStore((state) => state.logout);
   const getMyUserData = useAuthStore((state) => state.getMyUserData);
   const setReloadData = useFilterStore((state) => state.setReloadData);
+  const fetchSetupStatus = useSetupStore((state) => state.fetchSetupStatus);
+  const setupRequired = useSetupStore((state) => state.setupRequired);
+  const openClusterModal = useClusterStore((state) => state.openModal);
   const navigate = useNavigate();
   const initialized = useRef(false);
 
@@ -73,13 +79,18 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
 
   useEffect(() => {
     if (!initialized.current) {
-      getMyUserData().then((e) => {
-      }).catch((e) => {
-        if (e.status == 401) {
-          navigate('/login');
-        }
-      });
       initialized.current = true;
+      fetchSetupStatus().then((required) => {
+        if (required) {
+          navigate('/setup');
+          return;
+        }
+        getMyUserData().catch((e) => {
+          if (e?.status === 401) {
+            navigate('/login');
+          }
+        });
+      });
     }
   }, []);
 
@@ -175,6 +186,10 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
                 )}
               >
                 <DropdownList>
+                  {(myUserData?.is_superuser &&
+                    <DropdownItem onClick={() => { openClusterModal(); onSettingsDropdownSelect(); }}>
+                      Manage Clusters
+                    </DropdownItem>)}
                   {((myUserData?.is_platform_auditor || myUserData?.is_superuser) &&
                     <DropdownItem onClick={() => showResetDataModal()}>{resetModalState.title}</DropdownItem>)}
                 </DropdownList>
@@ -268,10 +283,22 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
     </Modal>
   );
 
+  const setupRequiredBanner =
+    setupRequired && isAuthenticated && !myUserData?.is_superuser ? (
+      <Alert
+        variant="warning"
+        isInline
+        title="Setup required — contact your administrator to complete the initial configuration."
+        style={{ borderRadius: 0 }}
+      />
+    ) : null;
+
   return (
     <Page mainContainerId={pageId} masthead={masthead} sidebar={null} mainComponent={'main'} className={isAuthenticated ? '' : 'dark-background'}>
+      {setupRequiredBanner}
       {children}
       {resetDataModal}
+      <ClusterManagementModal />
     </Page>
   );
 };
