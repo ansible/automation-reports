@@ -1,4 +1,5 @@
 import pytest
+from unittest import mock
 
 from django.core.management import call_command
 from django.test import TestCase
@@ -54,6 +55,22 @@ class TestResetInterruptedJobs:
         Command()._reset_interrupted_jobs()
 
         assert 'Reset' not in caplog.text
+
+    def test_handle_calls_reset_interrupted_jobs_before_service_start(self, cluster):
+        """handle() must call _reset_interrupted_jobs() even when the dispatcher
+        itself is mocked out — this covers the call-site line in handle()."""
+        with (
+            mock.patch('backend.apps.dispatch.management.commands.run_dispatcher.get_dispatcherd_config'),
+            mock.patch('backend.apps.dispatch.management.commands.run_dispatcher.dispatcher_setup'),
+            mock.patch('backend.apps.dispatch.management.commands.run_dispatcher.DispatcherMetricsServer') as mock_metrics,
+            mock.patch('backend.apps.dispatch.management.commands.run_dispatcher.run_service'),
+        ):
+            mock_metrics.return_value.start.return_value = None
+            cmd = Command()
+            with mock.patch.object(cmd, '_reset_interrupted_jobs') as mock_reset:
+                cmd.handle(test=None, reload=None, cancel=None, running=None)
+
+        mock_reset.assert_called_once()
 
 
 class TestUpdatePassword(TestCase):
