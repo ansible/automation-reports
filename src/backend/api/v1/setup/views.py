@@ -23,10 +23,15 @@ logger = logging.getLogger('automation_dashboard.setup')
 
 
 class SessionAuthNoCSRF(SessionAuthentication):
-    """SessionAuthentication without CSRF enforcement — safe for setup wizard endpoints
-    that are only reachable when no clusters exist (setup_required=true)."""
+    """SessionAuthentication for setup wizard endpoints.
+
+    Delegates CSRF enforcement to the shared enforce_csrf() helper (double-submit
+    cookie, supports both X-CSRFToken and X-XSRF-TOKEN) rather than using
+    Django's CsrfViewMiddleware which fails on origin checks for localhost.
+    """
     def enforce_csrf(self, request):
-        pass
+        from backend.apps.aap_auth.authentication import enforce_csrf
+        enforce_csrf(request)
 
 
 def _session_user(request):
@@ -128,7 +133,8 @@ class SetupTestConnectionView(APIView):
                         cur.execute("SELECT 1")
                 return Response({'success': True, 'error': None})
             except Exception as e:
-                return Response({'success': False, 'error': str(e)})
+                logger.warning('Setup DB connection test failed: %s', e)
+                return Response({'success': False, 'error': 'Database connection failed. Check host, port, credentials and network access.'})
 
         # --- API (OAuth2) connection test ---
         protocol = request.data.get('protocol', 'https')

@@ -41,9 +41,9 @@ class ClusterListCreateView(APIView):
             aap_version=d['aap_version'],
             verify_ssl=d['verify_ssl'],
             client_id=d['client_id'],
-            client_secret=encrypt_value(d['client_secret']),
-            access_token=encrypt_value(d['access_token']),
-            refresh_token=encrypt_value(d['refresh_token']),
+            client_secret=encrypt_value(d['client_secret']) if d.get('client_secret') else b'',
+            access_token=encrypt_value(d['access_token']) if d.get('access_token') else b'',
+            refresh_token=encrypt_value(d['refresh_token']) if d.get('refresh_token') else b'',
             sync_mode=d.get('sync_mode', 'api'),
             db_host=d.get('db_host', ''),
             db_port=d.get('db_port', 5432),
@@ -147,12 +147,12 @@ class ClusterTestConnectionView(APIView):
                 with conn.cursor() as cur:
                     cur.execute("SELECT 1")
             return Response({'success': True, 'detected_version': None, 'error': None})
-        except Exception as e:
-            logger.exception('Database connectivity test failed')
+        except Exception:
+            logger.exception('Database connectivity test failed for %s', db_host)
             return Response({
                 'success': False,
                 'detected_version': None,
-                'error': 'Database connectivity test failed. Check the connection settings and try again.',
+                'error': 'Database connection failed. Check host, port, credentials and network access.',
             })
 
     def _test_api(self, request):

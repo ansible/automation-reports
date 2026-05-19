@@ -10,20 +10,30 @@ from backend.apps.aap_auth.jwt_token import JWTToken
 logger = logging.getLogger("automation_dashboard.auth")
 
 
+_CSRF_SAFE_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS', 'TRACE'})
+
+
 def enforce_csrf(request):
     """
     Enforce CSRF validation using the double-submit cookie pattern.
 
-    Compares the csrftoken cookie against the token sent in the request header.
-    Accepts both X-CSRFToken (Django default) and X-XSRF-TOKEN (axios default)
-    so that browser clients work without extra configuration.
+    Safe methods (GET, HEAD, OPTIONS, TRACE) are exempt.  For all other methods
+    the csrftoken cookie must be present and must match the token sent in either
+    X-CSRFToken (Django default) or X-XSRF-TOKEN (axios default).
+
+    Silently skipping validation when the cookie is absent would allow any
+    unauthenticated cross-site request to bypass CSRF entirely, so we treat a
+    missing cookie as a hard failure for state-changing methods.
     """
     logger.info("Starting CSRF validation.")
 
+    if request.method in _CSRF_SAFE_METHODS:
+        return
+
     cookie_token = request.COOKIES.get('csrftoken', '')
     if not cookie_token:
-        # No CSRF cookie present — nothing to validate against.
-        return
+        logger.error('CSRF Failed: csrftoken cookie is absent')
+        raise exceptions.PermissionDenied('CSRF Failed: missing CSRF cookie')
 
     header_token = (
         request.META.get('HTTP_X_XSRF_TOKEN', '')
