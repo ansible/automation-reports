@@ -6,11 +6,16 @@ from unittest.mock import PropertyMock
 
 import pytest
 import pytz
+import requests as requests_lib
 import time_machine
 from requests import Response
 
 from backend.apps.clusters.connector import ApiConnector
-from backend.apps.clusters.models import ClusterVersionChoices, Cluster, Organization, JobTemplate, ClusterSyncData
+from backend.apps.clusters.encryption import decrypt_value
+from backend.apps.clusters.models import (
+    ClusterVersionChoices, Cluster, Organization, JobTemplate,
+    ClusterSyncData, ClusterSyncStatus,
+)
 
 
 def get_response(**kwargs):
@@ -525,3 +530,258 @@ class TestConnector:
 
         assert 'Missing id or finished date time' in caplog.text
         assert not ClusterSyncData.objects.filter(cluster=cluster, data__id=100).exists()
+
+    # ------------------------------------------------------------------
+    # _reauthorize
+    # ------------------------------------------------------------------
+
+    def test_reauthorize_success(self, mocker, cluster):
+        """_reauthorize should update cluster tokens from a successful POST response."""
+        mock_response = Response()
+        mock_response.status_code = 200
+        mock_response._content = json.dumps({
+            'access_token': 'new_access_token',
+            'refresh_token': 'new_refresh_token',
+        }).encode('utf-8')
+
+        mocker.patch('requests.post', return_value=mock_response)
+
+        connector = ApiConnector(cluster)
+        result = connector._reauthorize()
+
+        assert result is True
+        assert connector.access_token == 'new_access_token'
+        cluster.refresh_from_db()
+        assert decrypt_value(cluster.access_token) == 'new_access_token'
+        assert decrypt_value(cluster.refresh_token) == 'new_refresh_token'
+
+    def test_reauthorize_post_request_exception(self, mocker, cluster):
+        """_reauthorize should return False if POST raises a RequestException."""
+        mocker.patch('requests.post', side_effect=requests_lib.exceptions.RequestException('Timeout'))
+        connector = ApiConnector(cluster)
+        result = connector._reauthorize()
+        assert result is False
+
+    def test_reauthorize_non_ok_response(self, mocker, cluster, caplog):
+        """_reauthorize should return False if POST returns a non-OK status."""
+        mock_response = Response()
+        mock_response.status_code = 400
+        mock_response._content = b'Bad Request'
+
+        mocker.patch('requests.post', return_value=mock_response)
+
+        connector = ApiConnector(cluster)
+        with caplog.at_level(logging.ERROR, logger='automation_dashboard.clusters.connector'):
+            result = connector._reauthorize()
+
+        assert result is False
+        assert 'Token refresh POST request failed with status 400' in caplog.text
+
+    # ------------------------------------------------------------------
+    # _get_with_reauth
+    # ------------------------------------------------------------------
+
+    def test_get_with_reauth_retries_after_401(self, mocker, cluster):
+        """On 401, _get_with_reauth re-authorizes and retries; second response is returned."""
+        response_401 = Response()
+        response_401.status_code = 401
+        response_401._content = b'Unauthorized'
+
+        response_ok = get_response()  # 200 OK
+
+        mocker.patch('requests.get', side_effect=[response_401, response_ok])
+        mocker.patch(
+            'backend.apps.clusters.connector.ApiConnector._reauthorize',
+            return_value=True,
+        )
+
+        connector = ApiConnector(cluster)
+        result = connector._get_with_reauth(f"{cluster.base_url}/test")
+        assert result is not None
+        assert result.status_code == 200
+
+    def test_get_with_reauth_request_exception_returns_none(self, mocker, cluster, caplog):
+        """A plain RequestException (not ConnectionError) on first GET must return None."""
+        mocker.patch(
+            'requests.get',
+            side_effect=requests_lib.exceptions.Timeout('Timed out'),
+        )
+        connector = ApiConnector(cluster)
+        with caplog.at_level(logging.ERROR, logger='automation_dashboard.clusters.connector'):
+            result = connector._get_with_reauth(f"{cluster.base_url}/test")
+        assert result is None
+
+    def test_get_with_reauth_reraises_responses_connection_error(self, mocker, cluster):
+        """A ConnectionError from the `responses` library must be re-raised."""
+        error = requests_lib.exceptions.ConnectionError(
+            "Connection refused by Responses - the call doesn't match any registered mock."
+        )
+        mocker.patch('requests.get', side_effect=error)
+
+        connector = ApiConnector(cluster)
+        with pytest.raises(requests_lib.exceptions.ConnectionError) as exc_info:
+            connector._get_with_reauth(f"{cluster.base_url}/test")
+        assert 'Connection refused by Responses' in str(exc_info.value)
+
+    def test_get_with_reauth_second_request_exception_returns_none(self, mocker, cluster, caplog):
+        """RequestException on the *retry* GET (after 401) must return None."""
+        response_401 = Response()
+        response_401.status_code = 401
+        response_401._content = b'Unauthorized'
+
+        mocker.patch(
+            'requests.get',
+            side_effect=[response_401, requests_lib.exceptions.Timeout('Timed out again')],
+        )
+        mocker.patch(
+            'backend.apps.clusters.connector.ApiConnector._reauthorize',
+            return_value=True,
+        )
+
+        connector = ApiConnector(cluster)
+        result = connector._get_with_reauth(f"{cluster.base_url}/test")
+        assert result is None
+
+    # ------------------------------------------------------------------
+    # execute_get_one / execute_get
+    # ------------------------------------------------------------------
+
+    def test_execute_get_one_returns_none_when_no_response(self, mocker, cluster):
+        """execute_get_one should return None when _get_with_reauth returns None."""
+        mocker.patch(
+            'backend.apps.clusters.connector.ApiConnector._get_with_reauth',
+            return_value=None,
+        )
+        connector = ApiConnector(cluster)
+        result = connector.execute_get_one(f"{cluster.base_url}/test")
+        assert result is None
+
+    def test_execute_get_none_response_yields_empty_list(self, mocker, cluster):
+        """execute_get should yield an empty list when execute_get_one returns None."""
+        mocker.patch(
+            'backend.apps.clusters.connector.ApiConnector.execute_get_one',
+            return_value=None,
+        )
+        connector = ApiConnector(cluster)
+        results = list(connector.execute_get(endpoint='/api/v2/test/'))
+        assert results == [[]]
+
+    # ------------------------------------------------------------------
+    # job_host_summaries
+    # ------------------------------------------------------------------
+
+    def test_job_host_summaries(self, mocker, cluster):
+        """job_host_summaries should yield all summaries returned by the API."""
+        summaries = [
+            {'id': 1, 'host_name': 'Host A'},
+            {'id': 2, 'host_name': 'Host B'},
+        ]
+        mock = mocker.patch('backend.apps.clusters.connector.ApiConnector.execute_get')
+        mock.side_effect = [[iter(summaries)]]
+        connector = ApiConnector(cluster)
+        result = list(connector.job_host_summaries(42))
+        assert result == summaries
+
+    # ------------------------------------------------------------------
+    # detect_aap_version  (additional scenarios)
+    # ------------------------------------------------------------------
+
+    def test_detect_aap_version_26(self, mocker, cluster):
+        """detect_aap_version should return AAP26 when the gateway returns version 2.6."""
+        def mocked_requests_get(*args, **kwargs):
+            headers = {
+                'Content-Type': 'application/json',
+                'X-Api-Product-Name': 'Red Hat Ansible Automation Platform',
+            }
+            return get_response(**{'headers': headers, 'data': {'version': '2.6'}})
+
+        connector = ApiConnector(cluster)
+        mocker.patch('requests.get', new=mocked_requests_get)
+        assert connector.detect_aap_version() == ClusterVersionChoices.AAP26
+
+    def test_detect_aap_version_unknown_version_raises(self, mocker, cluster):
+        """detect_aap_version should raise when the gateway responds with an unknown version."""
+        def mocked_requests_get(*args, **kwargs):
+            headers = {
+                'Content-Type': 'application/json',
+                'X-Api-Product-Name': 'Red Hat Ansible Automation Platform',
+            }
+            return get_response(**{'headers': headers, 'data': {'version': '9.9'}})
+
+        connector = ApiConnector(cluster)
+        mocker.patch('requests.get', new=mocked_requests_get)
+        with pytest.raises(Exception) as exc_info:
+            connector.detect_aap_version()
+        assert 'Not valid version' in str(exc_info.value)
+
+    def test_detect_aap_version_both_pings_fail_raises(self, mocker, cluster):
+        """detect_aap_version should raise when both gateway and v2 pings return None."""
+        mocker.patch(
+            'backend.apps.clusters.connector.ApiConnector.ping',
+            return_value=None,
+        )
+        connector = ApiConnector(cluster)
+        with pytest.raises(Exception) as exc_info:
+            connector.detect_aap_version()
+        assert 'Not valid version' in str(exc_info.value)
+
+    # ------------------------------------------------------------------
+    # __init__ – edge-case since / managed logic
+    # ------------------------------------------------------------------
+
+    def test_init_managed_uses_provided_since(self, cluster):
+        """In managed mode the connector must use the explicitly provided `since` value."""
+        since = datetime(2025, 5, 1, tzinfo=pytz.UTC)
+        connector = ApiConnector(cluster, since=since, managed=True)
+        assert connector.since == since
+        assert connector.managed is True
+
+    @pytest.mark.django_db(transaction=True)
+    def test_init_uses_last_job_finished_date_from_sync_status(self, cluster):
+        """Without an explicit `since`, the connector should fall back to the last sync date."""
+        last_date = datetime(2025, 3, 15, 12, 0, 0, tzinfo=pytz.UTC)
+        ClusterSyncStatus.objects.create(cluster=cluster, last_job_finished_date=last_date)
+        connector = ApiConnector(cluster)
+        assert connector.since == last_date
+
+    @time_machine.travel(datetime(2025, 10, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    def test_since_invalid_iso_date_falls_back_to_timedelta(self, settings, cluster):
+        """An unparseable INITIAL_SYNC_SINCE must fall back to now() – INITIAL_SYNC_DAYS."""
+        settings.INITIAL_SYNC_SINCE = 'not-a-valid-date'
+        settings.INITIAL_SYNC_DAYS = 7
+        connector = ApiConnector(cluster)
+        assert str(connector.since) == '2025-10-14 00:00:00+00:00'
+
+    # ------------------------------------------------------------------
+    # sync_jobs – invalid finished format
+    # ------------------------------------------------------------------
+
+    def test_sync_jobs_invalid_finished_format_raises(self, mocker, cluster):
+        """sync_jobs must raise TypeError when the `finished` field is not ISO-8601."""
+        job = {
+            'id': 77,
+            'finished': 'not-a-date',
+            'started': '2025-01-16T20:00:00.000000Z',
+            'status': 'successful',
+        }
+        connector = ApiConnector(cluster)
+        mocker.patch.object(type(connector), 'jobs', new_callable=PropertyMock, return_value=[job])
+
+        with pytest.raises(TypeError):
+            connector.sync_jobs()
+
+    # ------------------------------------------------------------------
+    # ping – request exception
+    # ------------------------------------------------------------------
+
+    def test_ping_request_exception_returns_none(self, mocker, cluster, caplog):
+        """ping() must return None and log the exception on a RequestException."""
+        mocker.patch(
+            'requests.get',
+            side_effect=requests_lib.exceptions.Timeout('Connection timed out'),
+        )
+        connector = ApiConnector(cluster)
+        with caplog.at_level(logging.ERROR, logger='automation_dashboard.clusters.connector'):
+            result = connector.ping('/api/v2/ping/')
+        assert result is None
+
