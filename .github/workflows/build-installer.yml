@@ -19,7 +19,7 @@ on:
   #   # tags:
   #   #   - 'v*.*.*'
     branches:
-      - release-0.2-rc4
+      - release-*
   workflow_dispatch:
     inputs:
       AAP_DASHBOARD_IMAGE:
@@ -32,9 +32,7 @@ permissions:
   contents: read
 
 env:
-  # use SELECTED_AAP_DASHBOARD_IMAGE, workflow_dispatch will work only after merge to main, so we need to set a default value for now
-  # SELECTED_AAP_DASHBOARD_IMAGE: ${{ inputs.AAP_DASHBOARD_IMAGE || 'registry.stage.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest' }}
-  SELECTED_AAP_DASHBOARD_IMAGE: 'quay.io/aap/automation-dashboard:main'
+  SELECTED_AAP_DASHBOARD_IMAGE: ${{ inputs.AAP_DASHBOARD_IMAGE || 'registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest' }}
 
 jobs:
   bundled-installer:
@@ -96,6 +94,13 @@ jobs:
           bundle_install=true
           bundle_dir=$PWD/setup/bundle
           EOF
+      - name: Print build configuration
+        run: |
+          echo "Build configuration:"
+          echo "  AAP_DASHBOARD_IMAGE: ${{ env.SELECTED_AAP_DASHBOARD_IMAGE }}"
+          echo "  INSTALLER_ARCH: ${{ matrix.installer_arch }}"
+          echo "  Branch: ${{ github.ref_name }}"
+          echo "  Bundled installer: yes"
       - name: Build bundled installer
         run: >
           AAP_DASHBOARD_BUNDLED_INSTALLER=1
@@ -118,6 +123,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Print build configuration
+        run: |
+          echo "Build configuration:"
+          echo "  Branch: ${{ github.ref_name }}"
+          echo "  Bundled installer: no"
       - name: Build online installer
         run: >
           AAP_DASHBOARD_BUNDLED_INSTALLER=0
