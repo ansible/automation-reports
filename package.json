@@ -13,6 +13,7 @@
     "start": "sirv dist --cors --single --host",
     "start:dev": "vite",
     "test": "playwright test",
+    "test:retry": "playwright test || playwright test --last-failed",
     "eslint": "eslint --ext .tsx,.js ./src/frontend",
     "lint": "npm run eslint",
     "format": "prettier --check --write ./src/frontend/**/*.{tsx,ts}",
