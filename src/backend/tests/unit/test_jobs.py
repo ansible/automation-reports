@@ -17,6 +17,7 @@ class TestJobs:
         instance.get_job_args = None
         instance.name = "test"
         task.instance = instance
+        task.cluster = MagicMock(sync_mode='api')
         task.run_task()
         mock_update_model.assert_called_with(instance.pk, status=JobStatusChoices.FAILED, explanation="No job args provided for task test")
 
@@ -44,6 +45,7 @@ class TestJobs:
         instance.cluster = MagicMock()
         instance.cluster.base_url = "url"
         task.instance = instance
+        task.cluster = MagicMock(sync_mode='api')
         connector_instance = mock_connector.return_value
         connector_instance.check_aap_version.return_value = True
         connector_instance.sync_common.side_effect = [Exception("fail"), None]

@@ -229,3 +229,16 @@ export async function mockCostsRoute(
     });
   });
 }
+
+export async function mockSetupStatusRoute(
+  page: import("playwright").Page,
+  setupRequired: boolean = false,
+): Promise<void> {
+  await page.route(`**/api/v1/setup/status/`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ setup_required: setupRequired }),
+    });
+  });
+}

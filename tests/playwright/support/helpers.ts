@@ -3,6 +3,7 @@ import {
   mockAuthSettingsRoute,
   mockTokenRoute,
   mockMeRoute,
+  mockSetupStatusRoute,
   mockTemplateOptionsRoute,
   mockTemplatesRoute,
   mockOrganizationsRoute,
@@ -69,6 +70,7 @@ export async function loginUser(
   await mockAuthSettingsRoute(page);
   await mockTokenRoute(page);
   await mockMeRoute(page);
+  await mockSetupStatusRoute(page, false);
   await mockTemplateOptionsRoute(page, templateOptionsResponse);
   await mockTemplatesRoute(page, templatesResponse);
   await mockOrganizationsRoute(page, organizationsResponse);
