@@ -118,10 +118,12 @@
       2.4: "{{ aap_auth_provider_host }}/api"
       2.5: "{{ aap_auth_provider_host }}"
       2.6: "{{ aap_auth_provider_host }}"
+      2.7: "{{ aap_auth_provider_host }}"
     map_to_aap_user_data_endpoint:
       2.4: "/v2/me/"
       2.5: "/api/gateway/v1/me/"
       2.6: "/api/gateway/v1/me/"
+      2.7: "/api/gateway/v1/me/"
 
 # - name: Add rsyslog to systemd services list
 #   ansible.builtin.set_fact:
