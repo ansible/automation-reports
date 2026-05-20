@@ -15,7 +15,7 @@ export default defineConfig([
       parser: typescriptParser,
       parserOptions: {
         project: "./tsconfig.json",
-        tsconfigRootDir: ".",
+        tsconfigRootDir: import.meta.dirname,
         ecmaVersion: 2021,
         sourceType: "module",
         ecmaFeatures: {
