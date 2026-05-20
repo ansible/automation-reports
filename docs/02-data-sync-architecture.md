@@ -95,7 +95,7 @@ class ApiConnector:
 
 **Key Features**:
 - **OAuth2 Authentication**: Handles bearer token authentication
-- **Version Detection**: Auto-detects AAP 2.4 vs 2.5 API differences
+- **Version Detection**: Auto-detects AAP 2.4, 2.5, 2.6, and 2.7 API differences
 - **Incremental Sync**: Only fetches jobs since last successful sync
 - **Pagination Handling**: Automatically follows API pagination
 - **Error Handling**: Robust handling of network and API errors
@@ -307,7 +307,7 @@ class Cluster(models.Model):
     port = IntegerField()           # 443
     access_token = BinaryField()    # Encrypted OAuth2 token
     verify_ssl = BooleanField()     # SSL verification
-    aap_version = CharField()       # AAP 2.4 or 2.5
+    aap_version = CharField()       # AAP 2.4, 2.5, 2.6, or 2.7
 
 # Temporary Storage
 class ClusterSyncData(models.Model):
