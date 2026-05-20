@@ -167,8 +167,8 @@ class AAPParseDataTask(BaseTask):
             self.update_model(self.instance.pk, status=JobStatusChoices.FAILED, explanation=msg)
             return
 
-        data_parser = DataParser(sync_data.id)
         try:
+            data_parser = DataParser(sync_data.id)
             data_parser.parse()
         except DispatcherCancel:
             self.after_cancel_task()

@@ -75,9 +75,23 @@ class Command(BaseCommand):
                 results.append(result)
             logger.debug('Tasks: %s', results)
             return
+        self._reset_interrupted_jobs()
+
         try:
             DispatcherMetricsServer().start()
         except redis.exceptions.ConnectionError as exc:
             raise CommandError(f'Dispatcher could not connect to redis, error: {exc}')
 
         run_service()
+
+    def _reset_interrupted_jobs(self):
+        from backend.apps.clusters.models import JobStatusChoices
+        from backend.apps.scheduler.models import SyncJob, JobTypeChoices
+
+        stuck_statuses = [JobStatusChoices.RUNNING, JobStatusChoices.PENDING, JobStatusChoices.WAITING]
+        count = SyncJob.objects.filter(type=JobTypeChoices.PARSE_JOB_DATA, status__in=stuck_statuses).update(
+            status=JobStatusChoices.FAILED,
+            explanation='Reset on dispatcher startup: job was interrupted by a previous process exit',
+        )
+        if count:
+            logger.warning('Reset %d interrupted parse job(s) to FAILED on startup', count)
