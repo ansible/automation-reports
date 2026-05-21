@@ -299,11 +299,17 @@ class ApiConnector:
                         )
                 response_data.append(result["id"])
         if sync_type == 'job_template':
+            skipped_count = 0
             for key, value in db_data.items():
-                logger.info(f"Deleting job template {value.name} with id {value.id}")
                 count = Job.objects.filter(job_template_id=value.id, cluster_id=value.cluster_id).count()
                 if count == 0:
+                    logger.info(f"Deleting job template {value.name} with id {value.id}")
                     value.delete()
+                else:
+                    skipped_count += 1
+
+            if skipped_count > 0:
+                logger.info(f"Skipped deletion of {skipped_count} templates deleted from AAP but DB retains them with job references")
 
     def ping(self, ping_url):
         logger.info(f'Pinging api {self.cluster.base_url}{ping_url}')
