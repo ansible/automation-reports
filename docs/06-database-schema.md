@@ -116,7 +116,7 @@ ON clusters_cluster(protocol, address, port);
 
 **Key Features**:
 - **Encrypted Tokens**: OAuth2 access tokens stored as encrypted binary data
-- **Version Support**: Handles both AAP 2.4 and 2.5 API differences
+- **Version Support**: Handles AAP 2.4, 2.5, 2.6, and 2.7 API differences
 - **SSL Configuration**: Per-cluster SSL verification settings
 
 ### 2. Job Execution Data

@@ -332,11 +332,13 @@ class ApiConnector:
         return response
 
     def detect_aap_version(self):
-        logger.info(f'Checking if is AAP 2.5 ... 2.6 at {self.cluster.base_url}')
+        logger.info(f'Checking if is AAP 2.5 ... 2.7 at {self.cluster.base_url}')
         response25 = self.ping("/api/gateway/v1/ping/")
         if response25:
-            logger.debug(f"AAP 2.5/2.6 ping response: {response25}")
-            if response25["version"] == "2.6":
+            logger.debug(f"AAP 2.5/2.6/2.7 ping response: {response25}")
+            if response25["version"] == "2.7":
+                return ClusterVersionChoices.AAP27
+            elif response25["version"] == "2.6":
                 return ClusterVersionChoices.AAP26
             elif response25["version"] == "2.5":
                 return ClusterVersionChoices.AAP25

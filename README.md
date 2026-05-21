@@ -204,7 +204,7 @@ nano local_settings.py
 **Edit the following variables in `local_settings.py`:**
 
 - `url`: Change from `aap.example.com` to your AAP VM IP
-- `user_data_endpoint`: Change from `/api/v2/me/` to `/api/gateway/v1/me/` for AAP v2.5
+- `user_data_endpoint`: Change from `/api/v2/me/` to `/api/gateway/v1/me/` for AAP v2.5 and later
 - `client_id`: Replace `"TODO"` with your OAuth application client ID
 - `client_secret`: Replace `"TODO"` with your OAuth application client secret
 
@@ -218,7 +218,7 @@ AAP_AUTH_PROVIDER = {
     #
     # For AAP v2.4
     "user_data_endpoint": "/v2/me/",
-    # For AAP v2.5, v2.6
+    # For AAP v2.5, v2.6, v2.7
     # "user_data_endpoint": "/api/gateway/v1/me/",
     #
     "check_ssl": False,

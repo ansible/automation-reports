@@ -749,6 +749,19 @@ class TestConnector:
         mocker.patch('requests.get', new=mocked_requests_get)
         assert connector.detect_aap_version() == ClusterVersionChoices.AAP26
 
+    def test_detect_aap_version_27(self, mocker, cluster):
+        """detect_aap_version should return AAP27 when the gateway returns version 2.7."""
+        def mocked_requests_get(*args, **kwargs):
+            headers = {
+                'Content-Type': 'application/json',
+                'X-Api-Product-Name': 'Red Hat Ansible Automation Platform',
+            }
+            return get_response(**{'headers': headers, 'data': {'version': '2.7'}})
+
+        connector = ApiConnector(cluster)
+        mocker.patch('requests.get', new=mocked_requests_get)
+        assert connector.detect_aap_version() == ClusterVersionChoices.AAP27
+
     def test_detect_aap_version_unknown_version_raises(self, mocker, cluster):
         """detect_aap_version should raise when the gateway responds with an unknown version."""
         def mocked_requests_get(*args, **kwargs):
