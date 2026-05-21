@@ -14,7 +14,7 @@ from backend.apps.clusters.connector import ApiConnector
 from backend.apps.clusters.encryption import decrypt_value
 from backend.apps.clusters.models import (
     ClusterVersionChoices, Cluster, Organization, JobTemplate,
-    ClusterSyncData, ClusterSyncStatus,
+    ClusterSyncData, ClusterSyncStatus, Job, JobTypeChoices, JobStatusChoices,
 )
 
 
@@ -230,6 +230,56 @@ class TestConnector:
         connector = ApiConnector(cluster)
         with pytest.raises(NotImplementedError):
             connector.sync_common(sync_type='foo')
+
+    def test_sync_job_templates_deletion_with_jobs(self, mocker, cluster, caplog):
+        """Test that templates deleted from AAP but with job references are skipped, not deleted."""
+        import logging
+
+        # Create templates in DB: one with jobs, one without
+        template_with_jobs = JobTemplate.objects.create(
+            name="Template With Jobs",
+            cluster=cluster,
+            external_id=100,
+            description="Has job references"
+        )
+        template_without_jobs = JobTemplate.objects.create(
+            name="Template Without Jobs",
+            cluster=cluster,
+            external_id=101,
+            description="No job references"
+        )
+
+        # Create a job referencing the first template
+        Job.objects.create(
+            type=JobTypeChoices.JOB,
+            name="Test Job",
+            job_template=template_with_jobs,
+            cluster=cluster,
+            external_id=999,
+            status=JobStatusChoices.SUCCESSFUL,
+            started=datetime(2025, 1, 1, 10, 0, 0, tzinfo=pytz.UTC),
+            finished=datetime(2025, 1, 1, 10, 5, 0, tzinfo=pytz.UTC),
+        )
+
+        # Mock API response - returns empty list (both templates deleted from AAP)
+        mock = mocker.patch('backend.apps.clusters.connector.ApiConnector.execute_get')
+        mock.side_effect = [[iter([])]]
+
+        connector = ApiConnector(cluster)
+
+        # Capture logs
+        with caplog.at_level(logging.INFO):
+            connector.sync_common(sync_type='job_template')
+
+        # Template without jobs should be deleted
+        assert not JobTemplate.objects.filter(external_id=101).exists()
+        assert "Deleting job template Template Without Jobs" in caplog.text
+
+        # Template with jobs should still exist (skipped)
+        assert JobTemplate.objects.filter(external_id=100).exists()
+
+        # Should log about skipped deletion
+        assert "Skipped deletion of 1 templates deleted from AAP but DB retains them with job references" in caplog.text
 
     def test_jobs(self, mocker, cluster):
         return_items = [{'id': 1, 'name': 'test1'}, {'id': 2, 'name': 'test2'}]
