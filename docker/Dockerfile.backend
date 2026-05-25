@@ -56,15 +56,27 @@ RUN microdnf install --setopt=install_weak_deps=0 --nodocs -y \
       zlib-devel \
     && microdnf clean all
 
+COPY requirements-build-tools.txt /tmp/requirements-build-tools.txt
 COPY requirements-build.txt /tmp/requirements-build.txt
 
-# Strip hashes: built wheels have different hashes than the sdist entries
-# in requirements-build.txt, so pip hash verification would fail.
-# With --no-index --find-links we rely on name+version matching instead.
+# Install build backends from pre-fetched wheels (allow_binary=true for this file).
+# These are pure-Python or build-only tools; none end up in the final image.
+# --no-build-isolation here is safe because we're installing wheels, not sdists.
+RUN grep -E '^[a-zA-Z0-9].*==.*\\$' /tmp/requirements-build-tools.txt \
+      | sed 's/ \\$//' \
+      > /tmp/build-tools-no-hashes.txt && \
+    python3.12 -m pip install --no-cache-dir --no-deps \
+      --no-build-isolation \
+      -r /tmp/build-tools-no-hashes.txt
+
+# Build all runtime packages from sdist using the pre-installed build backends.
+# --no-build-isolation means pip uses the backends installed above instead of
+# spinning up isolated envs that would need to pull their own build deps.
 RUN grep -E '^[a-zA-Z0-9].*==.*\\$' /tmp/requirements-build.txt \
       | sed 's/ \\$//' \
       > /tmp/requirements-no-hashes.txt && \
     python3.12 -m pip wheel ${PIP_BUILD_OPTS} \
+      --no-build-isolation \
       -r /tmp/requirements-no-hashes.txt
 
 # =============================================================================
