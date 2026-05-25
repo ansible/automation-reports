@@ -1,17 +1,24 @@
 packages: [
+  # Runtime packages (Stage 3 final image)
   findutils,
-  glibc-langpack-en, 
+  glibc-langpack-en,
+  libjpeg-turbo,
+  libpq,
   nginx,
-  python3.12,
-  python3.12-devel,
-  libpq-devel,
-  gcc,
   pango,
+  python3.12,
+  # Build packages (Stage 2 python-builder)
+  cargo,
+  gcc,
   gcc-c++,
-  zlib-devel,
-  libjpeg-devel,
   libffi-devel,
-  python3.9
+  libjpeg-turbo-devel,
+  libpq-devel,
+  openssl-devel,
+  python3.12-devel,
+  python3.12-pip,
+  rust,
+  zlib-devel,
 ]
 contentOrigin:
   repofiles: ["./ubi.repo"]
