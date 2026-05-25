@@ -1,0 +1,8 @@
+# Build backends required to compile packages in requirements-build.txt from sdist.
+# These are pre-fetched by Cachi2 so that pip's isolated PEP 517 build environments
+# can install them during the hermetic python-builder stage.
+#
+# NOT a runtime dependency file — only used in the container build stage.
+hatchling
+flit_core
+maturin
