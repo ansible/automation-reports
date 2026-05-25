@@ -59,13 +59,16 @@ RUN microdnf install --setopt=install_weak_deps=0 --nodocs -y \
 COPY requirements-build-tools.txt /tmp/requirements-build-tools.txt
 COPY requirements-build.txt /tmp/requirements-build.txt
 
-# Install build backends from pre-fetched wheels (allow_binary=true for this file).
-# These are pure-Python or build-only tools; none end up in the final image.
-# --no-build-isolation here is safe because we're installing wheels, not sdists.
+# Install build backends from the pre-fetched requirements_build_files cache.
+# --no-deps is intentionally omitted: pip must resolve the dependency graph so it
+# installs in topological order (e.g. pathspec before hatchling). cachi2.env
+# restricts pip to the local cache so no network access occurs.
+# --no-build-isolation uses the current env for build backends, avoiding the
+# recursive isolated-env problem that the standard PEP 517 flow would cause.
 RUN grep -E '^[a-zA-Z0-9].*==.*\\$' /tmp/requirements-build-tools.txt \
       | sed 's/ \\$//' \
       > /tmp/build-tools-no-hashes.txt && \
-    python3.12 -m pip install --no-cache-dir --no-deps \
+    python3.12 -m pip install --no-cache-dir \
       --no-build-isolation \
       -r /tmp/build-tools-no-hashes.txt
 
