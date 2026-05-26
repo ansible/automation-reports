@@ -312,6 +312,20 @@ arches:
     name: python3.12-pip-wheel
     evr: 23.2.1-5.el9
     sourcerpm: python3.12-pip-23.2.1-5.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/python3.12-setuptools-68.2.2-5.el9_6.noarch.rpm
+    repoid: ubi-9-for-aarch64-appstream-rpms
+    size: 1654905
+    checksum: sha256:6a7ea24faa6a5f2686b5e5b103a09f63b929b9bef70f1392dfea4ec5ef57c819
+    name: python3.12-setuptools
+    evr: 68.2.2-5.el9_6
+    sourcerpm: python3.12-setuptools-68.2.2-5.el9_6.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/p/python3.12-wheel-0.41.2-3.el9_7.1.noarch.rpm
+    repoid: ubi-9-for-aarch64-appstream-rpms
+    size: 175924
+    checksum: sha256:2180893b2d7bec187b54bca44fbfc63f3bed50f7f252c5cac269a429e1be600c
+    name: python3.12-wheel
+    evr: 0.41.2-3.el9_7.1
+    sourcerpm: python3.12-wheel-0.41.2-3.el9_7.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/os/Packages/r/redhat-logos-httpd-90.6-1.el9.noarch.rpm
     repoid: ubi-9-for-aarch64-appstream-rpms
     size: 15717
@@ -946,6 +960,20 @@ arches:
     name: python3.12-pip-wheel
     evr: 23.2.1-5.el9
     sourcerpm: python3.12-pip-23.2.1-5.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.12-setuptools-68.2.2-5.el9_6.noarch.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 1654905
+    checksum: sha256:6a7ea24faa6a5f2686b5e5b103a09f63b929b9bef70f1392dfea4ec5ef57c819
+    name: python3.12-setuptools
+    evr: 68.2.2-5.el9_6
+    sourcerpm: python3.12-setuptools-68.2.2-5.el9_6.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/p/python3.12-wheel-0.41.2-3.el9_7.1.noarch.rpm
+    repoid: ubi-9-for-x86_64-appstream-rpms
+    size: 175924
+    checksum: sha256:2180893b2d7bec187b54bca44fbfc63f3bed50f7f252c5cac269a429e1be600c
+    name: python3.12-wheel
+    evr: 0.41.2-3.el9_7.1
+    sourcerpm: python3.12-wheel-0.41.2-3.el9_7.1.src.rpm
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/Packages/r/redhat-logos-httpd-90.6-1.el9.noarch.rpm
     repoid: ubi-9-for-x86_64-appstream-rpms
     size: 15717
