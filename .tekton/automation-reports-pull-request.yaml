@@ -57,7 +57,7 @@ spec:
       - name: name
         value: pde-docker-build-multiplatform-submodules-env-oci-ta
       - name: bundle
-        value: quay.io/aap-ci/pde-docker-build-multiplatform-submodules-env-oci-ta-bundle@sha256:a2c122d833447d5c6fa689725ab4c7a4a49f43bfa9bf835f48288c3b00dc06b8
+        value: quay.io/aap-ci/pde-docker-build-multiplatform-submodules-env-oci-ta-bundle@sha256:f9fdc9370fa431a3f930642c8bee4c4750b04be747a4d17136d62476aa35e6bc
       - name: kind
         value: pipeline
   taskRunTemplate:
