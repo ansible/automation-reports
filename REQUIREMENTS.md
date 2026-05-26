@@ -25,6 +25,9 @@ make sync-requirements
 
 # Check if requirements are in sync
 make requirements-check
+
+# Regenerate requirements-build-tools.txt (run after sync-requirements; requires podman)
+make sync-build-tools
 ```
 
 ## Syncing Requirements Files
@@ -63,6 +66,7 @@ If you see a PR check failure, run `make sync-requirements` locally and commit t
 - `requirements.txt`: Contains the base dependencies (for reference)
 - `requirements-pinned.txt`: Contains exact version pins
 - `requirements-build.txt`: Contains build dependencies for downstream hermetic builds, compiled from requirements-pinned.txt (auto-generated)
+- `requirements-build-tools.txt`: Contains build-time tool dependencies (build backends) for hermetic Konflux builds, compiled from `requirements-build.txt` via `pybuild-deps` (auto-generated)
 
 ## Tricks
 

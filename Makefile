@@ -39,8 +39,12 @@ requirements-check:
 		echo "Requirements-build.txt is in sync."; \
 	fi
 
+sync-build-tools:
+	@echo "Regenerating requirements-build-tools.txt via pybuild-deps container..."
+	./requirements/generate-build-requirements.sh
+
 licenses:
 	@echo "Syncing licenses/licenses.md..."
 	@./sync-licenses.sh
 
-.PHONY: docker-compose sync-requirements requirements requirements-check licenses
+.PHONY: docker-compose sync-requirements requirements requirements-check sync-build-tools licenses

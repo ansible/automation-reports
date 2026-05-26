@@ -62,6 +62,7 @@ python manage.py syncdata --since=2025-02-12 --until=2025-02-12
 # Requirements (source of truth is requirements-pinned.txt)
 make sync-requirements    # regenerate requirements-build.txt
 make requirements-check   # verify in sync
+make sync-build-tools     # regenerate requirements-build-tools.txt (run after sync-requirements)
 ```
 
 ### Frontend
