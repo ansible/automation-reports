@@ -28,6 +28,6 @@ podman run --rm \
     pybuild-deps \
     pybuild-deps compile --generate-hashes \
         --output-file=requirements-build-tools.txt \
-        requirements-build.txt
+        requirements-build.txt requirements/pybuild-constraints.txt
 
 echo "[INFO] Done. requirements-build-tools.txt updated ($(wc -l < requirements-build-tools.txt) lines)."
