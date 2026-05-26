@@ -1,0 +1,9 @@
+FROM registry.access.redhat.com/ubi9/python-311:latest
+
+USER root
+
+RUN pip install pybuild-deps
+RUN mkdir -p /opt/app-root/src/.cache/pybuild-deps
+VOLUME /data
+WORKDIR /data
+CMD ["pybuild-deps"]
