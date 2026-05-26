@@ -52,20 +52,33 @@ RUN microdnf install --setopt=install_weak_deps=0 --nodocs -y \
       python3.12 \
       python3.12-devel \
       python3.12-pip \
+      python3.12-setuptools \
+      python3.12-wheel \
       rust \
       zlib-devel \
     && microdnf clean all
 
+COPY requirements-build-tools.txt /tmp/requirements-build-tools.txt
 COPY requirements-build.txt /tmp/requirements-build.txt
 
-# Build all runtime packages from sdist. pip's default PEP 517 isolated-env
-# mechanism handles build backend installation; the proxy-served wheels for
-# hatchling, maturin, flit_core, etc. (pre-fetched via requirements_build_files)
-# are found in the Cachi2 cache without needing --no-build-isolation.
+# Step 1: Install build backends system-wide using pip's default isolated-env
+# mechanism. Their transitive build deps are pre-fetched into the Cachi2 cache
+# via requirements_build_files, so the isolated envs resolve cleanly.
+# After this step all build backends are installed in the system Python env.
+RUN grep -E '^[a-zA-Z0-9].*==.*\\$' /tmp/requirements-build-tools.txt \
+      | sed 's/ \\$//' \
+      > /tmp/build-tools-no-hashes.txt && \
+    python3.12 -m pip install --no-cache-dir \
+      -r /tmp/build-tools-no-hashes.txt
+
+# Step 2: Build all runtime packages from sdist using the pre-installed backends.
+# --no-build-isolation means pip uses the system Python env (step 1) instead of
+# spinning up isolated envs that would need to re-download build tools.
 RUN grep -E '^[a-zA-Z0-9].*==.*\\$' /tmp/requirements-build.txt \
       | sed 's/ \\$//' \
       > /tmp/requirements-no-hashes.txt && \
     python3.12 -m pip wheel ${PIP_BUILD_OPTS} \
+      --no-build-isolation \
       -r /tmp/requirements-no-hashes.txt
 
 # =============================================================================
