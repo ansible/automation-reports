@@ -1,0 +1,8 @@
+# Build constraints for automation-reports
+# These version constraints ensure reproducible hermetic builds.
+
+# cachecontrol>=0.14.4 uses uv-build==0.9.30 which has a Cargo.lock/Cargo.toml
+# mismatch that causes hermeto to reject it (PackageWithCorruptLockfileRejected).
+# cachecontrol==0.14.3 uses uv-build==0.9.21 which has a valid Cargo.lock.
+# Same fix as automation-metrics-service-container.
+cachecontrol<0.14.4
