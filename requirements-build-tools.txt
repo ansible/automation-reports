@@ -8,6 +8,10 @@ flit-core==3.12.0 \
     --hash=sha256:18f63100d6f94385c6ed57a72073443e1a71a4acb4339491615d0f16d6ff01b2 \
     --hash=sha256:e7a0304069ea895172e3c7bb703292e992c5d1555dd1233ab7b5621b5b69e62c
     # via -r /tmp/build-tools.in
+hatch-fancy-pypi-readme==25.1.0 \
+    --hash=sha256:9c58ed3dff90d51f43414ce37009ad1d5b0f08ffc9fc216998a06380f01c0045 \
+    --hash=sha256:ce0134c40d63d874ac48f48ccc678b8f3b62b8e50e9318520d2bffc752eedaf3
+    # via -r /tmp/build-tools.in
 hatch-vcs==0.5.0 \
     --hash=sha256:0395fa126940340215090c344a2bf4e2a77bcbe7daab16f41b37b98c95809ff9 \
     --hash=sha256:b49677dbdc597460cc22d01b27ab3696f5e16a21ecf2700fb01bc28e1f2a04a7
@@ -17,6 +21,7 @@ hatchling==1.29.0 \
     --hash=sha256:793c31816d952cee405b83488ce001c719f325d9cda69f1fc4cd750527640ea6
     # via
     #   -r /tmp/build-tools.in
+    #   hatch-fancy-pypi-readme
     #   hatch-vcs
 maturin==1.13.3 \
     --hash=sha256:0ef257e692cc756c87af5bea95ddfe7d3ac49d3376a7a87f728d63f06e7b6f8b \
