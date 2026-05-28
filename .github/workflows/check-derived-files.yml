@@ -6,10 +6,14 @@ on:
         paths:
             - "requirements-pinned.txt"
             - "requirements-build.txt"
+            - "requirements-build-tools.txt"
+            - "licenses/licenses.md"
     pull_request:
         paths:
             - "requirements-pinned.txt"
             - "requirements-build.txt"
+            - "requirements-build-tools.txt"
+            - "licenses/licenses.md"
 
 permissions:
   contents: write
