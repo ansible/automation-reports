@@ -18,7 +18,7 @@ sync-requirements:
 		python3.12 -m venv .venv; \
 		echo "Virtual environment created successfully."; \
 	fi
-	@source .venv/bin/activate && \
+	@. .venv/bin/activate && \
 		if [ ! -f .venv/bin/pip-compile ]; then \
 			echo "Installing pip-tools..."; \
 			pip install pip-tools; \
