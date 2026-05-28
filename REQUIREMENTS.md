@@ -12,7 +12,8 @@ For initial development setup, follow the instructions in [README.md](README.md#
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip wheel
-pip install -r requirements-pinned.txt -r requirements_dev.txt
+pip install -r requirements-pinned.txt
+pip install -r requirements_dev.txt
 ```
 
 ### Requirements Management
