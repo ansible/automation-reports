@@ -20,26 +20,31 @@ pip install -r requirements-pinned.txt
 The Makefile provides automated requirements management:
 
 ```bash
-# Sync requirements files (creates venv and installs pip-tools if needed)
-make sync-requirements
+# Sync ALL requirements files (recommended - does everything)
+make requirements
+
+# Or sync individual files:
+make sync-requirements        # Generate requirements-build.txt only
+make sync-build-tools         # Generate requirements-build-tools.txt only (requires podman)
 
 # Check if requirements are in sync
 make requirements-check
-
-# Regenerate requirements-build-tools.txt (run after sync-requirements; requires podman)
-make sync-build-tools
 ```
 
 ## Syncing Requirements Files
 
-The `requirements-build.txt` file is automatically generated from `requirements-pinned.txt`. 
+Both `requirements-build.txt` and `requirements-build-tools.txt` are automatically generated from `requirements-pinned.txt`. 
 
 ### Manual Sync
 
 ```bash
-# Sync requirements (creates venv and installs pip-tools if needed)
-make sync-requirements
+# Sync all requirements files (creates venv and installs pip-tools if needed)
+make requirements
 ```
+
+This will:
+1. Generate `requirements-build.txt` from `requirements-pinned.txt` (with hashes)
+2. Generate `requirements-build-tools.txt` from `requirements-build.txt` (build backend dependencies)
 
 ### Check if files are in sync
 

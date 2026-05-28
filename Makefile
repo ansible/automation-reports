@@ -26,7 +26,13 @@ sync-requirements:
 		./sync-requirements.sh $${EXTRA_DEPS:-}
 # above - we want to split EXTRA_DEPS on spaces, so we use normal shell splitting
 
-requirements: sync-requirements
+requirements:
+	@echo "Syncing all requirements files from requirements-pinned.txt..."
+	@echo "Step 1/2: Generating requirements-build.txt..."
+	@make sync-requirements
+	@echo "Step 2/2: Generating requirements-build-tools.txt..."
+	@make sync-build-tools
+	@echo "All requirements files synced successfully!"
 
 requirements-check:
 	@echo "Checking if requirements-build.txt is in sync..."
