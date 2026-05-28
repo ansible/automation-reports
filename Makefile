@@ -35,14 +35,14 @@ requirements:
 	@echo "All requirements files synced successfully!"
 
 requirements-check:
-	@echo "Checking if requirements-build.txt is in sync..."
-	@make sync-requirements
-	@if ! git diff --quiet requirements-build.txt; then \
-		echo "Requirements-build.txt is out of sync. Run 'make sync-requirements' to update it."; \
-		git diff requirements-build.txt; \
+	@echo "Checking if all requirements files are in sync..."
+	@make requirements
+	@if ! git diff --quiet requirements-build.txt requirements-build-tools.txt; then \
+		echo "Requirements files are out of sync. Run 'make requirements' to update them."; \
+		git diff requirements-build.txt requirements-build-tools.txt; \
 		exit 1; \
 	else \
-		echo "Requirements-build.txt is in sync."; \
+		echo "All requirements files are in sync."; \
 	fi
 
 sync-build-tools:

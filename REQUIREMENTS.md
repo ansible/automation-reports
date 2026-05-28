@@ -49,11 +49,11 @@ This will:
 ### Check if files are in sync
 
 ```bash
-# Check if requirements-build.txt matches the current state
+# Check if all requirements files match the current state
 make requirements-check
 ```
 
-**Note:** The `requirements-check` command will automatically run `make sync-requirements` first, then check if the generated file matches what's currently tracked in git.
+**Note:** The `requirements-check` command will automatically run `make requirements` first to regenerate both `requirements-build.txt` and `requirements-build-tools.txt`, then check if the generated files match what's currently tracked in git.
 
 ## Automated Sync
 
