@@ -383,7 +383,11 @@ class BaseModel(CreatUpdateModel):
         It first tries to find an existing instance by external ID, then by name if not found.
         If no instance exists, it creates a new one; otherwise, it updates the existing instance's
         name and description.
+
+        Handles IntegrityError race conditions when concurrent workers attempt to create
+        the same record simultaneously.
         """
+        from django.db import IntegrityError
 
         logger.info(f'Creating or updating {cls.__name__} for cluster {cluster} with external id: {external_id}')
 
@@ -397,21 +401,33 @@ class BaseModel(CreatUpdateModel):
                 model.name = name
                 model.save()
             except cls.DoesNotExist:
-                model, created = cls.objects.update_or_create(
-                    name=name,
-                    cluster=cluster,
-                    defaults={**kwargs, 'external_id': external_id},
-                )
+                try:
+                    model, created = cls.objects.update_or_create(
+                        name=name,
+                        cluster=cluster,
+                        defaults={**kwargs, 'external_id': external_id},
+                    )
+                except IntegrityError:
+                    # Race condition: another worker created it between our get() and create()
+                    # Retry the get() to fetch the existing record
+                    model = cls.objects.get(cluster=cluster, external_id=external_id)
+                    created = False
         else:
             _min = cls.objects.all().aggregate(Min('external_id'))
             _external_id = _min['external_id__min']
             _external_id = _external_id - 1 if _external_id is not None and _external_id <= 0 else -1
 
-            model, created = cls.objects.get_or_create(
-                name=name,
-                cluster=cluster,
-                defaults={**kwargs, 'external_id': _external_id},
-            )
+            try:
+                model, created = cls.objects.get_or_create(
+                    name=name,
+                    cluster=cluster,
+                    defaults={**kwargs, 'external_id': _external_id},
+                )
+            except IntegrityError:
+                # Race condition: another worker created it between our get() and create()
+                # Retry the get() to fetch the existing record
+                model = cls.objects.get(name=name, cluster=cluster)
+                created = False
 
         if created:
             logger.info(f'Created {cls.__name__} for cluster {cluster} with external id: {external_id}')
