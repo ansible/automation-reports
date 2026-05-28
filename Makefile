@@ -41,6 +41,12 @@ requirements-check:
 
 sync-build-tools:
 	@echo "Regenerating requirements-build-tools.txt via pybuild-deps container..."
+	@if ! command -v podman >/dev/null 2>&1; then \
+		echo "Error: podman is not installed or not in PATH"; \
+		echo "Please install podman to use this target"; \
+		echo "See: https://podman.io/getting-started/installation"; \
+		exit 1; \
+	fi
 	./requirements/generate-build-requirements.sh
 
 licenses:
