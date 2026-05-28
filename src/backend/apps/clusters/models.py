@@ -413,21 +413,36 @@ class BaseModel(CreatUpdateModel):
                     model = cls.objects.get(cluster=cluster, external_id=external_id)
                     created = False
         else:
-            _min = cls.objects.all().aggregate(Min('external_id'))
-            _external_id = _min['external_id__min']
-            _external_id = _external_id - 1 if _external_id is not None and _external_id <= 0 else -1
+            # Retry loop to handle both name and external_id collisions
+            max_retries = 5
+            for retry in range(max_retries):
+                _min = cls.objects.all().aggregate(Min('external_id'))
+                _external_id = _min['external_id__min']
+                _external_id = _external_id - 1 if _external_id is not None and _external_id <= 0 else -1
 
-            try:
-                model, created = cls.objects.get_or_create(
-                    name=name,
-                    cluster=cluster,
-                    defaults={**kwargs, 'external_id': _external_id},
-                )
-            except IntegrityError:
-                # Race condition: another worker created it between our get() and create()
-                # Retry the get() to fetch the existing record
-                model = cls.objects.get(name=name, cluster=cluster)
-                created = False
+                try:
+                    model, created = cls.objects.get_or_create(
+                        name=name,
+                        cluster=cluster,
+                        defaults={**kwargs, 'external_id': _external_id},
+                    )
+                    break  # Success, exit retry loop
+                except IntegrityError as e:
+                    # Race condition: another worker created a record
+                    # Could be collision on (cluster, name) OR (cluster, external_id)
+
+                    # Try to fetch by name first (most common case)
+                    try:
+                        model = cls.objects.get(name=name, cluster=cluster)
+                        created = False
+                        break  # Found existing record by name, exit retry loop
+                    except cls.DoesNotExist:
+                        # Not a name collision, must be external_id collision
+                        # Check if this is the last retry
+                        if retry == max_retries - 1:
+                            # Give up and raise the original IntegrityError
+                            raise e
+                        # Otherwise, retry with new external_id (loop continues)
 
         if created:
             logger.info(f'Created {cls.__name__} for cluster {cluster} with external id: {external_id}')
