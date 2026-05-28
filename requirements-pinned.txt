@@ -1,7 +1,7 @@
-Django==5.2.8
+Django==5.2.14
 PyJWT==2.12.1
 ansible-runner==2.4.2
-channels==4.3.1
+channels==4.3.2
 channels_redis==4.3.0
 dispatcherd[pg_notify]==2026.1.27
 django-ansible-base==2025.10.20
@@ -23,7 +23,7 @@ setuptools>=82.0.1
 split-settings==1.0.0
 supervisor==4.3.0
 tzdata==2025.3
-urllib3==2.6.3
+urllib3==2.7.0
 uvicorn==0.38.0
 wheel==0.46.3
 drf-spectacular==0.29.0

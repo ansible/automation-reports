@@ -7,6 +7,6 @@
 
 /code/src/backend/wait-for-migrations-dashboard.sh
 
-exec supervisord -c /etc/supervisord_dashboard_web.conf
+exec /venv/bin/supervisord -c /etc/supervisord_dashboard_web.conf
 # nginx -g 'daemon off;' &
 # /venv/bin/python manage.py runserver 0.0.0.0:8000 &
