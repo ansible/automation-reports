@@ -5,19 +5,22 @@ This test will:
 - FAIL (raise IntegrityError) BEFORE the fix is implemented
 - PASS AFTER the fix is implemented
 
-The fix should catch IntegrityError in Host.create_or_update() and retry get().
+The fix should catch IntegrityError in BaseModel.create_or_update() and retry get().
+This protects both Host and JobTemplate models.
 """
 import pytest
 from django.db import IntegrityError
 from unittest.mock import patch
 
-from backend.apps.clusters.models import Host
+from backend.apps.clusters.models import Host, JobTemplate
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
-class TestHostRaceBug:
+class TestBaseModelRaceBug:
     """
     Test that reproduces the exact race condition from production.
+
+    Affects both Host and JobTemplate models (both inherit from BaseModel).
 
     Production scenario (bug.txt line 29-30):
     - Two workers process host summaries for the same cluster
@@ -180,4 +183,79 @@ class TestHostRaceBug:
             )
 
             assert host1.id == host2.id
+
+    def test_job_template_race_condition_negative_external_id(self, cluster):
+        """
+        Test the race condition for JobTemplate with negative external_id.
+
+        Production logs (bug.txt lines 2-3) show:
+        - Two concurrent workers both creating JobTemplate with external_id=-1
+        - This didn't crash in production (lucky timing), but the bug exists
+
+        JobTemplate uses same BaseModel.create_or_update() as Host, so same fix applies.
+
+        WITHOUT FIX: This test raises IntegrityError
+        WITH FIX: This test passes (catch IntegrityError, retry get())
+        """
+        original_get_or_create = JobTemplate.objects.get_or_create
+        call_count = {"count": 0}
+
+        def simulated_race_get_or_create(*args, **kwargs):
+            """Simulate race condition for JobTemplate"""
+            call_count["count"] += 1
+
+            if call_count["count"] == 1:
+                return original_get_or_create(*args, **kwargs)
+            elif call_count["count"] == 2:
+                name = kwargs.get('name')
+                cluster_arg = kwargs.get('cluster')
+                existing = JobTemplate.objects.filter(
+                    name=name,
+                    cluster=cluster_arg
+                ).first()
+
+                if existing:
+                    defaults = kwargs.get('defaults', {})
+                    external_id = defaults.get('external_id')
+
+                    try:
+                        new_jt = JobTemplate.objects.create(
+                            name=name,
+                            cluster=cluster_arg,
+                            external_id=external_id,
+                            **{k: v for k, v in defaults.items() if k != 'external_id'}
+                        )
+                        return new_jt, True
+                    except IntegrityError:
+                        raise
+
+                return original_get_or_create(*args, **kwargs)
+
+            return original_get_or_create(*args, **kwargs)
+
+        with patch.object(JobTemplate.objects, 'get_or_create', simulated_race_get_or_create):
+            # First worker creates orphaned job template (external_id=-1)
+            # This happens when job runs without a template (ad-hoc/workflow)
+            jt1 = JobTemplate.create_or_update(
+                cluster=cluster,
+                external_id=-1,
+                name="orphaned-job-template",
+                description="Worker 1"
+            )
+            assert jt1 is not None
+            assert jt1.external_id == -1
+
+            # Second worker tries to create same orphaned job template
+            # WITHOUT FIX: IntegrityError
+            # WITH FIX: Returns existing job template
+            jt2 = JobTemplate.create_or_update(
+                cluster=cluster,
+                external_id=-1,
+                name="orphaned-job-template",
+                description="Worker 2"
+            )
+
+            assert jt2 is not None
+            assert jt1.id == jt2.id
+            assert JobTemplate.objects.filter(cluster=cluster, name="orphaned-job-template").count() == 1
 
