@@ -72,6 +72,20 @@ If you see a PR check failure, run `make sync-requirements` locally and commit t
 - `requirements-build.txt`: Contains build dependencies for downstream hermetic builds, compiled from requirements-pinned.txt (auto-generated, includes hashes)
 - `requirements-build-tools.txt`: Contains build-time tool dependencies (build backends) for hermetic Konflux builds, compiled from `requirements-build.txt` via `pybuild-deps` (auto-generated)
 
+## License Management
+
+The project maintains a `licenses/licenses.md` file that documents all dependency licenses:
+
+```bash
+# Regenerate licenses/licenses.md
+make licenses
+
+# Check if licenses/licenses.md is in sync
+make check-licenses
+```
+
+**Note:** The license file is generated from the installed dependencies in requirements-build.txt.
+
 ## Tricks
 
 ### Update all dependencies

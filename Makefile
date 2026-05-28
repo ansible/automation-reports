@@ -59,4 +59,15 @@ licenses:
 	@echo "Syncing licenses/licenses.md..."
 	@./sync-licenses.sh
 
-.PHONY: docker-compose sync-requirements requirements requirements-check sync-build-tools licenses
+check-licenses:
+	@echo "Checking if licenses/licenses.md is in sync..."
+	@make licenses
+	@if ! git diff --quiet licenses/licenses.md; then \
+		echo "licenses/licenses.md is out of sync. Run 'make licenses' to update it."; \
+		git diff licenses/licenses.md; \
+		exit 1; \
+	else \
+		echo "licenses/licenses.md is in sync."; \
+	fi
+
+.PHONY: docker-compose sync-requirements requirements requirements-check sync-build-tools licenses check-licenses
