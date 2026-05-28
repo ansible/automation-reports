@@ -395,8 +395,11 @@ class BaseModel(CreatUpdateModel):
                 )
             except IntegrityError:
                 # Race condition: another worker created it
-                model = cls.objects.get(cluster=cluster, external_id=external_id)
-                return model, False
+                # Apply pending updates atomically to ensure we don't lose changes
+                queryset = cls.objects.filter(cluster=cluster, external_id=external_id)
+                queryset.update(name=name, **kwargs)
+                instance = queryset.get()
+                return instance, False
 
     @classmethod
     def _compute_negative_external_id(cls):
@@ -406,11 +409,14 @@ class BaseModel(CreatUpdateModel):
         return _external_id - 1 if _external_id is not None and _external_id <= 0 else -1
 
     @classmethod
-    def _handle_negative_id_integrity_error(cls, name: str, cluster: Cluster, retry: int, max_retries: int, error: Exception):
+    def _handle_negative_id_integrity_error(cls, name: str, cluster: Cluster, retry: int, max_retries: int, error: Exception, **kwargs):
         """Handle IntegrityError for negative external_id path."""
         try:
-            model = cls.objects.get(name=name, cluster=cluster)
-            return model, False, True  # model, created=False, should_break=True
+            # Apply pending updates atomically to ensure we don't lose changes
+            queryset = cls.objects.filter(name=name, cluster=cluster)
+            queryset.update(**kwargs)
+            instance = queryset.get()
+            return instance, False, True  # instance, created=False, should_break=True
         except cls.DoesNotExist:
             if retry == max_retries - 1:
                 raise error
@@ -433,7 +439,7 @@ class BaseModel(CreatUpdateModel):
                 )
             except IntegrityError as e:
                 model, created, should_break = cls._handle_negative_id_integrity_error(
-                    name, cluster, retry, max_retries, e
+                    name, cluster, retry, max_retries, e, **kwargs
                 )
                 if should_break:
                     return model, created
