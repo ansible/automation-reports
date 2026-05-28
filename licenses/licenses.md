@@ -1,6 +1,6 @@
 | Name                      | Version     | License                                                                                                                                        |
 |---------------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------|
-| Django                    | 5.2.8       | BSD-3-Clause                                                                                                                                   |
+| Django                    | 5.2.14      | BSD-3-Clause                                                                                                                                   |
 | PyJWT                     | 2.12.1      | MIT                                                                                                                                            |
 | PyYAML                    | 6.0.3       | MIT License                                                                                                                                    |
 | Pygments                  | 2.20.0      | BSD-2-Clause                                                                                                                                   |
@@ -11,7 +11,7 @@
 | brotli                    | 1.2.0       | MIT                                                                                                                                            |
 | certifi                   | 2026.2.25   | Mozilla Public License 2.0 (MPL 2.0)                                                                                                           |
 | cffi                      | 2.0.0       | MIT                                                                                                                                            |
-| channels                  | 4.3.1       | BSD License                                                                                                                                    |
+| channels                  | 4.3.2       | BSD License                                                                                                                                    |
 | channels_redis            | 4.3.0       | BSD                                                                                                                                            |
 | charset-normalizer        | 3.4.7       | MIT                                                                                                                                            |
 | click                     | 8.3.2       | BSD-3-Clause                                                                                                                                   |
@@ -56,12 +56,14 @@
 | pytest-cov                | 7.0.0       | MIT                                                                                                                                            |
 | pytest-django             | 4.11.1      | BSD License                                                                                                                                    |
 | pytest-mock               | 3.15.1      | MIT License                                                                                                                                    |
+| pytest-responses          | 0.5.1       | Apache 2.0                                                                                                                                     |
 | python-daemon             | 3.1.2       | Apache Software License                                                                                                                        |
 | python-dateutil           | 2.9.0.post0 | Apache Software License; BSD License                                                                                                           |
 | pytz                      | 2025.2      | MIT License                                                                                                                                    |
 | redis                     | 7.0.1       | MIT                                                                                                                                            |
 | referencing               | 0.37.0      | MIT                                                                                                                                            |
 | requests                  | 2.32.5      | Apache Software License                                                                                                                        |
+| responses                 | 0.25.8      | Apache 2.0                                                                                                                                     |
 | rpds-py                   | 0.30.0      | MIT                                                                                                                                            |
 | six                       | 1.17.0      | MIT License                                                                                                                                    |
 | split-settings            | 1.0.0       | BSD License                                                                                                                                    |
@@ -75,7 +77,7 @@
 | tzdata                    | 2025.3      | Apache-2.0                                                                                                                                     |
 | uWSGI                     | 2.0.31      | GNU General Public License v2 or later (GPLv2+)                                                                                                |
 | uritemplate               | 4.2.0       | BSD 3-Clause OR Apache-2.0                                                                                                                     |
-| urllib3                   | 2.6.3       | MIT                                                                                                                                            |
+| urllib3                   | 2.7.0       | MIT                                                                                                                                            |
 | uvicorn                   | 0.38.0      | BSD-3-Clause                                                                                                                                   |
 | weasyprint                | 68.1        | BSD License                                                                                                                                    |
 | webencodings              | 0.5.1       | BSD License                                                                                                                                    |
