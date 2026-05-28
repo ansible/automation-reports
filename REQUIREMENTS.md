@@ -12,7 +12,7 @@ For initial development setup, follow the instructions in [README.md](README.md#
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip wheel
-pip install -r requirements.txt -r requirements_dev.txt
+pip install -r requirements-pinned.txt
 ```
 
 ### Requirements Management
@@ -63,9 +63,8 @@ If you see a PR check failure, run `make sync-requirements` locally and commit t
 
 ## File Contents
 
-- `requirements.txt`: Contains the base dependencies (for reference)
-- `requirements-pinned.txt`: Contains exact version pins
-- `requirements-build.txt`: Contains build dependencies for downstream hermetic builds, compiled from requirements-pinned.txt (auto-generated)
+- `requirements-pinned.txt`: **Source of truth** - Contains exact version pins for all runtime, deployment, and development dependencies
+- `requirements-build.txt`: Contains build dependencies for downstream hermetic builds, compiled from requirements-pinned.txt (auto-generated, includes hashes)
 - `requirements-build-tools.txt`: Contains build-time tool dependencies (build backends) for hermetic Konflux builds, compiled from `requirements-build.txt` via `pybuild-deps` (auto-generated)
 
 ## Tricks
