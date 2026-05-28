@@ -184,6 +184,82 @@ class TestBaseModelRaceBug:
 
             assert host1.id == host2.id
 
+    def test_external_id_collision_different_hosts(self, cluster):
+        """
+        Test external_id collision: different host names, same computed external_id.
+
+        This is Type 2 race condition:
+        - Worker A: processing "host-a", computes external_id=-19
+        - Worker B: processing "host-b", computes external_id=-19 (race on Min aggregation)
+        - Worker A: creates (cluster, name="host-a", external_id=-19) → SUCCESS
+        - Worker B: creates (cluster, name="host-b", external_id=-19) → IntegrityError on (cluster, external_id)
+        - Worker B: tries get(name="host-b") → DoesNotExist (not a name collision!)
+        - Worker B: retries with fresh Min(external_id) → computes -20 → SUCCESS
+
+        WITHOUT FIX: Worker B crashes with DoesNotExist after IntegrityError
+        WITH FIX: Worker B retries and creates host-b with different external_id
+        """
+        original_get_or_create = Host.objects.get_or_create
+        call_count = {"count": 0}
+
+        # First, create host-a to set up the scenario
+        host_a = Host.create_or_update(
+            cluster=cluster,
+            external_id=-1,
+            name="host-a",
+            description="Pre-existing host"
+        )
+        first_external_id = host_a.external_id
+
+        def simulated_external_id_collision(*args, **kwargs):
+            """
+            Simulate external_id collision on first attempt, then succeed on retry.
+            """
+            call_count["count"] += 1
+
+            if call_count["count"] == 1:
+                # First attempt: force IntegrityError by trying to use same external_id as host-a
+                # This simulates two workers computing the same external_id
+                name = kwargs.get('name')
+                cluster_arg = kwargs.get('cluster')
+                defaults = kwargs.get('defaults', {})
+
+                # Force the same external_id as host-a to trigger collision
+                try:
+                    new_host = Host.objects.create(
+                        name=name,
+                        cluster=cluster_arg,
+                        external_id=first_external_id,  # Same as host-a!
+                        **{k: v for k, v in defaults.items() if k != 'external_id'}
+                    )
+                    return new_host, True
+                except IntegrityError:
+                    # This is the collision we want to test
+                    raise
+
+            # Retry: use real get_or_create which will compute fresh external_id
+            return original_get_or_create(*args, **kwargs)
+
+        with patch.object(Host.objects, 'get_or_create', simulated_external_id_collision):
+            # Worker B: tries to create host-b
+            # First attempt uses same external_id as host-a → IntegrityError
+            # Retry mechanism kicks in, computes new external_id → SUCCESS
+            host_b = Host.create_or_update(
+                cluster=cluster,
+                external_id=-1,
+                name="host-b",  # Different name!
+                description="Worker B"
+            )
+
+            assert host_b is not None
+            assert host_b.name == "host-b"
+            # host_b should get a different external_id due to retry
+            assert host_b.external_id != host_a.external_id
+
+            # Verify both hosts exist as separate records
+            assert host_a.id != host_b.id
+            assert Host.objects.filter(cluster=cluster).count() == 2
+
     def test_job_template_race_condition_negative_external_id(self, cluster):
         """
         Test the race condition for JobTemplate with negative external_id.
