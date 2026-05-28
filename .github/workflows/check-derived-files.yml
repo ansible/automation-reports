@@ -1,20 +1,22 @@
-name: "Sync Requirements Files"
+name: "Check Derived Files"
 
 on:
     push:
         branches: [main]
         paths:
             - "requirements-pinned.txt"
+            - "requirements-build.txt"
     pull_request:
         paths:
             - "requirements-pinned.txt"
+            - "requirements-build.txt"
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-    sync-requirements:
+    check-derived-files:
         runs-on: ubuntu-latest
 
         steps:
@@ -28,25 +30,27 @@ jobs:
               with:
                   python-version: "3.12"
 
-            - name: "Install pip-tools"
+            - name: "Install podman"
               run: |
-                  python -m pip install --upgrade pip
-                  pip install pip-tools
+                  sudo apt-get update
+                  sudo apt-get install -y podman
 
-            - name: "Sync requirements files"
-              run: |
-                  chmod +x sync-requirements.sh
-                  ./sync-requirements.sh
+            - name: "Sync all requirements files"
+              run: make requirements
+
+            - name: "Sync licenses"
+              run: make licenses
 
             - name: "Check for changes"
               id: changes
               run: |
-                  if ! git diff --quiet requirements-build.txt; then
+                  if ! git diff --quiet requirements-build.txt requirements-build-tools.txt licenses/licenses.md; then
                     echo "changed=true" >> $GITHUB_OUTPUT
-                    echo "Requirements-build.txt has been updated"
+                    echo "Derived files have been updated"
+                    git diff --stat requirements-build.txt requirements-build-tools.txt licenses/licenses.md
                   else
                     echo "changed=false" >> $GITHUB_OUTPUT
-                    echo "Requirements-build.txt is up to date"
+                    echo "All derived files are up to date"
                   fi
 
             - name: "Commit and push changes"
@@ -54,8 +58,8 @@ jobs:
               run: |
                   git config --local user.email "action@github.com"
                   git config --local user.name "GitHub Action"
-                  git add requirements-build.txt
-                  git commit -m "Auto-sync requirements-build.txt from requirements-pinned.txt"
+                  git add requirements-build.txt requirements-build-tools.txt licenses/licenses.md
+                  git commit -m "Auto-sync derived files from requirements-pinned.txt"
                   git push
 
             - name: "Add PR comment for changes"
@@ -67,12 +71,12 @@ jobs:
                         issue_number: context.issue.number,
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        body: '**Requirements-build.txt needs to be updated**\n\nThe `requirements-pinned.txt` file has changed but `requirements-build.txt` is not in sync. Please run `make sync-requirements` locally and commit the updated requirements-build.txt file.'
+                        body: '**Derived files need to be updated**\n\nThe `requirements-pinned.txt` or `requirements-build.txt` has changed but derived files are not in sync.\n\nPlease run:\n```bash\nmake requirements\nmake licenses\n```\nThen commit the updated files:\n- `requirements-build.txt`\n- `requirements-build-tools.txt`\n- `licenses/licenses.md`'
                       })
 
-            - name: "Fail if requirements out of sync in PR"
+            - name: "Fail if derived files out of sync in PR"
               if: steps.changes.outputs.changed == 'true' && github.event_name == 'pull_request'
               run: |
-                  echo "Requirements-build.txt is out of sync. Please run 'make sync-requirements' locally and commit the changes."
-                  git diff requirements-build.txt
+                  echo "Derived files are out of sync. Please run 'make requirements' and 'make licenses' locally."
+                  git diff requirements-build.txt requirements-build-tools.txt licenses/licenses.md
                   exit 1
