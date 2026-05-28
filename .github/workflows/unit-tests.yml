@@ -41,7 +41,7 @@ jobs:
           pip --version
 
       - name: Install dependencies
-        run: pip install -r requirements-pinned.txt
+        run: pip install -r requirements-pinned.txt -r requirements_dev.txt
 
       - name: Setup local_settings.py file
         run: |

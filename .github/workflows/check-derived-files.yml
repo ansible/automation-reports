@@ -5,12 +5,14 @@ on:
         branches: [main]
         paths:
             - "requirements-pinned.txt"
+            - "requirements_dev.txt"
             - "requirements-build.txt"
             - "requirements-build-tools.txt"
             - "licenses/licenses.md"
     pull_request:
         paths:
             - "requirements-pinned.txt"
+            - "requirements_dev.txt"
             - "requirements-build.txt"
             - "requirements-build-tools.txt"
             - "licenses/licenses.md"

@@ -12,7 +12,7 @@ For initial development setup, follow the instructions in [README.md](README.md#
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip wheel
-pip install -r requirements-pinned.txt
+pip install -r requirements-pinned.txt -r requirements_dev.txt
 ```
 
 ### Requirements Management
@@ -33,7 +33,9 @@ make requirements-check
 
 ## Syncing Requirements Files
 
-Both `requirements-build.txt` and `requirements-build-tools.txt` are automatically generated from `requirements-pinned.txt`. 
+`requirements-build.txt` and `requirements-build-tools.txt` are automatically generated from `requirements-pinned.txt`. 
+
+**Note:** `requirements_dev.txt` is manually maintained (not auto-generated) and contains development/testing dependencies that don't need hash pinning. 
 
 ### Manual Sync
 
@@ -68,7 +70,8 @@ If you see a PR check failure, run `make sync-requirements` locally and commit t
 
 ## File Contents
 
-- `requirements-pinned.txt`: **Source of truth** - Contains exact version pins for all runtime, deployment, and development dependencies
+- `requirements-pinned.txt`: **Source of truth for production** - Contains exact version pins for runtime and deployment dependencies (used to generate requirements-build.txt with hashes)
+- `requirements_dev.txt`: **Development dependencies** - Contains testing and development tools (pytest, coverage, etc.). Not compiled with hashes since these are only used in CI and local dev.
 - `requirements-build.txt`: Contains build dependencies for downstream hermetic builds, compiled from requirements-pinned.txt (auto-generated, includes hashes)
 - `requirements-build-tools.txt`: Contains build-time tool dependencies (build backends) for hermetic Konflux builds, compiled from `requirements-build.txt` via `pybuild-deps` (auto-generated)
 
