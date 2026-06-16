@@ -375,48 +375,94 @@ class BaseModel(CreatUpdateModel):
         )
 
     @classmethod
-    def create_or_update(cls, cluster: Cluster, external_id: int, **kwargs):
+    def _create_or_update_positive_id(cls, cluster: Cluster, external_id: int, name: str, **kwargs):
+        """Handle create_or_update for positive external_id."""
+        from django.db import IntegrityError
 
-        """
-        This function creates or updates a model instance
-        based on the provided cluster, external ID, name, and description.
-        It first tries to find an existing instance by external ID, then by name if not found.
-        If no instance exists, it creates a new one; otherwise, it updates the existing instance's
-        name and description.
-        """
-
-        logger.info(f'Creating or updating {cls.__name__} for cluster {cluster} with external id: {external_id}')
-
-        name = kwargs.pop('name', None)
-        created = False
-        if external_id > 0:
+        try:
+            model = cls.objects.get(cluster=cluster, external_id=external_id)
+            for key, value in kwargs.items():
+                setattr(model, key, value)
+            model.name = name
+            model.save()
+            return model, False
+        except cls.DoesNotExist:
             try:
-                model = cls.objects.get(cluster=cluster, external_id=external_id)
-                for key, value in kwargs.items():
-                    setattr(model, key, value)
-                model.name = name
-                model.save()
-            except cls.DoesNotExist:
-                model, created = cls.objects.update_or_create(
+                return cls.objects.update_or_create(
                     name=name,
                     cluster=cluster,
                     defaults={**kwargs, 'external_id': external_id},
                 )
-        else:
-            _min = cls.objects.all().aggregate(Min('external_id'))
-            _external_id = _min['external_id__min']
-            _external_id = _external_id - 1 if _external_id is not None and _external_id <= 0 else -1
+            except IntegrityError:
+                # Race condition: another worker created it
+                # Apply pending updates atomically to ensure we don't lose changes
+                queryset = cls.objects.filter(cluster=cluster, external_id=external_id)
+                queryset.update(name=name, **kwargs)
+                instance = queryset.get()
+                return instance, False
 
-            model, created = cls.objects.get_or_create(
-                name=name,
-                cluster=cluster,
-                defaults={**kwargs, 'external_id': _external_id},
-            )
+    @classmethod
+    def _compute_negative_external_id(cls):
+        """Compute next available negative external_id."""
+        _min = cls.objects.all().aggregate(Min('external_id'))
+        _external_id = _min['external_id__min']
+        return _external_id - 1 if _external_id is not None and _external_id <= 0 else -1
 
-        if created:
-            logger.info(f'Created {cls.__name__} for cluster {cluster} with external id: {external_id}')
+    @classmethod
+    def _handle_negative_id_integrity_error(cls, name: str, cluster: Cluster, retry: int, max_retries: int, error: Exception, **kwargs):
+        """Handle IntegrityError for negative external_id path."""
+        try:
+            # Apply pending updates atomically to ensure we don't lose changes
+            queryset = cls.objects.filter(name=name, cluster=cluster)
+            queryset.update(**kwargs)
+            instance = queryset.get()
+            return instance, False, True  # instance, created=False, should_break=True
+        except cls.DoesNotExist:
+            if retry == max_retries - 1:
+                raise error
+            return None, False, False  # Continue retry loop
+
+    @classmethod
+    def _create_or_update_negative_id(cls, cluster: Cluster, name: str, **kwargs):
+        """Handle create_or_update for negative external_id with retry logic."""
+        from django.db import IntegrityError
+
+        max_retries = 5
+        for retry in range(max_retries):
+            _external_id = cls._compute_negative_external_id()
+
+            try:
+                return cls.objects.get_or_create(
+                    name=name,
+                    cluster=cluster,
+                    defaults={**kwargs, 'external_id': _external_id},
+                )
+            except IntegrityError as e:
+                model, created, should_break = cls._handle_negative_id_integrity_error(
+                    name, cluster, retry, max_retries, e, **kwargs
+                )
+                if should_break:
+                    return model, created
+
+    @classmethod
+    def create_or_update(cls, cluster: Cluster, external_id: int, **kwargs):
+        """
+        Create or update a model instance based on cluster and external_id.
+
+        Handles IntegrityError race conditions when concurrent workers attempt
+        to create the same record simultaneously.
+        """
+        logger.info(f'Creating or updating {cls.__name__} for cluster {cluster} with external id: {external_id}')
+
+        name = kwargs.pop('name', None)
+
+        if external_id > 0:
+            model, created = cls._create_or_update_positive_id(cluster, external_id, name, **kwargs)
         else:
-            logger.info(f'Updated {cls.__name__} for cluster {cluster} with external id: {external_id}')
+            model, created = cls._create_or_update_negative_id(cluster, name, **kwargs)
+
+        action = 'Created' if created else 'Updated'
+        logger.info(f'{action} {cls.__name__} for cluster {cluster} with external id: {external_id}')
 
         return model
 
