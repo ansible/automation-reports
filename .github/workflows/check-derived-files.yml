@@ -28,6 +28,7 @@ jobs:
               uses: actions/checkout@v5
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
+                  persist-credentials: ${{ github.event_name != 'pull_request' }}
 
             - name: "Set up Python"
               uses: actions/setup-python@v5
