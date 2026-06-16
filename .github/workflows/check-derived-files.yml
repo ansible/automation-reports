@@ -7,14 +7,12 @@ on:
             - "requirements-pinned.txt"
             - "requirements_dev_licenses.txt"
             - "requirements-build.txt"
-            - "requirements-build-tools.txt"
             - "licenses/licenses.md"
     pull_request:
         paths:
             - "requirements-pinned.txt"
             - "requirements_dev_licenses.txt"
             - "requirements-build.txt"
-            - "requirements-build-tools.txt"
             - "licenses/licenses.md"
 
 permissions:
@@ -36,13 +34,8 @@ jobs:
               with:
                   python-version: "3.12"
 
-            - name: "Install podman"
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y podman
-
-            - name: "Sync all requirements files"
-              run: make requirements
+            - name: "Sync requirements-build.txt"
+              run: NO_UPGRADE=1 make sync-requirements
 
             - name: "Sync licenses"
               run: make licenses
@@ -50,10 +43,10 @@ jobs:
             - name: "Check for changes"
               id: changes
               run: |
-                  if ! git diff --quiet requirements-build.txt requirements-build-tools.txt licenses/licenses.md; then
+                  if ! git diff --quiet requirements-build.txt licenses/licenses.md; then
                     echo "changed=true" >> $GITHUB_OUTPUT
                     echo "Derived files have been updated"
-                    git diff --stat requirements-build.txt requirements-build-tools.txt licenses/licenses.md
+                    git diff --stat requirements-build.txt licenses/licenses.md
                   else
                     echo "changed=false" >> $GITHUB_OUTPUT
                     echo "All derived files are up to date"
@@ -64,7 +57,7 @@ jobs:
               run: |
                   git config --local user.email "action@github.com"
                   git config --local user.name "GitHub Action"
-                  git add requirements-build.txt requirements-build-tools.txt licenses/licenses.md
+                  git add requirements-build.txt licenses/licenses.md
                   git commit -m "Auto-sync derived files from requirements-pinned.txt"
                   git push
 
@@ -84,5 +77,5 @@ jobs:
               if: steps.changes.outputs.changed == 'true' && github.event_name == 'pull_request'
               run: |
                   echo "Derived files are out of sync. Please run 'make requirements' and 'make licenses' locally."
-                  git diff requirements-build.txt requirements-build-tools.txt licenses/licenses.md
+                  git diff requirements-build.txt licenses/licenses.md
                   exit 1
