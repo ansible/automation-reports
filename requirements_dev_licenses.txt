@@ -1,0 +1,4 @@
+# pip-licenses is used only for generating licenses/licenses.md
+# It is kept separate from requirements_dev.txt so that dev/test
+# dependencies (pytest, coverage, etc.) don't leak into the licenses file.
+pip-licenses==5.5.0
