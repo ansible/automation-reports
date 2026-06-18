@@ -1,11 +1,18 @@
 # If you are running an old version, you might need docker-compose instead
 DOCKER_COMPOSE?=docker compose
 
-docker-compose:
+.DEFAULT_GOAL := help
+
+help:  ## Show this help message
+	@echo "Available targets:"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+docker-compose:  ## Start Docker Compose services
 	$(DOCKER_COMPOSE) --file compose/compose.yml up
 
 # Requirements management
-sync-requirements:
+sync-requirements:  ## Generate requirements-build.txt from requirements-pinned.txt
 	@echo "Syncing requirements-build.txt from requirements-pinned.txt..."
 	@if ! command -v python3.12 >/dev/null 2>&1; then \
 		echo "Error: Python 3.12 is not installed or not in PATH"; \
@@ -18,7 +25,7 @@ sync-requirements:
 		python3.12 -m venv .venv; \
 		echo "Virtual environment created successfully."; \
 	fi
-	@source .venv/bin/activate && \
+	@. .venv/bin/activate && \
 		if [ ! -f .venv/bin/pip-compile ]; then \
 			echo "Installing pip-tools..."; \
 			pip install pip-tools; \
@@ -26,20 +33,26 @@ sync-requirements:
 		./sync-requirements.sh $${EXTRA_DEPS:-}
 # above - we want to split EXTRA_DEPS on spaces, so we use normal shell splitting
 
-requirements: sync-requirements
-
-requirements-check:
-	@echo "Checking if requirements-build.txt is in sync..."
+requirements:  ## Sync all derived requirements files (build.txt + build-tools.txt)
+	@echo "Syncing all requirements files from requirements-pinned.txt..."
+	@echo "Step 1/2: Generating requirements-build.txt..."
 	@make sync-requirements
-	@if ! git diff --quiet requirements-build.txt; then \
-		echo "Requirements-build.txt is out of sync. Run 'make sync-requirements' to update it."; \
-		git diff requirements-build.txt; \
+	@echo "Step 2/2: Generating requirements-build-tools.txt..."
+	@make sync-build-tools
+	@echo "All requirements files synced successfully!"
+
+requirements-check:  ## Check if derived requirements files are in sync
+	@echo "Checking if all requirements files are in sync..."
+	@make requirements
+	@if ! git diff --quiet requirements-build.txt requirements-build-tools.txt; then \
+		echo "Requirements files are out of sync. Run 'make requirements' to update them."; \
+		git diff requirements-build.txt requirements-build-tools.txt; \
 		exit 1; \
 	else \
-		echo "Requirements-build.txt is in sync."; \
+		echo "All requirements files are in sync."; \
 	fi
 
-sync-build-tools:
+sync-build-tools:  ## Generate requirements-build-tools.txt (requires podman)
 	@echo "Regenerating requirements-build-tools.txt via pybuild-deps container..."
 	@if ! command -v podman >/dev/null 2>&1; then \
 		echo "Error: podman is not installed or not in PATH"; \
@@ -49,8 +62,19 @@ sync-build-tools:
 	fi
 	./requirements/generate-build-requirements.sh
 
-licenses:
+licenses:  ## Generate licenses/licenses.md from installed packages
 	@echo "Syncing licenses/licenses.md..."
 	@./sync-licenses.sh
 
-.PHONY: docker-compose sync-requirements requirements requirements-check sync-build-tools licenses
+check-licenses:  ## Check if licenses/licenses.md is in sync
+	@echo "Checking if licenses/licenses.md is in sync..."
+	@make licenses
+	@if ! git diff --quiet licenses/licenses.md; then \
+		echo "licenses/licenses.md is out of sync. Run 'make licenses' to update it."; \
+		git diff licenses/licenses.md; \
+		exit 1; \
+	else \
+		echo "licenses/licenses.md is in sync."; \
+	fi
+
+.PHONY: help docker-compose sync-requirements requirements requirements-check sync-build-tools licenses check-licenses

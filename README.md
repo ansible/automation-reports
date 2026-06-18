@@ -58,13 +58,13 @@ The Automation Dashboard requires multiple services to run properly. Here's the 
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip wheel
-pip install -r requirements.txt
+pip install -r requirements-pinned.txt
+pip install -r requirements_dev.txt
 ```
 
 You might need to install required development libraries
 
 ```bash
-pip install -r requirements_dev.txt
 # Fedora
 sudo dnf install python3.12-devel libpq-devel
 ```

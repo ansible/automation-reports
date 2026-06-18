@@ -25,7 +25,11 @@ for arg in "$@"; do
 done
 # Generate build requirements from pinned requirements
 echo "Generating requirements-build.txt..."
-pip-compile --generate-hashes --output-file=requirements-build.txt --allow-unsafe requirements-pinned.txt
+UPGRADE_FLAG=""
+if [ "${NO_UPGRADE:-}" = "1" ]; then
+    UPGRADE_FLAG="--no-upgrade"
+fi
+pip-compile --generate-hashes --output-file=requirements-build.txt --allow-unsafe $UPGRADE_FLAG requirements-pinned.txt
 git checkout requirements-pinned.txt
 
 echo "Requirements files synced successfully!"

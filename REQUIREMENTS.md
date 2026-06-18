@@ -12,7 +12,8 @@ For initial development setup, follow the instructions in [README.md](README.md#
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip wheel
-pip install -r requirements.txt -r requirements_dev.txt
+pip install -r requirements-pinned.txt
+pip install -r requirements_dev.txt
 ```
 
 ### Requirements Management
@@ -20,35 +21,42 @@ pip install -r requirements.txt -r requirements_dev.txt
 The Makefile provides automated requirements management:
 
 ```bash
-# Sync requirements files (creates venv and installs pip-tools if needed)
-make sync-requirements
+# Sync ALL requirements files (recommended - does everything)
+make requirements
+
+# Or sync individual files:
+make sync-requirements        # Generate requirements-build.txt only
+make sync-build-tools         # Generate requirements-build-tools.txt only (requires podman)
 
 # Check if requirements are in sync
 make requirements-check
-
-# Regenerate requirements-build-tools.txt (run after sync-requirements; requires podman)
-make sync-build-tools
 ```
 
 ## Syncing Requirements Files
 
-The `requirements-build.txt` file is automatically generated from `requirements-pinned.txt`. 
+`requirements-build.txt` and `requirements-build-tools.txt` are automatically generated from `requirements-pinned.txt`. 
+
+**Note:** `requirements_dev.txt` is manually maintained (not auto-generated) and contains development/testing dependencies that don't need hash pinning. 
 
 ### Manual Sync
 
 ```bash
-# Sync requirements (creates venv and installs pip-tools if needed)
-make sync-requirements
+# Sync all requirements files (creates venv and installs pip-tools if needed)
+make requirements
 ```
+
+This will:
+1. Generate `requirements-build.txt` from `requirements-pinned.txt` (with hashes)
+2. Generate `requirements-build-tools.txt` from `requirements-build.txt` (build backend dependencies)
 
 ### Check if files are in sync
 
 ```bash
-# Check if requirements-build.txt matches the current state
+# Check if all requirements files match the current state
 make requirements-check
 ```
 
-**Note:** The `requirements-check` command will automatically run `make sync-requirements` first, then check if the generated file matches what's currently tracked in git.
+**Note:** The `requirements-check` command will automatically run `make requirements` first to regenerate both `requirements-build.txt` and `requirements-build-tools.txt`, then check if the generated files match what's currently tracked in git.
 
 ## Automated Sync
 
@@ -63,10 +71,24 @@ If you see a PR check failure, run `make sync-requirements` locally and commit t
 
 ## File Contents
 
-- `requirements.txt`: Contains the base dependencies (for reference)
-- `requirements-pinned.txt`: Contains exact version pins
-- `requirements-build.txt`: Contains build dependencies for downstream hermetic builds, compiled from requirements-pinned.txt (auto-generated)
+- `requirements-pinned.txt`: **Source of truth for production** - Contains exact version pins for runtime and deployment dependencies (used to generate requirements-build.txt with hashes)
+- `requirements_dev.txt`: **Development dependencies** - Contains testing and development tools (pytest, coverage, etc.). Not compiled with hashes since these are only used in CI and local dev.
+- `requirements-build.txt`: Contains build dependencies for downstream hermetic builds, compiled from requirements-pinned.txt (auto-generated, includes hashes)
 - `requirements-build-tools.txt`: Contains build-time tool dependencies (build backends) for hermetic Konflux builds, compiled from `requirements-build.txt` via `pybuild-deps` (auto-generated)
+
+## License Management
+
+The project maintains a `licenses/licenses.md` file that documents all dependency licenses:
+
+```bash
+# Regenerate licenses/licenses.md
+make licenses
+
+# Check if licenses/licenses.md is in sync
+make check-licenses
+```
+
+**Note:** The license file is generated from the installed dependencies in requirements-build.txt.
 
 ## Tricks
 
