@@ -3,7 +3,6 @@ import base64
 import hashlib
 
 from cryptography.fernet import Fernet
-from cryptography.hazmat.backends import default_backend
 from django.conf import settings
 from django.utils.encoding import smart_bytes, smart_str
 
@@ -15,14 +14,12 @@ class Fernet256(Fernet):
     """
 
     def __init__(self, key: bytes | str):
-        backend = default_backend()
         key = base64.urlsafe_b64decode(key)
         if len(key) != 64:
             raise ValueError("Fernet key must be 64 url-safe base64-encoded bytes.")
 
         self._signing_key = key[:32]
         self._encryption_key = key[32:]
-        self._backend = backend
 
 
 def get_encryption_key() -> bytes:
