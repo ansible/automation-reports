@@ -3,6 +3,11 @@
   ansible.builtin.set_fact:
     _ca_tls_dir: '{{ ansible_user_dir }}/aap/tls'
 
+- name: Get CA certificate checksum before changes
+  ansible.builtin.stat:
+    path: '{{ _ca_tls_dir }}/ca.cert'
+  register: _ca_cert_before
+
 - name: Create the TLS CA directory
   ansible.builtin.file:
     path: '{{ _ca_tls_dir }}'
@@ -59,7 +64,6 @@
             privatekey_path: '{{ _ca_tls_dir }}/ca.key'
             provider: selfsigned
             mode: '0640'
-          notify: Update CA trust
 
     - name: Copy TLS CA files to other nodes
       block:
@@ -84,7 +88,6 @@
             dest: '{{ _ca_tls_dir }}/ca.cert'
             mode: '0640'
           run_once: false
-          notify: Update CA trust
 
         - name: Copy TLS CA key
           ansible.builtin.copy:
@@ -110,7 +113,6 @@
         dest: '{{ _ca_tls_dir }}/ca.cert'
         mode: '0640'
         remote_src: '{{ ca_tls_remote | default(false) }}'
-      notify: Update CA trust
 
     - name: Copy TLS CA key
       ansible.builtin.copy:
@@ -118,6 +120,39 @@
         dest: '{{ _ca_tls_dir }}/ca.key'
         mode: '0400'
         remote_src: '{{ ca_tls_remote | default(false) }}'
+
+- name: Get CA certificate checksum after changes
+  ansible.builtin.stat:
+    path: '{{ _ca_tls_dir }}/ca.cert'
+  register: _ca_cert_after
+
+- name: Set CA certificate changed fact
+  ansible.builtin.set_fact:
+    _ca_cert_changed: >-
+      {{ (_ca_cert_before.stat.checksum | default(''))
+         != (_ca_cert_after.stat.checksum | default('')) }}
+
+- name: Set volumes for updating the CA trust
+  ansible.builtin.set_fact:
+    _ca_volumes:
+      - '{{ _ca_tls_dir }}/extracted:/etc/pki/ca-trust/extracted:z'
+      - '{{ _ca_tls_dir }}/ca.cert:/etc/pki/ca-trust/source/anchors/tls-aap.cert:ro,z'
+
+- name: Copy extra TLS CA certificates
+  ansible.builtin.copy:
+    src: '{{ custom_ca_cert }}'
+    dest: '{{ _ca_tls_dir }}/custom.cert'
+    mode: '0640'
+    remote_src: '{{ ca_tls_remote | default(false) }}'
+  when: custom_ca_cert is defined
+
+- name: Add extra TLS CA certificate to volumes
+  ansible.builtin.set_fact:
+    _ca_volumes: '{{ _ca_volumes + _custom_ca }}'
+  vars:
+    _custom_ca:
+      - '{{ _ca_tls_dir }}/custom.cert:/etc/pki/ca-trust/source/anchors/tls-custom.cert:ro,z'
+  when: custom_ca_cert is defined
 
 - name: Create the PKI directories
   ansible.builtin.file:
@@ -129,4 +164,16 @@
     - java
     - pem
     - openssl
+
+- name: Update CA trust
+  containers.podman.podman_container:
+    name: update-ca-trust
+    image: '{{ _images | first }}'
+    command: 'update-ca-trust'
+    detach: false
+    entrypoint: ''
+    rm: true
+    log_driver: journald
+    user: root
+    volume: '{{ _ca_volumes }}'
 ...
