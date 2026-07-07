@@ -11,6 +11,7 @@ import time_machine
 from requests import Response
 
 from backend.apps.clusters.connector import ApiConnector
+from backend.apps.clusters.exceptions import InvalidClusterVersionError, UnsupportedProductError
 from backend.apps.clusters.encryption import decrypt_value
 from backend.apps.clusters.models import (
     ClusterVersionChoices, Cluster, Organization, JobTemplate,
@@ -75,7 +76,7 @@ class TestConnector:
 
         connector = ApiConnector(cluster)
         mocker.patch('requests.get', new=mocked_requests_get)
-        with pytest.raises(Exception) as e:
+        with pytest.raises(UnsupportedProductError) as e:
             connector.execute_get_one(f"{cluster.base_url}{cluster.api_url}/test_endpoint")
         assert str(e.value) == "Not supported product."
 
@@ -181,9 +182,9 @@ class TestConnector:
         assert Cluster.objects.first().aap_version == ClusterVersionChoices.AAP25
 
     def test_check_aap_version_fail(self, mocker, cluster):
-        mocker.patch('backend.apps.clusters.connector.ApiConnector.detect_aap_version', side_effect=Exception('Not valid version for cluster https://localhost:8000.'), new_callable=mocker.PropertyMock)
+        mocker.patch('backend.apps.clusters.connector.ApiConnector.detect_aap_version', side_effect=InvalidClusterVersionError('Not valid version for cluster https://localhost:8000.'), new_callable=mocker.PropertyMock)
         connector = ApiConnector(cluster)
-        with pytest.raises(Exception) as e:
+        with pytest.raises(InvalidClusterVersionError) as e:
             connector.check_aap_version()
         assert str(e.value) == "Not valid version for cluster https://localhost:8000."
 
@@ -773,7 +774,7 @@ class TestConnector:
 
         connector = ApiConnector(cluster)
         mocker.patch('requests.get', new=mocked_requests_get)
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(InvalidClusterVersionError) as exc_info:
             connector.detect_aap_version()
         assert 'Not valid version' in str(exc_info.value)
 
@@ -784,7 +785,7 @@ class TestConnector:
             return_value=None,
         )
         connector = ApiConnector(cluster)
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(InvalidClusterVersionError) as exc_info:
             connector.detect_aap_version()
         assert 'Not valid version' in str(exc_info.value)
 
