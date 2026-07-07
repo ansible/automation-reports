@@ -99,9 +99,13 @@
     __task_cmd: /usr/bin/launch_dashboard_task.sh
     __task_env:
       SUPERVISOR_CONFIG_PATH: /etc/supervisord_task.conf
+      REQUESTS_CA_BUNDLE: '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+      SSL_CERT_FILE: '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
     __web_cmd: /usr/bin/launch_dashboard_web.sh
     __web_env:
       SUPERVISOR_CONFIG_PATH: /etc/supervisord_web.conf
+      REQUESTS_CA_BUNDLE: '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+      SSL_CERT_FILE: '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
 
 - name: Set facts for systemd services
   ansible.builtin.set_fact:

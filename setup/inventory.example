@@ -73,6 +73,11 @@ dashboard_pg_username=aapdashboard
 dashboard_pg_password=TODO
 dashboard_pg_database=aapdashboard
 
+# Custom CA certificate for verifying TLS connections to AAP.
+# Path to a PEM-format CA certificate file on the Ansible controller.
+# When set, the certificate is added to the container trust store.
+# custom_ca_cert=/path/to/custom-ca.pem
+
 bundle_install=false
 #
 # Relevant if bundle_install=false
