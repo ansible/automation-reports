@@ -18,6 +18,7 @@ from backend.apps.clusters.models import (
     Job,
     Organization, ClusterVersionChoices
 )
+from backend.apps.clusters.exceptions import InvalidClusterVersionError, UnsupportedProductError
 from backend.apps.clusters.schemas import ClusterSchema
 
 logger = logging.getLogger("automation_dashboard.clusters.connector")
@@ -189,7 +190,7 @@ class ApiConnector:
         logger.debug(f"Product name from headers: {product_name}")
         if product_name is None or product_name == "AWX":
             logger.error("Not supported product.")
-            raise Exception("Not supported product.")
+            raise UnsupportedProductError("Not supported product.")
         response = response.json()
         logger.debug(f"GET response JSON: {response}")
         return response
@@ -344,7 +345,7 @@ class ApiConnector:
                 return ClusterVersionChoices.AAP25
             else:
                 logger.error(f'Not valid version {response25["version"]} for cluster {self.cluster.base_url}.')
-                raise Exception(f'Not valid version {response25["version"]} for cluster {self.cluster.base_url}.')
+                raise InvalidClusterVersionError(f'Not valid version {response25["version"]} for cluster {self.cluster.base_url}.')
 
         logger.info(f'Checking if is AAP 2.4 at {self.cluster.base_url}')
         response24 = self.ping("/api/v2/ping/")
@@ -353,7 +354,7 @@ class ApiConnector:
             return ClusterVersionChoices.AAP24
 
         logger.error(f'Not valid version for cluster {self.cluster.base_url}.')
-        raise Exception(f'Not valid version for cluster {self.cluster.base_url}.')
+        raise InvalidClusterVersionError(f'Not valid version for cluster {self.cluster.base_url}.')
 
     def check_aap_version(self):
         logger.info("Checking AAP version for cluster.")

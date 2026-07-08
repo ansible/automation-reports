@@ -1,4 +1,6 @@
 import pytest
+from cryptography.fernet import InvalidToken
+
 from backend.apps.clusters import encryption
 
 
@@ -25,5 +27,5 @@ class TestEncryption:
         assert encrypted1 != encrypted2
 
     def test_decrypt_invalid_value_raises(self):
-        with pytest.raises(Exception):
+        with pytest.raises(InvalidToken):
             encryption.decrypt_value(b"not_a_valid_encrypted_value")
