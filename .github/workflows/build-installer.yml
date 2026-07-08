@@ -50,6 +50,8 @@ jobs:
   bundled-installer:
     needs: set-version
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.set-version.outputs.version }}
     strategy:
       matrix:
         include:
@@ -112,8 +114,8 @@ jobs:
           echo "Build configuration:"
           echo "  AAP_DASHBOARD_IMAGE: ${{ env.SELECTED_AAP_DASHBOARD_IMAGE }}"
           echo "  INSTALLER_ARCH: ${{ matrix.installer_arch }}"
-          echo "  VERSION: ${{ needs.set-version.outputs.version }}"
-          echo "  Branch: ${{ github.ref_name }}"
+          echo "  VERSION: $VERSION"
+          echo "  Branch: $GITHUB_REF_NAME"
           echo "  Bundled installer: yes"
       - name: Build bundled installer
         run: >
@@ -121,7 +123,7 @@ jobs:
           USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=0
           AAP_DASHBOARD_IMAGE=${{ env.SELECTED_AAP_DASHBOARD_IMAGE }}
           INSTALLER_ARCH=${{ matrix.installer_arch }}
-          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ needs.set-version.outputs.version }}-${{ matrix.installer_arch }}.tar.gz"
+          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-bundle-${VERSION}-${{ matrix.installer_arch }}.tar.gz"
           setup/build_installer.sh
       - name: Upload bundled installer
         uses: actions/upload-artifact@v4
@@ -133,6 +135,8 @@ jobs:
   online-installer:
     needs: set-version
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.set-version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -141,18 +145,18 @@ jobs:
       - name: Print build configuration
         run: |
           echo "Build configuration:"
-          echo "  VERSION: ${{ needs.set-version.outputs.version }}"
-          echo "  Branch: ${{ github.ref_name }}"
+          echo "  VERSION: $VERSION"
+          echo "  Branch: $GITHUB_REF_NAME"
           echo "  Bundled installer: no"
       - name: Build online installer
         run: >
           AAP_DASHBOARD_BUNDLED_INSTALLER=0
-          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-${{ needs.set-version.outputs.version }}.tar.gz"
+          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-${VERSION}.tar.gz"
           setup/build_installer.sh
       - name: Create per-arch copies
         run: |
           cd setup/bundle
-          BASE="ansible-automation-dashboard-containerized-setup-${{ needs.set-version.outputs.version }}"
+          BASE="ansible-automation-dashboard-containerized-setup-${VERSION}"
           cp "${BASE}.tar.gz" "${BASE}-x86_64.tar.gz"
           mv "${BASE}.tar.gz" "${BASE}-aarch64.tar.gz"
       - name: Upload online installers
