@@ -42,6 +42,9 @@ jobs:
     steps:
       - name: Extract version from branch name
         id: extract
+        # For release-x.y branches this strips the prefix to get "x.y".
+        # For other branches (e.g. workflow_dispatch on a feature branch)
+        # the full branch name is used as-is, which is fine for testing.
         run: |
           VERSION="${GITHUB_REF_NAME#release-}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
