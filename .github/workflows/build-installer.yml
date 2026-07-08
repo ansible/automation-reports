@@ -35,7 +35,20 @@ env:
   SELECTED_AAP_DASHBOARD_IMAGE: ${{ inputs.AAP_DASHBOARD_IMAGE || 'registry.redhat.io/ansible-automation-platform/automation-dashboard-rhel9:latest' }}
 
 jobs:
+  set-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+    steps:
+      - name: Extract version from branch name
+        id: extract
+        run: |
+          VERSION="${GITHUB_REF_NAME#release-}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: $VERSION (from branch: $GITHUB_REF_NAME)"
+
   bundled-installer:
+    needs: set-version
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -99,6 +112,7 @@ jobs:
           echo "Build configuration:"
           echo "  AAP_DASHBOARD_IMAGE: ${{ env.SELECTED_AAP_DASHBOARD_IMAGE }}"
           echo "  INSTALLER_ARCH: ${{ matrix.installer_arch }}"
+          echo "  VERSION: ${{ needs.set-version.outputs.version }}"
           echo "  Branch: ${{ github.ref_name }}"
           echo "  Bundled installer: yes"
       - name: Build bundled installer
@@ -107,16 +121,17 @@ jobs:
           USE_LOCAL_AUTOMATION_DASHBOARD_IMAGE=0
           AAP_DASHBOARD_IMAGE=${{ env.SELECTED_AAP_DASHBOARD_IMAGE }}
           INSTALLER_ARCH=${{ matrix.installer_arch }}
-          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ github.ref_name }}-${{ matrix.installer_arch }}.tar.gz"
+          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ needs.set-version.outputs.version }}-${{ matrix.installer_arch }}.tar.gz"
           setup/build_installer.sh
-      - name: Upload installer artifact
+      - name: Upload bundled installer
         uses: actions/upload-artifact@v4
         with:
-          name: ansible-automation-dashboard-containerized-setup-bundle-${{ github.ref_name }}-${{ matrix.installer_arch }}.tar.gz
-          path: setup/bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ github.ref_name }}-${{ matrix.installer_arch }}.tar.gz
-          retention-days: 31
+          name: bundled-installer-${{ matrix.installer_arch }}
+          path: setup/bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ needs.set-version.outputs.version }}-${{ matrix.installer_arch }}.tar.gz
+          retention-days: 1
 
   online-installer:
+    needs: set-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -126,16 +141,43 @@ jobs:
       - name: Print build configuration
         run: |
           echo "Build configuration:"
+          echo "  VERSION: ${{ needs.set-version.outputs.version }}"
           echo "  Branch: ${{ github.ref_name }}"
           echo "  Bundled installer: no"
       - name: Build online installer
         run: >
           AAP_DASHBOARD_BUNDLED_INSTALLER=0
-          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-${{ github.ref_name }}.tar.gz"
+          INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-${{ needs.set-version.outputs.version }}.tar.gz"
           setup/build_installer.sh
-      - name: Upload installer artifact
+      - name: Create per-arch copies
+        run: |
+          cd setup/bundle
+          BASE="ansible-automation-dashboard-containerized-setup-${{ needs.set-version.outputs.version }}"
+          cp "${BASE}.tar.gz" "${BASE}-x86_64.tar.gz"
+          mv "${BASE}.tar.gz" "${BASE}-aarch64.tar.gz"
+      - name: Upload online installers
         uses: actions/upload-artifact@v4
         with:
-          name: ansible-automation-dashboard-containerized-setup-${{ github.ref_name }}.tar.gz
-          path: setup/bundle/ansible-automation-dashboard-containerized-setup-${{ github.ref_name }}.tar.gz
+          name: online-installers
+          path: |
+            setup/bundle/ansible-automation-dashboard-containerized-setup-${{ needs.set-version.outputs.version }}-x86_64.tar.gz
+            setup/bundle/ansible-automation-dashboard-containerized-setup-${{ needs.set-version.outputs.version }}-aarch64.tar.gz
+          retention-days: 1
+
+  collect-installers:
+    needs: [set-version, bundled-installer, online-installer]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all installer artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '{bundled-installer-*,online-installers}'
+          merge-multiple: true
+      - name: Print checksums
+        run: sha256sum *.tar.gz
+      - name: Upload combined installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ansible-automation-dashboard-containerized-installers-${{ needs.set-version.outputs.version }}
+          path: '*.tar.gz'
           retention-days: 31
