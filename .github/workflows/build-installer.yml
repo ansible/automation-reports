@@ -62,27 +62,14 @@ jobs:
           - installer_arch: aarch64
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - name: Log in to Red Hat Registry
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: registry.redhat.io
-          username: ${{ vars.REGISTRY_REDHAT_IO_USERNAME }}
-          password: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
-      - name: Log in to Stage Red Hat Registry
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: registry.stage.redhat.io
-          username: ${{ vars.REGISTRY_STAGE_REDHAT_IO_USERNAME }}
-          password: ${{ secrets.REGISTRY_STAGE_REDHAT_IO_PASSWORD }}
-      - name: Log in to Quay.io Registry
-        uses: redhat-actions/podman-login@v1
-        with:
-          registry: quay.io
-          username: ${{ vars.REGISTRY_QUAY_IO_USERNAME }}
-          password: ${{ secrets.REGISTRY_QUAY_IO_PASSWORD }}
+      - name: Log in to container registries
+        run: |
+          podman login -u "${{ vars.REGISTRY_REDHAT_IO_USERNAME }}" -p "${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}" registry.redhat.io
+          podman login -u "${{ vars.REGISTRY_STAGE_REDHAT_IO_USERNAME }}" -p "${{ secrets.REGISTRY_STAGE_REDHAT_IO_PASSWORD }}" registry.stage.redhat.io
+          podman login -u "${{ vars.REGISTRY_QUAY_IO_USERNAME }}" -p "${{ secrets.REGISTRY_QUAY_IO_PASSWORD }}" quay.io
       - name: Prepare inventory
         run: |
           REGISTRY_URL_AAP_AUTOMATION_DASHBOARD=$(echo "${{ env.SELECTED_AAP_DASHBOARD_IMAGE }}" | cut -d'/' -f1)
@@ -129,7 +116,7 @@ jobs:
           INSTALLER_FILE="bundle/ansible-automation-dashboard-containerized-setup-bundle-${VERSION}-${{ matrix.installer_arch }}.tar.gz"
           setup/build_installer.sh
       - name: Upload bundled installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bundled-installer-${{ matrix.installer_arch }}
           path: setup/bundle/ansible-automation-dashboard-containerized-setup-bundle-${{ needs.set-version.outputs.version }}-${{ matrix.installer_arch }}.tar.gz
@@ -142,7 +129,7 @@ jobs:
       VERSION: ${{ needs.set-version.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
       - name: Print build configuration
@@ -163,7 +150,7 @@ jobs:
           cp "${BASE}.tar.gz" "${BASE}-x86_64.tar.gz"
           mv "${BASE}.tar.gz" "${BASE}-aarch64.tar.gz"
       - name: Upload online installers
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: online-installers
           path: |
@@ -176,14 +163,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all installer artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: '{bundled-installer-*,online-installers}'
           merge-multiple: true
       - name: Print checksums
         run: sha256sum *.tar.gz
       - name: Upload combined installer artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ansible-automation-dashboard-containerized-installers-${{ needs.set-version.outputs.version }}
           path: '*.tar.gz'
