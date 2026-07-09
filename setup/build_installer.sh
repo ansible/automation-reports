@@ -64,6 +64,18 @@ function save_container_image() {
   /bin/rm -f bundle/images/*.tar  # keep only .tar.gz files
 }
 
+function check_inventory() {
+  # Note: ansible-inventory returns 0 even for invalid files, so we use grep.
+  if [ ! -f inventory ]; then
+    echo "ERROR: setup/inventory file not found. Copy inventory.example to inventory and configure it before building."
+    exit 1
+  fi
+  if ! grep -q '^\[automationdashboard\]' inventory; then
+    echo "ERROR: setup/inventory is not a valid inventory file (missing [automationdashboard] group)."
+    exit 1
+  fi
+}
+
 function adjust_inventory_example() {
   # The inventory.example for bundled installer should have "bundle_install=false" by default.
   if [ "$AAP_DASHBOARD_BUNDLED_INSTALLER" == "1" ]
@@ -86,6 +98,7 @@ Build configuration:
   INSTALLER_ARCH=$INSTALLER_ARCH
 EOF
 cd setup/
+check_inventory
 ansible-galaxy collection install -r requirements.yml -p collections/
 if [ "$AAP_DASHBOARD_BUNDLED_INSTALLER" == "1" ]
 then
