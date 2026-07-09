@@ -90,9 +90,6 @@
     "victory-voronoi-container": "^37.3.6",
     "zustand": "^5.0.12"
   },
-  "resolutions": {
-    "@patternfly/react-core": "6.4.3"
-  },
   "overrides": {
     "chokidar": "^5.0.0",
     "micromatch": "^4.0.8",
