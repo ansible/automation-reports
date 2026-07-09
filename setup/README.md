@@ -32,7 +32,6 @@ cd setup
 ansible --version  # 2.14.17, py3.9
 cp -i inventory.example inventory
 nano inventory
-ansible-galaxy collection install -r requirements.yml
 ansible-playbook -i inventory ansible.containerized_installer.dashboard_install
 ```
 
@@ -62,7 +61,6 @@ sudo dnf install git podman ansible-core
 cp -i setup/inventory.example setup/inventory
 # setup bundle_install, bundle_dir, registry_username, registry_password
 nano setup/inventory
-(cd setup; ansible-galaxy collection install -r requirements.yml)
 
 ./setup/build_installer.sh
 # ...
@@ -109,7 +107,6 @@ cd ansible-automation-dashboard-containerized-setup/
 
 cp -i inventory.example inventory
 nano inventory
-ansible-galaxy collection install -r requirements.yml
 ansible-playbook -i inventory ansible.containerized_installer.dashboard_install
 ```
 

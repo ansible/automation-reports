@@ -86,6 +86,7 @@ Build configuration:
   INSTALLER_ARCH=$INSTALLER_ARCH
 EOF
 cd setup/
+ansible-galaxy collection install -r requirements.yml -p collections/
 if [ "$AAP_DASHBOARD_BUNDLED_INSTALLER" == "1" ]
 then
   INSTALLER_FILE="${INSTALLER_FILE:-bundle/ansible-automation-dashboard-containerized-setup-bundle.tar.gz}"
@@ -108,7 +109,7 @@ EOF
 /bin/cp ../clusters.example.yaml ./
 FILES=""
 FILES+=" ansible.cfg "
-FILES+=" collections/ansible_collections/ansible/containerized_installer/ "
+FILES+=" collections/ "
 FILES+=" inventory.example "
 FILES+=" meta "
 FILES+=" README.md "
