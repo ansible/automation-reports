@@ -168,7 +168,7 @@ class TestNullOrgTemplate:
         assert j3.job_template.organization == org_b
 
     def test_template_deleted_before_parse(self, mocker, cluster):
-        """Bug: sync twice (template deleted in AAP), then parse → org=NULL."""
+        """Sync twice (template deleted in AAP), then parse → templates recreated with correct org."""
         # 1st sync: templates + jobs synced, parse jobs queued
         run_sync(cluster, mocker, API_ORGS, API_TEMPLATES, API_JOBS)
 
@@ -181,38 +181,35 @@ class TestNullOrgTemplate:
 
         assert JobTemplate.objects.filter(cluster=cluster).count() == 0
 
-        # Parse: recreates templates from job data WITHOUT organization
+        # Parse: recreates templates with correct organization
         run_parse(cluster)
 
         org_a = Organization.objects.get(cluster=cluster, external_id=100)
         org_b = Organization.objects.get(cluster=cluster, external_id=200)
 
-        # Bug: only 1 template created (both org's jobs collapse into one
-        # because create_or_update doesn't pass org, and update_or_create
-        # matches by (cluster, name) — last write wins on external_id)
         templates = JobTemplate.objects.filter(cluster=cluster)
-        assert templates.count() == 1
+        assert templates.count() == 2
+        assert templates.filter(organization__isnull=True).count() == 0
 
-        tmpl = templates.first()
-        assert tmpl.organization is None, "Bug: template has no organization"
-        assert tmpl.name == "Deploy"
+        t_a = templates.get(organization=org_a)
+        t_b = templates.get(organization=org_b)
+        assert t_a.name == "Deploy"
+        assert t_b.name == "Deploy"
 
         jobs = Job.objects.filter(cluster=cluster).order_by('external_id')
         assert jobs.count() == 3
 
-        # All 3 jobs point to the same org-less template
-        for job in jobs:
-            assert job.job_template == tmpl
-            assert job.job_template.organization is None
-
-        # But jobs themselves have correct organizations
+        assert jobs[0].job_template == t_a
         assert jobs[0].organization == org_a
-        assert jobs[1].organization == org_a
-        assert jobs[2].organization == org_b
+        assert jobs[0].job_template.organization == org_a
 
-        # The mismatch: job.organization != job.job_template.organization
-        for job in jobs:
-            assert job.organization != job.job_template.organization
+        assert jobs[1].job_template == t_a
+        assert jobs[1].organization == org_a
+        assert jobs[1].job_template.organization == org_a
+
+        assert jobs[2].job_template == t_b
+        assert jobs[2].organization == org_b
+        assert jobs[2].job_template.organization == org_b
 
     def test_template_deleted_after_parse(self, mocker, cluster):
         """No bug: sync, parse (creates jobs), then sync again — templates kept."""
@@ -253,11 +250,12 @@ class TestNullOrgTemplate:
         assert jobs[2].job_template.organization == org_b
 
     def test_template_never_synced(self, mocker, cluster):
-        """Bug: template deleted from AAP before first sync, only jobs exist.
+        """Template deleted from AAP before first sync, only jobs exist.
 
         AAP strips summary_fields.job_template from the job response when
         the template is deleted, so parser gets job_template=None and falls
-        back to external_id=-1 with the job's own name.
+        back to external_id=-1 with the job's own name. Parser now sets
+        organization correctly from the job's summary_fields.
         """
         # Sync: orgs exist, templates already deleted, jobs have job_template=None
         run_sync(cluster, mocker, API_ORGS, [], API_JOBS_DELETED_TEMPLATE)
@@ -266,30 +264,34 @@ class TestNullOrgTemplate:
         assert JobTemplate.objects.filter(cluster=cluster).count() == 0
         assert ClusterSyncData.objects.filter(cluster=cluster).count() == 3
 
-        # Parse: creates template with ext_id=-1 and organization=NULL
+        # Parse: creates per-org templates with correct organization
         run_parse(cluster)
 
         org_a = Organization.objects.get(cluster=cluster, external_id=100)
         org_b = Organization.objects.get(cluster=cluster, external_id=200)
 
         templates = JobTemplate.objects.filter(cluster=cluster)
-        assert templates.count() == 1
+        assert templates.count() == 2
+        assert templates.filter(organization__isnull=True).count() == 0
 
-        tmpl = templates.first()
-        assert tmpl.organization is None, "Bug: template has no organization"
-        assert tmpl.name == "Deploy"
-        assert tmpl.external_id == -1
+        t_a = templates.get(organization=org_a)
+        t_b = templates.get(organization=org_b)
+        assert t_a.name == "Deploy"
+        assert t_b.name == "Deploy"
+        assert t_a.external_id < 0
+        assert t_b.external_id < 0
 
         jobs = Job.objects.filter(cluster=cluster).order_by('external_id')
         assert jobs.count() == 3
 
-        for job in jobs:
-            assert job.job_template == tmpl
-            assert job.job_template.organization is None
-
+        assert jobs[0].job_template == t_a
         assert jobs[0].organization == org_a
-        assert jobs[1].organization == org_a
-        assert jobs[2].organization == org_b
+        assert jobs[0].job_template.organization == org_a
 
-        for job in jobs:
-            assert job.organization != job.job_template.organization
+        assert jobs[1].job_template == t_a
+        assert jobs[1].organization == org_a
+        assert jobs[1].job_template.organization == org_a
+
+        assert jobs[2].job_template == t_b
+        assert jobs[2].organization == org_b
+        assert jobs[2].job_template.organization == org_b
