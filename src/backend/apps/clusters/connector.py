@@ -284,19 +284,27 @@ class ApiConnector:
                 else:
                     logger.info(f"Creating new {sync_type} {result['name']}")
                     if sync_type == 'job_template':
-                        JobTemplate.objects.create(
+                        obj, created = JobTemplate.objects.update_or_create(
                             cluster=self.cluster,
                             name=result["name"],
-                            description=result["description"],
-                            external_id=result["id"],
                             organization=organization,
+                            defaults={
+                                "description": result["description"],
+                                "external_id": result["id"],
+                            },
                         )
+                        if not created:
+                            # ponytail: Template existed under a different external_id (Controller
+                            # recreated with same name). Drop stale key so cleanup doesn't orphan it.
+                            db_data = {k: v for k, v in db_data.items() if v.pk != obj.pk}
                     elif sync_type == 'organization':
-                        Organization.objects.create(
+                        Organization.objects.update_or_create(
                             cluster=self.cluster,
                             name=result["name"],
-                            description=result["description"],
-                            external_id=result["id"],
+                            defaults={
+                                "description": result["description"],
+                                "external_id": result["id"],
+                            },
                         )
                 response_data.append(result["id"])
         if sync_type == 'job_template':

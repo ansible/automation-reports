@@ -227,6 +227,25 @@ class TestConnector:
             for key, value in expected_obj.items():
                 assert getattr(db_data[i], key) == value
 
+    def test_sync_job_templates_stale_external_id(self, mocker, cluster):
+        """Template recreated in Controller with same name but new ID: row updated, not deleted."""
+        JobTemplate.objects.create(name="Stale Template", cluster=cluster, external_id=10)
+        api_result = [{"id": 99, "type": "job_template", "name": "Stale Template", "description": "updated"}]
+        mocker.patch('backend.apps.clusters.connector.ApiConnector.execute_get').side_effect = [[iter(api_result)]]
+        ApiConnector(cluster).sync_common(sync_type='job_template')
+        tmpl = JobTemplate.objects.get(cluster=cluster, name="Stale Template")
+        assert tmpl.external_id == 99
+        assert tmpl.description == "updated"
+
+    def test_sync_organizations_duplicate(self, mocker, cluster):
+        """Organization recreated in Controller with same name but new ID: row updated, no IntegrityError."""
+        Organization.objects.create(name="Stale Org", cluster=cluster, external_id=10)
+        api_result = [{"id": 99, "type": "organization", "name": "Stale Org", "description": "updated"}]
+        mocker.patch('backend.apps.clusters.connector.ApiConnector.execute_get').side_effect = [[iter(api_result)]]
+        ApiConnector(cluster).sync_common(sync_type='organization')
+        org = Organization.objects.get(cluster=cluster, name="Stale Org")
+        assert org.external_id == 99
+
     def test_sync_common_not_implemented(self, cluster):
         connector = ApiConnector(cluster)
         with pytest.raises(NotImplementedError):
