@@ -24,7 +24,8 @@ export const Login: React.FunctionComponent = () => {
   const [errorMessage, seterrorMessage] = useState('false');
 
   const loginWithAAP = () => {
-    window.location.href = `${appSettings?.url}?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}`;
+    const redirectUri = encodeURIComponent(window.location.origin + '/auth-callback');
+    window.location.href = `${appSettings?.url}?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}&redirect_uri=${redirectUri}`;
   };
 
   const handleLogin = (code: string) => {
