@@ -62,6 +62,23 @@ sync-build-tools:  ## Generate requirements-build-tools.txt (requires podman)
 	fi
 	./requirements/generate-build-requirements.sh
 
+# Frontend dependency management
+fe-install:  ## Install frontend dependencies (clean install from lock file)
+	npm ci
+
+fe-install-update:  ## Install frontend dependencies (allow updates within semver ranges)
+	npm install
+
+fe-install-clean:  ## Remove node_modules and lock file, then reinstall from scratch
+	rm -rf node_modules package-lock.json
+	npm install
+
+fe-lint:  ## Run frontend linting and type checks
+	npm run ci-checks
+
+fe-build:  ## Build frontend for production
+	npm run build
+
 licenses:  ## Generate licenses/licenses.md from installed packages
 	@echo "Syncing licenses/licenses.md..."
 	@./sync-licenses.sh
@@ -77,4 +94,4 @@ check-licenses:  ## Check if licenses/licenses.md is in sync
 		echo "licenses/licenses.md is in sync."; \
 	fi
 
-.PHONY: help docker-compose sync-requirements requirements requirements-check sync-build-tools licenses check-licenses
+.PHONY: help docker-compose sync-requirements requirements requirements-check sync-build-tools fe-install fe-install-update fe-install-clean fe-lint fe-build licenses check-licenses
