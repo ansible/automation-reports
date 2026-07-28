@@ -7,9 +7,6 @@ name: Build
 # GHA secrets:
 #  - REGISTRY_REDHAT_IO_PASSWORD
 #  - REGISTRY_QUAY_IO_PASSWORD
-#
-# Note: pull_request builds from forks won't have access to secrets.
-# Use pull_request_target if fork PRs need image builds (has security implications).
 
 on:
   push:
@@ -23,6 +20,8 @@ on:
 
 jobs:
   build-image:
+    # Skip fork PRs — they don't have access to registry secrets
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
