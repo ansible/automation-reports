@@ -39,6 +39,8 @@ jobs:
       - name: Set build date
         run: echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
       - name: Set image tag and metadata
+        env:
+          PR_HEAD_REF: ${{ github.head_ref }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
@@ -48,7 +50,7 @@ jobs:
             {
               echo 'EXTRA_LABELS<<EOF'
               echo "quay.expires-after=14d"
-              echo "org.opencontainers.image.ref.name=${{ github.head_ref }}"
+              echo "org.opencontainers.image.ref.name=${PR_HEAD_REF}"
               echo "io.github.pull_request.number=${{ github.event.pull_request.number }}"
               echo "io.github.pull_request.url=${{ github.event.pull_request.html_url }}"
               echo 'EOF'
