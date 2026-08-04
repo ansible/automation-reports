@@ -11,7 +11,7 @@ import {
   ChartTooltip,
   ChartVoronoiContainer,
 } from '@patternfly/react-charts/victory';
-import { AnimatePropTypeInterface } from '@patternfly/react-charts/victory';
+import { AnimatePropTypeInterface } from 'victory-core';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
 
 export const DashboardBarChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {

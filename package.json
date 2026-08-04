@@ -74,6 +74,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "sass": "^1.99.0",
+    "victory-core": "^37.3.6",
     "zustand": "^5.0.12"
   },
   "overrides": {
