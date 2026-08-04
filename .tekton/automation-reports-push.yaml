@@ -7,7 +7,7 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-0.5"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-0.7"
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: automation-reports
@@ -52,7 +52,7 @@ spec:
       - name: name
         value: pde-docker-build-multiplatform-submodules-env-oci-ta
       - name: bundle
-        value: quay.io/aap-ci/pde-docker-build-multiplatform-submodules-env-oci-ta-bundle@sha256:f9fdc9370fa431a3f930642c8bee4c4750b04be747a4d17136d62476aa35e6bc
+        value: quay.io/aap-ci/pde-docker-build-multiplatform-submodules-env-oci-ta-bundle@sha256:c40a2067622f20053ceb926664f8325e59ee97a480df09d3278ec2455586954d
       - name: kind
         value: pipeline
   taskRunTemplate:
