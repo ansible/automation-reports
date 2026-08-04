@@ -709,6 +709,8 @@ class SingletonModel(models.Model):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
+    get_solo = get
+
 
 class SubscriptionCost(SingletonModel):
     """

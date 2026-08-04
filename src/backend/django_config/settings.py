@@ -473,10 +473,7 @@ def _load_settings_file(path: str) -> None:
 ### Local settings
 local_config_file = os.path.join(BASE_DIR, "django_config", "local_settings.py")
 if os.path.isfile(local_config_file):
-    try:
-        _load_settings_file(local_config_file)
-    except ImportError:
-        pass
+    _load_settings_file(local_config_file)
 
 # Load settings from DASHBOARD_SETTINGS_DIR
 settings_dir = os.environ.get('DASHBOARD_SETTINGS_DIR', '/etc/dashboard/conf.d/')

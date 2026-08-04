@@ -16,7 +16,7 @@ pydantic==2.13.4
 python-dateutil==2.9.0.post0
 redis==7.4.1
 requests==2.34.2
-setuptools>=83.0.0
+setuptools==83.0.0
 supervisor==4.3.0
 tzdata==2026.3
 urllib3==2.7.0
