@@ -1,6 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-import pytz
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -11,7 +10,7 @@ class User(AbstractUser):
     is_platform_auditor = models.BooleanField(default=False)
 
     def log_login(self):
-        self.last_login = datetime.now(pytz.utc)
+        self.last_login = datetime.now(timezone.utc)
         self.save(update_fields=["last_login"])
 
     @classmethod

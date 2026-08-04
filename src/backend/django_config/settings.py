@@ -16,7 +16,8 @@ import traceback
 from datetime import timedelta
 from pathlib import Path
 
-from split_settings.tools import optional, include
+import glob
+import importlib.util
 from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -65,7 +66,6 @@ INSTALLED_APPS = [
     'backend.apps.users',
     'backend.apps.aap_auth',
     'backend.analytics',
-    'solo',
     'drf_spectacular',
 ]
 
@@ -459,19 +459,31 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
+def _load_settings_file(path: str) -> None:
+    """Load a Python settings override file into the current module's global scope."""
+    spec = importlib.util.spec_from_file_location('_settings_override', path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    g = globals()
+    for k, v in vars(mod).items():
+        if not k.startswith('_'):
+            g[k] = v
+
+
 ### Local settings
 local_config_file = os.path.join(BASE_DIR, "django_config", "local_settings.py")
-try:
-    include(optional(local_config_file), scope=locals())
-except ImportError:
-    pass
+if os.path.isfile(local_config_file):
+    try:
+        _load_settings_file(local_config_file)
+    except ImportError:
+        pass
 
 # Load settings from DASHBOARD_SETTINGS_DIR
 settings_dir = os.environ.get('DASHBOARD_SETTINGS_DIR', '/etc/dashboard/conf.d/')
-settings_files = os.path.join(settings_dir, '*.py')
 if os.path.isdir(settings_dir):
     try:
-        include(optional(settings_files), scope=locals())
+        for _settings_path in sorted(glob.glob(os.path.join(settings_dir, '*.py'))):
+            _load_settings_file(_settings_path)
     except ImportError:
         traceback.print_exc()
         sys.exit(1)

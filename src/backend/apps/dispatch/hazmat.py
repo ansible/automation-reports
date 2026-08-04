@@ -3,8 +3,6 @@ import django
 # dispatcherd publisher logic is likely to be used, but needs manual preload
 from dispatcherd.brokers import pg_notify  # noqa
 
-# Cache may not be initialized until we are in the worker, so preload here
-from channels_redis import core  # noqa
 from dispatcherd.utils import resolve_callable
 
 django.setup()

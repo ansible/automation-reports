@@ -12,7 +12,7 @@ import {
   ChartVoronoiContainer,
 } from '@patternfly/react-charts/victory';
 import { formatNumber, generateChartData } from '@app/Utils';
-import { AnimatePropTypeInterface } from 'victory-core';
+import { AnimatePropTypeInterface } from '@patternfly/react-charts/victory';
 import { DashboardTotals } from '@app/Dashboard/DashboardTotals';
 
 export const DashboardLineChart: React.FunctionComponent<DashboardChartProps> = (props: DashboardChartProps) => {

@@ -1,8 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 import pytest
-import pytz
 
 from backend.apps.clusters.models import (
     Organization,
@@ -91,8 +90,8 @@ host_summaries_expected_data = [
         'failed': False,
         'ignored': 0,
         'rescued': 0,
-        'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc),
-        'modified': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc)
+        'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc),
+        'modified': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc)
     },
     {
         'host_name': 'Host C',
@@ -105,8 +104,8 @@ host_summaries_expected_data = [
         'failed': False,
         'ignored': 0,
         'rescued': 0,
-        'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc),
-        'modified': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc)
+        'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc),
+        'modified': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc)
     }
 ]
 
@@ -114,16 +113,16 @@ job_expected_data = {
     'id': 2,
     'name': 'Job Template B',
     'description': '',
-    'started': datetime(2025, 4, 5, 18, 30, 3, 963413, tzinfo=pytz.utc),
-    'finished': datetime(2025, 4, 5, 18, 30, 12, 226281, tzinfo=pytz.utc),
+    'started': datetime(2025, 4, 5, 18, 30, 3, 963413, tzinfo=timezone.utc),
+    'finished': datetime(2025, 4, 5, 18, 30, 12, 226281, tzinfo=timezone.utc),
     'elapsed': Decimal('8.263'),
     'failed': False,
     'status': 'successful',
     'job_type': 'run',
     'type': 'job',
     'launch_type': 'manual',
-    'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc),
-    'modified': datetime(2025, 4, 5, 18, 30, 3, 739997, tzinfo=pytz.utc)
+    'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc),
+    'modified': datetime(2025, 4, 5, 18, 30, 3, 739997, tzinfo=timezone.utc)
 }
 
 parsed_job_expected_data = {
@@ -143,12 +142,12 @@ parsed_job_expected_data = {
         'job_template_id': 1,
         'launched_by_id': 1,
         'status': 'successful',
-        'started': datetime(2025, 4, 5, 18, 30, 3, 963413, tzinfo=pytz.utc),
-        'finished': datetime(2025, 4, 5, 18, 30, 12, 226281, tzinfo=pytz.utc),
+        'started': datetime(2025, 4, 5, 18, 30, 3, 963413, tzinfo=timezone.utc),
+        'finished': datetime(2025, 4, 5, 18, 30, 12, 226281, tzinfo=timezone.utc),
         'elapsed': Decimal('8.263'),
         'failed': False,
-        'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc),
-        'modified': datetime(2025, 4, 5, 18, 30, 3, 739997, tzinfo=pytz.utc),
+        'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc),
+        'modified': datetime(2025, 4, 5, 18, 30, 3, 739997, tzinfo=timezone.utc),
         'num_hosts': 2,
         'changed_hosts_count': 0,
         'dark_hosts_count': 0,
@@ -176,8 +175,8 @@ parsed_job_expected_data = {
             'failed': False,
             'ignored': 0,
             'rescued': 0,
-            'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc),
-            'modified': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc)
+            'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc),
+            'modified': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc)
         },
         {
             'id': 2,
@@ -193,8 +192,8 @@ parsed_job_expected_data = {
             'failed': False,
             'ignored': 0,
             'rescued': 0,
-            'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc),
-            'modified': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=pytz.utc)
+            'created': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc),
+            'modified': datetime(2025, 4, 5, 18, 30, 2, 851402, tzinfo=timezone.utc)
         }
     ]
 

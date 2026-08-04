@@ -1,9 +1,9 @@
 import datetime
 import json
+from datetime import timezone
 import logging
 from urllib.parse import urlsplit
 
-import pytz
 import requests
 import urllib3
 from django.conf import settings
@@ -80,10 +80,10 @@ class ApiConnector:
                         logger.warning("Failed to parse INITIAL_SYNC_SINCE, using fallback.")
                         _date = None
                 if _date is None:
-                    _date = datetime.datetime.now(pytz.UTC) - datetime.timedelta(days=initial_sync_days)
+                    _date = datetime.datetime.now(timezone.utc) - datetime.timedelta(days=initial_sync_days)
                     logger.debug("Using fallback initial sync date.")
-                self.since = datetime.datetime.combine(_date.astimezone(pytz.UTC),
-                                                       datetime.datetime.min.time()).astimezone(pytz.UTC)
+                self.since = datetime.datetime.combine(_date.astimezone(timezone.utc),
+                                                       datetime.datetime.min.time()).astimezone(timezone.utc)
                 logger.info(f"Initial sync since: {self.since}")
 
     @property

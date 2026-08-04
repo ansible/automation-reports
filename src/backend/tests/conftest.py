@@ -1,7 +1,7 @@
 import datetime
+from datetime import timezone
 
 import pytest
-import pytz
 from django.core.cache import cache
 
 from backend.apps.clusters.encryption import encrypt_value
@@ -161,9 +161,9 @@ def jobs(
             launched_by=AAPUser.objects.get(name="AAP User"),
             status=JobStatusChoices.SUCCESSFUL,
             started=datetime.datetime.strptime('2025-03-01T10:00:00Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(
-                pytz.timezone('UTC')),
+                timezone.utc),
             finished=datetime.datetime.strptime('2025-03-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(
-                pytz.timezone('UTC')),
+                timezone.utc),
             elapsed=25,
             failed=False,
             num_hosts=2,
@@ -184,9 +184,9 @@ def jobs(
             launched_by=AAPUser.objects.get(name="AAP User"),
             status=JobStatusChoices.SUCCESSFUL,
             started=datetime.datetime.strptime('2025-02-01T10:00:00Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(
-                pytz.timezone('UTC')),
+                timezone.utc),
             finished=datetime.datetime.strptime('2025-02-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(
-                pytz.timezone('UTC')),
+                timezone.utc),
             elapsed=25,
             failed=False,
             num_hosts=2,
@@ -241,8 +241,8 @@ def hosts(cluster):
 
 @pytest.fixture
 def host_summaries(jobs, hosts):
-    created = datetime.datetime.strptime('2025-03-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC'))
-    created2 = datetime.datetime.strptime('2025-02-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone('UTC'))
+    created = datetime.datetime.strptime('2025-03-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(timezone.utc)
+    created2 = datetime.datetime.strptime('2025-02-01T10:00:25Z', '%Y-%m-%dT%H:%M:%SZ').astimezone(timezone.utc)
     job1 = Job.objects.get(name="Job Template A")
     job2 = Job.objects.get(name="Job Template B")
     job3 = Job.objects.get(name="Job Template C")

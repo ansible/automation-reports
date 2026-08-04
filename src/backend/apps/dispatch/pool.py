@@ -1,5 +1,18 @@
-from ansible_runner.utils.capacity import get_mem_in_bytes, get_cpu_count
+import multiprocessing
+
 from backend.common_utils import get_corrected_memory, get_mem_effective_capacity, get_corrected_cpu, get_cpu_effective_capacity
+
+
+def _get_mem_in_bytes() -> int:
+    """Return total physical memory in bytes, read from /proc/meminfo on Linux."""
+    try:
+        with open('/proc/meminfo') as f:
+            for line in f:
+                if line.startswith('MemTotal:'):
+                    return int(line.split()[1]) * 1024
+    except (FileNotFoundError, ValueError, IndexError):
+        pass
+    return 2 * 1024 * 1024 * 1024
 
 
 def get_auto_max_workers():
@@ -13,21 +26,14 @@ def get_auto_max_workers():
     but this poses some bootstrap problems where OCP task containers
     register themselves after startup
     """
-    # Get memory from ansible-runner
-    total_memory_gb = get_mem_in_bytes()
-
-    # This may replace memory calculation with a user override
+    total_memory_gb = _get_mem_in_bytes()
     corrected_memory = get_corrected_memory(total_memory_gb)
-
-    # Get same number as max forks based on memory, this function takes memory as bytes
     mem_capacity = get_mem_effective_capacity(corrected_memory, is_control_node=True)
 
-    # Follow same process for CPU capacity constraint
-    cpu_count = get_cpu_count()
+    cpu_count = multiprocessing.cpu_count()
     corrected_cpu = get_corrected_cpu(cpu_count)
     cpu_capacity = get_cpu_effective_capacity(corrected_cpu, is_control_node=True)
 
-    # Here is what is different from health checks,
     auto_max = max(mem_capacity, cpu_capacity)
 
     return auto_max

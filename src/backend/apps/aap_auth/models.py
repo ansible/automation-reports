@@ -1,5 +1,4 @@
-import pytz
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.db import models
 
@@ -49,7 +48,7 @@ class JwtUserToken(BaseJWTUserToken):
             aap_token=aap_token.access_token,
             aap_refresh_token=aap_token.refresh_token,
             aap_token_type=aap_token.token_type,
-            aap_token_expires=datetime.now(pytz.utc) + timedelta(seconds=aap_token.expires_in),
+            aap_token_expires=datetime.now(timezone.utc) + timedelta(seconds=aap_token.expires_in),
         )
 
     def revoke_token(self):

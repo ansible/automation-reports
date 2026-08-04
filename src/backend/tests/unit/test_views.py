@@ -1,11 +1,10 @@
 import csv
 import io
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest import mock
 
 import pytest
-import pytz
 import time_machine
 from rest_framework.test import APIClient
 
@@ -320,7 +319,7 @@ class TestViews:
         assert data == expected
 
     @pytest.mark.parametrize('expected', [test_report_expected_data])
-    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_report(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         response = client.get('/api/v1/report/?page=1&page_size=10&date_range=month_to_date')
@@ -329,7 +328,7 @@ class TestViews:
         assert data == expected
 
     @pytest.mark.parametrize('expected', [test_report_past_month_expected_data])
-    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_report_past_month(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         response = client.get("/api/v1/report/?page=1&page_size=10&date_range=last_month")
@@ -345,7 +344,7 @@ class TestViews:
             'results': []
         }
     ])
-    @time_machine.travel(datetime(2025, 12, 31, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 12, 31, 22, 1, 45, tzinfo=timezone.utc))
     def test_report_by_project(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         project = Project.objects.get(name="Project B")
@@ -361,7 +360,7 @@ class TestViews:
         assert data["count"] == 2
 
     @pytest.mark.parametrize('expected', [test_report_details_expected_data])
-    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_report_details(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         response = client.get("/api/v1/report/details/?page=1&page_size=10&date_range=year_to_date")
@@ -459,7 +458,7 @@ class TestViews:
         assert db_data.value == 0
 
     @pytest.mark.parametrize('expected', [test_report_disabled_time_taken_to_create_automation_save_expected_data])
-    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_report_disabled_time_taken_to_create_automation_save(self, mock_auth, host_summaries, projects, expected):
         client = APIClient()
         data = dict(type="enable_template_creation_time", value=False)
@@ -470,7 +469,7 @@ class TestViews:
         data = response.json()
         assert data == expected
 
-    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_export_csv(self, mock_auth, host_summaries, projects):
         client = APIClient()
         response = client.get("/api/v1/report/csv/?date_range=last_month")
@@ -498,7 +497,7 @@ class TestViews:
             assert headers[index] == data[0]
             assert body[0][index] == data[1]
 
-    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_export_pdf(self, mock_auth, host_summaries, projects, currencies):
         client = APIClient()
         response = client.post("/api/v1/report/pdf/?date_range=last_month")
@@ -565,7 +564,7 @@ class TestViews:
             response = client.delete(url)
             assert response.status_code == 403
 
-    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 3, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_restore_user_inputs(self, mock_auth, host_summaries, projects):
         client = APIClient()
         response = client.get("/api/v1/report/?page=1&page_size=10&date_range=last_month")

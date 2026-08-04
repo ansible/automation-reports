@@ -1,8 +1,7 @@
 import decimal
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
-import pytz
 import time_machine
 
 from backend.apps.clusters.models import SubscriptionCost, get_month_overlap_days
@@ -129,8 +128,8 @@ class TestCostPerElapsedSecond:
 
         # Test for March 2025 — only one job falls inside this period (elapsed=25, total=25).
         # The second fixture job is in February and is excluded from this date range.
-        start = datetime(2025, 3, 1, tzinfo=pytz.UTC)
-        end = datetime(2025, 3, 31, tzinfo=pytz.UTC)
+        start = datetime(2025, 3, 1, tzinfo=timezone.utc)
+        end = datetime(2025, 3, 31, tzinfo=timezone.utc)
 
         result = db.cost_per_elapsed_second(start, end)
 
@@ -147,8 +146,8 @@ class TestCostPerElapsedSecond:
         db.save()
 
         # Test for March 1-15 (15 days out of 31) - includes the March job finished on 2025-03-01
-        start = datetime(2025, 3, 1, tzinfo=pytz.UTC)
-        end = datetime(2025, 3, 15, tzinfo=pytz.UTC)
+        start = datetime(2025, 3, 1, tzinfo=timezone.utc)
+        end = datetime(2025, 3, 15, tzinfo=timezone.utc)
 
         result = db.cost_per_elapsed_second(start, end)
 
@@ -166,8 +165,8 @@ class TestCostPerElapsedSecond:
         db.save()
 
         # Test for February-March 2025 (both jobs)
-        start = datetime(2025, 2, 1, tzinfo=pytz.UTC)
-        end = datetime(2025, 3, 31, tzinfo=pytz.UTC)
+        start = datetime(2025, 2, 1, tzinfo=timezone.utc)
+        end = datetime(2025, 3, 31, tzinfo=timezone.utc)
 
         result = db.cost_per_elapsed_second(start, end)
 
@@ -186,15 +185,15 @@ class TestCostPerElapsedSecond:
         db.save()
 
         # Test period with no jobs
-        start = datetime(2025, 1, 1, tzinfo=pytz.UTC)
-        end = datetime(2025, 1, 31, tzinfo=pytz.UTC)
+        start = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        end = datetime(2025, 1, 31, tzinfo=timezone.utc)
 
         result = db.cost_per_elapsed_second(start, end)
 
         # Should return very small fallback value
         assert result == decimal.Decimal('0.000001')
 
-    @time_machine.travel(datetime(2025, 3, 15, 10, 0, 0, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 3, 15, 10, 0, 0, tzinfo=timezone.utc))
     def test_current_month_default(self, jobs):
         """Test default behavior (no dates specified) uses current month."""
         db = SubscriptionCost.get()
@@ -208,7 +207,7 @@ class TestCostPerElapsedSecond:
         expected = decimal.Decimal('3100') / decimal.Decimal('25')
         assert result == expected.quantize(decimal.Decimal('0.0000000001'))
 
-    @time_machine.travel(datetime(2025, 1, 15, 10, 0, 0, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 1, 15, 10, 0, 0, tzinfo=timezone.utc))
     def test_current_month_no_jobs(self):
         """Test default behavior when current month has no jobs."""
         db = SubscriptionCost.get()
@@ -227,8 +226,8 @@ class TestCostPerElapsedSecond:
         db.save()
 
         # Reversed dates - should be same as normal order
-        start = datetime(2025, 3, 31, tzinfo=pytz.UTC)
-        end = datetime(2025, 3, 1, tzinfo=pytz.UTC)
+        start = datetime(2025, 3, 31, tzinfo=timezone.utc)
+        end = datetime(2025, 3, 1, tzinfo=timezone.utc)
 
         result = db.cost_per_elapsed_second(start, end)
 
@@ -251,8 +250,8 @@ class TestCostPerElapsedSecond:
         db.save()
 
         # Full month March — one job with elapsed=25 seconds
-        start = datetime(2025, 3, 1, tzinfo=pytz.UTC)
-        end = datetime(2025, 3, 31, tzinfo=pytz.UTC)
+        start = datetime(2025, 3, 1, tzinfo=timezone.utc)
+        end = datetime(2025, 3, 31, tzinfo=timezone.utc)
 
         cost_per_unit = db.cost_per_elapsed_second(start, end)
 

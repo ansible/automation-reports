@@ -1,9 +1,9 @@
 import datetime
-from datetime import timedelta
+from datetime import timedelta, timezone
 from unittest.mock import MagicMock
+from zoneinfo import ZoneInfo
 
 import pytest
-import pytz
 
 from backend.apps.scheduler.models import SyncSchedule
 
@@ -20,7 +20,7 @@ class TestScheduler:
     @property
     def distant_rrule(self):
         # this rule should produce a next_run, but it should not overlap with test run time
-        this_year = datetime.datetime.now(pytz.utc).year
+        this_year = datetime.datetime.now(timezone.utc).year
         return "DTSTART;TZID=UTC:{}0520T190000 RRULE:FREQ=YEARLY;INTERVAL=1;BYMONTH=1;BYMONTHDAY=1;UNTIL={}0530T000000Z".format(this_year + 1, this_year + 2)
 
     def test_get_end_date_returns_none_if_no_until_or_count(self):
@@ -54,12 +54,12 @@ class TestScheduler:
         rrule = f'DTSTART;TZID=Europe/Ljubljana:20150101T000000 RRULE:FREQ={freq};INTERVAL={delta}'  # noqa
         s = self.sync_rule(cluster, rrule)
         first_event = s.rrulestr(s.rrule)[0]
-        assert datetime.datetime.now(pytz.timezone("Europe/Ljubljana")) - first_event < timedelta(days=1)
+        assert datetime.datetime.now(ZoneInfo("Europe/Ljubljana")) - first_event < timedelta(days=1)
 
         # the next few scheduled events should be the next minute/hour incremented
-        next_five_events = list(s.rrulestr(s.rrule).xafter(datetime.datetime.now(pytz.timezone("Europe/Ljubljana")), count=5))
+        next_five_events = list(s.rrulestr(s.rrule).xafter(datetime.datetime.now(ZoneInfo("Europe/Ljubljana")), count=5))
 
-        assert next_five_events[0] > datetime.datetime.now(pytz.timezone("Europe/Ljubljana"))
+        assert next_five_events[0] > datetime.datetime.now(ZoneInfo("Europe/Ljubljana"))
         last = None
         for event in next_five_events:
             if last:
@@ -138,7 +138,7 @@ class TestScheduler:
     )
     def test_tzinfo_naive_until(self, cluster, rrule, length):
         s = self.sync_rule(cluster, rrule)
-        gen = SyncSchedule.rrulestr(s.rrule).xafter(datetime.datetime.now(pytz.utc), count=20)
+        gen = SyncSchedule.rrulestr(s.rrule).xafter(datetime.datetime.now(timezone.utc), count=20)
         assert len(list(gen)) == length
 
     def test_utc_until_in_the_past(self, cluster):
@@ -149,7 +149,7 @@ class TestScheduler:
         assert s.next_run is s.dtstart is s.dtend is None
 
     def test_beginning_of_time(self, cluster):
-        start = datetime.datetime.now(pytz.utc)
+        start = datetime.datetime.now(timezone.utc)
         rrule = 'DTSTART:19700101T000000Z RRULE:FREQ=MINUTELY;INTERVAL=1'
         s = self.sync_rule(cluster, rrule)
         assert s.next_run > start
@@ -215,7 +215,7 @@ class TestScheduler:
           RRULE:INTERVAL=1;FREQ=DAILY
           EXRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=SU
         '''
-        timezone = pytz.timezone("Europe/Ljubljana")
+        timezone = ZoneInfo("Europe/Ljubljana")
         friday_apr_29th = datetime.datetime(2022, 4, 29, 0, 0, 0, 0, timezone)
         monday_may_2nd = datetime.datetime(2022, 5, 2, 23, 59, 59, 999, timezone)
         ruleset = SyncSchedule.rrulestr(rrule)
@@ -232,17 +232,17 @@ class TestScheduler:
         [
             pytest.param(
                 'DTSTART;TZID=Europe/Ljubljana:20210310T150000 RRULE:INTERVAL=1;FREQ=DAILY;UNTIL=20210430T150000Z EXRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=SU;COUNT=5',
-                datetime.datetime(2021, 4, 30, 13, 0, 0, tzinfo=pytz.utc),
+                datetime.datetime(2021, 4, 30, 13, 0, 0, tzinfo=timezone.utc),
                 id="Single rule in rule set with UTC TZ aware until",
             ),
             pytest.param(
                 'DTSTART;TZID=Europe/Ljubljana:20220310T150000 RRULE:INTERVAL=1;FREQ=DAILY;UNTIL=20220430T150000 EXRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=SU;COUNT=5',
-                datetime.datetime(2022, 4, 30, 13, 0, tzinfo=pytz.utc),
+                datetime.datetime(2022, 4, 30, 13, 0, tzinfo=timezone.utc),
                 id="Single rule in ruleset with naive until",
             ),
             pytest.param(
                 'DTSTART;TZID=Europe/Ljubljana:20220310T150000 RRULE:INTERVAL=1;FREQ=DAILY;COUNT=4 EXRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=SU;COUNT=5',
-                datetime.datetime(2022, 3, 12, 14, 0, tzinfo=pytz.utc),
+                datetime.datetime(2022, 3, 12, 14, 0, tzinfo=timezone.utc),
                 id="Single rule in ruleset with count",
             ),
             pytest.param(
@@ -257,12 +257,12 @@ class TestScheduler:
             ),
             pytest.param(
                 'DTSTART;TZID=Europe/Ljubljana:20220310T150000 RRULE:INTERVAL=1;FREQ=DAILY;UNTIL=20220430T150000Z',
-                datetime.datetime(2022, 4, 30, 13, 0, tzinfo=pytz.utc),
+                datetime.datetime(2022, 4, 30, 13, 0, tzinfo=timezone.utc),
                 id="Single rule in rule with UTZ TZ aware until",
             ),
             pytest.param(
                 'DTSTART;TZID=Europe/Ljubljana:20220310T150000 RRULE:INTERVAL=1;FREQ=DAILY;UNTIL=20220430T150000',
-                datetime.datetime(2022, 4, 30, 13, 0, tzinfo=pytz.utc),
+                datetime.datetime(2022, 4, 30, 13, 0, tzinfo=timezone.utc),
                 id="Single rule in rule with naive until",
             ),
             pytest.param(
@@ -277,12 +277,12 @@ class TestScheduler:
             ),
             pytest.param(
                 'DTSTART;TZID=Europe/Ljubljana:20220310T150000 RRULE:INTERVAL=1;FREQ=DAILY;BYDAY=SU;UNTIL=20220430T1500Z RRULE:INTERVAL=1;FREQ=DAILY;BYDAY=MO;COUNT=4',
-                datetime.datetime(2022, 4, 24, 13, 0, tzinfo=pytz.utc),
+                datetime.datetime(2022, 4, 24, 13, 0, tzinfo=timezone.utc),
                 id="Multi rule one with until and one with an count",
             ),
             pytest.param(
                 'DTSTART;TZID=Europe/Ljubljana:20010430T1500 RRULE:INTERVAL=1;FREQ=DAILY;BYDAY=SU;COUNT=1',
-                datetime.datetime(2001, 5, 6, 13, 0, tzinfo=pytz.utc),
+                datetime.datetime(2001, 5, 6, 13, 0, tzinfo=timezone.utc),
                 id="Rule with count but ends in the past",
             ),
             pytest.param(

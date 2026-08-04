@@ -6,16 +6,15 @@ import re
 
 import dateutil.parser
 import dateutil.rrule
-import pytz
+from datetime import timezone
 from ansible_base.lib.utils.models import get_type_for_model, prevent_search
 from dateutil.tz import tzutc, datetime_exists
 from django.db import models
 from django.db.models import QuerySet
 from django.utils.timezone import make_aware, now
 from django.utils.translation import gettext_lazy as _
-from solo.models import SingletonModel
 
-from backend.apps.clusters.models import Cluster, CreatUpdateModel, JobLaunchTypeChoices, JobStatusChoices, ClusterSyncData
+from backend.apps.clusters.models import Cluster, CreatUpdateModel, JobLaunchTypeChoices, JobStatusChoices, ClusterSyncData, SingletonModel
 
 logger = logging.getLogger('automation_dashboard.scheduler')
 
@@ -148,7 +147,7 @@ class SyncSchedule(models.Model):
         # If we made it this far we should have an end date and can ask the ruleset what the last date is
         # However, if the until/count is before dtstart we will get an IndexError when trying to get [-1]
         try:
-            return self[-1].astimezone(pytz.utc)
+            return self[-1].astimezone(timezone.utc)
         except IndexError:
             return None
 
@@ -205,7 +204,7 @@ class SyncSchedule(models.Model):
 
                     # Coerce the datetime to UTC and format it as a string w/ Zulu format
                     # utc_until = UNTIL=20200601T220000Z
-                    utc_until = 'UNTIL=' + localized_until.astimezone(pytz.utc).strftime('%Y%m%dT%H%M%SZ')
+                    utc_until = 'UNTIL=' + localized_until.astimezone(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
 
                     # rule was:    DTSTART;TZID=America/New_York:20200601T120000 RRULE:...;UNTIL=20200601T170000
                     # rule is now: DTSTART;TZID=America/New_York:20200601T120000 RRULE:...;UNTIL=20200601T220000Z
@@ -248,14 +247,14 @@ class SyncSchedule(models.Model):
                 if not datetime_exists(next_run_actual):
                     # skip imaginary dates, like 2:30 on DST boundaries
                     next_run_actual = future_rs.after(next_run_actual)
-                next_run_actual = next_run_actual.astimezone(pytz.utc)
+                next_run_actual = next_run_actual.astimezone(timezone.utc)
         else:
             next_run_actual = None
 
         self.next_run = next_run_actual
         if not self.dtstart:
             try:
-                self.dtstart = future_rs[0].astimezone(pytz.utc)
+                self.dtstart = future_rs[0].astimezone(timezone.utc)
             except IndexError:
                 self.dtstart = None
         self.dtend = SyncSchedule.get_end_date(future_rs)

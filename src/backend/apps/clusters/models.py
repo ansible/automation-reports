@@ -6,13 +6,12 @@ from typing import List, Self, Any
 from urllib.parse import urlencode
 
 import dateutil.parser
-import pytz
+from datetime import timezone
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import QuerySet, Min, Sum
-from solo.models import SingletonModel
 
 from backend.apps.clusters.schemas import DateRangeSchema, RelatedLinks
 
@@ -195,7 +194,7 @@ class DateRangeChoices(models.TextChoices):
 
     @classmethod
     def get_date_range(cls, choice: str, start: str = None, end: str = None) -> DateRangeSchema:
-        now = datetime.datetime.now(pytz.utc)
+        now = datetime.datetime.now(timezone.utc)
         match choice:
             case cls.LAST_YEAR:
                 start_date = now.replace(year=now.year - 1, month=1, day=1)
@@ -256,8 +255,8 @@ class DateRangeChoices(models.TextChoices):
 
             case _:
                 raise NotImplementedError
-        start = datetime.datetime.combine(start_date, datetime.time.min, pytz.utc)
-        end = datetime.datetime.combine(end_date, datetime.time.max, pytz.utc)
+        start = datetime.datetime.combine(start_date, datetime.time.min, timezone.utc)
+        end = datetime.datetime.combine(end_date, datetime.time.max, timezone.utc)
 
         return DateRangeSchema(**{
             'start': start,
@@ -697,6 +696,20 @@ class JobHostSummary(CreatUpdateModel):
         return f'{self.job.name} - {self.host.name}'
 
 
+class SingletonModel(models.Model):
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 class SubscriptionCost(SingletonModel):
     """
     Stores subscription cost information for the AAP subscription, including monthly cost and average engineer hourly rate.
@@ -776,7 +789,7 @@ class SubscriptionCost(SingletonModel):
 
         # If no date range specified, fall through with current-month bounds
         if start is None or end is None:
-            now = datetime.datetime.now(pytz.utc)
+            now = datetime.datetime.now(timezone.utc)
             start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             end = (start + relativedelta(months=1)) - datetime.timedelta(microseconds=1)
 

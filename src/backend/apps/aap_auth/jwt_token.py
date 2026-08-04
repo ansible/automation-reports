@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Dict
 
 import jwt
-import pytz
+from datetime import timezone
 from django.conf import settings
 
 from backend.apps.aap_auth.models import JwtUserToken, JwtUserRefreshToken
@@ -21,7 +21,7 @@ class JWTToken:
         logger.info("Initializing JWTToken")
         self.access_token_lifetime_seconds = settings.JWT_ACCESS_TOKEN_LIFETIME_SECONDS
         self.refresh_token_lifetime_seconds = settings.JWT_REFRESH_TOKEN_LIFETIME_SECONDS
-        self.now = datetime.now(pytz.utc)
+        self.now = datetime.now(timezone.utc)
         self.algorithm = 'HS256'
         logger.debug(f"Access token lifetime: {self.access_token_lifetime_seconds}, "
                      f"Refresh token lifetime: {self.refresh_token_lifetime_seconds}, "

@@ -1,11 +1,10 @@
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 from unittest.mock import PropertyMock
 
 import pytest
-import pytz
 import requests as requests_lib
 import time_machine
 from requests import Response
@@ -277,8 +276,8 @@ class TestConnector:
             cluster=cluster,
             external_id=999,
             status=JobStatusChoices.SUCCESSFUL,
-            started=datetime(2025, 1, 1, 10, 0, 0, tzinfo=pytz.UTC),
-            finished=datetime(2025, 1, 1, 10, 5, 0, tzinfo=pytz.UTC),
+            started=datetime(2025, 1, 1, 10, 0, 0, tzinfo=timezone.utc),
+            finished=datetime(2025, 1, 1, 10, 5, 0, tzinfo=timezone.utc),
         )
 
         # Mock API response - returns empty list (both templates deleted from AAP)
@@ -546,7 +545,7 @@ class TestConnector:
         connector = ApiConnector(cluster)
         assert str(connector.since) == '2025-05-06 00:00:00+00:00'
 
-    @time_machine.travel(datetime(2025, 10, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 10, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_since_without_iso_date(self, settings, cluster):
         delattr(settings, "INITIAL_SYNC_SINCE")
         settings.INITIAL_SYNC_DAYS = 5
@@ -554,7 +553,7 @@ class TestConnector:
         assert str(connector.since) == '2025-10-16 00:00:00+00:00'
         assert connector.until is None
 
-    @time_machine.travel(datetime(2025, 10, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 10, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_since_without_iso_date_without_timedelta_days(self, settings, cluster):
         delattr(settings, "INITIAL_SYNC_SINCE")
         delattr(settings, "INITIAL_SYNC_DAYS")
@@ -563,10 +562,10 @@ class TestConnector:
         assert connector.until is None
 
     def test_since_until(self, cluster):
-        since = datetime(2025, 10, 1, 22, 1, 45, tzinfo=pytz.UTC)
-        until = datetime(2025, 10, 31, 22, 1, 45, tzinfo=pytz.UTC)
-        since = datetime.combine(since, datetime.min.time()).astimezone(pytz.UTC)
-        until = datetime.combine(until, datetime.max.time()).astimezone(pytz.UTC)
+        since = datetime(2025, 10, 1, 22, 1, 45, tzinfo=timezone.utc)
+        until = datetime(2025, 10, 31, 22, 1, 45, tzinfo=timezone.utc)
+        since = datetime.combine(since, datetime.min.time()).astimezone(timezone.utc)
+        until = datetime.combine(until, datetime.max.time()).astimezone(timezone.utc)
         connector = ApiConnector(cluster, since=since, until=until)
         assert str(connector.since) == '2025-10-01 00:00:00+00:00'
         assert str(connector.until) == '2025-10-31 23:59:59.999999+00:00'
@@ -814,7 +813,7 @@ class TestConnector:
 
     def test_init_managed_uses_provided_since(self, cluster):
         """In managed mode the connector must use the explicitly provided `since` value."""
-        since = datetime(2025, 5, 1, tzinfo=pytz.UTC)
+        since = datetime(2025, 5, 1, tzinfo=timezone.utc)
         connector = ApiConnector(cluster, since=since, managed=True)
         assert connector.since == since
         assert connector.managed is True
@@ -822,12 +821,12 @@ class TestConnector:
     @pytest.mark.django_db(transaction=True)
     def test_init_uses_last_job_finished_date_from_sync_status(self, cluster):
         """Without an explicit `since`, the connector should fall back to the last sync date."""
-        last_date = datetime(2025, 3, 15, 12, 0, 0, tzinfo=pytz.UTC)
+        last_date = datetime(2025, 3, 15, 12, 0, 0, tzinfo=timezone.utc)
         ClusterSyncStatus.objects.create(cluster=cluster, last_job_finished_date=last_date)
         connector = ApiConnector(cluster)
         assert connector.since == last_date
 
-    @time_machine.travel(datetime(2025, 10, 21, 22, 1, 45, tzinfo=pytz.UTC))
+    @time_machine.travel(datetime(2025, 10, 21, 22, 1, 45, tzinfo=timezone.utc))
     def test_since_invalid_iso_date_falls_back_to_timedelta(self, settings, cluster):
         """An unparseable INITIAL_SYNC_SINCE must fall back to now() – INITIAL_SYNC_DAYS."""
         settings.INITIAL_SYNC_SINCE = 'not-a-valid-date'
