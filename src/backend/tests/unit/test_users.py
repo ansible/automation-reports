@@ -51,7 +51,7 @@ class TestCreateAAPUser:
         assert user.email == 'aap@example.com'
 
     def test_create_aap_user_not_auditor_by_default(self):
-        schema = UserSchema(username='plain', email='p@e.com')
+        schema = UserSchema(username='plain', email='p@e.com', first_name='', last_name='')
         user = User.create_aap_user(schema)
         assert user.is_platform_auditor is False
 
@@ -59,6 +59,8 @@ class TestCreateAAPUser:
         schema = UserSchema(
             username='auditor',
             email='a@e.com',
+            first_name='',
+            last_name='',
             is_platform_auditor=True,
         )
         user = User.create_aap_user(schema)
@@ -68,6 +70,8 @@ class TestCreateAAPUser:
         schema = UserSchema(
             username='sysaudit',
             email='s@e.com',
+            first_name='',
+            last_name='',
             is_system_auditor=True,
         )
         user = User.create_aap_user(schema)
@@ -78,13 +82,13 @@ class TestCreateAAPUser:
 class TestCreateOrUpdateAAPUser:
 
     def test_creates_when_user_does_not_exist(self):
-        schema = UserSchema(username='newuser', email='new@e.com')
+        schema = UserSchema(username='newuser', email='new@e.com', first_name='', last_name='')
         user = User.create_or_update_aap_user(schema)
         assert User.objects.filter(username='newuser').count() == 1
         assert user.email == 'new@e.com'
 
     def test_updates_existing_user_fields(self):
-        User.objects.create_user(username='existing', email='old@e.com')
+        User.objects.create_user(username='existing', email='old@e.com', first_name='', last_name='')
         schema = UserSchema(
             username='existing',
             email='new@e.com',
@@ -98,7 +102,7 @@ class TestCreateOrUpdateAAPUser:
         assert user.is_superuser is True
 
     def test_does_not_create_duplicate_on_update(self):
-        User.objects.create_user(username='dup', email='d@e.com')
-        schema = UserSchema(username='dup', email='d2@e.com')
+        User.objects.create_user(username='dup', email='d@e.com', first_name='', last_name='')
+        schema = UserSchema(username='dup', email='d2@e.com', first_name='', last_name='')
         User.create_or_update_aap_user(schema)
         assert User.objects.filter(username='dup').count() == 1
