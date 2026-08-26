@@ -4,6 +4,7 @@ import { useAuthStore } from '@app/Store/authStore';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { AppSettings } from '@app/Types/AuthTypes';
+import { generatePKCE, storePKCEVerifier, getPKCEVerifier, clearPKCEVerifier } from '@app/utils/pkce';
 import logo from '../../assets/images/logo.svg';
 
 
@@ -23,13 +24,18 @@ export const Login: React.FunctionComponent = () => {
 
   const [errorMessage, seterrorMessage] = useState('false');
 
-  const loginWithAAP = () => {
+  const loginWithAAP = async () => {
     const redirectUri = encodeURIComponent(window.location.origin + '/auth-callback');
-    window.location.href = `${appSettings?.url}?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}&redirect_uri=${redirectUri}`;
+    const pkce = await generatePKCE();
+    storePKCEVerifier(pkce.verifier);
+    const pkceParams = `&code_challenge=${pkce.challenge}&code_challenge_method=S256`;
+    window.location.href = `${appSettings?.url}?client_id=${appSettings?.client_id}&response_type=${appSettings?.response_type}&approval_prompt=${appSettings?.approval_prompt}&redirect_uri=${redirectUri}${pkceParams}`;
   };
 
   const handleLogin = (code: string) => {
-    authorizeUser(code).then(() => {
+    const codeVerifier = getPKCEVerifier();
+    authorizeUser(code, codeVerifier).then(() => {
+      clearPKCEVerifier();
       navigate('/');
     }).catch((e) => {
       seterrorMessage((

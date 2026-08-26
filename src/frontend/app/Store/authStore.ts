@@ -13,7 +13,7 @@ type AuthStoreState = {
 
 type AuthStoreActions = {
   fetchAppSettings: () => Promise<void>;
-  authorizeUser: (authCode: string) => Promise<void>;
+  authorizeUser: (authCode: string, codeVerifier?: string | null) => Promise<void>;
   refreshAccessToken: () => Promise<void>;
   getMyUserData: () => Promise<void>;
   logout: () => Promise<void>;
@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthStoreState & AuthStoreActions & AuthStore
       return Promise.reject();
     }
   },
-  authorizeUser: async (authCode: string) => {
+  authorizeUser: async (authCode: string, codeVerifier?: string | null) => {
     if (!authCode) {
       // eslint-disable-next-line no-undef
       console.error('Authorization code is required');
@@ -51,7 +51,7 @@ export const useAuthStore = create<AuthStoreState & AuthStoreActions & AuthStore
     const callback_uri = window.location.origin + '/auth-callback';
     set({ loading: 'pending', error: false });
     try {
-      await RestService.authorizeUser(authCode, callback_uri);
+      await RestService.authorizeUser(authCode, callback_uri, codeVerifier);
       set({
         loading: 'succeeded'
       });

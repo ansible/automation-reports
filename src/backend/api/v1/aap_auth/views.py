@@ -80,6 +80,7 @@ class AAPTokenView(BaseAAPView):
     def post(self, request: Request) -> Response:
         auth_code = request.data.get("auth_code", None)
         redirect_uri = request.data.get("redirect_uri", None)
+        code_verifier = request.data.get("code_verifier", None)
 
         if auth_code is None:
             raise AuthenticationFailed("Invalid authorization data for AAP token. 'auth_code' is missing.")
@@ -89,7 +90,7 @@ class AAPTokenView(BaseAAPView):
 
         aap_auth = AAPAuth()
         try:
-            tokens = aap_auth.authorize(auth_code, redirect_uri)
+            tokens = aap_auth.authorize(auth_code, redirect_uri, code_verifier)
         except Exception as e:
             return Response(data={"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         csrf.get_token(request)
