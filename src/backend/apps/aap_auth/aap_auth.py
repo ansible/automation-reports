@@ -144,9 +144,9 @@ class AAPAuth:
             raise AuthenticationFailed("Obtaining of AAP token failed. Invalid response from AAP.")
         return AAPToken(**token_result)
 
-    def authorize(self, code: str, redirect_uri: str) -> dict[str, JwtUserToken | JwtUserRefreshToken]:
+    def authorize(self, code: str, redirect_uri: str, code_verifier: str = None) -> dict[str, JwtUserToken | JwtUserRefreshToken]:
         logger.info("Authorizing user")
-        logger.debug(f"Authorization code: {code}, redirect_uri: {redirect_uri}")
+        logger.debug(f"Authorization code: {code}, redirect_uri: {redirect_uri}, code_verifier: {'provided' if code_verifier else 'not provided'}")
         token_params = {
             "client_id": self.client_id,
             "client_secret": self.client_secret,
@@ -154,6 +154,8 @@ class AAPAuth:
             "grant_type": "authorization_code",
             "code": code,
         }
+        if code_verifier:
+            token_params["code_verifier"] = code_verifier
         aap_token = self._aap_authorize(token_params)
         user = self.get_user_data(aap_token)
         jwt_token = JWTToken()

@@ -72,6 +72,31 @@ class TestAAPAuth:
         with pytest.raises(ValueError, match="Failed to fetch user data"):
             auth.authorize(code="test_code", redirect_uri="http://test.com/callback")
 
+    @patch("backend.apps.aap_auth.aap_auth.JWTToken")
+    @patch("backend.apps.aap_auth.aap_auth.AAPAuth._aap_authorize")
+    @patch("backend.apps.aap_auth.aap_auth.AAPAuth.get_user_data")
+    def test_authorize_with_pkce_code_verifier(self, mock_get_user_data, mock_aap_authorize, mock_jwt_token, mock_ping):
+        mock_aap_token = MagicMock()
+        mock_aap_authorize.return_value = mock_aap_token
+        mock_user = MagicMock()
+        mock_get_user_data.return_value = mock_user
+        mock_jwt_instance = MagicMock()
+        mock_jwt_token.return_value = mock_jwt_instance
+        mock_jwt_instance.acquire_token_pair.return_value = {"access_token": "test_access", "refresh_token": "test_refresh"}
+
+        auth = AAPAuth()
+        code_verifier = "test_code_verifier_value"
+        result = auth.authorize(code="test_code", redirect_uri="http://test.com/callback", code_verifier=code_verifier)
+
+        assert result["access_token"] == "test_access"
+        assert result["refresh_token"] == "test_refresh"
+
+        # Verify that code_verifier was included in the token params
+        call_args = mock_aap_authorize.call_args[0][0]
+        assert call_args["code_verifier"] == code_verifier
+        assert call_args["code"] == "test_code"
+        assert call_args["redirect_uri"] == "http://test.com/callback"
+
     @patch("backend.apps.aap_auth.aap_auth.JwtUserToken.get_user_token")
     @patch("backend.apps.aap_auth.aap_auth.requests.post")
     def test_logout_revokes_token(self, mock_post, mock_get_user_token, mock_ping):

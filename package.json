@@ -14,6 +14,7 @@
     "start:dev": "vite",
     "test": "playwright test",
     "test:retry": "playwright test || playwright test --last-failed",
+    "vitest": "vitest",
     "eslint": "eslint --ext .tsx,.js ./src/frontend",
     "lint": "npm run eslint",
     "format": "prettier --check --write ./src/frontend/**/*.{tsx,ts}",
@@ -61,7 +62,10 @@
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
     "url-loader": "^4.1.1",
-    "vite": "^8.0.13"
+    "vite": "^6.0.0",
+    "vitest": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.8",
+    "@vitejs/plugin-react": "^4.0.0"
   },
   "dependencies": {
     "@patternfly/react-charts": "^8.4.1",

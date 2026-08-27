@@ -58,11 +58,24 @@ jobs:
           DATABASE_KEY = "$(uuidgen)"
           EOF
 
-      - name: Run tests
+      - name: Run backend tests
         run: |
           cd src/backend
           export PYTHONPATH=$PWD/..
           pytest --cov=backend --cov-report=term-missing:skip-covered --cov-report=xml:coverage-backend.xml
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.21.1
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend tests
+        run: npm run vitest -- --coverage
 
       - name: SonarCube Static Scans (on push)
         uses: SonarSource/sonarqube-scan-action@v5
@@ -72,12 +85,15 @@ jobs:
         with:
           args: >
             -Dsonar.python.coverage.reportPaths=src/backend/coverage-backend.xml
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 
-      - name: Upload Code Coverage Report from Unit Tests
+      - name: Upload Code Coverage Reports
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: src/backend/coverage-backend.xml
+          name: coverage-reports
+          path: |
+            src/backend/coverage-backend.xml
+            coverage/
 
       - name: Save off PR Number
         run: echo "PR ${{ github.event.number }}" > pr_number.txt

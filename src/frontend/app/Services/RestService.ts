@@ -36,12 +36,16 @@ const fetchAapSettings = async () => {
   return api.get('/api/v1/aap_auth/settings/');
 };
 
-const authorizeUser = async (authCode: string, callback_uri: string) => {
+const authorizeUser = async (authCode: string, callback_uri: string, codeVerifier?: string | null) => {
+  const payload: Record<string, string> = {
+    auth_code: authCode,
+    redirect_uri: callback_uri
+  };
+  if (codeVerifier) {
+    payload.code_verifier = codeVerifier;
+  }
   return api
-    .post('/api/v1/aap_auth/token/', {
-      auth_code: authCode,
-      redirect_uri: callback_uri
-    })
+    .post('/api/v1/aap_auth/token/', payload)
     .then((response) => response.data);
 };
 
