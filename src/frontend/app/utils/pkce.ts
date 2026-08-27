@@ -11,10 +11,10 @@ function generateCodeVerifier(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
   // Base64-url encode without padding
-  return btoa(String.fromCharCode(...array))
+  return btoa(String.fromCodePoint(...array))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .replace(/={1,2}$/, '');
 }
 
 /**
@@ -26,10 +26,10 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
   const data = encoder.encode(verifier);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   // Convert ArrayBuffer to base64-url
-  return btoa(String.fromCharCode(...new Uint8Array(hashBuffer)))
+  return btoa(String.fromCodePoint(...new Uint8Array(hashBuffer)))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .replace(/={1,2}$/, '');
 }
 
 /**
