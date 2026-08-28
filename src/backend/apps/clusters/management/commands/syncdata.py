@@ -25,6 +25,12 @@ class Command(BaseCommand):
                             action='store',
                             help='End date for sync (e.g. --until=2025-12-21)')
 
+        parser.add_argument('--cluster',
+                            dest='cluster',
+                            action='store',
+                            help='Cluster address or numeric ID to sync (e.g. --cluster=aap26.example.com or --cluster=2). '
+                                 'Without this flag the first cluster in the database is used.')
+
     def handle(self, *args, **options):
 
         if not settings.SHOW_URLLIB3_INSECURE_REQUEST_WARNING:
@@ -61,14 +67,26 @@ class Command(BaseCommand):
         except TypeError as e:
             self.stdout.write(self.style.ERROR('Error parsing arguments: {}'.format(e)))
 
+        cluster_identifier = options.get('cluster') or None
         try:
-            cluster = Cluster.objects.first()
+            if cluster_identifier is not None:
+                try:
+                    cluster = Cluster.objects.get(pk=int(cluster_identifier))
+                except (ValueError, TypeError):
+                    cluster = Cluster.objects.filter(address=cluster_identifier).first()
+                    if cluster is None:
+                        self.stdout.write(self.style.ERROR(f'Cluster not found: {cluster_identifier}'))
+                        sys.exit(1)
+                except Cluster.DoesNotExist:
+                    self.stdout.write(self.style.ERROR(f'Cluster not found with id: {cluster_identifier}'))
+                    sys.exit(1)
+            else:
+                cluster = Cluster.objects.first()
+                if cluster is None:
+                    self.stdout.write(self.style.ERROR('Cluster instance does not exist.'))
+                    sys.exit(1)
         except django.db.ProgrammingError:
             self.stdout.write(self.style.ERROR('Cluster table does not exist.'))
-            sys.exit(1)
-
-        if cluster is None:
-            self.stdout.write(self.style.ERROR('Cluster instance does not exist.'))
             sys.exit(1)
         name = "Sync historical data"
         if since is not None:
