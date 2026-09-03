@@ -1,0 +1,30 @@
+{% if ansible_all_ipv6_addresses | length > 0 %}
+listen_addresses = '*'
+{% else %}
+listen_addresses = '0.0.0.0'
+{% endif %}
+port = {{ postgresql_port }}
+
+password_encryption = '{{ postgresql_password_encryption }}'
+
+{% if not postgresql_disable_tls | bool %}
+ssl = on
+ssl_cert_file = '/var/lib/pgsql/server.crt'
+ssl_key_file = '/var/lib/pgsql/server.key'
+ssl_ca_file = '/etc/pki/tls/certs/ca-bundle.crt'
+{% endif %}
+
+max_connections = ${POSTGRESQL_MAX_CONNECTIONS}
+shared_buffers = ${POSTGRESQL_SHARED_BUFFERS}
+effective_cache_size = ${POSTGRESQL_EFFECTIVE_CACHE_SIZE}
+
+{% if postgresql_extra_settings | length > 0 %}
+# User defined Extra Settings - postgresql_extra_settings
+{% for item in postgresql_extra_settings %}
+{% if item.value is string %}
+{{ item.setting }} = '{{ item.value }}'
+{% else %}
+{{ item.setting }} = {{ item.value }}
+{% endif %}
+{% endfor %}
+{% endif %}
