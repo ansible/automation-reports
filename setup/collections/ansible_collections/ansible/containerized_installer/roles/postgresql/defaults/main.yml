@@ -13,6 +13,12 @@ postgresql_conf_dir: '{{ ansible_user_dir }}/aap/postgresql'
 postgresql_disable_tls: false
 postgresql_password_encryption: scram-sha-256
 
+# Extra postgresql.conf settings. The default excludes 3DES for TLS 1.2 and
+# older connections to mitigate SWEET32/CVE-2016-2183.
+postgresql_extra_settings:
+  - setting: ssl_ciphers
+    value: 'HIGH:MEDIUM:!3DES:!aNULL'
+
 ### for non-containerized install
 postgresql_default_options:
   PGOPTIONS: '-c password_encryption=scram-sha-256'

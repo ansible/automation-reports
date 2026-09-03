@@ -58,6 +58,11 @@ redis_mode=standalone
 
 postgresql_admin_username=postgres
 postgresql_admin_password=TODO
+# Extra postgresql.conf settings. The default excludes 3DES for TLS 1.2 and
+# older connections to mitigate SWEET32/CVE-2016-2183.
+# postgresql_extra_settings:
+#   - setting: ssl_ciphers
+#     value: 'HIGH:MEDIUM:!3DES:!aNULL'
 # registry_username=
 # registry_password=
 

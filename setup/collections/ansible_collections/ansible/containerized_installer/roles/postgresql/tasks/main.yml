@@ -10,6 +10,9 @@
   vars:
     __volume_state: present
 
+- name: Configure postgresql
+  ansible.builtin.include_tasks: config.yml
+
 - name: Configure TLS
   ansible.builtin.include_tasks: tls.yml
   when: not postgresql_disable_tls | bool
@@ -19,9 +22,6 @@
 
 - name: Configure systemd
   ansible.builtin.include_tasks: systemd.yml
-
-- name: Configure postgresql
-  ansible.builtin.include_tasks: config.yml
 
 - name: Add firewalld rules
   ansible.builtin.include_tasks: firewalld.yml
