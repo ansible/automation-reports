@@ -794,9 +794,9 @@ pbr==7.0.3 \
     --hash=sha256:b46004ec30a5324672683ec848aed9e8fc500b0d261d40a3229c2d2bbfcedc29 \
     --hash=sha256:ff223894eb1cd271a98076b13d3badff3bb36c424074d26334cd25aebeecea6b
     # via lockfile
-pbs-installer==2026.8.14 \
-    --hash=sha256:7f177e1ff0c3b09a0d57c6ac2d3de4f0cd504af732e7607f334a04e5a9e01473 \
-    --hash=sha256:e611fe862a3e3b72e6bf17f92d4bb78868e2e203fa7d7579b8d4bfc8d89be7a8
+pbs-installer==2026.8.25 \
+    --hash=sha256:2ef248b8689e676b5f52bda96e0b91f29db1f351ac793d9d610cfde030ea165b \
+    --hash=sha256:55716bb41a8f86afee5812485ae71e96dcd3499aad6cb7fa75d7825993e15728
     # via
     #   pbs-installer
     #   poetry
