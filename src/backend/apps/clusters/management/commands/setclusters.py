@@ -64,6 +64,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--keep", action="store_true", help="Keep (do not remove) the clusters.yaml after processing")
+        parser.add_argument("--no-prune", action="store_true", dest="no_prune",
+                            help="Do not delete clusters that are missing from the YAML file. "
+                                 "Without this flag, any cluster whose address is not in the YAML is deleted along with its imported jobs.")
         parser.add_argument("path", nargs='+', type=str, help="Path to the clusters.yaml file")
 
     def handle(self, *args, **options):
@@ -177,8 +180,16 @@ class Command(BaseCommand):
                     _db_schedule.delete()
 
             if not error:
+                no_prune = options.get('no_prune', False)
                 for key, value in db_clusters.items():
-                    value.delete()
+                    if no_prune:
+                        self.stdout.write(self.style.WARNING(
+                            f'Cluster {key} is not in the YAML file but retained (--no-prune). '
+                            f'Its sync schedules remain unchanged.'
+                        ))
+                    else:
+                        self.stdout.write(self.style.WARNING(f'Deleting cluster not in YAML: {key}'))
+                        value.delete()
         if error:
             sys.exit(1)
         self.stdout.write(self.style.SUCCESS('Successfully set up AAP clusters'))
