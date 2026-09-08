@@ -506,6 +506,66 @@ class JobTemplate(NameDescriptionModel):
     def __str__(self):
         return f"{self.organization}:{self.name}"
 
+    @classmethod
+    def create_or_update(cls, cluster: Cluster, external_id: int, **kwargs):
+        """Override BaseModel to include organization in all lookups.
+
+        JobTemplate unique constraints are (cluster, external_id, organization)
+        and (cluster, name, organization), so organization must be part of
+        every lookup to avoid matching templates from a different org.
+        """
+        from django.db import IntegrityError
+
+        name = kwargs.pop('name', None)
+        organization = kwargs.pop('organization', None)
+
+        if external_id > 0:
+            try:
+                model = cls.objects.get(
+                    cluster=cluster, external_id=external_id,
+                    organization=organization,
+                )
+                for key, value in kwargs.items():
+                    setattr(model, key, value)
+                model.name = name
+                model.save()
+                return model
+            except cls.DoesNotExist:
+                try:
+                    model, created = cls.objects.update_or_create(
+                        name=name, cluster=cluster, organization=organization,
+                        defaults={**kwargs, 'external_id': external_id},
+                    )
+                    return model
+                except IntegrityError:
+                    queryset = cls.objects.filter(
+                        cluster=cluster, external_id=external_id,
+                        organization=organization,
+                    )
+                    queryset.update(name=name, **kwargs)
+                    return queryset.get()
+        else:
+            max_retries = 5
+            for retry in range(max_retries):
+                _external_id = cls._compute_negative_external_id()
+                try:
+                    model, created = cls.objects.get_or_create(
+                        name=name, cluster=cluster, organization=organization,
+                        defaults={**kwargs, 'external_id': _external_id},
+                    )
+                    return model
+                except IntegrityError as e:
+                    try:
+                        queryset = cls.objects.filter(
+                            name=name, cluster=cluster,
+                            organization=organization,
+                        )
+                        queryset.update(**kwargs)
+                        return queryset.get()
+                    except cls.DoesNotExist:
+                        if retry == max_retries - 1:
+                            raise e
+
 
 class AAPUser(BaseModel):
     name = models.CharField(max_length=255)
