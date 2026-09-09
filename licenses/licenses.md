@@ -9,13 +9,13 @@
 | attrs                     | 26.1.0      | MIT                                                                                                                                            |
 | brotli                    | 1.2.0       | MIT                                                                                                                                            |
 | certifi                   | 2026.7.22   | Mozilla Public License 2.0 (MPL 2.0)                                                                                                           |
-| cffi                      | 2.1.0       | MIT-0                                                                                                                                          |
+| cffi                      | 2.1.1       | MIT-0                                                                                                                                          |
 | channels                  | 4.3.2       | BSD License                                                                                                                                    |
 | channels_redis            | 4.3.0       | BSD                                                                                                                                            |
-| charset-normalizer        | 3.4.9       | MIT                                                                                                                                            |
-| click                     | 8.4.2       | BSD-3-Clause                                                                                                                                   |
-| cryptography              | 49.0.0      | Apache-2.0 OR BSD-3-Clause                                                                                                                     |
-| cssselect2                | 0.9.0       | BSD License                                                                                                                                    |
+| charset-normalizer        | 3.5.1       | MIT                                                                                                                                            |
+| click                     | 8.5.0       | BSD-3-Clause                                                                                                                                   |
+| cryptography              | 50.0.1      | Apache-2.0 OR BSD-3-Clause                                                                                                                     |
+| cssselect2                | 0.10.1      | BSD License                                                                                                                                    |
 | dispatcherd               | 2026.1.27   | Apache-2.0                                                                                                                                     |
 | django-ansible-base       | 2025.10.20  | Apache Software License                                                                                                                        |
 | django-cors-headers       | 4.9.0       | MIT                                                                                                                                            |
@@ -28,16 +28,16 @@
 | djangorestframework       | 3.16.1      | BSD License                                                                                                                                    |
 | drf-spectacular           | 0.29.0      | BSD-3-Clause                                                                                                                                   |
 | dumb-init                 | 1.2.5.post1 | UNKNOWN                                                                                                                                        |
-| dynaconf                  | 3.3.3       | MIT License                                                                                                                                    |
-| fonttools                 | 4.63.0      | MIT                                                                                                                                            |
+| dynaconf                  | 3.3.5       | MIT License                                                                                                                                    |
+| fonttools                 | 4.64.0      | MIT                                                                                                                                            |
 | h11                       | 0.16.0      | MIT License                                                                                                                                    |
-| idna                      | 3.18        | BSD-3-Clause                                                                                                                                   |
+| idna                      | 3.19        | BSD-3-Clause                                                                                                                                   |
 | inflection                | 0.5.1       | MIT License                                                                                                                                    |
 | jsonschema                | 4.26.0      | MIT                                                                                                                                            |
 | jsonschema-specifications | 2025.9.1    | MIT                                                                                                                                            |
 | lockfile                  | 0.12.2      | MIT License                                                                                                                                    |
-| msgpack                   | 1.2.1       | Apache-2.0                                                                                                                                     |
-| packaging                 | 26.2        | Apache-2.0 OR BSD-2-Clause                                                                                                                     |
+| msgpack                   | 1.2.2       | Apache-2.0                                                                                                                                     |
+| packaging                 | 26.3        | Apache-2.0 OR BSD-2-Clause                                                                                                                     |
 | pexpect                   | 4.9.0       | ISC License (ISCL)                                                                                                                             |
 | pillow                    | 12.3.0      | MIT-CMU                                                                                                                                        |
 | prometheus_client         | 0.23.1      | Apache-2.0 AND BSD-2-Clause                                                                                                                    |
@@ -47,7 +47,7 @@
 | pydantic                  | 2.12.4      | MIT                                                                                                                                            |
 | pydantic_core             | 2.41.5      | MIT                                                                                                                                            |
 | pydyf                     | 0.12.1      | BSD License                                                                                                                                    |
-| pyphen                    | 0.17.2      | GNU General Public License v2 or later (GPLv2+); GNU Lesser General Public License v2 or later (LGPLv2+); Mozilla Public License 1.1 (MPL 1.1) |
+| pyphen                    | 0.18.1      | GNU General Public License v2 or later (GPLv2+); GNU Lesser General Public License v2 or later (LGPLv2+); Mozilla Public License 1.1 (MPL 1.1) |
 | python-daemon             | 3.1.2       | Apache Software License                                                                                                                        |
 | python-dateutil           | 2.9.0.post0 | Apache Software License; BSD License                                                                                                           |
 | pytz                      | 2025.2      | MIT License                                                                                                                                    |
@@ -57,17 +57,17 @@
 | rpds-py                   | 2026.6.3    | MIT                                                                                                                                            |
 | six                       | 1.17.0      | MIT License                                                                                                                                    |
 | split-settings            | 1.0.0       | BSD License                                                                                                                                    |
-| sqlparse                  | 0.5.5       | BSD License                                                                                                                                    |
+| sqlparse                  | 0.6.0       | BSD License                                                                                                                                    |
 | supervisor                | 4.3.0       | BSD-derived (http://www.repoze.org/LICENSE.txt)                                                                                                |
 | tinycss2                  | 1.5.1       | BSD License                                                                                                                                    |
 | tinyhtml5                 | 2.1.0       | MIT License                                                                                                                                    |
-| typing-inspection         | 0.4.2       | MIT                                                                                                                                            |
+| typing-inspection         | 0.4.4       | MIT                                                                                                                                            |
 | typing_extensions         | 4.16.0      | PSF-2.0                                                                                                                                        |
 | tzdata                    | 2025.3      | Apache-2.0                                                                                                                                     |
 | uWSGI                     | 2.0.31      | GNU General Public License v2 or later (GPLv2+)                                                                                                |
 | uritemplate               | 4.2.0       | BSD 3-Clause OR Apache-2.0                                                                                                                     |
 | urllib3                   | 2.7.0       | MIT                                                                                                                                            |
 | uvicorn                   | 0.38.0      | BSD-3-Clause                                                                                                                                   |
-| weasyprint                | 69.0        | BSD License                                                                                                                                    |
-| webencodings              | 0.5.1       | BSD License                                                                                                                                    |
+| weasyprint                | 70.0        | BSD License                                                                                                                                    |
+| webencodings              | 0.6.1       | BSD License                                                                                                                                    |
 | zopfli                    | 0.4.3       | Apache Software License                                                                                                                        |
