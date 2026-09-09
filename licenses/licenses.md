@@ -24,7 +24,7 @@
 | django-generate-series    | 0.5.0       | Apache Software License                                                                                                                        |
 | django-guid               | 3.5.2       | BSD License; MIT License                                                                                                                       |
 | django-solo               | 2.4.0       | Creative Commons Attribution 3.0 Unported                                                                                                      |
-| django-weasyprint         | 2.4.0       | Apache Software License                                                                                                                        |
+| django-weasyprint         | 2.5.0       | Apache Software License                                                                                                                        |
 | djangorestframework       | 3.16.1      | BSD License                                                                                                                                    |
 | drf-spectacular           | 0.29.0      | BSD-3-Clause                                                                                                                                   |
 | dumb-init                 | 1.2.5.post1 | UNKNOWN                                                                                                                                        |
