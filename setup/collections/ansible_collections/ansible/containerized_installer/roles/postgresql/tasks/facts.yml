@@ -14,6 +14,7 @@
       - 'postgresql_admin_password,type=env,target=POSTGRESQL_ADMIN_PASSWORD'
     _volumes:
       - 'postgresql:/var/lib/pgsql/data:Z'
+      - '{{ postgresql_conf_dir }}/postgresql.conf:/usr/share/container-scripts/postgresql/openshift-custom-postgresql.conf.template:ro,z'
 
 - name: Add tls to volumes
   ansible.builtin.set_fact:

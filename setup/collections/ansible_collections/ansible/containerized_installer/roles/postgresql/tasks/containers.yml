@@ -12,6 +12,7 @@
     secrets: '{{ _secrets }}'
     volume: '{{ _volumes }}'
     env:
+      PGPORT: '{{ postgresql_port }}'
       POSTGRESQL_EFFECTIVE_CACHE_SIZE: '{{ postgresql_effective_cache_size }}'
       POSTGRESQL_MAX_CONNECTIONS: '{{ postgresql_max_connections }}'
       POSTGRESQL_SHARED_BUFFERS: '{{ postgresql_shared_buffers }}'

@@ -44,9 +44,11 @@ jobs:
         id: extract
         # For release-x.y branches this strips the prefix to get "x.y".
         # For other branches (e.g. workflow_dispatch on a feature branch)
-        # the full branch name is used as-is, which is fine for testing.
+        # the full branch name is slugified for use in filenames.
         run: |
           VERSION="${GITHUB_REF_NAME#release-}"
+          # Create filesystem-safe slug: lowercase, preserve dots, replace other non-alphanumeric with -, trim dashes
+          VERSION=$(echo "$VERSION" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9.' '-' | sed 's/^-//;s/-$//')
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Extracted version: $VERSION (from branch: $GITHUB_REF_NAME)"
 

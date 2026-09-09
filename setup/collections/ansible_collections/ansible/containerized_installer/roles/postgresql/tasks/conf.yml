@@ -23,7 +23,7 @@
       community.postgresql.postgresql_user:
         name: "{{ dashboard_pg_username }}"
         password: "{{ dashboard_pg_password }}"
-        port: "{{ pg_port }}"
+        port: "{{ postgresql_port }}"
         state: present
         login_user: postgres
       become: true
@@ -37,7 +37,7 @@
       postgresql_db:
         name: "{{ dashboard_pg_database }}"
         owner: "{{ dashboard_pg_username }}"
-        port: "{{ pg_port }}"
+        port: "{{ postgresql_port }}"
         state: present
         login_user: postgres
       become: true
