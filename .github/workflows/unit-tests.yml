@@ -35,14 +35,22 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Show python version
         run: |
           python3 --version
           pip --version
 
-      - name: Install dependencies
+      - name: Create Python venv and install dependencies
         run: |
-          pip install -r requirements-pinned.txt
+          python3.12 -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements-build.txt
           pip install -r requirements_dev.txt
 
       - name: Setup local_settings.py file
@@ -60,6 +68,7 @@ jobs:
 
       - name: Run backend tests
         run: |
+          source .venv/bin/activate
           cd src/backend
           export PYTHONPATH=$PWD/..
           pytest --cov=backend --cov-report=term-missing:skip-covered --cov-report=xml:coverage-backend.xml
