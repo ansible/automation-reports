@@ -3,6 +3,7 @@ import base64
 import hashlib
 
 from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives.ciphers import algorithms
 from django.conf import settings
 from django.utils.encoding import smart_bytes, smart_str
 
@@ -18,8 +19,11 @@ class Fernet256(Fernet):
         if len(key) != 64:
             raise ValueError("Fernet key must be 64 url-safe base64-encoded bytes.")
 
+        # Mirror Fernet.__init__() but with 256-bit keys instead of 128-bit
         self._signing_key = key[:32]
         self._encryption_key = key[32:]
+        # Required since cryptography 50.0+: parent's _decrypt_data() uses self._aes
+        self._aes = algorithms.AES(self._encryption_key)
 
 
 def get_encryption_key() -> bytes:
