@@ -1,7 +1,7 @@
 | Name                      | Version     | License                                                                                                                                        |
 |---------------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------|
 | Django                    | 5.2.17      | BSD-3-Clause                                                                                                                                   |
-| PyJWT                     | 2.13.0      | MIT                                                                                                                                            |
+| PyJWT                     | 2.15.1      | MIT                                                                                                                                            |
 | PyYAML                    | 6.0.3       | MIT License                                                                                                                                    |
 | annotated-types           | 0.8.0       | MIT                                                                                                                                            |
 | ansible-runner            | 2.4.2       | Apache Software License                                                                                                                        |
@@ -12,9 +12,9 @@
 | cffi                      | 2.1.1       | MIT-0                                                                                                                                          |
 | channels                  | 4.3.2       | BSD License                                                                                                                                    |
 | channels_redis            | 4.3.0       | BSD                                                                                                                                            |
-| charset-normalizer        | 3.5.1       | MIT                                                                                                                                            |
+| charset-normalizer        | 3.5.2       | MIT                                                                                                                                            |
 | click                     | 8.5.0       | BSD-3-Clause                                                                                                                                   |
-| cryptography              | 50.0.1      | Apache-2.0 OR BSD-3-Clause                                                                                                                     |
+| cryptography              | 50.0.2      | Apache-2.0 OR BSD-3-Clause                                                                                                                     |
 | cssselect2                | 0.10.1      | BSD License                                                                                                                                    |
 | dispatcherd               | 2026.1.27   | Apache-2.0                                                                                                                                     |
 | django-ansible-base       | 2025.10.20  | Apache Software License                                                                                                                        |
@@ -29,14 +29,14 @@
 | drf-spectacular           | 0.29.0      | BSD-3-Clause                                                                                                                                   |
 | dumb-init                 | 1.2.5.post1 | UNKNOWN                                                                                                                                        |
 | dynaconf                  | 3.3.5       | MIT License                                                                                                                                    |
-| fonttools                 | 4.64.0      | MIT                                                                                                                                            |
+| fonttools                 | 4.66.1      | MIT                                                                                                                                            |
 | h11                       | 0.16.0      | MIT License                                                                                                                                    |
-| idna                      | 3.19        | BSD-3-Clause                                                                                                                                   |
+| idna                      | 3.20        | BSD-3-Clause                                                                                                                                   |
 | inflection                | 0.5.1       | MIT License                                                                                                                                    |
 | jsonschema                | 4.26.0      | MIT                                                                                                                                            |
 | jsonschema-specifications | 2025.9.1    | MIT                                                                                                                                            |
 | lockfile                  | 0.12.2      | MIT License                                                                                                                                    |
-| msgpack                   | 1.2.2       | Apache-2.0                                                                                                                                     |
+| msgpack                   | 1.2.3       | Apache-2.0                                                                                                                                     |
 | packaging                 | 26.3        | Apache-2.0 OR BSD-2-Clause                                                                                                                     |
 | pexpect                   | 4.9.0       | ISC License (ISCL)                                                                                                                             |
 | pillow                    | 12.3.0      | MIT-CMU                                                                                                                                        |
@@ -50,11 +50,11 @@
 | pyphen                    | 0.18.1      | GNU General Public License v2 or later (GPLv2+); GNU Lesser General Public License v2 or later (LGPLv2+); Mozilla Public License 1.1 (MPL 1.1) |
 | python-daemon             | 3.1.2       | Apache Software License                                                                                                                        |
 | python-dateutil           | 2.9.0.post0 | Apache Software License; BSD License                                                                                                           |
-| pytz                      | 2025.2      | MIT License                                                                                                                                    |
+| pytz                      | 2026.5      | MIT License                                                                                                                                    |
 | redis                     | 7.0.1       | MIT                                                                                                                                            |
 | referencing               | 0.37.0      | MIT                                                                                                                                            |
 | requests                  | 2.32.5      | Apache Software License                                                                                                                        |
-| rpds-py                   | 2026.6.3    | MIT                                                                                                                                            |
+| rpds-py                   | 2026.9.1    | MIT                                                                                                                                            |
 | six                       | 1.17.0      | MIT License                                                                                                                                    |
 | split-settings            | 1.0.0       | BSD License                                                                                                                                    |
 | sqlparse                  | 0.6.0       | BSD License                                                                                                                                    |

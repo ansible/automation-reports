@@ -30,6 +30,14 @@ sync-requirements:  ## Generate requirements-build.txt from requirements-pinned.
 			echo "Installing pip-tools..."; \
 			pip install pip-tools; \
 		fi && \
+		CURRENT_VERSION=$$(pip-compile --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+'); \
+		LATEST_VERSION=$$(pip index versions pip-tools 2>/dev/null | grep -oP 'LATEST:\s+\K[0-9]+\.[0-9]+\.[0-9]+'); \
+		if [ "$$CURRENT_VERSION" != "$$LATEST_VERSION" ]; then \
+			echo "Error: pip-tools version $$CURRENT_VERSION is outdated"; \
+			echo "Latest available: $$LATEST_VERSION"; \
+			echo "Run: pip install --upgrade pip-tools"; \
+			exit 1; \
+		fi && \
 		./sync-requirements.sh $${EXTRA_DEPS:-}
 # above - we want to split EXTRA_DEPS on spaces, so we use normal shell splitting
 
