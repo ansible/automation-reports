@@ -100,9 +100,9 @@ backports-zstd==1.7.0 \
     --hash=sha256:f8da4758af21788a9a90f56b7f658a35d33034e55d416fd40e8bcfbb347b90c2 \
     --hash=sha256:ff08fbdf4090c8075bcc0f3ffccf3098e4fd6a0d9a4c5c2078398ea5bb2ddd1f
     # via pbs-installer
-build==1.6.0 \
-    --hash=sha256:bd2c8afc603e7a2e0ce70e2ea85f0a6d02043bafbd307f5bada0f98669eca5af \
-    --hash=sha256:f7aaf1ebbb79178a02ba248bb524f2176b256017e17e8e4bd4289c7b38cc2bad
+build==1.6.1 \
+    --hash=sha256:51cc11666391ab6f092070437ac747002ff46f3e4113a3622177ee6b488bfc53 \
+    --hash=sha256:ecd351a4be9d35a9eaaba244a7687143c9c7d4aea6ac964e7e7ddab20cbcf4e7
     # via poetry
 cachecontrol==0.14.3 \
     --hash=sha256:73e7efec4b06b20d9267b441c1f733664f989fb8688391b670ca812d70795d11 \
