@@ -27,7 +27,7 @@ ENV VITE_API_URL=./
 
 # Build frontend and copy to /output (same RUN to preserve in layer)
 # vite.config.ts has root: 'src/frontend', so dist is created at /code/src/frontend/dist
-RUN npm run build --no-fund --ignore-scripts && \
+RUN npm run build --no-fund && \
     cp -r /code/src/frontend/dist /output/dist
 
 # =============================================================================
