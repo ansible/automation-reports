@@ -245,7 +245,15 @@ class TestParser:
     @pytest.mark.parametrize('expected', [
         job_template_expected_data
     ])
-    def test_update_job_template(self, cluster, cluster_sync_data, job_templates, expected):
+    def test_update_job_template(self, cluster, cluster_sync_data, job_templates, organizations, expected):
+        # Parser resolves org from job's summary_fields and includes it in
+        # the template lookup. The fixture template must have the matching
+        # org so the lookup finds it (instead of creating a new template).
+        org_a = Organization.objects.get(cluster=cluster, external_id=2)
+        tmpl_b = JobTemplate.objects.get(cluster=cluster, external_id=2)
+        tmpl_b.organization = org_a
+        tmpl_b.save(update_fields=['organization_id'])
+
         parser = DataParser(cluster_sync_data.id)
         assert JobTemplate.objects.count() == 3
         job_template = parser.job_template

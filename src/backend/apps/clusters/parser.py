@@ -73,6 +73,7 @@ class DataParser:
             external_id=external_job_template.id if external_job_template else -1,
             name=external_job_template.name if external_job_template else self.data.name,
             description=external_job_template.description if external_job_template else self.data.description,
+            organization=self.organization,
         )
         job_count = Job.objects.filter(job_template=job_template).count()
         logger.debug(f"Job count for template: {job_count}")
@@ -234,7 +235,7 @@ class DataParser:
             logger.warning("No data to parse.")
             return
 
-        organization = self.organization
+        organization = self.organization # todo?
         job_template = self.job_template
         launched_by = self.launched_by
         inventory = self.inventory
