@@ -1,2 +1,8 @@
+# cachecontrol 0.14.4 bulids using uv_build, uv_build 0.9.30 has mismatch Cargo.lock vs. Cargo.toml
 cachecontrol==0.14.3
+cachecontrol[filecache]==0.14.3
+# Use older poetry/poetry-core to avoid
+# https://github.com/python-poetry/poetry/issues/11101
+# Building django-guid triggered bug.
+poetry==2.4.3
 pybind11==2.9.2
