@@ -7,7 +7,7 @@
 | ansible-runner            | 2.4.2       | Apache Software License                                                                                                                        |
 | asgiref                   | 3.12.1      | BSD License                                                                                                                                    |
 | attrs                     | 26.1.0      | MIT                                                                                                                                            |
-| brotli                    | 1.2.0       | MIT                                                                                                                                            |
+| brotli                    | 1.2.1       | MIT                                                                                                                                            |
 | certifi                   | 2026.7.22   | Mozilla Public License 2.0 (MPL 2.0)                                                                                                           |
 | cffi                      | 2.1.1       | MIT-0                                                                                                                                          |
 | channels                  | 4.3.2       | BSD License                                                                                                                                    |
