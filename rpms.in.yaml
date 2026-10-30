@@ -9,11 +9,13 @@ packages: [
   python3.12,
   # Build packages (Stage 2 python-builder)
   cargo,
+  cmake,
   gcc,
   gcc-c++,
   libffi-devel,
   libjpeg-turbo-devel,
   libpq-devel,
+  ninja-build,
   openssl-devel,
   python3.12-devel,
   python3.12-pip,

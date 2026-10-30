@@ -43,11 +43,13 @@ ENV PIP_BUILD_OPTS="--no-deps --use-pep517 --disable-pip-version-check --wheel-d
 
 RUN microdnf install --setopt=install_weak_deps=0 --nodocs -y \
       cargo \
+      cmake \
       gcc \
       gcc-c++ \
       libffi-devel \
       libjpeg-turbo-devel \
       libpq-devel \
+      ninja-build \
       openssl-devel \
       python3.12 \
       python3.12-devel \
@@ -79,7 +81,7 @@ FROM registry.redhat.io/ubi9/ubi-minimal:latest
 LABEL description="Red Hat Automation Platform - dashboard backend" \
       com.redhat.component="automation-dashboard" \
       name="ansible-automation-platform/automation-dashboard-rhel9" \
-      version="0.9" \
+      version="0.10" \
       summary="Automation Dashboard Backend Service" \
       io.k8s.description="Backend service for Ansible Automation Platform dashboard" \
       io.k8s.display-name="Automation Dashboard Backend" \
