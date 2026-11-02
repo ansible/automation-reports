@@ -1360,7 +1360,6 @@ tomlkit==0.15.2 \
     # via
     #   hatchling
     #   poetry
-    #   uv-dynamic-versioning
 trove-classifiers==2026.9.21.13 \
     --hash=sha256:0a9ebc8d4e2f3e8a22848c5258033035bec17a3012ac3fea16dbaa764489eb71 \
     --hash=sha256:8b1ff4f9c191b1040b71c37f1e445ab99732911e3cd91de52838453a854d7a17
