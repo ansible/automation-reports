@@ -40,7 +40,8 @@ class Command(BaseCommand):
                 # We get EOFError if "podman run ..." is used without "-it"
                 self.stdout.write(self.style.ERROR('\nERROR: Non-iteractive mode, both "since" and "until" options are mandatory.'))
                 sys.exit(1)
-            if confirm != 'Y':
+            if confirm.lower() != 'y':
+                self.stdout.write(self.style.ERROR('Sync aborted by user.'))
                 sys.exit(1)
 
         since, until = self.parse_range(_since, _until)
