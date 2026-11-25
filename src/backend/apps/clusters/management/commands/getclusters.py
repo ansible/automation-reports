@@ -26,7 +26,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR('Cluster table does not exist.'))
             sys.exit(1)
 
-        cluster_attrs_plaintext = ["protocol", "address", "port", "client_id", "verify_ssl"]
+        cluster_attrs_plaintext = ["id", "protocol", "address", "port", "client_id", "verify_ssl"]
         cluster_attrs_encrypted = ["access_token", "refresh_token", "client_secret"]
         sync_attrs = ["name", "rrule", "enabled"]
         clusters_list = []

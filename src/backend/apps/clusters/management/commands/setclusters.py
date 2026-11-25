@@ -105,7 +105,6 @@ class Command(BaseCommand):
                 cluster["access_token"] = encrypt_value(cluster["access_token"])
                 cluster["refresh_token"] = encrypt_value(cluster["refresh_token"])
                 cluster["client_secret"] = encrypt_value(cluster["client_secret"])
-                self.stdout.write(self.style.NOTICE('Adding cluster: address={}'.format(cluster.get("address"))))
                 try:
                     new_cluster = ClusterSettings(**cluster)
                 except pydantic.ValidationError as ex:
@@ -124,6 +123,7 @@ class Command(BaseCommand):
                     new_cluster.internal_created = db_cluster.internal_created
 
                 new_cluster.save()
+                self.stdout.write(self.style.NOTICE('Adding cluster: id={} address={}'.format(new_cluster.pk, new_cluster.address)))
 
                 connector = ApiConnector(cluster=Cluster.objects.get(pk=new_cluster.pk))
                 try:
