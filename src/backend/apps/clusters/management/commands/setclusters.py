@@ -191,8 +191,9 @@ class Command(BaseCommand):
                         self.stdout.write(self.style.WARNING(
                             f'Cluster {key} is not in the YAML file but retained. '
                             f'Use --prune-unknown-clusters to delete unknown clusters. '
-                            f'Its sync schedules remain unchanged.'
+                            f'Disabling sync schedules for this cluster.'
                         ))
+                        SyncScheduleModel.objects.filter(cluster=value).update(enabled=False)
         if error:
             sys.exit(1)
         self.stdout.write(self.style.SUCCESS('Successfully set up AAP clusters'))

@@ -57,6 +57,8 @@ class TestSetClustersPruneUnknown:
     """Default behavior retains clusters absent from YAML; --prune-unknown-clusters deletes them."""
 
     def test_default_retains_omitted_cluster(self, tmp_path, capsys, mocker):
+        from backend.apps.scheduler.models import SyncSchedule
+
         mocker.patch(
             "backend.apps.clusters.connector.ApiConnector.check_aap_version",
             return_value=None,
@@ -73,6 +75,13 @@ class TestSetClustersPruneUnknown:
             external_id=1,
         )
 
+        SyncSchedule.objects.create(
+            cluster=c24,
+            name="sync-schedule",
+            rrule=RRULE,
+            enabled=True,
+        )
+
         yaml_path = _clusters_yaml(tmp_path, [_cluster_entry("aap26.example.com")])
 
         call_command("setclusters", "--keep", yaml_path)
@@ -82,8 +91,13 @@ class TestSetClustersPruneUnknown:
         assert Job.objects.filter(cluster=c24).count() == 1, \
             "Jobs on the omitted cluster should survive"
 
+        sync_schedule = SyncSchedule.objects.get(cluster=c24)
+        assert sync_schedule.enabled is False, \
+            "Sync schedules for omitted cluster should be disabled"
+
         captured = capsys.readouterr()
         assert "retained" in captured.out.lower()
+        assert "disabling sync schedules" in captured.out.lower()
 
     def test_prune_flag_deletes_unknown_clusters(self, tmp_path, capsys, mocker):
         mocker.patch(
