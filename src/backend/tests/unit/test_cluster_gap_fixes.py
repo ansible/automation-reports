@@ -1,7 +1,7 @@
 """Tests for AAP-90152: two-cluster cutover gap fixes.
 
 Covers:
-  1. setclusters --no-prune retains omitted clusters
+  1. setclusters --prune-unknown-clusters deletes omitted clusters
   2. syncdata --cluster selects the correct cluster by address or pk
 """
 import json
@@ -49,14 +49,14 @@ def _cluster_entry(address, port=443):
     }
 
 
-# ── setclusters --no-prune ──────────────────────────────────────────
+# ── setclusters --prune-unknown-clusters ───────────────────────────
 
 
 @pytest.mark.django_db(transaction=True)
-class TestSetClustersNoPrune:
-    """When --no-prune is passed, clusters absent from YAML are NOT deleted."""
+class TestSetClustersPruneUnknown:
+    """Default behavior retains clusters absent from YAML; --prune-unknown-clusters deletes them."""
 
-    def test_no_prune_retains_omitted_cluster(self, tmp_path, capsys, mocker):
+    def test_default_retains_omitted_cluster(self, tmp_path, capsys, mocker):
         mocker.patch(
             "backend.apps.clusters.connector.ApiConnector.check_aap_version",
             return_value=None,
@@ -75,17 +75,17 @@ class TestSetClustersNoPrune:
 
         yaml_path = _clusters_yaml(tmp_path, [_cluster_entry("aap26.example.com")])
 
-        call_command("setclusters", "--keep", "--no-prune", yaml_path)
+        call_command("setclusters", "--keep", yaml_path)
 
         assert Cluster.objects.filter(address="aap24.example.com").exists(), \
-            "Omitted cluster should survive with --no-prune"
+            "Omitted cluster should survive by default"
         assert Job.objects.filter(cluster=c24).count() == 1, \
             "Jobs on the omitted cluster should survive"
 
         captured = capsys.readouterr()
         assert "retained" in captured.out.lower()
 
-    def test_default_behavior_still_deletes(self, tmp_path, capsys, mocker):
+    def test_prune_flag_deletes_unknown_clusters(self, tmp_path, capsys, mocker):
         mocker.patch(
             "backend.apps.clusters.connector.ApiConnector.check_aap_version",
             return_value=None,
@@ -96,10 +96,10 @@ class TestSetClustersNoPrune:
 
         yaml_path = _clusters_yaml(tmp_path, [_cluster_entry("aap26.example.com")])
 
-        call_command("setclusters", "--keep", yaml_path)
+        call_command("setclusters", "--keep", "--prune-unknown-clusters", yaml_path)
 
         assert not Cluster.objects.filter(address="aap24.example.com").exists(), \
-            "Without --no-prune the old cluster must be deleted"
+            "With --prune-unknown-clusters the omitted cluster must be deleted"
 
 
 # ── syncdata --cluster ──────────────────────────────────────────────
