@@ -64,6 +64,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--keep", action="store_true", help="Keep (do not remove) the clusters.yaml after processing")
+        parser.add_argument("--prune-unknown-clusters", action="store_true", dest="prune_unknown_clusters",
+                            default=False,
+                            help="Delete clusters that are missing from the YAML file. "
+                                 "By default, any cluster whose address is not in the YAML is retained. "
+                                 "Use this flag to delete clusters not present in the YAML file along with their imported jobs.")
         parser.add_argument("path", nargs='+', type=str, help="Path to the clusters.yaml file")
 
     def handle(self, *args, **options):
@@ -100,7 +105,6 @@ class Command(BaseCommand):
                 cluster["access_token"] = encrypt_value(cluster["access_token"])
                 cluster["refresh_token"] = encrypt_value(cluster["refresh_token"])
                 cluster["client_secret"] = encrypt_value(cluster["client_secret"])
-                self.stdout.write(self.style.NOTICE('Adding cluster: address={}'.format(cluster.get("address"))))
                 try:
                     new_cluster = ClusterSettings(**cluster)
                 except pydantic.ValidationError as ex:
@@ -119,6 +123,7 @@ class Command(BaseCommand):
                     new_cluster.internal_created = db_cluster.internal_created
 
                 new_cluster.save()
+                self.stdout.write(self.style.NOTICE('Adding cluster: id={} address={}'.format(new_cluster.pk, new_cluster.address)))
 
                 connector = ApiConnector(cluster=Cluster.objects.get(pk=new_cluster.pk))
                 try:
@@ -177,8 +182,18 @@ class Command(BaseCommand):
                     _db_schedule.delete()
 
             if not error:
+                prune_unknown_clusters = options.get('prune_unknown_clusters', False)
                 for key, value in db_clusters.items():
-                    value.delete()
+                    if prune_unknown_clusters:
+                        self.stdout.write(self.style.WARNING(f'Deleting cluster not in YAML: {key}'))
+                        value.delete()
+                    else:
+                        self.stdout.write(self.style.WARNING(
+                            f'Cluster {key} is not in the YAML file but retained. '
+                            f'Use --prune-unknown-clusters to delete unknown clusters. '
+                            f'Disabling sync schedules for this cluster.'
+                        ))
+                        SyncScheduleModel.objects.filter(cluster=value).update(enabled=False)
         if error:
             sys.exit(1)
         self.stdout.write(self.style.SUCCESS('Successfully set up AAP clusters'))

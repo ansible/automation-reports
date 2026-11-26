@@ -32,9 +32,9 @@ class TestSetClusters:
         call_command("setclusters", clusters_yaml_filename)
 
         captured = capsys.readouterr()
-        assert f"Adding cluster: address=aap{aap_version_str_short}.example.com\n" in captured.out
         assert "Successfully set up AAP clusters\n" in captured.out
         assert 1 == Cluster.objects.count()
         cluster = Cluster.objects.get()
+        assert f"Adding cluster: id={cluster.pk} address=aap{aap_version_str_short}.example.com\n" in captured.out
         assert cluster.port == int(dict_cluster["port"])
         assert cluster.base_url == f"https://aap{aap_version_str_short}.example.com:{cluster.port}"
